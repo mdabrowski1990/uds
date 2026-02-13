@@ -40,6 +40,9 @@ class Client:
     DEFAULT_RECEIVING_TASK_CYCLE: TimeMillisecondsAlias = 10
     """Default value of receiving task cycle."""
 
+    tester_present_storage_size = 5
+    """Tester Present records number to store."""
+
     def __init__(self,
                  transport_interface: AbstractTransportInterface,
                  p2_client_timeout: TimeMillisecondsAlias = DEFAULT_P2_CLIENT_TIMEOUT,
@@ -108,6 +111,7 @@ class Client:
         self.__last_physical_response: Optional[UdsMessageRecord] = None
         self.__last_functional_request: Optional[UdsMessageRecord] = None
         self.__last_functional_response: Optional[UdsMessageRecord] = None
+        self.__last_tester_present_requests: List[UdsMessageRecord] = []
 
     def __del__(self) -> None:
         """Safely finish all tasks."""
@@ -374,6 +378,11 @@ class Client:
         self.__s3_client = value
 
     @property
+    def last_tester_present_requests_sent(self) -> Tuple[UdsMessageRecord, ...]:
+        """Get records with the last few request with Tester Present messages."""
+        return tuple(self.__last_tester_present_requests)
+
+    @property
     def last_request_sent(self) -> Optional[UdsMessageRecord]:
         """Get record with the last request message sent."""
         records = []
@@ -554,7 +563,10 @@ class Client:
             if (self.__send_and_receive_not_in_progress_event.is_set()
                     or self.last_request_sent.addressing_type != tester_present_request.addressing_type):
                 # avoid collision of message with the same addressing type
-                self._send_request(tester_present_request)
+                tp_record = self._send_request(tester_present_request)
+                self.__last_tester_present_requests.insert(0, tp_record)
+                self.__last_tester_present_requests \
+                    = self.__last_tester_present_requests[:self.tester_present_storage_size]
             next_call += period_s
             remaining_wait_s = next_call - perf_counter()
             if remaining_wait_s < 0:

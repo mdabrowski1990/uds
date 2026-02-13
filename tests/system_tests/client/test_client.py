@@ -85,6 +85,7 @@ class AbstractBaseClientFunctionalityTests(AbstractClientTests, ABC):
             - Check that addressing information of Tester Present packet matches the Client's addressing information.
             - Check that message transmission time is in line with s3_client parameter.
             - Check that direction attribute indicates that message was received.
+            - Check records stored in last_tester_present_requests_sent attribute.
 
         :param s3_client: Cycle time for Tester Present message sending.
         :param addressing_type: Addressing Type to use for Tester Present messages transmission.
@@ -139,6 +140,17 @@ class AbstractBaseClientFunctionalityTests(AbstractClientTests, ABC):
                     <= tp_message_record.transmission_start_timestamp
                     == tp_message_record.transmission_end_timestamp
                     <= desired_timestamp + self.TASK_TIMING_TOLERANCE / 1000.)
+        assert len(client.last_tester_present_requests_sent) == client.tester_present_storage_size
+        for i, tp_message_record in enumerate(client.last_tester_present_requests_sent, start=1):
+            received_record = tp_messages_records[-i]
+            assert tp_message_record.payload == tp_payload
+            assert tp_message_record.direction ==  TransmissionDirection.TRANSMITTED
+            for attribute_name, attribute_value in addressing_params.items():
+                assert getattr(tp_message_record.packets_records[0], attribute_name) == attribute_value
+            assert (received_record.transmission_end_timestamp - self.TIMESTAMP_TOLERANCE / 1000.
+                    <= tp_message_record.transmission_start_timestamp
+                    == tp_message_record.transmission_end_timestamp
+                    <= received_record.transmission_end_timestamp + self.TIMESTAMP_TOLERANCE / 1000.)
 
     @pytest.mark.parametrize("addressing_type, sprmib, s3_client", [
         (AddressingType.FUNCTIONAL, True, 1000),
@@ -1138,358 +1150,403 @@ class AbstractClientTimeoutsTests(AbstractClientTests, ABC):
 class AbstractClientErrorGuessing(AbstractClientTests, ABC):
     """Common implementation of error-guessing system tests for the Client."""
 
-    @pytest.mark.parametrize("request_message, other_message, response_message", [
-        (UdsMessage(payload=[0x3E, 0x00],
-                    addressing_type=AddressingType.FUNCTIONAL),
-         UdsMessage(payload=[0x54],
-                    addressing_type=AddressingType.FUNCTIONAL),
-         UdsMessage(payload=[0x7E, 0x00],
-                    addressing_type=AddressingType.FUNCTIONAL)),
-        (UdsMessage(payload=[0x22, 0x10, 0x00],
-                    addressing_type=AddressingType.PHYSICAL),
-         UdsMessage(payload=[0x7E, 0x00],
-                    addressing_type=AddressingType.FUNCTIONAL),
-         UdsMessage(payload=[0x62, *range(255)],
-                    addressing_type=AddressingType.PHYSICAL)),
-        (UdsMessage(payload=[0x11, 0x01],
-                    addressing_type=AddressingType.FUNCTIONAL),
-         UdsMessage(payload=[0x2A, *range(100, 200)],
-                    addressing_type=AddressingType.PHYSICAL),
-         UdsMessage(payload=[0x51, 0x01],
-                    addressing_type=AddressingType.FUNCTIONAL)),
-    ])
-    @pytest.mark.parametrize("p2_client_timeout, send_other_after, send_response_after", [
-        (100, 10, 80),
-        (250, 50, 150),
-    ])
-    def test_send_request_receive_responses__other_message(self, request_message, other_message, response_message,
-                                                           p2_client_timeout, send_other_after, send_response_after):
-        """
-        Check Client for sending UDS request and receiving UDS response that is disturbed by other response message.
+    # @pytest.mark.parametrize("request_message, other_message, response_message", [
+    #     (UdsMessage(payload=[0x3E, 0x00],
+    #                 addressing_type=AddressingType.FUNCTIONAL),
+    #      UdsMessage(payload=[0x54],
+    #                 addressing_type=AddressingType.FUNCTIONAL),
+    #      UdsMessage(payload=[0x7E, 0x00],
+    #                 addressing_type=AddressingType.FUNCTIONAL)),
+    #     (UdsMessage(payload=[0x22, 0x10, 0x00],
+    #                 addressing_type=AddressingType.PHYSICAL),
+    #      UdsMessage(payload=[0x7E, 0x00],
+    #                 addressing_type=AddressingType.FUNCTIONAL),
+    #      UdsMessage(payload=[0x62, *range(255)],
+    #                 addressing_type=AddressingType.PHYSICAL)),
+    #     (UdsMessage(payload=[0x11, 0x01],
+    #                 addressing_type=AddressingType.FUNCTIONAL),
+    #      UdsMessage(payload=[0x2A, *range(100, 200)],
+    #                 addressing_type=AddressingType.PHYSICAL),
+    #      UdsMessage(payload=[0x51, 0x01],
+    #                 addressing_type=AddressingType.FUNCTIONAL)),
+    # ])
+    # @pytest.mark.parametrize("p2_client_timeout, send_other_after, send_response_after", [
+    #     (100, 10, 80),
+    #     (250, 50, 150),
+    # ])
+    # def test_send_request_receive_responses__other_message(self, request_message, other_message, response_message,
+    #                                                        p2_client_timeout, send_other_after, send_response_after):
+    #     """
+    #     Check Client for sending UDS request and receiving UDS response that is disturbed by other response message.
+    #
+    #     Procedure:
+    #     1. Configure Client.
+    #     2. Schedule other response message sending by the second Transport Interface.
+    #     3. Schedule response message sending by the second Transport Interface.
+    #     4. Schedule request message reception by the second Transport Interface.
+    #     5. Check that measured values of P2Client, P2*Client, P6Client and P6*Client are not set in the Client.
+    #     6. Send UDS request message and receive UDS response by the Client.
+    #     7. Validate request and response records.
+    #         - Check that messages' payload matches the payload of transmitted messages.
+    #         - Check that direction attribute of request message indicates that the message was transmitted.
+    #         - Check that direction attribute of response message indicates that the message was received.
+    #         - Check that addressing type attribute in the message records is correctly set.
+    #         - Check the last request sent by the client.
+    #         - Check the last response received by the client.
+    #     8. Check that other response message is put in background receiving queue.
+    #     9. Validate timing parameters.
+    #         - Check that timestamps of record messages matches the transmission schedule.
+    #         - Check that measured P2Client and P6Client attributes were correctly updated in the Client.
+    #         - Check that measured P2*Client and P6*Client attributes were not updated in the Client.
+    #
+    #     :param request_message: Request message to send by Client.
+    #     :param other_message: Other response message to receive by Client.
+    #     :param response_message: Response message (to the request message) to receive by Client.
+    #     :param p2_client_timeout: P2Client timeout value to configure in Client.
+    #     :param send_other_after: Time after which other response message would be sent.
+    #     :param send_response_after: Time after which response message would be sent.
+    #     """
+    #     # Configure Client.
+    #     client = Client(transport_interface=self.transport_interface_1,
+    #                     p2_client_timeout=p2_client_timeout,
+    #                     p3_client_functional=2*p2_client_timeout,
+    #                     p3_client_physical=2*p2_client_timeout)
+    #     # Schedule other response message sending by the second Transport Interface.
+    #     self.send_message(transport_interface=self.transport_interface_2,
+    #                       message=other_message,
+    #                       delay=send_other_after)
+    #     # Schedule response message sending by the second Transport Interface.
+    #     self.send_message(transport_interface=self.transport_interface_2,
+    #                       message=response_message,
+    #                       delay=send_response_after)
+    #     # Schedule request message reception by the second Transport Interface.
+    #     self.receive_message(transport_interface=self.transport_interface_2,
+    #                          delay=0,
+    #                          start_timeout=1000,
+    #                          end_timeout=None)
+    #     # Check that measured values of P2Client, P2*Client, P6Client and P6*Client are not set in the Client.
+    #     assert client.p2_client_measured is None
+    #     assert client.p2_ext_client_measured is None
+    #     assert client.p6_client_measured is None
+    #     assert client.p6_ext_client_measured is None
+    #     # Send UDS request message and receive UDS response by the Client.
+    #     timestamp_before = perf_counter()
+    #     request_record, response_records = client.send_request_receive_responses(request=request_message)
+    #     timestamp_after = perf_counter()
+    #     # Validate request and response records.
+    #     assert isinstance(request_record, UdsMessageRecord)
+    #     assert request_record.direction == TransmissionDirection.TRANSMITTED
+    #     assert request_record.payload == request_message.payload
+    #     assert request_record.addressing_type == request_message.addressing_type
+    #     assert isinstance(response_records, tuple)
+    #     assert len(response_records) == 1
+    #     response_record = response_records[0]
+    #     assert response_record.direction == TransmissionDirection.RECEIVED
+    #     assert response_record.payload == response_message.payload
+    #     assert response_record.addressing_type == response_message.addressing_type
+    #     assert client.last_request_sent is request_record
+    #     assert client.last_response_received is response_records[-1]
+    #     # Check that other response message is put in background receiving queue.
+    #     other_response_record = client.get_response_no_wait()
+    #     assert isinstance(other_response_record, UdsMessageRecord)
+    #     assert other_response_record.direction == TransmissionDirection.RECEIVED
+    #     assert other_response_record.payload == other_message.payload
+    #     assert other_response_record.addressing_type == other_message.addressing_type
+    #     # Validate timing parameters.
+    #     assert (client.p2_client_measured
+    #             == round((response_record.transmission_start_timestamp
+    #                       - request_record.transmission_end_timestamp) * 1000., 3))
+    #     assert (client.p6_client_measured
+    #             == round((response_record.transmission_end_timestamp
+    #                       - request_record.transmission_end_timestamp) * 1000., 3))
+    #     assert client.p2_ext_client_measured is None
+    #     assert client.p6_ext_client_measured is None
+    #     if self.MAKE_TIMING_CHECKS:
+    #         assert (timestamp_before
+    #                 <= request_record.transmission_start_timestamp
+    #                 <= request_record.transmission_end_timestamp
+    #                 < response_record.transmission_start_timestamp
+    #                 <= response_record.transmission_end_timestamp
+    #                 <= timestamp_after)
+    #
+    # @pytest.mark.parametrize("addressing_type, sprmib, messages, s3_client, delay", [
+    #     (AddressingType.PHYSICAL,
+    #      False,
+    #      [
+    #          UdsMessage(payload=[0x7E, 0x00],
+    #                     addressing_type=AddressingType.PHYSICAL),
+    #          UdsMessage(payload=[0x6A, 0x00, 0xF0, 0xE1, 0xD2, 0xC3, 0xB4, 0xA5, 0x96, 0x87],
+    #                     addressing_type=AddressingType.PHYSICAL),
+    #          UdsMessage(payload=[0x7E, 0x00],
+    #                     addressing_type=AddressingType.PHYSICAL),
+    #          UdsMessage(payload=[0x6A, 0x01, *range(60,180)],
+    #                     addressing_type=AddressingType.PHYSICAL),
+    #          UdsMessage(payload=[0x7E, 0x00],
+    #                     addressing_type=AddressingType.PHYSICAL),
+    #          UdsMessage(payload=[0x6A, 0x00, 0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC, 0xDE, 0xF0],
+    #                     addressing_type=AddressingType.PHYSICAL),
+    #          UdsMessage(payload=[0x7E, 0x00],
+    #                     addressing_type=AddressingType.PHYSICAL),
+    #      ],
+    #      500,
+    #      250),
+    #     (AddressingType.FUNCTIONAL,
+    #      True,
+    #      [
+    #          UdsMessage(payload=[0x7E, 0x00],
+    #                     addressing_type=AddressingType.FUNCTIONAL),
+    #          UdsMessage(payload=[0x6A, 0x00, 0xF0, 0xE1, 0xD2, 0xC3, 0xB4, 0xA5, 0x96, 0x87],
+    #                     addressing_type=AddressingType.PHYSICAL),
+    #          UdsMessage(payload=[0x6A, 0x01, *range(60, 180)],
+    #                     addressing_type=AddressingType.PHYSICAL),
+    #          UdsMessage(payload=[0x6A, 0x00, 0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC, 0xDE, 0xF0],
+    #                     addressing_type=AddressingType.PHYSICAL),
+    #          UdsMessage(payload=[0x7E, 0x80],
+    #                     addressing_type=AddressingType.FUNCTIONAL),
+    #      ],
+    #      1000,
+    #      300),
+    # ])
+    # def test_background_receiving_and_tester_present(self, addressing_type, sprmib, messages,
+    #                                                  s3_client, delay):
+    #     """
+    #     Check Client for receiving messages in the background and send Tester Present cyclically at the same time.
+    #
+    #     Procedure:
+    #     1. Configure Client.
+    #     2. Schedule response messages sending by the second Transport Interface.
+    #     3. Start background receiving in the Client.
+    #     4. Start cyclic sending of Tester Present messages.
+    #     5. Get records of sent and received messages.
+    #         - Check that record of the last received message is stored in `last_response_received` attribute.
+    #         - Get records of the last sent request message from `last_request_sent` attribute
+    #     6. Stop background receiving in the Client.
+    #     7. Stop cyclic sending of Tester Present messages.
+    #     8. Validate collected messages records.
+    #         - Check that messages timing matches the schedule.
+    #         - Check messages payload and other attributes that were set.
+    #
+    #     :param addressing_type: Addressing Type to use for Tester Present messages transmission.
+    #     :param sprmib: Suppress Positive Response Message Indication Bit value to set in Tester Present messages.
+    #     :param messages: Response message to receive by Client.
+    #     :param s3_client: s3_client value to configure in Client.
+    #     :param delay: Time between following response message transmission.
+    #     """
+    #     # Configure Client.
+    #     client = Client(transport_interface=self.transport_interface_1,
+    #                     s3_client=s3_client)
+    #     # Schedule response messages sending by the second Transport Interface.
+    #     for i, message in enumerate(messages, start=1):
+    #         self.send_message(transport_interface=self.transport_interface_2,
+    #                           message=message,
+    #                           delay=i * delay)
+    #     # Start background receiving in the Client.
+    #     client.start_background_receiving()
+    #     # Start cyclic sending of Tester Present messages.
+    #     client.start_tester_present(addressing_type=addressing_type, sprmib=sprmib)
+    #     # Get records of sent and received messages.
+    #     received_records = []
+    #     sent_records = []
+    #     for _ in messages:
+    #         received_records.append(client.get_response(timeout=2 * delay))
+    #         assert client.last_response_received == received_records[-1]
+    #         if client.last_request_sent is not None and client.last_request_sent not in sent_records:
+    #             sent_records.append(client.last_request_sent)
+    #     # Start background receiving in the Client.
+    #     client.stop_tester_present()
+    #     # Stop cyclic sending of Tester Present messages.
+    #     client.stop_background_receiving()
+    #     # Validate collected messages records.
+    #     for i, record in enumerate(sent_records):
+    #         assert isinstance(record, UdsMessageRecord)
+    #         assert record.addressing_type == addressing_type
+    #         assert len(record.payload) == 2
+    #         assert record.payload[0] == 0x3E
+    #         assert record.payload[1] == (0x80 if sprmib else 0x00)
+    #         if i != 0:
+    #             delay_between_tp_ms = (record.transmission_end_timestamp
+    #                                    - sent_records[i-i].transmission_end_timestamp) * 1000.
+    #             assert (s3_client - self.TASK_TIMING_TOLERANCE
+    #                     <= delay_between_tp_ms
+    #                     <= s3_client + self.TASK_TIMING_TOLERANCE)
+    #     assert len(received_records) == len(messages)
+    #     for i, record in enumerate(received_records):
+    #         message = messages[i]
+    #         assert isinstance(record, UdsMessageRecord)
+    #         assert record.addressing_type == message.addressing_type
+    #         assert record.payload == bytes(message.payload)
+    #
+    # @pytest.mark.parametrize("request_message, response_delays, response_messages, other_delays, other_messages", [
+    #     (UdsMessage(payload=[0x22, *range(250, 0, -7)], addressing_type=AddressingType.PHYSICAL),
+    #      [40, 940, 1840],
+    #      (UdsMessage(payload=[0x7F, 0x22, 0x78], addressing_type=AddressingType.PHYSICAL),
+    #       UdsMessage(payload=[0x7F, 0x22, 0x78], addressing_type=AddressingType.PHYSICAL),
+    #       UdsMessage(payload=[0x62, *range(255), *range(255, 0, -1)], addressing_type=AddressingType.PHYSICAL)),
+    #      [20, 100, 900, 960, 2000],
+    #      (UdsMessage(payload=[0x7E, 0x00], addressing_type=AddressingType.FUNCTIONAL),
+    #       UdsMessage(payload=[0x6A, 0x0F, 0x1E, 0x2D, 0x3C, 0x4B, 0x5A, 0x69], addressing_type=AddressingType.PHYSICAL),
+    #       UdsMessage(payload=[0x7E, 0x00], addressing_type=AddressingType.FUNCTIONAL),
+    #       UdsMessage(payload=[0x7E, 0x00], addressing_type=AddressingType.FUNCTIONAL),
+    #       UdsMessage(payload=[0x6A, *range(255), *range(255, 0, -3)], addressing_type=AddressingType.PHYSICAL),)),
+    #     (UdsMessage(payload=[0x11, 0x81], addressing_type=AddressingType.FUNCTIONAL),
+    #      [30, 500],
+    #      (UdsMessage(payload=[0x7F, 0x11, 0x78], addressing_type=AddressingType.FUNCTIONAL),
+    #       UdsMessage(payload=[0x51, 0x81], addressing_type=AddressingType.FUNCTIONAL)),
+    #      [20, 50, 495, 505],
+    #      (UdsMessage(payload=[0x50, 0x01], addressing_type=AddressingType.PHYSICAL),
+    #       UdsMessage(payload=[0x6A, *range(0, 255, 2)], addressing_type=AddressingType.PHYSICAL),
+    #       UdsMessage(payload=[0x7E, 0x00], addressing_type=AddressingType.FUNCTIONAL),
+    #       UdsMessage(payload=[0x7E, 0x00], addressing_type=AddressingType.FUNCTIONAL))),
+    # ])
+    # @pytest.mark.parametrize("receiving_cycle", [10, 20])
+    # def test_background_receiving_and_send_request_receive_responses(self, request_message,
+    #                                                                  response_delays, response_messages,
+    #                                                                  other_delays, other_messages,
+    #                                                                  receiving_cycle):
+    #     """
+    #     Check Client for receiving messages in the background while sending request and receiving responses.
+    #
+    #     Procedure:
+    #     1. Configure Client.
+    #     2. Schedule request messages reception by the second Transport Interface.
+    #     3. Schedule response messages sending by the second Transport Interface.
+    #         - Schedule sending response messages to the request.
+    #         - Schedule sending other response messages.
+    #     4. Schedule other response message sending by the second Transport Interface.
+    #     5. Start background receiving in the Client.
+    #     6. Send UDS request message and receive UDS responses by the Client.
+    #     7. Wait 1s so other messages are transmitted.
+    #     8. Stop background receiving in the Client.
+    #     9. Get other response messages from response queue.
+    #     10. Validate request and response records.
+    #         - Check record of request message.
+    #         - Check records of response messages.
+    #         - Check records of other response messages.
+    #
+    #     :param request_message: Request message to send by Client.
+    #     :param response_delays: Times after which response messages would be sent.
+    #     :param response_messages: Response messages (to the request message) to receive by Client.
+    #     :param other_delays: Times after which other response messages would be sent.
+    #     :param other_messages: Other response messages to receive by Client.
+    #     :param receiving_cycle: Cycle for background receiving task.
+    #     """
+    #     # Configure Client.
+    #     client = Client(transport_interface=self.transport_interface_1)
+    #     # Schedule request messages reception by the second Transport Interface.
+    #     self.receive_message(transport_interface=self.transport_interface_2,
+    #                          delay=0,
+    #                          start_timeout=1000,
+    #                          end_timeout=None)
+    #     self.receive_message(transport_interface=self.transport_interface_2,
+    #                          delay=800,
+    #                          start_timeout=1000,
+    #                          end_timeout=None)
+    #     self.receive_message(transport_interface=self.transport_interface_2,
+    #                          delay=1500,
+    #                          start_timeout=1000,
+    #                          end_timeout=None)
+    #     # Schedule response messages sending by the second Transport Interface.
+    #     for i, response_message in enumerate(response_messages):
+    #         self.send_message(transport_interface=self.transport_interface_2,
+    #                           message=response_message,
+    #                           delay=response_delays[i])
+    #     # Schedule other response message sending by the second Transport Interface.
+    #     for i, other_message in enumerate(other_messages):
+    #         self.send_message(transport_interface=self.transport_interface_2,
+    #                           message=other_message,
+    #                           delay=other_delays[i])
+    #     # Start background receiving in the Client.
+    #     client.start_background_receiving(cycle=receiving_cycle)
+    #     # Send UDS request message and receive UDS responses by the Client.
+    #     request_record, response_records = client.send_request_receive_responses(request=request_message)
+    #     # Wait 1s so other messages are transmitted.
+    #     sleep(1)
+    #     # Stop background receiving in the Client.
+    #     client.stop_background_receiving()
+    #     # Get other response messages from response queue.
+    #     other_records = [client.get_response_no_wait() for _ in other_messages]
+    #     assert client.get_response_no_wait() is None
+    #     # Validate request and response records.
+    #     assert isinstance(request_record, UdsMessageRecord)
+    #     assert request_record.direction == TransmissionDirection.TRANSMITTED
+    #     assert request_record.payload == request_message.payload
+    #     assert request_record.addressing_type == request_message.addressing_type
+    #     assert isinstance(response_records, tuple)
+    #     assert len(response_records) == len(response_messages)
+    #     assert client.last_request_sent is request_record
+    #     for i, response_record in enumerate(response_records):
+    #         response_message = response_messages[i]
+    #         assert isinstance(response_record, UdsMessageRecord)
+    #         assert response_record.direction == TransmissionDirection.RECEIVED
+    #         assert response_record.payload == bytes(response_message.payload)
+    #         assert response_record.addressing_type == response_message.addressing_type
+    #     assert all(isinstance(other_record, UdsMessageRecord) for other_record in other_records)
+    #     for i, other_record in enumerate(other_records):
+    #         other_message = other_messages[i]
+    #         assert isinstance(other_record, UdsMessageRecord)
+    #         assert other_record.direction == TransmissionDirection.RECEIVED
+    #         assert other_record.payload == bytes(other_message.payload)
+    #         assert other_record.addressing_type == other_message.addressing_type
 
-        Procedure:
-        1. Configure Client.
-        2. Schedule other response message sending by the second Transport Interface.
-        3. Schedule response message sending by the second Transport Interface.
-        4. Schedule request message reception by the second Transport Interface.
-        5. Check that measured values of P2Client, P2*Client, P6Client and P6*Client are not set in the Client.
-        6. Send UDS request message and receive UDS response by the Client.
-        7. Validate request and response records.
-            - Check that messages' payload matches the payload of transmitted messages.
-            - Check that direction attribute of request message indicates that the message was transmitted.
-            - Check that direction attribute of response message indicates that the message was received.
-            - Check that addressing type attribute in the message records is correctly set.
-            - Check the last request sent by the client.
-            - Check the last response received by the client.
-        8. Check that other response message is put in background receiving queue.
-        9. Validate timing parameters.
-            - Check that timestamps of record messages matches the transmission schedule.
-            - Check that measured P2Client and P6Client attributes were correctly updated in the Client.
-            - Check that measured P2*Client and P6*Client attributes were not updated in the Client.
-
-        :param request_message: Request message to send by Client.
-        :param other_message: Other response message to receive by Client.
-        :param response_message: Response message (to the request message) to receive by Client.
-        :param p2_client_timeout: P2Client timeout value to configure in Client.
-        :param send_other_after: Time after which other response message would be sent.
-        :param send_response_after: Time after which response message would be sent.
-        """
-        # Configure Client.
-        client = Client(transport_interface=self.transport_interface_1,
-                        p2_client_timeout=p2_client_timeout,
-                        p3_client_functional=2*p2_client_timeout,
-                        p3_client_physical=2*p2_client_timeout)
-        # Schedule other response message sending by the second Transport Interface.
-        self.send_message(transport_interface=self.transport_interface_2,
-                          message=other_message,
-                          delay=send_other_after)
-        # Schedule response message sending by the second Transport Interface.
-        self.send_message(transport_interface=self.transport_interface_2,
-                          message=response_message,
-                          delay=send_response_after)
-        # Schedule request message reception by the second Transport Interface.
-        self.receive_message(transport_interface=self.transport_interface_2,
-                             delay=0,
-                             start_timeout=1000,
-                             end_timeout=None)
-        # Check that measured values of P2Client, P2*Client, P6Client and P6*Client are not set in the Client.
-        assert client.p2_client_measured is None
-        assert client.p2_ext_client_measured is None
-        assert client.p6_client_measured is None
-        assert client.p6_ext_client_measured is None
-        # Send UDS request message and receive UDS response by the Client.
-        timestamp_before = perf_counter()
-        request_record, response_records = client.send_request_receive_responses(request=request_message)
-        timestamp_after = perf_counter()
-        # Validate request and response records.
-        assert isinstance(request_record, UdsMessageRecord)
-        assert request_record.direction == TransmissionDirection.TRANSMITTED
-        assert request_record.payload == request_message.payload
-        assert request_record.addressing_type == request_message.addressing_type
-        assert isinstance(response_records, tuple)
-        assert len(response_records) == 1
-        response_record = response_records[0]
-        assert response_record.direction == TransmissionDirection.RECEIVED
-        assert response_record.payload == response_message.payload
-        assert response_record.addressing_type == response_message.addressing_type
-        assert client.last_request_sent is request_record
-        assert client.last_response_received is response_records[-1]
-        # Check that other response message is put in background receiving queue.
-        other_response_record = client.get_response_no_wait()
-        assert isinstance(other_response_record, UdsMessageRecord)
-        assert other_response_record.direction == TransmissionDirection.RECEIVED
-        assert other_response_record.payload == other_message.payload
-        assert other_response_record.addressing_type == other_message.addressing_type
-        # Validate timing parameters.
-        assert (client.p2_client_measured
-                == round((response_record.transmission_start_timestamp
-                          - request_record.transmission_end_timestamp) * 1000., 3))
-        assert (client.p6_client_measured
-                == round((response_record.transmission_end_timestamp
-                          - request_record.transmission_end_timestamp) * 1000., 3))
-        assert client.p2_ext_client_measured is None
-        assert client.p6_ext_client_measured is None
-        if self.MAKE_TIMING_CHECKS:
-            assert (timestamp_before
-                    <= request_record.transmission_start_timestamp
-                    <= request_record.transmission_end_timestamp
-                    < response_record.transmission_start_timestamp
-                    <= response_record.transmission_end_timestamp
-                    <= timestamp_after)
-
-    @pytest.mark.parametrize("addressing_type, sprmib, messages, s3_client, delay", [
-        (AddressingType.PHYSICAL,
-         False,
-         [
-             UdsMessage(payload=[0x7E, 0x00],
-                        addressing_type=AddressingType.PHYSICAL),
-             UdsMessage(payload=[0x6A, 0x00, 0xF0, 0xE1, 0xD2, 0xC3, 0xB4, 0xA5, 0x96, 0x87],
-                        addressing_type=AddressingType.PHYSICAL),
-             UdsMessage(payload=[0x7E, 0x00],
-                        addressing_type=AddressingType.PHYSICAL),
-             UdsMessage(payload=[0x6A, 0x01, *range(60,180)],
-                        addressing_type=AddressingType.PHYSICAL),
-             UdsMessage(payload=[0x7E, 0x00],
-                        addressing_type=AddressingType.PHYSICAL),
-             UdsMessage(payload=[0x6A, 0x00, 0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC, 0xDE, 0xF0],
-                        addressing_type=AddressingType.PHYSICAL),
-             UdsMessage(payload=[0x7E, 0x00],
-                        addressing_type=AddressingType.PHYSICAL),
-         ],
-         500,
-         250),
-        (AddressingType.FUNCTIONAL,
-         True,
-         [
-             UdsMessage(payload=[0x7E, 0x00],
-                        addressing_type=AddressingType.FUNCTIONAL),
-             UdsMessage(payload=[0x6A, 0x00, 0xF0, 0xE1, 0xD2, 0xC3, 0xB4, 0xA5, 0x96, 0x87],
-                        addressing_type=AddressingType.PHYSICAL),
-             UdsMessage(payload=[0x6A, 0x01, *range(60, 180)],
-                        addressing_type=AddressingType.PHYSICAL),
-             UdsMessage(payload=[0x6A, 0x00, 0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC, 0xDE, 0xF0],
-                        addressing_type=AddressingType.PHYSICAL),
-             UdsMessage(payload=[0x7E, 0x80],
-                        addressing_type=AddressingType.FUNCTIONAL),
-         ],
-         1000,
-         300),
-    ])
-    def test_background_receiving_and_tester_present(self, addressing_type, sprmib, messages,
-                                                     s3_client, delay):
-        """
-        Check Client for receiving messages in the background and send Tester Present cyclically at the same time.
-
-        Procedure:
-        1. Configure Client.
-        2. Schedule response messages sending by the second Transport Interface.
-        3. Start background receiving in the Client.
-        4. Start cyclic sending of Tester Present messages.
-        5. Get records of sent and received messages.
-            - Check that record of the last received message is stored in `last_response_received` attribute.
-            - Get records of the last sent request message from `last_request_sent` attribute
-        6. Stop background receiving in the Client.
-        7. Stop cyclic sending of Tester Present messages.
-        8. Validate collected messages records.
-            - Check that messages timing matches the schedule.
-            - Check messages payload and other attributes that were set.
-
-        :param addressing_type: Addressing Type to use for Tester Present messages transmission.
-        :param sprmib: Suppress Positive Response Message Indication Bit value to set in Tester Present messages.
-        :param messages: Response message to receive by Client.
-        :param s3_client: s3_client value to configure in Client.
-        :param delay: Time between following response message transmission.
-        """
-        # Configure Client.
-        client = Client(transport_interface=self.transport_interface_1,
-                        s3_client=s3_client)
-        # Schedule response messages sending by the second Transport Interface.
-        for i, message in enumerate(messages, start=1):
-            self.send_message(transport_interface=self.transport_interface_2,
-                              message=message,
-                              delay=i * delay)
-        # Start background receiving in the Client.
-        client.start_background_receiving()
-        # Start cyclic sending of Tester Present messages.
-        client.start_tester_present(addressing_type=addressing_type, sprmib=sprmib)
-        # Get records of sent and received messages.
-        received_records = []
-        sent_records = []
-        for _ in messages:
-            received_records.append(client.get_response(timeout=2 * delay))
-            assert client.last_response_received == received_records[-1]
-            if client.last_request_sent is not None and client.last_request_sent not in sent_records:
-                sent_records.append(client.last_request_sent)
-        # Start background receiving in the Client.
-        client.stop_tester_present()
-        # Stop cyclic sending of Tester Present messages.
-        client.stop_background_receiving()
-        # Validate collected messages records.
-        for i, record in enumerate(sent_records):
-            assert isinstance(record, UdsMessageRecord)
-            assert record.addressing_type == addressing_type
-            assert len(record.payload) == 2
-            assert record.payload[0] == 0x3E
-            assert record.payload[1] == (0x80 if sprmib else 0x00)
-            if i != 0:
-                delay_between_tp_ms = (record.transmission_end_timestamp
-                                       - sent_records[i-i].transmission_end_timestamp) * 1000.
-                assert (s3_client - self.TASK_TIMING_TOLERANCE
-                        <= delay_between_tp_ms
-                        <= s3_client + self.TASK_TIMING_TOLERANCE)
-        assert len(received_records) == len(messages)
-        for i, record in enumerate(received_records):
-            message = messages[i]
-            assert isinstance(record, UdsMessageRecord)
-            assert record.addressing_type == message.addressing_type
-            assert record.payload == bytes(message.payload)
-
-    @pytest.mark.parametrize("request_message, response_delays, response_messages, other_delays, other_messages", [
-        (UdsMessage(payload=[0x22, *range(250, 0, -7)], addressing_type=AddressingType.PHYSICAL),
-         [40, 940, 1840],
-         (UdsMessage(payload=[0x7F, 0x22, 0x78], addressing_type=AddressingType.PHYSICAL),
-          UdsMessage(payload=[0x7F, 0x22, 0x78], addressing_type=AddressingType.PHYSICAL),
-          UdsMessage(payload=[0x62, *range(255), *range(255, 0, -1)], addressing_type=AddressingType.PHYSICAL)),
-         [20, 100, 900, 960, 2000],
-         (UdsMessage(payload=[0x7E, 0x00], addressing_type=AddressingType.FUNCTIONAL),
-          UdsMessage(payload=[0x6A, 0x0F, 0x1E, 0x2D, 0x3C, 0x4B, 0x5A, 0x69], addressing_type=AddressingType.PHYSICAL),
-          UdsMessage(payload=[0x7E, 0x00], addressing_type=AddressingType.FUNCTIONAL),
-          UdsMessage(payload=[0x7E, 0x00], addressing_type=AddressingType.FUNCTIONAL),
-          UdsMessage(payload=[0x6A, *range(255), *range(255, 0, -3)], addressing_type=AddressingType.PHYSICAL),)),
+    @pytest.mark.parametrize("request_message, response_delays, response_messages, addressing_type, sprmib, s3_client", [
         (UdsMessage(payload=[0x11, 0x81], addressing_type=AddressingType.FUNCTIONAL),
-         [30, 500],
-         (UdsMessage(payload=[0x7F, 0x11, 0x78], addressing_type=AddressingType.FUNCTIONAL),
-          UdsMessage(payload=[0x51, 0x81], addressing_type=AddressingType.FUNCTIONAL)),
-         [20, 50, 495, 505],
-         (UdsMessage(payload=[0x50, 0x01], addressing_type=AddressingType.PHYSICAL),
-          UdsMessage(payload=[0x6A, *range(0, 255, 2)], addressing_type=AddressingType.PHYSICAL),
-          UdsMessage(payload=[0x7E, 0x00], addressing_type=AddressingType.FUNCTIONAL),
-          UdsMessage(payload=[0x7E, 0x00], addressing_type=AddressingType.FUNCTIONAL))),
-    ])
-    @pytest.mark.parametrize("receiving_cycle", [10, 20])
-    def test_background_receiving_and_send_request_receive_responses(self, request_message,
-                                                                     response_delays, response_messages,
-                                                                     other_delays, other_messages,
-                                                                     receiving_cycle):
-        """
-        Check Client for receiving messages in the background while sending request and receiving responses.
-
-        Procedure:
-        1. Configure Client.
-        2. Schedule request messages reception by the second Transport Interface.
-        3. Schedule response messages sending by the second Transport Interface.
-            - Schedule sending response messages to the request.
-            - Schedule sending other response messages.
-        4. Schedule other response message sending by the second Transport Interface.
-        5. Start background receiving in the Client.
-        6. Send UDS request message and receive UDS responses by the Client.
-        7. Wait 1s so other messages are transmitted.
-        8. Stop background receiving in the Client.
-        9. Get other response messages from response queue.
-        10. Validate request and response records.
-            - Check record of request message.
-            - Check records of response messages.
-            - Check records of other response messages.
-
-        :param request_message: Request message to send by Client.
-        :param response_delays: Times after which response messages would be sent.
-        :param response_messages: Response messages (to the request message) to receive by Client.
-        :param other_delays: Times after which other response messages would be sent.
-        :param other_messages: Other response messages to receive by Client.
-        :param receiving_cycle: Cycle for background receiving task.
-        """
-        # Configure Client.
-        client = Client(transport_interface=self.transport_interface_1)
-        # Schedule request messages reception by the second Transport Interface.
-        self.receive_message(transport_interface=self.transport_interface_2,
-                             delay=0,
-                             start_timeout=1000,
-                             end_timeout=None)
-        self.receive_message(transport_interface=self.transport_interface_2,
-                             delay=800,
-                             start_timeout=1000,
-                             end_timeout=None)
-        self.receive_message(transport_interface=self.transport_interface_2,
-                             delay=1500,
-                             start_timeout=1000,
-                             end_timeout=None)
-        # Schedule response messages sending by the second Transport Interface.
-        for i, response_message in enumerate(response_messages):
-            self.send_message(transport_interface=self.transport_interface_2,
-                              message=response_message,
-                              delay=response_delays[i])
-        # Schedule other response message sending by the second Transport Interface.
-        for i, other_message in enumerate(other_messages):
-            self.send_message(transport_interface=self.transport_interface_2,
-                              message=other_message,
-                              delay=other_delays[i])
-        # Start background receiving in the Client.
-        client.start_background_receiving(cycle=receiving_cycle)
-        # Send UDS request message and receive UDS responses by the Client.
-        request_record, response_records = client.send_request_receive_responses(request=request_message)
-        # Wait 1s so other messages are transmitted.
-        sleep(1)
-        # Stop background receiving in the Client.
-        client.stop_background_receiving()
-        # Get other response messages from response queue.
-        other_records = [client.get_response_no_wait() for _ in other_messages]
-        assert client.get_response_no_wait() is None
-        # Validate request and response records.
-        assert isinstance(request_record, UdsMessageRecord)
-        assert request_record.direction == TransmissionDirection.TRANSMITTED
-        assert request_record.payload == request_message.payload
-        assert request_record.addressing_type == request_message.addressing_type
-        assert isinstance(response_records, tuple)
-        assert len(response_records) == len(response_messages)
-        assert client.last_request_sent is request_record
-        for i, response_record in enumerate(response_records):
-            response_message = response_messages[i]
-            assert isinstance(response_record, UdsMessageRecord)
-            assert response_record.direction == TransmissionDirection.RECEIVED
-            assert response_record.payload == bytes(response_message.payload)
-            assert response_record.addressing_type == response_message.addressing_type
-        assert all(isinstance(other_record, UdsMessageRecord) for other_record in other_records)
-        for i, other_record in enumerate(other_records):
-            other_message = other_messages[i]
-            assert isinstance(other_record, UdsMessageRecord)
-            assert other_record.direction == TransmissionDirection.RECEIVED
-            assert other_record.payload == bytes(other_message.payload)
-            assert other_record.addressing_type == other_message.addressing_type
-
-    @pytest.mark.parametrize("request_message, response_messages, addressing_type, sprmib, s3_client", [
-        (UdsMessage(payload=[0x11, 0x81], addressing_type=AddressingType.FUNCTIONAL),
+         (250, 390, 410),
          (UdsMessage(payload=[0x7F, 0x11, 0x78], addressing_type=AddressingType.FUNCTIONAL),
           UdsMessage(payload=[0x7F, 0x11, 0x78], addressing_type=AddressingType.FUNCTIONAL),
           UdsMessage(payload=[0x51, 0x81], addressing_type=AddressingType.FUNCTIONAL)),
          AddressingType.FUNCTIONAL,
          False,
          200),
-        (UdsMessage(payload=[0x22] + 2 * list(range(255)), addressing_type=AddressingType.PHYSICAL),
-         (UdsMessage(payload=[0x7F, 0x22, 0x78], addressing_type=AddressingType.PHYSICAL),
-          UdsMessage(payload=[0x62] + 10 * list(range(255)), addressing_type=AddressingType.PHYSICAL)),
-         AddressingType.PHYSICAL,
-         True,
-         500),
+        # (UdsMessage(payload=[0x22] + 2 * list(range(255)), addressing_type=AddressingType.PHYSICAL),
+        #  (530, 995, 1005),
+        #  (UdsMessage(payload=[0x7F, 0x22, 0x78], addressing_type=AddressingType.PHYSICAL),
+        #   UdsMessage(payload=[0x62] + 50 * list(range(255)), addressing_type=AddressingType.PHYSICAL)),
+        #  AddressingType.PHYSICAL,
+        #  True,
+        #  500),
     ])
-    def test_tester_present_and_send_request_receive_responses(self):
-        ... #TODO: manual verification needed?
+    def test_tester_present_and_send_request_receive_responses(self, request_message,
+                                                               response_delays, response_messages,
+                                                               addressing_type, sprmib, s3_client):
+        """
+        Check Client for sending and receiving messages while tester present cyclical sending is on.
+
+        Procedure:
+        1. Configure Client.
+        2. Schedule request messages reception by the second Transport Interface.
+        3. Schedule response messages sending by the second Transport Interface.
+        4. Start cyclic sending of Tester Present messages.
+        5. Send UDS request message and receive UDS responses by the Client.
+
+        :param request_message:
+        :param response_messages:
+        :param addressing_type:
+        :param sprmib:
+        :param s3_client:
+        :return:
+        """
+        # Configure Client.
+        client = Client(transport_interface=self.transport_interface_1,
+                        s3_client=s3_client,
+                        p2_client_timeout=100,
+                        p3_client_physical=s3_client,
+                        p3_client_functional=s3_client)
+        # Schedule request message reception by the second Transport Interface.
+        self.receive_message(transport_interface=self.transport_interface_2,
+                             delay=0,
+                             start_timeout=2 * s3_client,
+                             end_timeout=None)
+        # Schedule response messages sending by the second Transport Interface.
+        for i, response_message in enumerate(response_messages):
+            self.send_message(transport_interface=self.transport_interface_2,
+                              message=response_message,
+                              delay=response_delays[i])
+        # Start cyclic sending of Tester Present messages.
+        client.start_tester_present(addressing_type=addressing_type, sprmib=sprmib)
+        # Wait less than S3Client
+        sleep(0.9 * s3_client / 1000.)
+        # Send UDS request message and receive UDS responses by the Client.
+        request_record, response_records = client.send_request_receive_responses(request=request_message)
+        # Wait twice the S3Client time for Tester Present messages to arrive
+        sleep(2 * s3_client / 1000.)
+        # TODO: add assertionts

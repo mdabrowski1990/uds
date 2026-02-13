@@ -19,9 +19,9 @@ class BaseSystemTests(ABC):
     TASK_TIMING_TOLERANCE: TimeMillisecondsAlias = 30
     TIMESTAMP_TOLERANCE: TimeMillisecondsAlias = 1
 
-    sent_message: Optional[UdsMessageRecord]
-    received_message: Optional[UdsMessageRecord]
-    sent_packet: Optional[AbstractPacketRecord]
+    sent_messages: List[UdsMessageRecord]
+    received_messages: List[UdsMessageRecord]
+    sent_packets: List[AbstractPacketRecord]
     _timers: List[Timer]
 
     def setup_method(self):
@@ -29,9 +29,9 @@ class BaseSystemTests(ABC):
         Common setup:
         - define common variables
         """
-        self.sent_message: Optional[UdsMessageRecord] = None
-        self.received_message: Optional[UdsMessageRecord] = None
-        self.sent_packet: Optional[AbstractPacketRecord] = None
+        self.sent_messages: List[UdsMessageRecord] = []
+        self.received_messages: List[UdsMessageRecord] = []
+        self.sent_packets: List[AbstractPacketRecord] = []
         self._timers: List[Timer] = []
 
     def teardown_method(self):
@@ -67,7 +67,7 @@ class BaseSystemTests(ABC):
         """
 
         def _send_packet():
-            self.sent_packet = transport_interface.send_packet(packet)
+            self.sent_packets.append(transport_interface.send_packet(packet))
 
         timer = Timer(interval=delay/1000., function=_send_packet)
         self._timers.append(timer)
@@ -109,8 +109,8 @@ class BaseSystemTests(ABC):
         """
 
         def _receive_message():
-            self.received_message = transport_interface.receive_message(start_timeout=start_timeout,
-                                                                        end_timeout=end_timeout)
+            self.received_messages.append(transport_interface.receive_message(start_timeout=start_timeout,
+                                                                              end_timeout=end_timeout))
 
         timer = Timer(interval=delay/1000., function=_receive_message)
         self._timers.append(timer)
@@ -133,7 +133,7 @@ class BaseSystemTests(ABC):
         :return: Timer object with scheduled task.
         """
         def _send_message():
-            self.sent_message = transport_interface.send_message(message)
+            self.sent_messages.append(transport_interface.send_message(message))
 
         timer = Timer(interval=delay/1000., function=_send_message)
         self._timers.append(timer)
