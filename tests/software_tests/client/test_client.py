@@ -18,6 +18,7 @@ from uds.client import (
     Thread,
     UdsMessage,
     UdsMessageRecord,
+    Queue
 )
 
 SCRIPT_LOCATION = "uds.client"
@@ -44,8 +45,10 @@ class TestClient:
         self.mock_thread = self._patcher_thread.start()
         self._patcher_event = patch(f"{SCRIPT_LOCATION}.Event")
         self.mock_event = self._patcher_event.start()
-        self._patcher_simple_queue = patch(f"{SCRIPT_LOCATION}.SimpleQueue")
-        self.mock_simple_queue = self._patcher_simple_queue.start()
+        self._patcher_lock = patch(f"{SCRIPT_LOCATION}.Lock")
+        self.mock_lock = self._patcher_lock.start()
+        self._patcher_queue = patch(f"{SCRIPT_LOCATION}.Queue")
+        self.mock_queue = self._patcher_queue.start()
         self._patcher_tester_present = patch(f"{SCRIPT_LOCATION}.TESTER_PRESENT")
         self.mock_tester_present = self._patcher_tester_present.start()
         self._patcher_validate_request_sid = patch(f"{SCRIPT_LOCATION}.RequestSID.validate_member")
@@ -57,6 +60,7 @@ class TestClient:
         self._patcher_perf_counter.stop()
         self._patcher_thread.stop()
         self._patcher_event.stop()
+        self._patcher_lock.stop()
         self._patcher_tester_present.stop()
         self._patcher_validate_request_sid.stop()
 
@@ -66,6 +70,20 @@ class TestClient:
     def test_init__mandatory_args(self, transport_interface):
         assert Client.__init__(self.mock_client,
                                transport_interface=transport_interface) is None
+        # measurements
+        assert self.mock_client._Client__p2_client_measured is None
+        assert self.mock_client._Client__p2_ext_client_measured is None
+        assert self.mock_client._Client__p6_client_measured is None
+        assert self.mock_client._Client__p6_ext_client_measured is None
+        # defaults
+        assert self.mock_client._Client__p2_client_timeout == self.mock_client.DEFAULT_P2_CLIENT_TIMEOUT
+        assert self.mock_client._Client__p2_ext_client_timeout == self.mock_client.DEFAULT_P2_EXT_CLIENT_TIMEOUT
+        assert self.mock_client._Client__p3_client_physical == self.mock_client.DEFAULT_P3_CLIENT
+        assert self.mock_client._Client__p3_client_functional == self.mock_client.DEFAULT_P3_CLIENT
+        assert self.mock_client._Client__p6_client_timeout == self.mock_client.DEFAULT_P6_CLIENT_TIMEOUT
+        assert self.mock_client._Client__p6_ext_client_timeout == self.mock_client.DEFAULT_P6_EXT_CLIENT_TIMEOUT
+        assert self.mock_client._Client__s3_client == self.mock_client.DEFAULT_S3_CLIENT
+        # assignment
         assert self.mock_client.transport_interface == transport_interface
         assert self.mock_client.p2_client_timeout == Client.DEFAULT_P2_CLIENT_TIMEOUT
         assert self.mock_client.p2_ext_client_timeout == Client.DEFAULT_P2_EXT_CLIENT_TIMEOUT
@@ -74,17 +92,25 @@ class TestClient:
         assert self.mock_client.p6_client_timeout == Client.DEFAULT_P6_CLIENT_TIMEOUT
         assert self.mock_client.p6_ext_client_timeout == Client.DEFAULT_P6_EXT_CLIENT_TIMEOUT
         assert self.mock_client.s3_client == Client.DEFAULT_S3_CLIENT
-        assert self.mock_client._Client__p2_client_measured is None
-        assert self.mock_client._Client__p2_ext_client_measured is None
-        assert self.mock_client._Client__p6_client_measured is None
-        assert self.mock_client._Client__p6_ext_client_measured is None
-        assert self.mock_client._Client__response_queue is self.mock_simple_queue.return_value
-        assert self.mock_client._Client__receiving_thread is None
-        assert self.mock_client._Client__receiving_stop_event == self.mock_event.return_value
-        assert self.mock_client._Client__receiving_break_event == self.mock_event.return_value
-        assert self.mock_client._Client__receiving_not_in_progress == self.mock_event.return_value
+        # internal attributes
+        assert self.mock_client._Client__tester_present_task_event == self.mock_event.return_value
         assert self.mock_client._Client__tester_present_thread is None
-        assert self.mock_client._Client__tester_present_stop_event == self.mock_event.return_value
+        assert self.mock_client._Client__background_receiving_task_event == self.mock_event.return_value
+        assert self.mock_client._Client__break_in_background_receiving_event == self.mock_event.return_value
+        assert self.mock_client._Client__background_receiving_thread is None
+        assert self.mock_client._Client__send_and_receive_not_in_progress_event == self.mock_event.return_value
+        assert self.mock_client._Client__receiving_not_in_progress_event == self.mock_event.return_value
+        assert self.mock_client._Client__transmission_not_in_progress_event == self.mock_event.return_value
+        assert self.mock_client._Client__receiving_lock == self.mock_lock.return_value
+        assert self.mock_client._Client__transmission_lock == self.mock_lock.return_value
+        assert self.mock_client._Client__physical_transmission_lock == self.mock_lock.return_value
+        assert self.mock_client._Client__functional_transmission_lock == self.mock_lock.return_value
+        assert self.mock_client._Client__response_queue == self.mock_queue.return_value
+        assert self.mock_client._Client__last_physical_request is None
+        assert self.mock_client._Client__last_physical_response is None
+        assert self.mock_client._Client__last_functional_request is None
+        assert self.mock_client._Client__last_functional_response is None
+        assert self.mock_client._Client__last_tester_present_requests == []
 
     @pytest.mark.parametrize("transport_interface, p2_client_timeout, p2_ext_client_timeout, "
                              "p3_client_physical, p3_client_functional, p6_client_timeout, p6_ext_client_timeout, "
@@ -104,6 +130,20 @@ class TestClient:
                                p6_client_timeout=p6_client_timeout,
                                p6_ext_client_timeout=p6_ext_client_timeout,
                                s3_client=s3_client) is None
+        # measurements
+        assert self.mock_client._Client__p2_client_measured is None
+        assert self.mock_client._Client__p2_ext_client_measured is None
+        assert self.mock_client._Client__p6_client_measured is None
+        assert self.mock_client._Client__p6_ext_client_measured is None
+        # defaults
+        assert self.mock_client._Client__p2_client_timeout == self.mock_client.DEFAULT_P2_CLIENT_TIMEOUT
+        assert self.mock_client._Client__p2_ext_client_timeout == self.mock_client.DEFAULT_P2_EXT_CLIENT_TIMEOUT
+        assert self.mock_client._Client__p3_client_physical == self.mock_client.DEFAULT_P3_CLIENT
+        assert self.mock_client._Client__p3_client_functional == self.mock_client.DEFAULT_P3_CLIENT
+        assert self.mock_client._Client__p6_client_timeout == self.mock_client.DEFAULT_P6_CLIENT_TIMEOUT
+        assert self.mock_client._Client__p6_ext_client_timeout == self.mock_client.DEFAULT_P6_EXT_CLIENT_TIMEOUT
+        assert self.mock_client._Client__s3_client == self.mock_client.DEFAULT_S3_CLIENT
+        # assignment
         assert self.mock_client.transport_interface == transport_interface
         assert self.mock_client.p2_client_timeout == p2_client_timeout
         assert self.mock_client.p2_ext_client_timeout == p2_ext_client_timeout
@@ -112,35 +152,43 @@ class TestClient:
         assert self.mock_client.p6_client_timeout == p6_client_timeout
         assert self.mock_client.p6_ext_client_timeout == p6_ext_client_timeout
         assert self.mock_client.s3_client == s3_client
-        assert self.mock_client._Client__p2_client_measured is None
-        assert self.mock_client._Client__p2_ext_client_measured is None
-        assert self.mock_client._Client__p6_client_measured is None
-        assert self.mock_client._Client__p6_ext_client_measured is None
-        assert self.mock_client._Client__response_queue is self.mock_simple_queue.return_value
-        assert self.mock_client._Client__receiving_thread is None
-        assert self.mock_client._Client__receiving_stop_event == self.mock_event.return_value
-        assert self.mock_client._Client__receiving_break_event == self.mock_event.return_value
-        assert self.mock_client._Client__receiving_not_in_progress == self.mock_event.return_value
+        # internal attributes
+        assert self.mock_client._Client__tester_present_task_event == self.mock_event.return_value
         assert self.mock_client._Client__tester_present_thread is None
-        assert self.mock_client._Client__tester_present_stop_event == self.mock_event.return_value
+        assert self.mock_client._Client__background_receiving_task_event == self.mock_event.return_value
+        assert self.mock_client._Client__break_in_background_receiving_event == self.mock_event.return_value
+        assert self.mock_client._Client__background_receiving_thread is None
+        assert self.mock_client._Client__send_and_receive_not_in_progress_event == self.mock_event.return_value
+        assert self.mock_client._Client__receiving_not_in_progress_event == self.mock_event.return_value
+        assert self.mock_client._Client__transmission_not_in_progress_event == self.mock_event.return_value
+        assert self.mock_client._Client__receiving_lock == self.mock_lock.return_value
+        assert self.mock_client._Client__transmission_lock == self.mock_lock.return_value
+        assert self.mock_client._Client__physical_transmission_lock == self.mock_lock.return_value
+        assert self.mock_client._Client__functional_transmission_lock == self.mock_lock.return_value
+        assert self.mock_client._Client__response_queue == self.mock_queue.return_value
+        assert self.mock_client._Client__last_physical_request is None
+        assert self.mock_client._Client__last_physical_response is None
+        assert self.mock_client._Client__last_functional_request is None
+        assert self.mock_client._Client__last_functional_response is None
+        assert self.mock_client._Client__last_tester_present_requests == []
 
-    @pytest.mark.parametrize("is_tester_present_sent, is_receiving", [
+    @pytest.mark.parametrize("is_tester_present_sent, is_background_receiving", [
         (False, True),
         (True, False),
         (True, True),
     ])
-    def test_del(self, is_tester_present_sent, is_receiving):
+    def test_del(self, is_tester_present_sent, is_background_receiving):
         self.mock_client.is_tester_present_sent = is_tester_present_sent
-        self.mock_client.is_receiving = is_receiving
+        self.mock_client.is_background_receiving = is_background_receiving
         assert Client.__del__(self.mock_client) is None
         if is_tester_present_sent:
             self.mock_client.stop_tester_present.assert_called_once_with()
         else:
             self.mock_client.stop_tester_present.assert_not_called()
-        if is_receiving:
-            self.mock_client.stop_receiving.assert_called_once_with()
+        if is_background_receiving:
+            self.mock_client.stop_background_receiving.assert_called_once_with()
         else:
-            self.mock_client.stop_receiving.assert_not_called()
+            self.mock_client.stop_background_receiving.assert_not_called()
 
     # transport_interface
 
@@ -523,24 +571,24 @@ class TestClient:
         assert Client.s3_client.fset(self.mock_client, s3_client) is None
         assert self.mock_client._Client__s3_client == s3_client
 
-    # is_receiving
+    # is_background_receiving
 
-    def test_is_receiving__true(self):
-        self.mock_client._Client__receiving_thread = Mock()
+    def test_is_background_receiving__true(self):
+        self.mock_client._Client__background_receiving_task_event = Mock(is_set=Mock(return_value=True))
         assert Client.is_background_receiving.fget(self.mock_client) is True
 
-    def test_is_receiving__false(self):
-        self.mock_client._Client__receiving_thread = None
+    def test_is_background_receiving__false(self):
+        self.mock_client._Client__background_receiving_task_event = Mock(is_set=Mock(return_value=False))
         assert Client.is_background_receiving.fget(self.mock_client) is False
 
     # is_tester_present_sent
 
     def test_is_tester_present_sent__true(self):
-        self.mock_client._Client__tester_present_thread = Mock()
+        self.mock_client._Client__tester_present_task_event = Mock(is_set=Mock(return_value=True))
         assert Client.is_tester_present_sent.fget(self.mock_client) is True
 
     def test_is_tester_present_sent__false(self):
-        self.mock_client._Client__tester_present_thread = None
+        self.mock_client._Client__tester_present_task_event = Mock(is_set=Mock(return_value=False))
         assert Client.is_tester_present_sent.fget(self.mock_client) is False
 
     # __update_p2_client_measured
@@ -1026,7 +1074,7 @@ class TestClient:
 
     @pytest.mark.parametrize("cycle", [Mock(), 234])
     def test_start_receiving__not_running(self, cycle):
-        self.mock_client.is_receiving = False
+        self.mock_client.is_background_receiving = False
         assert Client.start_background_receiving(self.mock_client, cycle=cycle) is None
         assert self.mock_client._Client__receiving_thread == self.mock_thread.return_value
         self.mock_thread.return_value.start.assert_called_once_with()
@@ -1035,7 +1083,7 @@ class TestClient:
 
     @pytest.mark.parametrize("cycle", [Mock(), 234])
     def test_start_receiving__running(self, cycle):
-        self.mock_client.is_receiving = True
+        self.mock_client.is_background_receiving = True
         assert Client.start_background_receiving(self.mock_client, cycle=cycle) is None
         self.mock_thread.return_value.start.assert_not_called()
         self.mock_warn.assert_called_once()
@@ -1043,7 +1091,7 @@ class TestClient:
     # stop_receiving
 
     def test_stop_receiving__running(self):
-        self.mock_client.is_receiving = True
+        self.mock_client.is_background_receiving = True
         mock_thread = Mock(spec=Thread)
         self.mock_client._Client__receiving_thread = mock_thread
         assert Client.stop_background_receiving(self.mock_client) is None
@@ -1053,7 +1101,7 @@ class TestClient:
         self.mock_warn.assert_not_called()
 
     def test_stop_receiving__not_running(self):
-        self.mock_client.is_receiving = False
+        self.mock_client.is_background_receiving = False
         assert Client.stop_background_receiving(self.mock_client) is None
         self.mock_warn.assert_called_once()
 
@@ -1253,7 +1301,7 @@ class TestClientPerformance:
 
     def setup_method(self):
         self.mock_client = MagicMock(spec=Client,
-                                     _Client__response_queue=SimpleQueue())
+                                     _Client__response_queue=Queue())
         # patching
         self._patcher_warn = patch(f"{SCRIPT_LOCATION}.warn")
         self.mock_warn = self._patcher_warn.start()

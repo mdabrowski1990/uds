@@ -186,7 +186,10 @@ class AbstractCanAddressingInformation(AbstractAddressingInformation, ABC):
 
         :return: Addressing Type used for transmission of this packet, None otherwise.
         """
-        decoded_frame_ai_params = self.decode_frame_ai_params(can_id=can_id, raw_frame_data=raw_frame_data)
+        try:
+            decoded_frame_ai_params = self.decode_frame_ai_params(can_id=can_id, raw_frame_data=raw_frame_data)
+        except ValueError:
+            return None
         if (decoded_frame_ai_params["addressing_type"] in {None, AddressingType.PHYSICAL}
                 and can_id == self.rx_physical_params["can_id"]
                 and decoded_frame_ai_params["target_address"] == self.rx_physical_params["target_address"]
