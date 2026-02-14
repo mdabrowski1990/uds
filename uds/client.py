@@ -379,12 +379,12 @@ class Client:
         self.__s3_client = value
 
     @property
-    def last_tester_present_requests_sent(self) -> Tuple[UdsMessageRecord, ...]:
+    def last_sent_tester_present_requests(self) -> Tuple[UdsMessageRecord, ...]:
         """Get records with the last few request with Tester Present messages."""
         return tuple(self.__last_tester_present_requests)
 
     @property
-    def last_request_sent(self) -> Optional[UdsMessageRecord]:
+    def last_sent_request(self) -> Optional[UdsMessageRecord]:
         """Get record with the last request message sent."""
         records = []
         if self.__last_physical_request is not None:
@@ -396,7 +396,7 @@ class Client:
         return max(records, key=lambda record: record.transmission_end_timestamp)
 
     @property
-    def last_response_received(self) -> Optional[UdsMessageRecord]:
+    def last_received_response(self) -> Optional[UdsMessageRecord]:
         """
         Get record with the last response message sent.
 
@@ -544,12 +544,6 @@ class Client:
                 pass
             else:
                 self.__response_queue.put_nowait(response_record)
-                if response_record.addressing_type == AddressingType.PHYSICAL:
-                    self.__last_physical_response = response_record
-                elif response_record.addressing_type == AddressingType.FUNCTIONAL:
-                    self.__last_functional_response = response_record
-                else:
-                    raise NotImplementedError(f"Unhandled Addressing Type found: {response_record.addressing_type!r}")
 
     def __send_tester_present_task(self, tester_present_request: UdsMessage) -> None:
         """
@@ -562,7 +556,7 @@ class Client:
         sleep(period_s)
         while self.is_tester_present_sent:
             if (self.__send_and_receive_not_in_progress_event.is_set()
-                    or self.last_request_sent.addressing_type != tester_present_request.addressing_type):
+                    or self.last_sent_request.addressing_type != tester_present_request.addressing_type):
                 # avoid collision of message with the same addressing type
                 tp_record = self._send_request(tester_present_request)
                 self.__last_tester_present_requests.insert(0, tp_record)
@@ -573,6 +567,22 @@ class Client:
             if remaining_wait_s < 0:
                 continue
             sleep(remaining_wait_s)
+
+    def _update_last_response(self, response_record: UdsMessageRecord) -> None:
+        if self.__last_physical_request is not None and self.__last_physical_response is None:
+            sid = RequestSID(self.__last_physical_request.payload[0])
+            if (self.is_response_to_request(response_message=response_record,
+                                            request_message=self.__last_physical_request)
+                    and not self.is_response_pending_message(response_message=response_record,
+                                                             request_sid=sid)):
+                self.__last_physical_response = response_record
+        if self.__last_functional_request is not None and self.__last_functional_response is None:
+            sid = RequestSID(self.__last_functional_request.payload[0])
+            if (self.is_response_to_request(response_message=response_record,
+                                            request_message=self.__last_functional_request)
+                    and not self.is_response_pending_message(response_message=response_record,
+                                                             request_sid=sid)):
+                self.__last_functional_response = response_record
 
     def _update_measured_client_values(self,
                                        request_record: UdsMessageRecord,
@@ -651,20 +661,7 @@ class Client:
                     end_timeout=remaining_end_timeout_ms)
             finally:
                 self.__receiving_not_in_progress_event.set()
-            if self.__last_physical_request is not None and self.__last_physical_response is None:
-                sid = RequestSID(self.__last_physical_request.payload[0])
-                if (self.is_response_to_request(response_message=response_record,
-                                                request_message=self.__last_physical_request)
-                        and not self.is_response_pending_message(response_message=response_record,
-                                                                 request_sid=sid)):
-                    self.__last_physical_response = response_record
-            if self.__last_functional_request is not None and self.__last_functional_response is None:
-                sid = RequestSID(self.__last_functional_request.payload[0])
-                if (self.is_response_to_request(response_message=response_record,
-                                                request_message=self.__last_functional_request)
-                        and not self.is_response_pending_message(response_message=response_record,
-                                                                 request_sid=sid)):
-                    self.__last_functional_response = response_record
+            self._update_last_response(response_record)
         return response_record
 
     def _receive_initial_response(self, request_record: UdsMessageRecord) -> Optional[UdsMessageRecord]:

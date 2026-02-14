@@ -140,8 +140,8 @@ class AbstractBaseClientFunctionalityTests(AbstractClientTests, ABC):
                     <= tp_message_record.transmission_start_timestamp
                     == tp_message_record.transmission_end_timestamp
                     <= desired_timestamp + self.TASK_TIMING_TOLERANCE / 1000.)
-        assert len(client.last_tester_present_requests_sent) == client.tester_present_storage_size
-        for i, tp_message_record in enumerate(client.last_tester_present_requests_sent, start=1):
+        assert len(client.last_sent_tester_present_requests) == client.tester_present_storage_size
+        for i, tp_message_record in enumerate(client.last_sent_tester_present_requests, start=1):
             received_record = tp_messages_records[-i]
             assert tp_message_record.payload == tp_payload
             assert tp_message_record.direction ==  TransmissionDirection.TRANSMITTED
@@ -293,9 +293,9 @@ class AbstractBaseClientFunctionalityTests(AbstractClientTests, ABC):
         # Check that background receiving is not set in the Client.
         assert client.is_background_receiving is False
         # Check that there were no requests sent by the Client.
-        assert client.last_request_sent is None
+        assert client.last_sent_request is None
         # Check that there were no responses received by the Client.
-        assert client.last_response_received is None
+        assert client.last_received_response is None
         assert client.get_response_no_wait() is None
         # Start background receiving in the Client.
         client.start_background_receiving()
@@ -322,13 +322,13 @@ class AbstractBaseClientFunctionalityTests(AbstractClientTests, ABC):
         # Check that background receiving is not set in the Client.
         assert client.is_background_receiving is False
         # Check that there were no requests sent by the Client.
-        assert client.last_request_sent is None
+        assert client.last_sent_request is None
         # Validate received messages.
         assert message_record_1.payload == message_1.payload
         assert message_record_1.direction == TransmissionDirection.RECEIVED
         assert message_record_2.payload == message_2.payload
         assert message_record_2.direction == TransmissionDirection.RECEIVED
-        assert client.last_response_received is message_record_2
+        assert client.last_received_response is message_record_2
 
     @pytest.mark.parametrize("request_message", [
         UdsMessage(payload=[0x3E, 0x00],
@@ -375,9 +375,9 @@ class AbstractBaseClientFunctionalityTests(AbstractClientTests, ABC):
                              start_timeout=1000,
                              end_timeout=None)
         # Check that there were no requests sent by the Client.
-        assert client.last_request_sent is None
+        assert client.last_sent_request is None
         # Check that there were no responses received by the Client.
-        assert client.last_response_received is None
+        assert client.last_received_response is None
         assert client.get_response_no_wait() is None
         # Check that measured values of P2Client, P2*Client, P6Client and P6*Client are not set in the Client.
         assert client.p2_client_measured is None
@@ -400,8 +400,8 @@ class AbstractBaseClientFunctionalityTests(AbstractClientTests, ABC):
         assert request_record.addressing_type == request_message.addressing_type
         assert isinstance(response_records, tuple)
         assert len(response_records) == 0
-        assert client.last_request_sent is request_record
-        assert client.last_response_received is None
+        assert client.last_sent_request is request_record
+        assert client.last_received_response is None
         # Validate timing parameters.
         if self.MAKE_TIMING_CHECKS:
             desired_timeout = request_record.transmission_end_timestamp + p2_client_timeout / 1000.
@@ -477,9 +477,9 @@ class AbstractBaseClientFunctionalityTests(AbstractClientTests, ABC):
                              start_timeout=1000,
                              end_timeout=None)
         # Check that there were no requests sent by the Client.
-        assert client.last_request_sent is None
+        assert client.last_sent_request is None
         # Check that there were no responses received by the Client.
-        assert client.last_response_received is None
+        assert client.last_received_response is None
         assert client.get_response_no_wait() is None
         # Check that measured values of P2Client, P2*Client, P6Client and P6*Client are not set in the Client.
         assert client.p2_client_measured is None
@@ -501,8 +501,8 @@ class AbstractBaseClientFunctionalityTests(AbstractClientTests, ABC):
         assert response_record.direction == TransmissionDirection.RECEIVED
         assert response_record.payload == response_message.payload
         assert response_record.addressing_type == response_message.addressing_type
-        assert client.last_request_sent is request_record
-        assert client.last_response_received is response_records[-1]
+        assert client.last_sent_request is request_record
+        assert client.last_received_response is response_records[-1]
         # Validate timing parameters.
         assert (client.p2_client_measured
                 == round((response_record.transmission_start_timestamp
@@ -605,9 +605,9 @@ class AbstractBaseClientFunctionalityTests(AbstractClientTests, ABC):
                              start_timeout=100,
                              end_timeout=None)
         # Check that there were no requests sent by the Client.
-        assert client.last_request_sent is None
+        assert client.last_sent_request is None
         # Check that there were no responses received by the Client.
-        assert client.last_response_received is None
+        assert client.last_received_response is None
         assert client.get_response_no_wait() is None
         # Check that measured values of P2Client, P2*Client, P6Client and P6*Client are not set in the Client.
         assert client.p2_client_measured is None
@@ -629,8 +629,8 @@ class AbstractBaseClientFunctionalityTests(AbstractClientTests, ABC):
             assert response_record.direction == TransmissionDirection.RECEIVED
             assert response_record.payload == response_messages[i].payload
             assert response_record.addressing_type == response_messages[i].addressing_type
-        assert client.last_request_sent is request_record
-        assert client.last_response_received is response_records[-1]
+        assert client.last_sent_request is request_record
+        assert client.last_received_response is response_records[-1]
         # Validate timing parameters.
         assert (client.p2_client_measured
                 == round((response_records[0].transmission_start_timestamp
@@ -731,11 +731,11 @@ class AbstractClientTimeoutsTests(AbstractClientTests, ABC):
         assert client.p6_client_measured is None
         assert client.p6_ext_client_measured is None
         # Check that last request sent by the Client is updated.
-        assert isinstance(client.last_request_sent, UdsMessageRecord)
-        assert client.last_request_sent.payload == request_message.payload
-        assert client.last_request_sent.addressing_type == request_message.addressing_type
+        assert isinstance(client.last_sent_request, UdsMessageRecord)
+        assert client.last_sent_request.payload == request_message.payload
+        assert client.last_sent_request.addressing_type == request_message.addressing_type
         # Check that last response received by the Client remains unassigned.
-        assert client.last_response_received is None
+        assert client.last_received_response is None
         # Validate timing parameters.
         if self.MAKE_TIMING_CHECKS:
             receiving_time_ms = (timestamp_after - timestamp_before) * 1000.
@@ -815,11 +815,11 @@ class AbstractClientTimeoutsTests(AbstractClientTests, ABC):
         assert client.p6_client_measured is None
         assert client.p6_ext_client_measured is None
         # Check that last request sent by the Client is updated.
-        assert isinstance(client.last_request_sent, UdsMessageRecord)
-        assert client.last_request_sent.payload == request_message.payload
-        assert client.last_request_sent.addressing_type == request_message.addressing_type
+        assert isinstance(client.last_sent_request, UdsMessageRecord)
+        assert client.last_sent_request.payload == request_message.payload
+        assert client.last_sent_request.addressing_type == request_message.addressing_type
         # Check that last response received by the Client remains unassigned.
-        assert client.last_response_received is None
+        assert client.last_received_response is None
         # performance checks
         if self.MAKE_TIMING_CHECKS:
             receiving_time_ms = (timestamp_after - timestamp_before) * 1000.
@@ -923,11 +923,11 @@ class AbstractClientTimeoutsTests(AbstractClientTests, ABC):
         assert client.p6_client_measured is None
         assert client.p6_ext_client_measured is None
         # Check that last request sent by the Client is updated.
-        assert isinstance(client.last_request_sent, UdsMessageRecord)
-        assert client.last_request_sent.payload == request_message.payload
-        assert client.last_request_sent.addressing_type == request_message.addressing_type
+        assert isinstance(client.last_sent_request, UdsMessageRecord)
+        assert client.last_sent_request.payload == request_message.payload
+        assert client.last_sent_request.addressing_type == request_message.addressing_type
         # Check that last response received by the Client remains unassigned.
-        assert client.last_response_received is None
+        assert client.last_received_response is None
         # Validate timing parameters.
         if self.MAKE_TIMING_CHECKS:
             receiving_time_ms = (timestamp_after - timestamp_before) * 1000.
@@ -1031,11 +1031,11 @@ class AbstractClientTimeoutsTests(AbstractClientTests, ABC):
         assert client.p6_client_measured is None
         assert client.p6_ext_client_measured is None
         # Check that last request sent by the Client is updated.
-        assert isinstance(client.last_request_sent, UdsMessageRecord)
-        assert client.last_request_sent.payload == request_message.payload
-        assert client.last_request_sent.addressing_type == request_message.addressing_type
+        assert isinstance(client.last_sent_request, UdsMessageRecord)
+        assert client.last_sent_request.payload == request_message.payload
+        assert client.last_sent_request.addressing_type == request_message.addressing_type
         # Check that last response received by the Client remains unassigned.
-        assert client.last_response_received is None
+        assert client.last_received_response is None
         # Validate timing parameters.
         if self.MAKE_TIMING_CHECKS:
             receiving_time_ms = (timestamp_after - timestamp_before) * 1000.
@@ -1134,8 +1134,8 @@ class AbstractClientTimeoutsTests(AbstractClientTests, ABC):
         assert request_record_2.addressing_type == request_message_2.addressing_type
         assert isinstance(response_records_2, tuple)
         assert len(response_records_2) == 0
-        assert client.last_request_sent is request_record_2
-        assert client.last_response_received is None
+        assert client.last_sent_request is request_record_2
+        assert client.last_received_response is None
         # Validate timing parameters.
         transmission_diff_ms = (request_record_2.transmission_start_timestamp
                                 - request_record_1.transmission_end_timestamp) * 1000.
@@ -1244,8 +1244,8 @@ class AbstractClientErrorGuessing(AbstractClientTests, ABC):
         assert response_record.direction == TransmissionDirection.RECEIVED
         assert response_record.payload == response_message.payload
         assert response_record.addressing_type == response_message.addressing_type
-        assert client.last_request_sent is request_record
-        assert client.last_response_received is response_records[-1]
+        assert client.last_sent_request is request_record
+        assert client.last_received_response is response_records[-1]
         # Check that other response message is put in background receiving queue.
         other_response_record = client.get_response_no_wait()
         assert isinstance(other_response_record, UdsMessageRecord)
@@ -1349,9 +1349,9 @@ class AbstractClientErrorGuessing(AbstractClientTests, ABC):
         sent_records = []
         for _ in messages:
             received_records.append(client.get_response(timeout=2 * delay))
-            assert client.last_response_received == received_records[-1]
-            if client.last_request_sent is not None and client.last_request_sent not in sent_records:
-                sent_records.append(client.last_request_sent)
+            assert client.last_received_response == received_records[-1]
+            if client.last_sent_request is not None and client.last_sent_request not in sent_records:
+                sent_records.append(client.last_sent_request)
         # Start background receiving in the Client.
         client.stop_tester_present()
         # Stop cyclic sending of Tester Present messages.
@@ -1473,7 +1473,7 @@ class AbstractClientErrorGuessing(AbstractClientTests, ABC):
         assert request_record.addressing_type == request_message.addressing_type
         assert isinstance(response_records, tuple)
         assert len(response_records) == len(response_messages)
-        assert client.last_request_sent is request_record
+        assert client.last_sent_request is request_record
         for i, response_record in enumerate(response_records):
             response_message = response_messages[i]
             assert isinstance(response_record, UdsMessageRecord)
@@ -1573,8 +1573,8 @@ class AbstractClientErrorGuessing(AbstractClientTests, ABC):
             response_message = response_messages[i]
             assert response_record.payload == bytes(response_message.payload)
             assert response_record.addressing_type == response_message.addressing_type
-        assert len(client.last_tester_present_requests_sent) == 2
-        for tester_present_record in client.last_tester_present_requests_sent:
+        assert len(client.last_sent_tester_present_requests) == 2
+        for tester_present_record in client.last_sent_tester_present_requests:
             assert tester_present_record.payload == bytes(tp_payload)
             assert tester_present_record.transmission_end_timestamp > response_records[-1].transmission_end_timestamp
         # wait till TP task closes
@@ -1666,10 +1666,10 @@ class AbstractClientErrorGuessing(AbstractClientTests, ABC):
             assert response_record.addressing_type == response_message.addressing_type
         s3_client_cycles = (time_stop - time_start) * 1000. // s3_client
         if addressing_type == AddressingType.FUNCTIONAL:  # it should be continuously sent due to no collision
-            assert s3_client_cycles - 1 <= len(client.last_tester_present_requests_sent) <= s3_client_cycles
+            assert s3_client_cycles - 1 <= len(client.last_sent_tester_present_requests) <= s3_client_cycles
         else:  # physically address Tester PResent shall be only send when no transmission neither reception in progress
-            assert 2 <= len(client.last_tester_present_requests_sent) <= 3
-        for tester_present_record in client.last_tester_present_requests_sent:
+            assert 2 <= len(client.last_sent_tester_present_requests) <= 3
+        for tester_present_record in client.last_sent_tester_present_requests:
             assert tester_present_record.payload == bytes(tp_payload)
         # wait till TP task closes
         sleep(s3_client / 1000.)

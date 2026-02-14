@@ -29,12 +29,12 @@ class TestClient:
 
     def setup_method(self):
         self.mock_client = MagicMock(spec=Client,
-                                     _Client__receiving_stop_event=Mock(),
-                                     _Client__receiving_break_event=Mock(),
-                                     _Client__receiving_not_in_progress=Mock(),
-                                     _Client__tester_present_stop_event=Mock(),
-                                     _Client__response_queue=Mock())
+                                     _Client__response_queue=Mock(),
+                                     _Client__last_physical_response=Mock(),
+                                     _Client__last_functional_response=Mock())
         # patching
+        self._patcher_sleep = patch(f"{SCRIPT_LOCATION}.sleep")
+        self.mock_sleep = self._patcher_sleep.start()
         self._patcher_min = patch(f"{SCRIPT_LOCATION}.min")
         self.mock_min = self._patcher_min.start()
         self._patcher_warn = patch(f"{SCRIPT_LOCATION}.warn")
@@ -55,6 +55,7 @@ class TestClient:
         self.mock_validate_request_sid = self._patcher_validate_request_sid.start()
 
     def teardown_method(self):
+        self._patcher_sleep.stop()
         self._patcher_min.stop()
         self._patcher_warn.stop()
         self._patcher_perf_counter.stop()
@@ -171,6 +172,8 @@ class TestClient:
         assert self.mock_client._Client__last_functional_request is None
         assert self.mock_client._Client__last_functional_response is None
         assert self.mock_client._Client__last_tester_present_requests == []
+
+    # __del__
 
     @pytest.mark.parametrize("is_tester_present_sent, is_background_receiving", [
         (False, True),
@@ -571,6 +574,58 @@ class TestClient:
         assert Client.s3_client.fset(self.mock_client, s3_client) is None
         assert self.mock_client._Client__s3_client == s3_client
 
+    # last_sent_tester_present_requests
+
+    @pytest.mark.parametrize("last_tester_present_requests", [
+        [Mock()],
+        range(5),
+    ])
+    def test_last_sent_tester_present_requests(self, last_tester_present_requests):
+        self.mock_client._Client__last_tester_present_requests = last_tester_present_requests
+        assert Client.last_sent_tester_present_requests.fget(self.mock_client) == tuple(last_tester_present_requests)
+
+    # last_sent_request
+
+    @pytest.mark.parametrize("last_physical, last_functional, last_sent_request", [
+        (None, None, None),
+        (Mock(transmission_end_timestamp=1), None, "last_physical"),
+        (None, Mock(transmission_end_timestamp=2), "last_functional"),
+        (Mock(transmission_end_timestamp=3.5), Mock(transmission_end_timestamp=3.6), "last_functional"),
+        (Mock(transmission_end_timestamp=3.8), Mock(transmission_end_timestamp=3.7), "last_physical"),
+    ])
+    def test_last_sent_request(self, last_physical, last_functional, last_sent_request):
+        self.mock_client._Client__last_physical_request = last_physical
+        self.mock_client._Client__last_functional_request = last_functional
+        if last_sent_request is None:
+            assert Client.last_sent_request.fget(self.mock_client) is None
+        elif last_sent_request == "last_physical":
+            assert Client.last_sent_request.fget(self.mock_client) is last_physical
+        elif last_sent_request == "last_functional":
+            assert Client.last_sent_request.fget(self.mock_client) is last_functional
+        else:
+            raise AssertionError
+
+    # last_received_response
+
+    @pytest.mark.parametrize("last_physical, last_functional, last_received_response", [
+        (None, None, None),
+        (Mock(transmission_end_timestamp=1), None, "last_physical"),
+        (None, Mock(transmission_end_timestamp=2), "last_functional"),
+        (Mock(transmission_end_timestamp=3.5), Mock(transmission_end_timestamp=3.6), "last_functional"),
+        (Mock(transmission_end_timestamp=3.8), Mock(transmission_end_timestamp=3.7), "last_physical"),
+    ])
+    def test_last_received_response(self, last_physical, last_functional, last_received_response):
+        self.mock_client._Client__last_physical_response = last_physical
+        self.mock_client._Client__last_functional_response = last_functional
+        if last_received_response is None:
+            assert Client.last_received_response.fget(self.mock_client) is None
+        elif last_received_response == "last_physical":
+            assert Client.last_received_response.fget(self.mock_client) is last_physical
+        elif last_received_response == "last_functional":
+            assert Client.last_received_response.fget(self.mock_client) is last_functional
+        else:
+            raise AssertionError
+
     # is_background_receiving
 
     def test_is_background_receiving__true(self):
@@ -590,6 +645,56 @@ class TestClient:
     def test_is_tester_present_sent__false(self):
         self.mock_client._Client__tester_present_task_event = Mock(is_set=Mock(return_value=False))
         assert Client.is_tester_present_sent.fget(self.mock_client) is False
+
+    # is_ready_for_physical_transmission
+
+    @pytest.mark.parametrize("transmission_not_in_progress, receiving_not_in_progress,"
+                             "last_physical_request, last_physical_response,"
+                             "p3_client_physical, perf_counter_value,"
+                             "excepted_output", [
+        (True, True, None, None, 100, 0, True),
+        (False, True, None, None, 100, 0, False),
+        (True, False, None, None, 100, 0, False),
+        (True, True, Mock(transmission_end_timestamp=1.), None, 125, 1.125, False),
+        (True, True, Mock(transmission_end_timestamp=1.), None, 125, 1.125001, True),
+        (True, True, Mock(transmission_end_timestamp=5.6), None, 1000, 6.6, False),
+        (True, True, Mock(transmission_end_timestamp=5.6), None, 1000, 6.60001, True),
+        (True, True, Mock(transmission_end_timestamp=5.6), Mock(), 1000, 5.7, True),
+    ])
+    def test_is_ready_for_physical_transmission(self, transmission_not_in_progress,
+                                                receiving_not_in_progress,
+                                                last_physical_request,
+                                                last_physical_response,
+                                                p3_client_physical, perf_counter_value,
+                                                excepted_output):
+        self.mock_client._Client__transmission_not_in_progress_event = Mock(is_set=Mock(return_value=transmission_not_in_progress))
+        self.mock_client._Client__receiving_not_in_progress_event = Mock(is_set=Mock(return_value=receiving_not_in_progress))
+        self.mock_client._Client__last_physical_request = last_physical_request
+        self.mock_client._Client__last_physical_response = last_physical_response
+        self.mock_client.p3_client_physical = p3_client_physical
+        self.mock_perf_counter.return_value = perf_counter_value
+        assert Client.is_ready_for_physical_transmission.fget(self.mock_client) == excepted_output
+
+    # is_ready_for_functional_transmission
+
+    @pytest.mark.parametrize("transmission_not_in_progress, last_functional_request, p3_client_functional, "
+                             "perf_counter_value, excepted_output", [
+        (True, None, 100, 0, True),
+        (False, None, 100, 0, False),
+        (True, Mock(transmission_end_timestamp=1.), 125, 1.125, False),
+        (True, Mock(transmission_end_timestamp=1.), 125, 1.125001, True),
+        (True, Mock(transmission_end_timestamp=49.2), 65, 49.265, False),
+        (True, Mock(transmission_end_timestamp=49.2), 65, 49.265001, True),
+    ])
+    def test_is_ready_for_functional_transmission(self, transmission_not_in_progress,
+                                                last_functional_request,
+                                                p3_client_functional, perf_counter_value,
+                                                excepted_output):
+        self.mock_client._Client__transmission_not_in_progress_event = Mock(is_set=Mock(return_value=transmission_not_in_progress))
+        self.mock_client._Client__last_functional_request = last_functional_request
+        self.mock_client.p3_client_functional = p3_client_functional
+        self.mock_perf_counter.return_value = perf_counter_value
+        assert Client.is_ready_for_functional_transmission.fget(self.mock_client) == excepted_output
 
     # __update_p2_client_measured
 
@@ -743,6 +848,111 @@ class TestClient:
         assert Client._Client__update_p6_ext_client_measured(self.mock_client, p6_ext_client_measured) is None
         assert self.mock_client._Client__p6_ext_client_measured == p6_ext_client_measured
         self.mock_warn.assert_not_called()
+
+    # __receiving_task
+
+    def test_receiving_task__stopped(self):
+        self.mock_client.is_background_receiving = False
+        assert Client._Client__receiving_task(self.mock_client, cycle=Mock()) is None
+        self.mock_client.transport_interface.receive_message.assert_not_called()
+
+    @pytest.mark.parametrize("cycle", [10])
+    def test_receiving_task__send_and_receive_in_progress__no_message(self, cycle):
+        def _stop_background_receiving(*_, **__):
+            self.mock_client.is_background_receiving = False
+            raise TimeoutError
+
+        mock_send_and_receive_not_in_progress = Mock(return_value=False)
+        mock_set_break_in_background_receiving = Mock()
+        mock_clear_break_in_background_receiving = Mock()
+        mock_wait = Mock()
+        self.mock_client.is_background_receiving = True
+        self.mock_client._Client__send_and_receive_not_in_progress_event = Mock(
+            is_set=mock_send_and_receive_not_in_progress,
+            wait=mock_wait)
+        self.mock_client._Client__break_in_background_receiving_event = Mock(
+            set=mock_set_break_in_background_receiving,
+            clear=mock_clear_break_in_background_receiving)
+        self.mock_client._receive_response.side_effect = _stop_background_receiving
+        assert Client._Client__receiving_task(self.mock_client, cycle=cycle) is None
+        self.mock_sleep.assert_called_once_with(cycle / 1000.)
+        mock_send_and_receive_not_in_progress.assert_called_once_with()
+        mock_set_break_in_background_receiving.assert_called_once_with()
+        mock_wait.assert_called_once_with()
+        mock_clear_break_in_background_receiving.assert_called_once_with()
+        self.mock_client._receive_response.assert_called_once_with(start_timeout=cycle,
+                                                                   end_timeout=self.mock_client.p6_ext_client_timeout)
+
+    @pytest.mark.parametrize("cycle", [13])
+    def test_receiving_task__received_message(self, cycle):
+        mock_message = Mock()
+        def _stop_background_receiving(*_, **__):
+            self.mock_client.is_background_receiving = False
+            return mock_message
+
+        mock_send_and_receive_not_in_progress = Mock(return_value=True)
+        self.mock_client.is_background_receiving = True
+        self.mock_client._Client__send_and_receive_not_in_progress_event = Mock(
+            is_set=mock_send_and_receive_not_in_progress)
+        self.mock_client._receive_response.side_effect = _stop_background_receiving
+        assert Client._Client__receiving_task(self.mock_client, cycle=cycle) is None
+        self.mock_sleep.assert_called_once_with(cycle / 1000.)
+        mock_send_and_receive_not_in_progress.assert_called_once_with()
+        self.mock_client._receive_response.assert_called_once_with(start_timeout=cycle,
+                                                                   end_timeout=self.mock_client.p6_ext_client_timeout)
+        self.mock_client._Client__response_queue.put_nowait.assert_called_once_with(mock_message)
+
+
+    # __send_tester_present_task
+
+    # @pytest.mark.parametrize("cycle", [10, 321])
+    # def test__receiving_task__no_message(self, cycle):
+    #     mock_is_set = Mock(side_effect=[False, True])
+    #     self.mock_client._Client__receiving_stop_event = Mock(spec=Event, is_set=mock_is_set)
+    #     mock_is_waiting = Mock(return_value=False)
+    #     self.mock_client._Client__receiving_break_event = Mock(spec=Event, wait=mock_is_waiting)
+    #     self.mock_client.transport_interface.receive_message.side_effect = TimeoutError
+    #     assert Client._Client__receiving_task(self.mock_client, cycle=cycle) is None
+    #     self.mock_client.transport_interface.receive_message.assert_called_once_with(
+    #         start_timeout=cycle,
+    #         end_timeout=self.mock_client.p6_ext_client_timeout)
+    #     self.mock_client._Client__response_queue.put_nowait.assert_not_called()
+    #
+    # @pytest.mark.parametrize("cycle", [10, 321])
+    # def test__receiving_task__1_message(self, cycle):
+    #     mock_message = Mock()
+    #     mock_is_set = Mock(side_effect=[False, False, False, True])
+    #     self.mock_client._Client__receiving_stop_event = Mock(spec=Event, is_set=mock_is_set)
+    #     mock_is_waiting = Mock(return_value=False)
+    #     self.mock_client._Client__receiving_break_event = Mock(spec=Event, wait=mock_is_waiting)
+    #     self.mock_client.transport_interface.receive_message.side_effect = [TimeoutError, mock_message, TimeoutError]
+    #     assert Client._Client__receiving_task(self.mock_client, cycle=cycle) is None
+    #     assert self.mock_client.transport_interface.receive_message.call_count == 3
+    #     self.mock_client._Client__response_queue.put_nowait.assert_called_once_with(mock_message)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     # _update_measured_client_values
 
@@ -922,47 +1132,7 @@ class TestClient:
                                         end_timeout=end_timeout) == response_records[-1]
         self.mock_client.transport_interface.receive_message.assert_called()
 
-    # _receive_task
 
-    def test_receive_task__stopped(self):
-        mock_is_set = Mock(return_value=True)
-        self.mock_client._Client__receiving_stop_event = Mock(spec=Event, is_set=mock_is_set)
-        assert Client.__receiving_task(self.mock_client, cycle=Mock()) is None
-        self.mock_client.transport_interface.receive_message.assert_not_called()
-
-    @pytest.mark.parametrize("cycle", [10, 321])
-    def test_receive_task__waiting(self, cycle):
-        mock_is_set = Mock(side_effect=[False, False, False, False, True])
-        self.mock_client._Client__receiving_stop_event = Mock(spec=Event, is_set=mock_is_set)
-        mock_is_waiting = Mock(return_value=True)
-        self.mock_client._Client__receiving_break_event = Mock(spec=Event, wait=mock_is_waiting)
-        assert Client.__receiving_task(self.mock_client, cycle=cycle) is None
-        self.mock_client.transport_interface.receive_message.assert_not_called()
-
-    @pytest.mark.parametrize("cycle", [10, 321])
-    def test_receive_task__no_message(self, cycle):
-        mock_is_set = Mock(side_effect=[False, True])
-        self.mock_client._Client__receiving_stop_event = Mock(spec=Event, is_set=mock_is_set)
-        mock_is_waiting = Mock(return_value=False)
-        self.mock_client._Client__receiving_break_event = Mock(spec=Event, wait=mock_is_waiting)
-        self.mock_client.transport_interface.receive_message.side_effect = TimeoutError
-        assert Client.__receiving_task(self.mock_client, cycle=cycle) is None
-        self.mock_client.transport_interface.receive_message.assert_called_once_with(
-            start_timeout=cycle,
-            end_timeout=self.mock_client.p6_ext_client_timeout)
-        self.mock_client._Client__response_queue.put_nowait.assert_not_called()
-
-    @pytest.mark.parametrize("cycle", [10, 321])
-    def test_receive_task__1_message(self, cycle):
-        mock_message = Mock()
-        mock_is_set = Mock(side_effect=[False, False, False, True])
-        self.mock_client._Client__receiving_stop_event = Mock(spec=Event, is_set=mock_is_set)
-        mock_is_waiting = Mock(return_value=False)
-        self.mock_client._Client__receiving_break_event = Mock(spec=Event, wait=mock_is_waiting)
-        self.mock_client.transport_interface.receive_message.side_effect = [TimeoutError, mock_message, TimeoutError]
-        assert Client.__receiving_task(self.mock_client, cycle=cycle) is None
-        assert self.mock_client.transport_interface.receive_message.call_count == 3
-        self.mock_client._Client__response_queue.put_nowait.assert_called_once_with(mock_message)
 
     # _send_tester_present_task
 
