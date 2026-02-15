@@ -815,7 +815,7 @@ class Client:
         while not self.is_ready_for_physical_transmission:
             self.__transmission_not_in_progress_event.wait()
             self.__receiving_not_in_progress_event.wait()
-            if self.__last_physical_request is not None:
+            if self.__last_physical_request is not None and self.__last_physical_response is None:
                 timestamp_now = perf_counter()
                 timestamp_p3_timeout = (self.__last_physical_request.transmission_end_timestamp
                                         + self.p3_client_physical / 1000.)
