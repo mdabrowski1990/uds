@@ -280,7 +280,7 @@ class AbstractBaseClientFunctionalityTests(AbstractClientTests, ABC):
         12. Validate received messages.
             - Check that received response messages matches the payload of transmitted messages.
             - Check that direction attribute indicates that message was received.
-            - Check that the record of the last received message by the Client matches the second received message.
+            - Check that the record of the last received message was not updated.
 
         :param delay_1: Time after which the first response message to be sent.
         :param message_1: The first response message.
@@ -1318,7 +1318,6 @@ class AbstractClientErrorGuessing(AbstractClientTests, ABC):
         3. Start background receiving in the Client.
         4. Start cyclic sending of Tester Present messages.
         5. Get records of sent and received messages.
-            - Check that record of the last received message is stored in `last_response_received` attribute.
             - Get records of the last sent request message from `last_request_sent` attribute
         6. Stop background receiving in the Client.
         7. Stop cyclic sending of Tester Present messages.
@@ -1349,7 +1348,6 @@ class AbstractClientErrorGuessing(AbstractClientTests, ABC):
         sent_records = []
         for _ in messages:
             received_records.append(client.get_response(timeout=2 * delay))
-            assert client.last_received_response == received_records[-1]
             if client.last_sent_request is not None and client.last_sent_request not in sent_records:
                 sent_records.append(client.last_sent_request)
         # Start background receiving in the Client.
