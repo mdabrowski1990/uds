@@ -13,6 +13,9 @@ def main():
     # https://uds.readthedocs.io/en/stable/pages/user_guide/client.html#configuration
     client = Client(transport_interface=transport_interface)
 
+    # clear queue with response messages
+    client.clear_response_queue()
+
     # start collecting all response messages sent to the client
     client.start_background_receiving()
 
