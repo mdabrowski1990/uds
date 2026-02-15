@@ -59,9 +59,9 @@ class Client:
         :param p2_client_timeout: Timeout value for P2Client parameter.
         :param p2_ext_client_timeout: Timeout value for P2*Client parameter.
         :param p3_client_physical: Value of P3Client_Phys time parameter.
-        :param p3_client_physical: Value of P3Client_Func time parameter.
+        :param p3_client_functional: Value of P3Client_Func time parameter.
         :param p6_client_timeout: Timeout value for P6Client parameter.
-        :param p6_ext_client_timeout: Timeout value for P*Client parameter.
+        :param p6_ext_client_timeout: Timeout value for P6*Client parameter.
         :param s3_client: Value of S3Client time parameter.
         """
         # TIMING PARAMETERS
@@ -372,10 +372,10 @@ class Client:
             raise ValueError(f"Provided timeout parameter value must be greater than 0. Actual value: {value}")
         if value < self.p3_client_physical:
             raise InconsistencyError("S3Client value must be greater or equal than "
-                                     f"P3Client_Phys ({self.p2_client_timeout} ms).")
+                                     f"P3Client_Phys ({self.p3_client_physical} ms).")
         if value < self.p3_client_functional:
             raise InconsistencyError("S3Client value must be greater or equal than "
-                                     f"P3Client_Func ({self.p2_client_timeout} ms).")
+                                     f"P3Client_Func ({self.p3_client_functional} ms).")
         self.__s3_client = value
 
     @property  # noqa: vulture
