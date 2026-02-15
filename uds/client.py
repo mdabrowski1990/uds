@@ -400,7 +400,9 @@ class Client:
         """
         Get record with the last response message sent.
 
-        .. note:: Only final responses can be found here (no Negative Responses with Response Pending NRC).
+        .. warning:: Only the final response for the request messages can be found here.
+             No Negative Responses with Response Pending NRC (0x78), neither
+             cyclic responses (e.g. following ResponseOnEvent or ReadDataByPeriodicIdentifier responses).
         """
         records = []
         if self.__last_physical_response is not None:
@@ -564,11 +566,15 @@ class Client:
                     = self.__last_tester_present_requests[:self.tester_present_storage_size]
             next_call += period_s
             remaining_wait_s = next_call - perf_counter()
-            if remaining_wait_s < 0:
-                continue
-            sleep(remaining_wait_s)
+            if remaining_wait_s > 0:
+                sleep(remaining_wait_s)
 
     def _update_last_response(self, response_record: UdsMessageRecord) -> None:
+        """
+        Update the last response messages received by the Client.
+
+        :param response_record: Recently received response record.
+        """
         if self.__last_physical_request is not None and self.__last_physical_response is None:
             sid = RequestSID(self.__last_physical_request.payload[0])
             if (self.is_response_to_request(response_message=response_record,
@@ -638,6 +644,8 @@ class Client:
         elif request.addressing_type == AddressingType.FUNCTIONAL:
             self.__last_functional_request = request_record
             self.__last_functional_response = None
+        else:
+            pass  # pragma: no cover
         return request_record
 
     def _receive_response(self,
@@ -703,7 +711,6 @@ class Client:
                     warn(message="Response message was received just after P2Client timeout was exceeded. "
                                   "It was put into response_queue.",
                          category=RuntimeWarning)
-                    break
             self.__response_queue.put_nowait(response_record)
         raise TimeoutError("P2Client timeout exceeded.")
 
@@ -780,7 +787,10 @@ class Client:
             False otherwise.
         """
         if not isinstance(response_message, (UdsMessage, UdsMessageRecord)):
-            raise TypeError("Provided message value is not an instance of UdsMessageRecord class. "
+            raise TypeError("Provided response message value is not an instance of UdsMessageRecord class. "
+                            f"Actual type: {type(response_message)}.")
+        if not isinstance(request_message, (UdsMessage, UdsMessageRecord)):
+            raise TypeError("Provided request message value is not an instance of UdsMessageRecord class. "
                             f"Actual type: {type(response_message)}.")
         if isinstance(request_message, UdsMessageRecord) and isinstance(response_message, UdsMessageRecord):
             if response_message.transmission_start_timestamp < request_message.transmission_end_timestamp:

@@ -328,7 +328,7 @@ class AbstractBaseClientFunctionalityTests(AbstractClientTests, ABC):
         assert message_record_1.direction == TransmissionDirection.RECEIVED
         assert message_record_2.payload == message_2.payload
         assert message_record_2.direction == TransmissionDirection.RECEIVED
-        assert client.last_received_response is message_record_2
+        assert client.last_received_response is None
 
     @pytest.mark.parametrize("request_message", [
         UdsMessage(payload=[0x3E, 0x00],
