@@ -11,14 +11,15 @@ from uds.client import (
     Empty,
     Event,
     InconsistencyError,
+    Lock,
     MessageTransmissionNotStartedError,
+    Queue,
     ReassignmentError,
     RequestSID,
     ResponseSID,
     Thread,
     UdsMessage,
     UdsMessageRecord,
-    Queue, Lock
 )
 
 SCRIPT_LOCATION = "uds.client"
