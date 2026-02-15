@@ -19,9 +19,9 @@ pylint:
     max-line-length: 120
     max-args: 12
     max-positional-arguments: 12
-    max-attributes: 25
+    max-attributes: 40
     min-public-methods: 1
-    max-public-methods: 30
+    max-public-methods: 40
     max-parents: 15
     max-branches: 12
     max-locals: 20

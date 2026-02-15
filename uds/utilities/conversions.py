@@ -213,7 +213,7 @@ class TimeSync:
         if sync_expiration is not None:
             self.sync_expiration = sync_expiration
 
-    def __new__(cls, *args: Any, **kwargs: Any) -> "TimeSync":
+    def __new__(cls, *_: Any, **__: Any) -> "TimeSync":
         """Return existing instance if one exists, otherwise create one."""
         if cls._instance is None:
             cls._instance = super(TimeSync, cls).__new__(cls)

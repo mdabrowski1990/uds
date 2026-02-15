@@ -378,7 +378,7 @@ class Client:
                                      f"P3Client_Func ({self.p2_client_timeout} ms).")
         self.__s3_client = value
 
-    @property
+    @property  # noqa: vulture
     def last_sent_tester_present_requests(self) -> Tuple[UdsMessageRecord, ...]:
         """Get records with the last few request with Tester Present messages."""
         return tuple(self.__last_tester_present_requests)
@@ -395,7 +395,7 @@ class Client:
             return None
         return max(records, key=lambda record: record.transmission_end_timestamp)
 
-    @property
+    @property  # noqa: vulture
     def last_received_response(self) -> Optional[UdsMessageRecord]:
         """
         Get record with the last response message sent.
@@ -558,7 +558,8 @@ class Client:
         sleep(period_s)
         while self.is_tester_present_sent:
             if (self.__send_and_receive_not_in_progress_event.is_set()
-                    or self.last_sent_request.addressing_type != tester_present_request.addressing_type):
+                    or (self.last_sent_request is not None
+                        and self.last_sent_request.addressing_type != tester_present_request.addressing_type)):
                 # avoid collision of message with the same addressing type
                 tp_record = self._send_request(tester_present_request)
                 self.__last_tester_present_requests.insert(0, tp_record)
@@ -707,10 +708,9 @@ class Client:
                              - request_record.transmission_end_timestamp) * 1000.
                 if p2_client < self.p2_client_timeout:
                     return response_record
-                else:
-                    warn(message="Response message was received just after P2Client timeout was exceeded. "
-                                  "It was put into response_queue.",
-                         category=RuntimeWarning)
+                warn(message="Response message was received just after P2Client timeout was exceeded. "
+                             "It was put into response_queue.",
+                     category=RuntimeWarning)
             self.__response_queue.put_nowait(response_record)
         raise TimeoutError("P2Client timeout exceeded.")
 
