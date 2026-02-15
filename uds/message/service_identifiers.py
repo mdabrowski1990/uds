@@ -58,6 +58,8 @@ class RequestSID(ValidatedEnum, ExtendableEnum, ByteEnum):
     .. note:: Request :ref:`SID <knowledge-base-sid>` is always the first payload byte of all request message.
     """
 
+    # pylint: disable=invalid-name
+
     @classmethod
     def is_request_sid(cls, value: int) -> bool:
         """
@@ -123,6 +125,8 @@ class ResponseSID(ValidatedEnum, ExtendableEnum, ByteEnum):
         :class:`~uds.message.service_identifiers.RequestSID`), but most of them are dynamically (implicitly) added and
         invisible in the documentation.
     """
+
+    # pylint: disable=invalid-name
 
     NegativeResponse: "ResponseSID" = 0x7F  # type: ignore
     # Diagnostic and communication management - more information in ISO 14229-1:2013 (obsolete), chapter 9

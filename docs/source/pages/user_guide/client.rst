@@ -24,7 +24,8 @@ Attributes:
 - :attr:`~uds.client.Client.p2_ext_client_timeout` - configured :ref:`P2*Client <knowledge-base-p2*-client>` timeout
 - :attr:`~uds.client.Client.p2_ext_client_measured` - last measured :ref:`P2*Client <knowledge-base-p2*-client>` value
 - :attr:`~uds.client.Client.p3_client_physical` - configured :ref:`P2Client_Phys <knowledge-base-p3-client-phys>` value
-- :attr:`~uds.client.Client.p3_client_functional` - configured :ref:`P2Client_Func <knowledge-base-p3-client-func>` value
+- :attr:`~uds.client.Client.p3_client_functional` - configured :ref:`P2Client_Func <knowledge-base-p3-client-func>`
+  value
 - :attr:`~uds.client.Client.p6_client_timeout` - configured :ref:`P6Client <knowledge-base-p6-client>` timeout
 - :attr:`~uds.client.Client.p6_client_measured` - last measured :ref:`P6Client <knowledge-base-p6-client>` value
 - :attr:`~uds.client.Client.p6_ext_client_timeout` - configured :ref:`P6*Client <knowledge-base-p6*-client>` timeout

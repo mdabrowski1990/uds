@@ -21,6 +21,8 @@ class NRC(ValidatedEnum, ExtendableEnum, ByteEnum):
     message. NRC informs why a server is not sending a positive response message.
     """
 
+    # pylint: disable=invalid-name
+
     # PositiveResponse: "NRC" = 0x00
     # This NRC shall not be used in a negative response message as positiveResponse parameter value is reserved
     # for server internal implementation. Refer to 8.7.5 of ISO 14229-1 for more details.

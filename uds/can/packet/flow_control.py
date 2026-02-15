@@ -62,6 +62,8 @@ class CanFlowStatus(ValidatedEnum, NibbleEnum):
     Consecutive Frames transmission.
     """
 
+    # pylint: disable=invalid-name
+
     ContinueToSend: "CanFlowStatus" = 0x0  # type: ignore
     """Asks to resume Consecutive Frames transmission."""
     Wait: "CanFlowStatus" = 0x1  # type: ignore
