@@ -916,10 +916,8 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         :param end_timeout: Maximal time (in milliseconds) to wait for a message transmission to finish.
             Leave None to wait forever.
 
-        # TODO: MessageTransmissionNotStartedError
-        :raise TimeoutError: Timeout was reached.
-            Either Single Frame / First Frame not received within [timeout] ms
-            or N_As, N_Ar, N_Bs, N_Cr timeout reached.
+        :raise MessageTransmissionNotStartedError: Timeout was exceeded before message reception started.
+        :raise TimeoutError: Timeout was exceeded during message receiving (before all packets received).
 
         :return: Record with historic information about received UDS message.
         """
@@ -970,9 +968,8 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
             Leave None to wait forever.
         :param loop: An asyncio event loop to use for scheduling this task.
 
-        :raise TimeoutError: Timeout was reached.
-            Either Single Frame / First Frame not received within [timeout] ms
-            or N_As, N_Ar, N_Bs, N_Cr timeout reached.
+        :raise MessageTransmissionNotStartedError: Timeout was exceeded before message reception started.
+        :raise TimeoutError: Timeout was exceeded during message receiving (before all packets received).
 
         :return: Record with historic information about received UDS message.
         """
