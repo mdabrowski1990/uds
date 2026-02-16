@@ -74,7 +74,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
         :param segmenter_configuration: Configuration parameters for CAN Segmenter.
 
             - :parameter dlc: Base CAN DLC value to use for CAN packets.
-            - :parameter min_dlc: min_dlc: Minimal CAN DLC to use for CAN Packets during Data Optimization.
+            - :parameter min_dlc: Minimal CAN DLC to use for CAN Packets during Data Optimization.
             - :parameter use_data_optimization: Information whether to use
                 :ref:`CAN Frame Data Optimization <knowledge-base-can-data-optimization>`.
             - :parameter filler_byte: Filler byte value to use for

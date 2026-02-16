@@ -74,7 +74,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
             - :parameter n_cs: Value of :ref:`N_Cs <knowledge-base-can-n-cs>` time parameter to use in communication.
             - :parameter n_cr_timeout: Timeout value for :ref:`N_Cr <knowledge-base-can-n-cr>` time parameter.
             - :parameter dlc: Base CAN DLC value to use for CAN packets.
-            - :parameter min_dlc: min_dlc: Minimal CAN DLC to use for CAN Packets during Data Optimization.
+            - :parameter min_dlc: Minimal CAN DLC to use for CAN Packets during Data Optimization.
             - :parameter use_data_optimization: Information whether to use
                 :ref:`CAN Frame Data Optimization <knowledge-base-can-data-optimization>`.
             - :parameter filler_byte: Filler byte value to use for
