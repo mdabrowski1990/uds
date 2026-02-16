@@ -1,9 +1,8 @@
 import asyncio
 from abc import ABC, abstractmethod
-from datetime import datetime
 from threading import Timer
 from time import perf_counter, sleep
-from typing import Optional
+from typing import List
 
 import pytest
 from tests.system_tests import BaseSystemTests
@@ -37,7 +36,7 @@ class AbstractPythonCanTests(BaseSystemTests, ABC):
 
     can_interface_1: Bus
     can_interface_2: Bus
-    sent_packet: Optional[CanPacketRecord]
+    sent_packets: List[CanPacketRecord]
 
     @abstractmethod
     def _define_interfaces(self):
@@ -1545,7 +1544,8 @@ class AbstractFullDuplexTests(AbstractPythonCanTests, ABC):
         received_rx_message_record = can_transport_interface.receive_message(start_timeout=50)
         while not all([timer_1.finished.is_set(), timer_2.finished.is_set(), timer_3.finished.is_set()]):
             sleep(self.TASK_TIMING_TOLERANCE / 1000.)
-        received_tx_message_record = self.received_message
+        assert len(self.received_messages) == 1
+        received_tx_message_record = self.received_messages[0]
         assert isinstance(received_tx_message_record, UdsMessageRecord)
         assert isinstance(received_rx_message_record, UdsMessageRecord)
         assert received_tx_message_record.payload == tx_message.payload
@@ -1850,12 +1850,14 @@ class AbstractUseCaseTests(AbstractPythonCanTests, ABC):
         received_message_record = can_transport_interface_2.receive_message(start_timeout=timeout)
         while not timer.finished.is_set():
             sleep(self.TASK_TIMING_TOLERANCE / 1000.)
-        assert isinstance(self.sent_message, UdsMessageRecord)
+        assert len(self.sent_messages) == 1
+        sent_message = self.sent_messages[0]
+        assert isinstance(sent_message, UdsMessageRecord)
         assert isinstance(received_message_record, UdsMessageRecord)
-        assert self.sent_message.direction == TransmissionDirection.TRANSMITTED
+        assert sent_message.direction == TransmissionDirection.TRANSMITTED
         assert received_message_record.direction == TransmissionDirection.RECEIVED
-        assert self.sent_message.addressing_type == message.addressing_type
-        assert self.sent_message.payload == received_message_record.payload == message.payload
+        assert sent_message.addressing_type == message.addressing_type
+        assert sent_message.payload == received_message_record.payload == message.payload
 
     @pytest.mark.parametrize("message, n_cs, n_br, block_size, st_min, wait_count, repeat_wait, send_after, timeout", [
         (UdsMessage(payload=[0x22, 0x12, 0x34], addressing_type=AddressingType.PHYSICAL),

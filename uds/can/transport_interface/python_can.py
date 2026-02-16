@@ -243,7 +243,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         """
         if value is not None:
             if not isinstance(value, (int, float)):
-                raise TypeError("Timeout value must be None, int or float type.")
+                raise TypeError(f"Timeout value must be None, int or float type. Actual type: {type(value)}.")
             if value <= 0:
                 raise ValueError(f"Provided timeout value is less or equal to 0. Actual value: {value}")
 
@@ -701,16 +701,16 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
 
         .. warning:: This will cause that all CAN packets received in a past are no longer accessible.
         """
-        for _ in range(self.__rx_frames_buffer.buffer.qsize()):
+        while not self.__rx_frames_buffer.buffer.empty():
             self.__rx_frames_buffer.buffer.get_nowait()
-        for _ in range(self.__async_rx_frames_buffer.buffer.qsize()):
+        while not self.__async_rx_frames_buffer.buffer.empty():
             self.__async_rx_frames_buffer.buffer.get_nowait()
 
     def clear_tx_frames_buffers(self) -> None:
         """Clear buffers used for storing transmitted CAN frames."""
-        for _ in range(self.__tx_frames_buffer.buffer.qsize()):
+        while not self.__tx_frames_buffer.buffer.empty():
             self.__tx_frames_buffer.buffer.get_nowait()
-        for _ in range(self.__async_tx_frames_buffer.buffer.qsize()):
+        while not self.__async_tx_frames_buffer.buffer.empty():
             self.__async_tx_frames_buffer.buffer.get_nowait()
 
     @staticmethod
@@ -916,9 +916,8 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         :param end_timeout: Maximal time (in milliseconds) to wait for a message transmission to finish.
             Leave None to wait forever.
 
-        :raise TimeoutError: Timeout was reached.
-            Either Single Frame / First Frame not received within [timeout] ms
-            or N_As, N_Ar, N_Bs, N_Cr timeout reached.
+        :raise MessageTransmissionNotStartedError: Timeout was exceeded before message reception started.
+        :raise TimeoutError: Timeout was exceeded during message receiving (before all packets received).
 
         :return: Record with historic information about received UDS message.
         """
@@ -969,9 +968,8 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
             Leave None to wait forever.
         :param loop: An asyncio event loop to use for scheduling this task.
 
-        :raise TimeoutError: Timeout was reached.
-            Either Single Frame / First Frame not received within [timeout] ms
-            or N_As, N_Ar, N_Bs, N_Cr timeout reached.
+        :raise MessageTransmissionNotStartedError: Timeout was exceeded before message reception started.
+        :raise TimeoutError: Timeout was exceeded during message receiving (before all packets received).
 
         :return: Record with historic information about received UDS message.
         """

@@ -42,9 +42,9 @@ def decode_ascii(character: str) -> int:
     :return: Raw value representation of this character in ASCII format.
     """
     if not isinstance(character, str):
-        raise TypeError("Provided value is not str type.")
+        raise TypeError(f"Provided value is not str type. Actual type: {type(character)}.")
     if not character.isascii() or len(character) != 1:
-        raise ValueError("Provided value is non-ASCII character.")
+        raise ValueError(f"Provided value is non-ASCII character. Actual value: {character!r}")
     return ord(character)
 
 
@@ -60,9 +60,9 @@ def decode_bcd(character: str) -> int:
     :return: Raw value representation of this character in BCD format.
     """
     if not isinstance(character, str):
-        raise TypeError("Provided value is not str type.")
+        raise TypeError(f"Provided value is not str type. Actual type: {type(character)}.")
     if not character.isdecimal() or len(character) != 1:
-        raise ValueError("Provided value is not a BCD character.")
+        raise ValueError(f"Provided value is not a BCD character. Actual value: {character!r}")
     return int(character)
 
 

@@ -178,6 +178,16 @@ class TestAbstractCanAddressingInformation:
         self.mock_addressing_information.decode_frame_ai_params.assert_called_once_with(
             can_id=can_id, raw_frame_data=raw_frame_data)
 
+    def test_is_input_packet__none_from_exception(self):
+        mock_can_id = Mock()
+        mock_raw_frame_data = Mock()
+        self.mock_addressing_information.decode_frame_ai_params.side_effect = ValueError
+        assert AbstractCanAddressingInformation.is_input_packet(self.mock_addressing_information,
+                                                                can_id=mock_can_id,
+                                                                raw_frame_data=mock_raw_frame_data) is None
+        self.mock_addressing_information.decode_frame_ai_params.assert_called_once_with(
+            can_id=mock_can_id, raw_frame_data=mock_raw_frame_data)
+
     @pytest.mark.parametrize("can_id, raw_frame_data, "
                              "decoded_frame_ai_params, rx_physical_params, rx_functional_params", [
         (0x123, b"\xFE\xDC\xBA\x98\x76\x54\x32\x10",

@@ -1510,15 +1510,17 @@ class TestPyCanTransportInterface:
         (69, 3),
     ])
     def test_clear_rx_frames_buffers(self, sync_queue_size, async_queue_size):
-        mock_sync_queue = Mock(qsize=Mock(return_value=sync_queue_size))
-        mock_async_queue = Mock(qsize=Mock(return_value=async_queue_size))
+        sync_get_nowait = Mock()
+        async_get_nowait = Mock()
+        mock_sync_queue = Mock(empty=Mock(side_effect=[False] * sync_queue_size + [True]),
+                               get_nowait=sync_get_nowait)
+        mock_async_queue = Mock(empty=Mock(side_effect=[False] * async_queue_size + [True]),
+                                get_nowait=async_get_nowait)
         self.mock_can_transport_interface._PyCanTransportInterface__rx_frames_buffer = Mock(buffer=mock_sync_queue)
         self.mock_can_transport_interface._PyCanTransportInterface__async_rx_frames_buffer = Mock(buffer=mock_async_queue)
         assert PyCanTransportInterface.clear_rx_frames_buffers(self.mock_can_transport_interface) is None
-        mock_sync_queue.qsize.assert_called_once_with()
-        mock_async_queue.qsize.assert_called_once_with()
-        assert mock_sync_queue.get_nowait.call_count == sync_queue_size
-        assert mock_async_queue.get_nowait.call_count == async_queue_size
+        assert sync_get_nowait.call_count == sync_queue_size
+        assert async_get_nowait.call_count == async_queue_size
 
     # clear_tx_frames_buffers
 
@@ -1528,13 +1530,15 @@ class TestPyCanTransportInterface:
         (69, 3),
     ])
     def test_clear_tx_frames_buffers(self, sync_queue_size, async_queue_size):
-        mock_sync_queue = Mock(qsize=Mock(return_value=sync_queue_size))
-        mock_async_queue = Mock(qsize=Mock(return_value=async_queue_size))
+        sync_get_nowait = Mock()
+        async_get_nowait = Mock()
+        mock_sync_queue = Mock(empty=Mock(side_effect=[False] * sync_queue_size + [True]),
+                               get_nowait=sync_get_nowait)
+        mock_async_queue = Mock(empty=Mock(side_effect=[False] * async_queue_size + [True]),
+                                get_nowait=async_get_nowait)
         self.mock_can_transport_interface._PyCanTransportInterface__tx_frames_buffer = Mock(buffer=mock_sync_queue)
         self.mock_can_transport_interface._PyCanTransportInterface__async_tx_frames_buffer = Mock(buffer=mock_async_queue)
         assert PyCanTransportInterface.clear_tx_frames_buffers(self.mock_can_transport_interface) is None
-        mock_sync_queue.qsize.assert_called_once_with()
-        mock_async_queue.qsize.assert_called_once_with()
         assert mock_sync_queue.get_nowait.call_count == sync_queue_size
         assert mock_async_queue.get_nowait.call_count == async_queue_size
 

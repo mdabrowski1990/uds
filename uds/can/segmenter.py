@@ -131,7 +131,7 @@ class CanSegmenter(AbstractSegmenter):
             CanDlcHandler.validate_dlc(value)
             if value > self.dlc:
                 raise ValueError(f"Min DLC must be less or equal than base DLC. DLC = {self.dlc}. "
-                                 f"Provided value: {value}.")
+                                 f"Actual value: {value}")
         self.__min_dlc: Optional[int] = value
 
     @property

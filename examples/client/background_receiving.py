@@ -13,8 +13,11 @@ def main():
     # https://uds.readthedocs.io/en/stable/pages/user_guide/client.html#configuration
     client = Client(transport_interface=transport_interface)
 
+    # clear queue with response messages
+    client.clear_response_queue()
+
     # start collecting all response messages sent to the client
-    client.start_receiving()
+    client.start_background_receiving()
 
     # try to get a response immediately
     response_message_record = client.get_response_no_wait()
@@ -31,7 +34,7 @@ def main():
         print("Received response:", response_message_record)
 
     # stop collecting response messages
-    client.stop_receiving()
+    client.stop_background_receiving()
 
 
 if __name__ == "__main__":

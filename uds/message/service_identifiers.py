@@ -5,8 +5,13 @@ Service Identifier (SID) data parameter implementation.
     and SAE J1979 standards.
 """
 
-__all__ = ["RESPONSE_REQUEST_SID_DIFF", "ALL_REQUEST_SIDS", "ALL_RESPONSE_SIDS",
-           "RequestSID", "ResponseSID", "UnrecognizedSIDWarning"]
+__all__ = [
+    "ALL_REQUEST_SIDS", "ALL_RESPONSE_SIDS",
+    "SERVICES_WITH_SUBFUNCTION",
+    "RESPONSE_REQUEST_SID_DIFF",
+    "RequestSID", "ResponseSID",
+    "UnrecognizedSIDWarning"
+]
 
 from warnings import warn
 
@@ -53,6 +58,8 @@ class RequestSID(ValidatedEnum, ExtendableEnum, ByteEnum):
     .. note:: Request :ref:`SID <knowledge-base-sid>` is always the first payload byte of all request message.
     """
 
+    # pylint: disable=invalid-name
+
     @classmethod
     def is_request_sid(cls, value: int) -> bool:
         """
@@ -79,9 +86,9 @@ class RequestSID(ValidatedEnum, ExtendableEnum, ByteEnum):
     CommunicationControl: "RequestSID" = 0x28  # type: ignore
     Authentication: "RequestSID" = 0x29  # type: ignore
     TesterPresent: "RequestSID" = 0x3E  # type: ignore
-    ControlDTCSetting: "RequestSID" = 0x85  # type: ignore  # noqa: vulture
-    ResponseOnEvent: "RequestSID" = 0x86  # type: ignore  # noqa: vulture
-    LinkControl: "RequestSID" = 0x87  # type: ignore  # noqa: vulture
+    ControlDTCSetting: "RequestSID" = 0x85  # type: ignore
+    ResponseOnEvent: "RequestSID" = 0x86  # type: ignore
+    LinkControl: "RequestSID" = 0x87  # type: ignore
     # Data transmission - more information in ISO 14229-1:2020, chapter 11
     ReadDataByIdentifier: "RequestSID" = 0x22  # type: ignore
     ReadMemoryByAddress: "RequestSID" = 0x23  # type: ignore
@@ -119,7 +126,46 @@ class ResponseSID(ValidatedEnum, ExtendableEnum, ByteEnum):
         invisible in the documentation.
     """
 
+    # pylint: disable=invalid-name
+
     NegativeResponse: "ResponseSID" = 0x7F  # type: ignore
+    # Diagnostic and communication management - more information in ISO 14229-1:2013 (obsolete), chapter 9
+    AccessTimingParameter: "ResponseSID" = RequestSID.AccessTimingParameter + RESPONSE_REQUEST_SID_DIFF
+    # Diagnostic and communication management - more information in ISO 14229-1:2020, chapter 10
+    DiagnosticSessionControl: "ResponseSID" = RequestSID.DiagnosticSessionControl + RESPONSE_REQUEST_SID_DIFF
+    ECUReset: "ResponseSID" = RequestSID.ECUReset + RESPONSE_REQUEST_SID_DIFF
+    SecurityAccess: "ResponseSID" = RequestSID.SecurityAccess + RESPONSE_REQUEST_SID_DIFF
+    CommunicationControl: "ResponseSID" = RequestSID.CommunicationControl + RESPONSE_REQUEST_SID_DIFF
+    Authentication: "ResponseSID" = RequestSID.Authentication + RESPONSE_REQUEST_SID_DIFF
+    TesterPresent: "ResponseSID" = RequestSID.TesterPresent + RESPONSE_REQUEST_SID_DIFF
+    ControlDTCSetting: "ResponseSID" = RequestSID.ControlDTCSetting + RESPONSE_REQUEST_SID_DIFF
+    ResponseOnEvent: "ResponseSID" = RequestSID.ResponseOnEvent + RESPONSE_REQUEST_SID_DIFF
+    LinkControl: "ResponseSID" = RequestSID.LinkControl + RESPONSE_REQUEST_SID_DIFF
+    # Data transmission - more information in ISO 14229-1:2020, chapter 11
+    ReadDataByIdentifier: "ResponseSID" = RequestSID.ReadDataByIdentifier + RESPONSE_REQUEST_SID_DIFF
+    ReadMemoryByAddress: "ResponseSID" = RequestSID.ReadMemoryByAddress + RESPONSE_REQUEST_SID_DIFF
+    ReadScalingDataByIdentifier: "ResponseSID" = RequestSID.ReadScalingDataByIdentifier + RESPONSE_REQUEST_SID_DIFF
+    ReadDataByPeriodicIdentifier: "ResponseSID" = RequestSID.ReadDataByPeriodicIdentifier + RESPONSE_REQUEST_SID_DIFF
+    DynamicallyDefineDataIdentifier: "ResponseSID" = (RequestSID.DynamicallyDefineDataIdentifier
+                                                      + RESPONSE_REQUEST_SID_DIFF)
+    WriteDataByIdentifier: "ResponseSID" = RequestSID.WriteDataByIdentifier + RESPONSE_REQUEST_SID_DIFF
+    WriteMemoryByAddress: "ResponseSID" = RequestSID.WriteMemoryByAddress + RESPONSE_REQUEST_SID_DIFF
+    # Stored data transmission - more information in ISO 14229-1:2020, chapter 12
+    ClearDiagnosticInformation: "ResponseSID" = RequestSID.ClearDiagnosticInformation + RESPONSE_REQUEST_SID_DIFF
+    ReadDTCInformation: "ResponseSID" = RequestSID.ReadDTCInformation + RESPONSE_REQUEST_SID_DIFF
+    # InputOutput control - more information in ISO 14229-1:2020, chapter 13
+    InputOutputControlByIdentifier: "ResponseSID" = (RequestSID.InputOutputControlByIdentifier
+                                                     + RESPONSE_REQUEST_SID_DIFF)
+    # Routine - more information in ISO 14229-1:2020, chapter 14
+    RoutineControl: "ResponseSID" = RequestSID.RoutineControl + RESPONSE_REQUEST_SID_DIFF
+    # Upload download - more information in ISO 14229-1:2020, chapter 15
+    RequestDownload: "ResponseSID" = RequestSID.RequestDownload + RESPONSE_REQUEST_SID_DIFF
+    RequestUpload: "ResponseSID" = RequestSID.RequestUpload + RESPONSE_REQUEST_SID_DIFF
+    TransferData: "ResponseSID" = RequestSID.TransferData + RESPONSE_REQUEST_SID_DIFF
+    RequestTransferExit: "ResponseSID" = RequestSID.RequestTransferExit + RESPONSE_REQUEST_SID_DIFF
+    RequestFileTransfer: "ResponseSID" = RequestSID.RequestFileTransfer + RESPONSE_REQUEST_SID_DIFF
+    # Security sub-layer - more information in ISO 14229-1:2020, chapter 16
+    SecuredDataTransmission: "ResponseSID" = RequestSID.SecuredDataTransmission + RESPONSE_REQUEST_SID_DIFF
 
     @classmethod
     def is_response_sid(cls, value: int) -> bool:
@@ -139,6 +185,32 @@ class ResponseSID(ValidatedEnum, ExtendableEnum, ByteEnum):
         return False
 
 
-# extend 'ResponseSID' with members that were defined in RequestSID
-for request_sid_member in RequestSID:
-    ResponseSID.add_member(request_sid_member.name, request_sid_member.value + RESPONSE_REQUEST_SID_DIFF)
+SERVICES_WITH_SUBFUNCTION = {
+    RequestSID.DiagnosticSessionControl,
+    ResponseSID.DiagnosticSessionControl,
+    RequestSID.ECUReset,
+    ResponseSID.ECUReset,
+    RequestSID.ReadDTCInformation,
+    ResponseSID.ReadDTCInformation,
+    RequestSID.SecurityAccess,
+    ResponseSID.SecurityAccess,
+    RequestSID.CommunicationControl,
+    ResponseSID.CommunicationControl,
+    RequestSID.Authentication,
+    ResponseSID.Authentication,
+    RequestSID.DynamicallyDefineDataIdentifier,
+    ResponseSID.DynamicallyDefineDataIdentifier,
+    RequestSID.RoutineControl,
+    ResponseSID.RoutineControl,
+    RequestSID.TesterPresent,
+    ResponseSID.TesterPresent,
+    RequestSID.AccessTimingParameter,
+    ResponseSID.AccessTimingParameter,
+    RequestSID.ControlDTCSetting,
+    ResponseSID.ControlDTCSetting,
+    RequestSID.ResponseOnEvent,
+    ResponseSID.ResponseOnEvent,
+    RequestSID.LinkControl,
+    ResponseSID.LinkControl,
+}
+"""SID and RSID values for services that contain sub-function in their message format."""

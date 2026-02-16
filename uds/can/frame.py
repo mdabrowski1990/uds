@@ -267,10 +267,10 @@ class CanDlcHandler:
         :raise ValueError: Provided value is not number of data bytes that matches the criteria.
         """
         if not isinstance(value, int):
-            raise TypeError("Provided value is not int type.")
+            raise TypeError(f"Provided value is not int type. Actual type: {type(value)}.")
         if exact_value:
             if value not in cls.__DATA_BYTES_NUMBERS:
-                raise ValueError("Provided value is not a valid CAN Frame data bytes number.")
+                raise ValueError(f"Provided value is not a valid CAN Frame data bytes number. Actual value: {value}")
         else:
             if not cls.MIN_DATA_BYTES_NUMBER <= value <= cls.MAX_DATA_BYTES_NUMBER:
                 raise ValueError("Provided data bytes number of a CAN frame is out of range. "

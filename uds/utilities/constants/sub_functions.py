@@ -1,6 +1,7 @@
 """SubFunction related constants."""
 
 __all__ = [
+    "SPRMIB_MASK",
     "DIAGNOSTIC_SESSION_TYPE_MAPPING",  # SID 0x10
     "RESET_TYPE_MAPPING",  # SID 0x11
     "REPORT_TYPE_MAPPING_2020", "REPORT_TYPE_MAPPING_2013",  # SID 0x19
@@ -17,6 +18,9 @@ __all__ = [
 ]
 
 from typing import Dict
+
+SPRMIB_MASK = 0x80
+"""Bit mask of suppressPosRspMsgIndicationBit in SubFunction byte."""
 
 # SID 0x10
 
