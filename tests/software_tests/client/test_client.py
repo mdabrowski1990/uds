@@ -76,6 +76,7 @@ class TestClient:
         self._patcher_thread.stop()
         self._patcher_event.stop()
         self._patcher_lock.stop()
+        self._patcher_queue.stop()
         self._patcher_tester_present.stop()
         self._patcher_validate_request_sid.stop()
 
