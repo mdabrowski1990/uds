@@ -54,6 +54,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
                  flow_control_parameters_generator: AbstractFlowControlParametersGenerator
                  = DEFAULT_FLOW_CONTROL_PARAMETERS,
                  can_version: CanVersion = CanVersion.CLASSIC_CAN,
+                 bitrate_switch: bool = False,
                  **segmenter_configuration: Any) -> None:
         """
         Create Transport Interface (an object for handling UDS Transport and Network layers).
@@ -69,10 +70,11 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
         :param n_cs: Value of :ref:`N_Cs <knowledge-base-can-n-cs>` time parameter to use in communication.
         :param flow_control_parameters_generator: Generator with Flow Control parameters to use.
         :param can_version: Version of CAN protocol to be used for packets sending.
+        :param bitrate_switch: Whether bitrate switch (BRS) shall be set in sent packets.
         :param segmenter_configuration: Configuration parameters for CAN Segmenter.
 
             - :parameter dlc: Base CAN DLC value to use for CAN packets.
-            - :parameter min_dlc: min_dlc: Minimal CAN DLC to use for CAN Packets during Data Optimization.
+            - :parameter min_dlc: Minimal CAN DLC to use for CAN Packets during Data Optimization.
             - :parameter use_data_optimization: Information whether to use
                 :ref:`CAN Frame Data Optimization <knowledge-base-can-data-optimization>`.
             - :parameter filler_byte: Filler byte value to use for
@@ -92,6 +94,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
         self.flow_control_parameters_generator = flow_control_parameters_generator
         self.segmenter = CanSegmenter(addressing_information=addressing_information, **segmenter_configuration)
         self.can_version = can_version
+        self.bitrate_switch = bitrate_switch
 
     # General
 
@@ -133,6 +136,22 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
         :param value: Value to set.
         """
         self.__can_version = CanVersion.validate_member(value)
+
+    @property
+    def bitrate_switch(self) -> bool:
+        """Get value of bitrate switch (BRS) to be used for packets sending."""
+        return self.__bitrate_switch
+
+    @bitrate_switch.setter
+    def bitrate_switch(self, value: bool) -> None:
+        """
+        Set value of bitrate switch (BRS) to be used for packets sending.
+
+        .. note:: This value will be ignored if CLASSICAL CAN is used.
+
+        :param value: Value to set.
+        """
+        self.__bitrate_switch = bool(value)
 
     @property
     def dlc(self) -> int:

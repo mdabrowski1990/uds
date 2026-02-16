@@ -838,6 +838,7 @@ Attributes:
 - :attr:`~uds.can.transport_interface.common.AbstractCanTransportInterface.DEFAULT_FLOW_CONTROL_PARAMETERS`
 - :attr:`~uds.can.transport_interface.common.AbstractCanTransportInterface.segmenter`
 - :attr:`~uds.can.transport_interface.common.AbstractCanTransportInterface.can_version`
+- :attr:`~uds.can.transport_interface.common.AbstractCanTransportInterface.bitrate_switch`
 - :attr:`~uds.can.transport_interface.common.AbstractCanTransportInterface.n_as_timeout`
 - :attr:`~uds.can.transport_interface.common.AbstractCanTransportInterface.n_as_measured`
 - :attr:`~uds.can.transport_interface.common.AbstractCanTransportInterface.n_ar_timeout`
@@ -925,7 +926,8 @@ Following functionalities are provided by :class:`~uds.can.transport_interface.p
                                                                                         block_size=5,
                                                                                         wait_count=0,
                                                                                         repeat_wait=False),
-        can_version=uds.can.CanVersion.CAN_FD)
+        can_version=uds.can.CanVersion.CAN_FD,
+        bitrate_switch=True)
 
     # change CAN Transport Interface configuration
     can_transport_interface.n_as_timeout = uds.can.PyCanTransportInterface.N_AS_TIMEOUT
@@ -943,6 +945,7 @@ Following functionalities are provided by :class:`~uds.can.transport_interface.p
         wait_count=1,
         repeat_wait=True)
     can_transport_interface.can_version = uds.can.CanVersion.CLASSIC_CAN
+    can_transport_interface.bitrate_switch = False
 
 - Synchronous communication
 

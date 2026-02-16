@@ -74,13 +74,14 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
             - :parameter n_cs: Value of :ref:`N_Cs <knowledge-base-can-n-cs>` time parameter to use in communication.
             - :parameter n_cr_timeout: Timeout value for :ref:`N_Cr <knowledge-base-can-n-cr>` time parameter.
             - :parameter dlc: Base CAN DLC value to use for CAN packets.
-            - :parameter min_dlc: min_dlc: Minimal CAN DLC to use for CAN Packets during Data Optimization.
+            - :parameter min_dlc: Minimal CAN DLC to use for CAN Packets during Data Optimization.
             - :parameter use_data_optimization: Information whether to use
                 :ref:`CAN Frame Data Optimization <knowledge-base-can-data-optimization>`.
             - :parameter filler_byte: Filler byte value to use for
                 :ref:`CAN Frame Data Padding <knowledge-base-can-frame-data-padding>`.
             - :parameter flow_control_parameters_generator: Generator with Flow Control parameters to use.
             - :parameter can_version: Version of CAN protocol to be used for packets sending.
+            - :parameter bitrate_switch: Whether bitrate switch (BRS) shall be set in sent packets.
         """
         super().__init__(network_manager=network_manager,
                          addressing_information=addressing_information,
@@ -745,6 +746,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
                                    is_extended_id=CanIdHandler.is_extended_can_id(packet.can_id),
                                    data=packet.raw_frame_data,
                                    is_fd=fd,
+                                   bitrate_switch=self.bitrate_switch,
                                    is_rx=False,
                                    is_error_frame=False,
                                    is_remote_frame=False)
@@ -755,6 +757,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
                                     is_extended_id=can_frame.is_extended_id,
                                     data=can_frame.data,
                                     is_fd=can_frame.is_fd,
+                                    bitrate_switch=can_frame.bitrate_switch,
                                     is_rx=False,
                                     is_error_frame=False,
                                     is_remote_frame=False,
