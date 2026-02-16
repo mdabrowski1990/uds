@@ -62,19 +62,20 @@ class TestAbstractCanTransportInterface:
         assert (self.mock_can_transport_interface.flow_control_parameters_generator
                 == AbstractCanTransportInterface.DEFAULT_FLOW_CONTROL_PARAMETERS)
         assert self.mock_can_transport_interface.can_version == CanVersion.CLASSIC_CAN
+        assert self.mock_can_transport_interface.bitrate_switch == False
         self.mock_can_transport_interface.segmenter = self.mock_can_segmenter.return_value
         self.mock_abstract_transport_interface_init.assert_called_once_with(network_manager=network_manager)
         self.mock_can_segmenter.assert_called_once_with(addressing_information=addressing_information)
 
     @pytest.mark.parametrize("network_manager, addressing_information, "
                              "n_as_timeout, n_ar_timeout, n_bs_timeout, n_br, n_cs, n_cr_timeout, "
-                             "flow_control_parameters_generator, can_version, segmenter_configuration", [
-        (Mock(), Mock(), Mock(), Mock(), Mock(), Mock(), Mock(), Mock(), Mock(), Mock(),
+                             "flow_control_parameters_generator, can_version, bitrate_switch, segmenter_configuration", [
+        (Mock(), Mock(), Mock(), Mock(), Mock(), Mock(), Mock(), Mock(), Mock(), Mock(), Mock(),
          {"a": 1, "bc": 2, "def_xyz": Mock()})
     ])
     def test_init__all_args(self, network_manager, addressing_information,
                             n_as_timeout, n_ar_timeout, n_bs_timeout, n_br, n_cs, n_cr_timeout,
-                            flow_control_parameters_generator, can_version, segmenter_configuration):
+                            flow_control_parameters_generator, can_version, bitrate_switch, segmenter_configuration):
         assert AbstractCanTransportInterface.__init__(
             self.mock_can_transport_interface,
             network_manager=network_manager,
@@ -87,6 +88,7 @@ class TestAbstractCanTransportInterface:
             n_cr_timeout=n_cr_timeout,
             flow_control_parameters_generator=flow_control_parameters_generator,
             can_version=can_version,
+            bitrate_switch=bitrate_switch,
             **segmenter_configuration) is None
         assert self.mock_can_transport_interface._AbstractCanTransportInterface__n_ar_measured is None
         assert self.mock_can_transport_interface._AbstractCanTransportInterface__n_as_measured is None
@@ -101,6 +103,7 @@ class TestAbstractCanTransportInterface:
         assert (self.mock_can_transport_interface.flow_control_parameters_generator
                 == flow_control_parameters_generator)
         assert self.mock_can_transport_interface.can_version == can_version
+        assert self.mock_can_transport_interface.bitrate_switch == bitrate_switch
         self.mock_can_transport_interface.segmenter = self.mock_can_segmenter.return_value
         self.mock_abstract_transport_interface_init.assert_called_once_with(network_manager=network_manager)
         self.mock_can_segmenter.assert_called_once_with(addressing_information=addressing_information,
@@ -142,6 +145,18 @@ class TestAbstractCanTransportInterface:
         assert (self.mock_can_transport_interface._AbstractCanTransportInterface__can_version
                 == self.mock_validate_can_version.return_value)
         self.mock_validate_can_version.assert_called_once_with(value)
+
+    # bitrate_switch
+    
+    def test_bitrate_switch__get(self):
+        self.mock_can_transport_interface._AbstractCanTransportInterface__bitrate_switch = Mock()
+        assert AbstractCanTransportInterface.bitrate_switch.fget(self.mock_can_transport_interface) \
+               == self.mock_can_transport_interface._AbstractCanTransportInterface__bitrate_switch
+
+    @pytest.mark.parametrize("value", [True, False, 1, 0])
+    def test_bitrate_switch__set(self, value):
+        AbstractCanTransportInterface.bitrate_switch.fset(self.mock_can_transport_interface, value)
+        assert self.mock_can_transport_interface._AbstractCanTransportInterface__bitrate_switch == bool(value)
 
     # dlc
 
