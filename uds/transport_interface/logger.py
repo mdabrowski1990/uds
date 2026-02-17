@@ -19,9 +19,9 @@ class TransportLogger:
 
     TransportInterfaceAlias = Union[AbstractTransportInterface, Type[AbstractTransportInterface]]
     """Alias of Transport Interface (either class or instance)."""
-    MessageMethodAlias = Callable[[Any], Union[UdsMessageRecord, Awaitable[UdsMessageRecord]]]
+    MessageMethodAlias = Callable[..., Union[UdsMessageRecord, Awaitable[UdsMessageRecord]]]
     """Alias of transmitting/receiving UDS Message method."""
-    PacketMethodAlias = Callable[[Any], Union[AbstractPacketRecord, Awaitable[AbstractPacketRecord]]]
+    PacketMethodAlias = Callable[..., Union[AbstractPacketRecord, Awaitable[AbstractPacketRecord]]]
     """Alias of transmitting/receiving Packet method."""
 
     def __init__(self,
@@ -69,12 +69,13 @@ class TransportLogger:
                 attributes_to_overwrite["send_message"] = self._decorate_message_method(cls.send_message)
                 attributes_to_overwrite["async_send_message"] = self._decorate_message_method(cls.async_send_message)
             if self.packet_logging_level is not None:
-                attributes_to_overwrite["send_packet"] =  self._decorate_packet_method(cls.send_packet)
+                attributes_to_overwrite["send_packet"] = self._decorate_packet_method(cls.send_packet)
                 attributes_to_overwrite["async_send_packet"] = self._decorate_packet_method(cls.async_send_packet)
         if self.log_receiving:
             if self.message_logging_level is not None:
                 attributes_to_overwrite["receive_message"] = self._decorate_message_method(cls.receive_message)
-                attributes_to_overwrite["async_receive_message"] = self._decorate_message_method(cls.async_receive_message)
+                attributes_to_overwrite["async_receive_message"] \
+                    = self._decorate_message_method(cls.async_receive_message)
             if self.packet_logging_level is not None:
                 attributes_to_overwrite["receive_packet"] = self._decorate_packet_method(cls.receive_packet)
                 attributes_to_overwrite["async_receive_packet"] = self._decorate_packet_method(cls.async_receive_packet)
@@ -86,18 +87,26 @@ class TransportLogger:
         decorated = copy(instance)
         if self.log_sending:
             if self.message_logging_level is not None:
-                decorated.send_message = self._decorate_message_method(cls.send_message).__get__(decorated, cls)
-                decorated.async_send_message = self._decorate_message_method(cls.async_send_message).__get__(decorated, cls)
+                decorated.send_message \
+                    = self._decorate_message_method(cls.send_message).__get__(decorated, cls)
+                decorated.async_send_message \
+                    = self._decorate_message_method(cls.async_send_message).__get__(decorated, cls)
             if self.packet_logging_level is not None:
-                decorated.send_packet =  self._decorate_packet_method(cls.send_packet).__get__(decorated, cls)
-                decorated.async_send_packet = self._decorate_packet_method(cls.async_send_packet).__get__(decorated, cls)
+                decorated.send_packet \
+                    = self._decorate_packet_method(cls.send_packet).__get__(decorated, cls)
+                decorated.async_send_packet \
+                    = self._decorate_packet_method(cls.async_send_packet).__get__(decorated, cls)
         if self.log_receiving:
             if self.message_logging_level is not None:
-                decorated.receive_message = self._decorate_message_method(cls.receive_message).__get__(decorated, cls)
-                decorated.async_receive_message = self._decorate_message_method(cls.async_receive_message).__get__(decorated, cls)
+                decorated.receive_message \
+                    = self._decorate_message_method(cls.receive_message).__get__(decorated, cls)
+                decorated.async_receive_message \
+                    = self._decorate_message_method(cls.async_receive_message).__get__(decorated, cls)
             if self.packet_logging_level is not None:
-                decorated.receive_packet = self._decorate_packet_method(cls.receive_packet).__get__(decorated, cls)
-                decorated.async_receive_packet = self._decorate_packet_method(cls.async_receive_packet).__get__(decorated, cls)
+                decorated.receive_packet \
+                    = self._decorate_packet_method(cls.receive_packet).__get__(decorated, cls)
+                decorated.async_receive_packet \
+                    = self._decorate_packet_method(cls.async_receive_packet).__get__(decorated, cls)
         return decorated
 
     def _decorate_message_method(self, method: MessageMethodAlias) -> MessageMethodAlias:
@@ -134,10 +143,12 @@ class TransportLogger:
 
     def log_message(self, record: UdsMessageRecord) -> None:
         """Log a message after receiving/transmitting UDS Message."""
-        self.__logger.log(level=self.message_logging_level,
-                          msg=self.message_log_format.format(record=record))
+        if self.message_logging_level is not None:
+            self.__logger.log(level=self.message_logging_level,
+                              msg=self.message_log_format.format(record=record))
 
-    def log_packet(self, record: AbstractPacketRecord):
+    def log_packet(self, record: AbstractPacketRecord) -> None:
         """Log a message after receiving/transmitting Packet."""
-        self.__logger.log(level=self.packet_logging_level,
-                          msg=self.packet_log_format.format(record=record))
+        if self.packet_logging_level is not None:
+            self.__logger.log(level=self.packet_logging_level,
+                              msg=self.packet_log_format.format(record=record))
