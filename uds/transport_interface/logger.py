@@ -2,11 +2,11 @@
 
 __all__ = ["TransportLogger"]
 
-import functools
 from copy import copy
+from functools import wraps
 from inspect import iscoroutinefunction
-from logging import INFO, getLogger
-from typing import Any, Awaitable, Callable, Optional, Type, Union
+from logging import INFO, Logger, getLogger
+from typing import Any, Callable, Optional, Type, Union
 
 from uds.message import UdsMessageRecord
 from uds.packet import AbstractPacketRecord
@@ -19,10 +19,6 @@ class TransportLogger:
 
     TransportInterfaceAlias = Union[AbstractTransportInterface, Type[AbstractTransportInterface]]
     """Alias of Transport Interface (either class or instance)."""
-    MessageMethodAlias = Callable[..., Union[UdsMessageRecord, Awaitable[UdsMessageRecord]]]
-    """Alias of transmitting/receiving UDS Message method."""
-    PacketMethodAlias = Callable[..., Union[AbstractPacketRecord, Awaitable[AbstractPacketRecord]]]
-    """Alias of transmitting/receiving Packet method."""
 
     def __init__(self,
                  *,
@@ -31,8 +27,8 @@ class TransportLogger:
                  packet_logging_level: Optional[int] = INFO,
                  log_sending: bool = True,
                  log_receiving: bool = True,
-                 message_log_format: str = "{record}",
-                 packet_log_format: str = "{record}") -> None:
+                 message_log_format: str = "{record.direction.name} {record}",
+                 packet_log_format: str = "{record.direction.name} {record}") -> None:
         """
         Configure transport logging.
 
@@ -61,6 +57,105 @@ class TransportLogger:
         raise TypeError("Provided value is not an instance neither subclass of AbstractTransportInterface. "
                         f"Actual type: {type(transport_interface)}.")
 
+    @property
+    def logger(self) -> Logger:
+        """Get configured Logger (from logging package)."""
+        return self.__logger
+
+    @property
+    def message_logging_level(self) -> Optional[int]:
+        """Get logging level to use for UDS Messages logging."""
+        return self.__message_logging_level
+
+    @message_logging_level.setter
+    def message_logging_level(self, value: Optional[int]) -> None:
+        """
+        Set logging level to use for UDS Messages logging.
+
+        :param value: Either log level to use or None if UDS Messages are not supposed to be logged.
+
+        :raise TypeError: Provided value is not None neither int type.
+        """
+        if value is not None and not isinstance(value, int):
+            raise TypeError(f"Provided value is not None neither int type. Actual type: {type(value)}.")
+        self.__message_logging_level = value
+
+    @property
+    def packet_logging_level(self) -> Optional[int]:
+        """Get logging level to use for Packets logging."""
+        return self.__packet_logging_level
+
+    @packet_logging_level.setter
+    def packet_logging_level(self, value: Optional[int]) -> None:
+        """
+        Set logging level to use for Packets logging.
+
+        :param value: Either log level to use or None if Packets are not supposed to be logged.
+
+        :raise TypeError: Provided value is not None neither int type.
+        """
+        if value is not None and not isinstance(value, int):
+            raise TypeError(f"Provided value is not None neither int type. Actual type: {type(value)}.")
+        self.__packet_logging_level = value
+
+    @property
+    def log_sending(self) -> bool:
+        """Get information whether outgoing traffic shall be logged."""
+        return self.__log_sending
+
+    @log_sending.setter
+    def log_sending(self, value: bool) -> None:
+        """Set whether outgoing traffic shall be logged."""
+        self.__log_sending = bool(value)
+
+    @property
+    def log_receiving(self) -> bool:
+        """Get information whether incoming traffic shall be logged."""
+        return self.__log_receiving
+
+    @log_receiving.setter
+    def log_receiving(self, value: bool) -> None:
+        """Set whether outgoing traffic shall be logged."""
+        self.__log_receiving = bool(value)
+
+    @property
+    def message_log_format(self) -> str:
+        """Get log messages format for UDS Messages."""
+        return self.__message_log_format
+
+    @message_log_format.setter
+    def message_log_format(self, value: str) -> None:
+        """
+        Set log messages format for UDS Messages.
+
+        :param value: Value to set.
+            It has to be defined as a str on which format method would be called with record parameter.
+
+        :raise TypeError: Provided value is not str type.
+        """
+        if not isinstance(value, str):
+            raise TypeError(f"Provided value is not str type. Actual type: {type(value)}.")
+        self.__message_log_format = value
+
+    @property
+    def packet_log_format(self) -> str:
+        """Get log messages format for Packets."""
+        return self.__packet_log_format
+
+    @packet_log_format.setter
+    def packet_log_format(self, value: str) -> None:
+        """
+        Set log messages format for Packets.
+
+        :param value: Value to set.
+            It has to be defined as a str on which format method would be called with record parameter.
+
+        :raise TypeError: Provided value is not str type.
+        """
+        if not isinstance(value, str):
+            raise TypeError(f"Provided value is not str type. Actual type: {type(value)}.")
+        self.__packet_log_format = value
+
     def _decorate_class(self, cls: Type[AbstractTransportInterface]) -> Type[AbstractTransportInterface]:
         """Decorate Transport Interface class."""
         attributes_to_overwrite = {}
@@ -83,60 +178,69 @@ class TransportLogger:
 
     def _decorate_instance(self, instance: AbstractTransportInterface) -> AbstractTransportInterface:
         """Decorate Transport Interface instance."""
+        # pylint: disable=too-many-function-args
         cls = instance.__class__
         decorated = copy(instance)
         if self.log_sending:
             if self.message_logging_level is not None:
-                decorated.send_message \
-                    = self._decorate_message_method(cls.send_message).__get__(decorated, cls)
-                decorated.async_send_message \
-                    = self._decorate_message_method(cls.async_send_message).__get__(decorated, cls)
+                setattr(decorated,
+                        "send_message",
+                        self._decorate_message_method(cls.send_message).__get__(decorated, cls))
+                setattr(decorated,
+                        "async_send_message",
+                        self._decorate_message_method(cls.async_send_message).__get__(decorated, cls))
             if self.packet_logging_level is not None:
-                decorated.send_packet \
-                    = self._decorate_packet_method(cls.send_packet).__get__(decorated, cls)
-                decorated.async_send_packet \
-                    = self._decorate_packet_method(cls.async_send_packet).__get__(decorated, cls)
+                setattr(decorated,
+                        "send_packet",
+                        self._decorate_packet_method(cls.send_packet).__get__(decorated, cls))
+                setattr(decorated,
+                        "async_send_packet",
+                        self._decorate_packet_method(cls.async_send_packet).__get__(decorated, cls))
         if self.log_receiving:
             if self.message_logging_level is not None:
-                decorated.receive_message \
-                    = self._decorate_message_method(cls.receive_message).__get__(decorated, cls)
-                decorated.async_receive_message \
-                    = self._decorate_message_method(cls.async_receive_message).__get__(decorated, cls)
+                setattr(decorated,
+                        "receive_message",
+                        self._decorate_message_method(cls.receive_message).__get__(decorated, cls))
+                setattr(decorated,
+                        "async_receive_message",
+                        self._decorate_message_method(cls.async_receive_message).__get__(decorated, cls))
             if self.packet_logging_level is not None:
-                decorated.receive_packet \
-                    = self._decorate_packet_method(cls.receive_packet).__get__(decorated, cls)
-                decorated.async_receive_packet \
-                    = self._decorate_packet_method(cls.async_receive_packet).__get__(decorated, cls)
+                setattr(decorated,
+                        "receive_packet",
+                        self._decorate_packet_method(cls.receive_packet).__get__(decorated, cls))
+                setattr(decorated,
+                        "async_receive_packet",
+                        self._decorate_packet_method(cls.async_receive_packet).__get__(decorated, cls))
         return decorated
 
-    def _decorate_message_method(self, method: MessageMethodAlias) -> MessageMethodAlias:
+    def _decorate_message_method(self, method: Callable) -> Callable:  # type: ignore
         """Decorate method that either transmits or receives UDS Message."""
         if iscoroutinefunction(method):
-            @functools.wraps(method)
+            @wraps(method)
             async def decorated_method(*args: Any, **kwargs: Any) -> UdsMessageRecord:
-                message_record = await method(*args, **kwargs)
+                message_record: UdsMessageRecord = await method(*args, **kwargs)
                 self.log_message(message_record)
                 return message_record
         else:
-            @functools.wraps(method)
+            @wraps(method)
             def decorated_method(*args: Any, **kwargs: Any) -> UdsMessageRecord:
-                message_record = method(*args, **kwargs)
+                message_record: UdsMessageRecord = method(*args, **kwargs)
                 self.log_message(message_record)
                 return message_record
         return decorated_method
 
-    def _decorate_packet_method(self, method: PacketMethodAlias) -> PacketMethodAlias:
+    def _decorate_packet_method(self, method: Callable) -> Callable:  # type: ignore
         """Decorate method that either transmits or receives Packet."""
         if iscoroutinefunction(method):
-            @functools.wraps(method)
+            @wraps(method)
             async def decorated_method(*args: Any, **kwargs: Any) -> AbstractPacketRecord:
-                packet_record = await method(*args, **kwargs)
+                packet_record: AbstractPacketRecord = await method(*args, **kwargs)
                 self.log_packet(packet_record)
                 return packet_record
         else:
-            @functools.wraps(method)
+            @wraps(method)
             def decorated_method(*args: Any, **kwargs: Any) -> AbstractPacketRecord:
-                packet_record = method(*args, **kwargs)
+                packet_record: AbstractPacketRecord = method(*args, **kwargs)
                 self.log_packet(packet_record)
                 return packet_record
         return decorated_method
@@ -144,11 +248,11 @@ class TransportLogger:
     def log_message(self, record: UdsMessageRecord) -> None:
         """Log a message after receiving/transmitting UDS Message."""
         if self.message_logging_level is not None:
-            self.__logger.log(level=self.message_logging_level,
-                              msg=self.message_log_format.format(record=record))
+            self.logger.log(level=self.message_logging_level,
+                            msg=self.message_log_format.format(record=record))
 
     def log_packet(self, record: AbstractPacketRecord) -> None:
         """Log a message after receiving/transmitting Packet."""
         if self.packet_logging_level is not None:
-            self.__logger.log(level=self.packet_logging_level,
-                              msg=self.packet_log_format.format(record=record))
+            self.logger.log(level=self.packet_logging_level,
+                            msg=self.packet_log_format.format(record=record))
