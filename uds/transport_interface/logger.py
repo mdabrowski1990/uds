@@ -20,6 +20,8 @@ class TransportLogger:
     TransportInterfaceAlias = Union[AbstractTransportInterface, Type[AbstractTransportInterface]]
     """Alias of Transport Interface (either class or instance)."""
 
+    DEFAULT_LOG_FORMAT: str = "{record.direction.name} {record}"
+
     def __init__(self,
                  *,
                  logger_name: Optional[str] = None,
@@ -27,8 +29,8 @@ class TransportLogger:
                  packet_logging_level: Optional[int] = INFO,
                  log_sending: bool = True,
                  log_receiving: bool = True,
-                 message_log_format: str = "{record.direction.name} {record}",
-                 packet_log_format: str = "{record.direction.name} {record}") -> None:
+                 message_log_format: str = DEFAULT_LOG_FORMAT,
+                 packet_log_format: str = DEFAULT_LOG_FORMAT) -> None:
         """
         Configure transport logging.
 
