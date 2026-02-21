@@ -1,6 +1,7 @@
 """Configure logger for instance of Transport Interface."""
 
 import logging
+
 from uds.transport_interface import AbstractTransportInterface, TransportLogger
 
 # configure your own Transport Interface
