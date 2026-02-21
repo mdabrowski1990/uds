@@ -20,7 +20,11 @@ class TransportLogger:
     TransportInterfaceAlias = Union[AbstractTransportInterface, Type[AbstractTransportInterface]]
     """Alias of Transport Interface (either class or instance)."""
 
+    DECORATED_CLASS_NAME_SUFFIX = "WithLogger"
+    """Suffix to add to decorated classes."""
+
     DEFAULT_LOG_FORMAT: str = "{record.direction.name} {record}"
+    """Default format of log messages."""
 
     def __init__(self,
                  *,
@@ -176,7 +180,7 @@ class TransportLogger:
             if self.packet_logging_level is not None:
                 attributes_to_overwrite["receive_packet"] = self._decorate_packet_method(cls.receive_packet)
                 attributes_to_overwrite["async_receive_packet"] = self._decorate_packet_method(cls.async_receive_packet)
-        return type(f"{cls.__name__}WithLogger", (cls,), attributes_to_overwrite)
+        return type(f"{cls.__name__}{self.DECORATED_CLASS_NAME_SUFFIX}", (cls,), attributes_to_overwrite)
 
     def _decorate_instance(self, instance: AbstractTransportInterface) -> AbstractTransportInterface:
         """Decorate Transport Interface instance."""
