@@ -1,12 +1,9 @@
-"""Configure logger for instance of Transport Interface."""
+"""Configure logger for class of Transport Interface."""
 
 import logging
 
 from uds.transport_interface import AbstractTransportInterface, TransportLogger
 
-# configure your own Transport Interface
-# https://uds.readthedocs.io/en/stable/pages/user_guide/quickstart.html#create-transport-interface
-transport_interface: AbstractTransportInterface = ...  # TODO: provide your implementation here
 
 # configure your logging
 # https://docs.python.org/3/library/logging.html
@@ -30,7 +27,7 @@ transport_logger = TransportLogger(logger_name="UDS",  # the same name as previo
                                    log_receiving=True)
 
 # activate your logger
-# https://uds.readthedocs.io/en/stable/pages/user_guide/logging.html#decorating-transport-interface-instance
-transport_interface_with_logger = transport_logger(transport_interface)
-
-# TODO: use `transport_interface_with_logger` the same way as `transport_interface`
+# https://uds.readthedocs.io/en/stable/pages/user_guide/logging.html#decorating-transport-interface-class
+@transport_logger
+class CustomTransportInterface(AbstractTransportInterface):
+    ...  # TODO: implement your interface class

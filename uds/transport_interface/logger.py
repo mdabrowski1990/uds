@@ -121,7 +121,7 @@ class TransportLogger:
 
     @log_receiving.setter
     def log_receiving(self, value: bool) -> None:
-        """Set whether outgoing traffic shall be logged."""
+        """Set whether incoming traffic shall be logged."""
         self.__log_receiving = bool(value)
 
     @property

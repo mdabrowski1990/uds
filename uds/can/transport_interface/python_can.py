@@ -205,7 +205,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         :param suppress_warning: Do not warn about mixing Synchronous and Asynchronous implementation.
         """
         if self.notifier is not None:
-            self.notifier.stop(self._MIN_NOTIFIER_TIMEOUT)
+            self.notifier.stop()
             self.notifier = None
             if not suppress_warning:
                 warn(message="Notifier (python-can) was stopped. "
@@ -222,7 +222,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         :param suppress_warning: Do not warn about mixing Synchronous and Asynchronous implementation.
         """
         if self.async_notifier is not None:
-            self.async_notifier.stop(self._MIN_NOTIFIER_TIMEOUT)
+            self.async_notifier.stop()
             self.async_notifier = None
             if not suppress_warning:
                 warn(message="Async notifier (python-can) was stopped. "

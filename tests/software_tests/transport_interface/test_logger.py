@@ -1,6 +1,3 @@
-from asyncio import iscoroutine, iscoroutinefunction
-from inspect import *
-
 import pytest
 from mock import AsyncMock, MagicMock, Mock, call, patch
 
