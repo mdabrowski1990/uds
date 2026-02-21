@@ -97,6 +97,8 @@ It is also possible to decorate existing Transport Interfaces.
 
   PyCanTransportInterfaceWithLogging = transport_logger(PyCanTransportInterface)
 
+.. seealso:: :ref:`An example script <example-transport-logger-class>`
+
 
 Decorating Transport Interface instance
 '''''''''''''''''''''''''''''''''''''''
@@ -116,6 +118,8 @@ Another option is to decorate an already existing transport interface instance.
 
   # add logging to the transport_interface
   transport_interface_with_logger = transport_logger(transport_interface)
+
+.. seealso:: :ref:`An example script <example-transport-logger-instance>`
 
 
 Customization

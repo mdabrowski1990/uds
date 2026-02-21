@@ -4,7 +4,6 @@ import logging
 
 from uds.transport_interface import AbstractTransportInterface, TransportLogger
 
-
 # configure your logging
 # https://docs.python.org/3/library/logging.html
 logger = logging.getLogger("UDS")  # example logger name
