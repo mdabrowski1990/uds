@@ -15,19 +15,19 @@ if __name__ == "__main__":
     message = Message(data=[0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC, 0xDE, 0xF0], arbitration_id=0x100)
 
     for _ in range(100):
-        timestamp_before_send = time()
+        time_before_send = time()
         Timer(interval=0.1, function=kvaser_interface_1.send, args=(message,)).start()
 
         sent_message = buffered_reader.get_message(timeout=1)
-        timestamp_after_send = time()
+        time_after_send = time()
 
         print(f"-----------------------------------------------\n"
               f"Result:\n"
-              f"Timestamp before send: {timestamp_before_send}\n"
+              f"Timestamp before send: {time_before_send}\n"
               f"Message timestamp: {sent_message.timestamp}\n"
-              f"Current timestamp: {timestamp_after_send}\n"
-              f"Timestamp before send <= Message timestamp <= Current timestamp: {timestamp_before_send <= sent_message.timestamp <= timestamp_after_send} (expected `True`)\n"
-              f"Current timestamp - Message timestamp: {timestamp_after_send - sent_message.timestamp:06f} (excepted >= 0)")
+              f"Current timestamp: {time_after_send}\n"
+              f"Timestamp before send <= Message timestamp <= Current timestamp: {time_before_send <= sent_message.timestamp <= time_after_send} (expected `True`)\n"
+              f"Current timestamp - Message timestamp: {time_after_send - sent_message.timestamp:06f} (excepted >= 0)")
 
     kvaser_interface_1.shutdown()
     kvaser_interface_2.shutdown()

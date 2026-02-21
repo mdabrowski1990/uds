@@ -1,4 +1,5 @@
 from random import choice
+from time import sleep
 
 from tests.conftest import make_can_addressing_information
 
@@ -6,7 +7,7 @@ from can import Bus
 from uds.can import CanAddressingFormat, DefaultFlowControlParametersGenerator, PyCanTransportInterface
 from uds.utilities import TimeMillisecondsAlias
 
-from ..test_client import (
+from ..client import (
     AbstractBaseClientFunctionalityTests,
     AbstractClientErrorGuessing,
     AbstractClientTests,
@@ -32,9 +33,10 @@ class PythonCanKvaserConfig(AbstractClientTests):
         self.can_interface_2 = Bus(interface="kvaser",
                                    channel=1,
                                    fd=True)
-        self.transport_interface_1 = PyCanTransportInterface(
+        transport_interface_1 = PyCanTransportInterface(
             network_manager=self.can_interface_1,
             addressing_information=addressing_information)
+        self.transport_interface_1 = self.transport_logger(transport_interface_1)
         self.transport_interface_2 = PyCanTransportInterface(
             network_manager=self.can_interface_2,
             addressing_information=addressing_information.get_other_end())
@@ -46,6 +48,7 @@ class PythonCanKvaserConfig(AbstractClientTests):
         super().teardown_method()
         self.can_interface_1.shutdown()
         self.can_interface_2.shutdown()
+        sleep(0.1)
 
     def configure_slow_message_reception(self):
         """Change configuration of Transport Interfaces to reach timeouts easily."""

@@ -5,7 +5,9 @@ __all__ = [
     "AbstractClientErrorGuessing",
 ]
 
+import logging
 from abc import ABC, abstractmethod
+from datetime import datetime
 from time import perf_counter, sleep
 
 import pytest
@@ -15,12 +17,16 @@ from uds.addressing import AddressingType, TransmissionDirection
 from uds.client import Client
 from uds.message import RequestSID, UdsMessage, UdsMessageRecord
 from uds.translator import BASE_TRANSLATOR
-from uds.transport_interface import AbstractTransportInterface
+from uds.transport_interface import AbstractTransportInterface, TransportLogger
 
 
 class AbstractClientTests(BaseSystemTests, ABC):
     """Abstract definition of System tests for UDS Client."""
 
+    LOGGER_NAME: str = "UDS"
+
+    logger: logging.Logger
+    transport_logger: TransportLogger
     transport_interface_1: AbstractTransportInterface
     transport_interface_2: AbstractTransportInterface
 
@@ -35,6 +41,20 @@ class AbstractClientTests(BaseSystemTests, ABC):
     @abstractmethod
     def configure_slow_message_reception(self):
         """Change configuration of Transport Interfaces to reach timeouts easily."""
+
+    @classmethod
+    def configure_logger(cls):
+        cls.logger = logging.getLogger(cls.LOGGER_NAME)
+        cls.logger.setLevel(logging.INFO)
+        date_and_time = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
+        file_handler = logging.FileHandler(filename=f"{date_and_time}.log", encoding="utf-8")
+        file_handler.setLevel(logging.INFO)
+        cls.logger.addHandler(file_handler)
+        cls.transport_logger = TransportLogger(logger_name=cls.LOGGER_NAME)
+
+    @classmethod
+    def setup_class(cls):
+        cls.configure_logger()
 
     def setup_method(self):
         """

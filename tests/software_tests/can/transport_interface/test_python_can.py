@@ -545,7 +545,7 @@ class TestPyCanTransportInterface:
         assert PyCanTransportInterface._PyCanTransportInterface__teardown_sync_listening(
             self.mock_can_transport_interface) is None
         assert self.mock_can_transport_interface.notifier is None
-        mock_notifier.stop.assert_called_once_with(self.mock_can_transport_interface._MIN_NOTIFIER_TIMEOUT)
+        mock_notifier.stop.assert_called_once_with()
         self.mock_warn.assert_called_once()
 
     def test_teardown_sync_listening__notifier_with_suppressed_warning(self):
@@ -554,7 +554,7 @@ class TestPyCanTransportInterface:
         assert PyCanTransportInterface._PyCanTransportInterface__teardown_sync_listening(
             self.mock_can_transport_interface, suppress_warning=True) is None
         assert self.mock_can_transport_interface.notifier is None
-        mock_notifier.stop.assert_called_once_with(self.mock_can_transport_interface._MIN_NOTIFIER_TIMEOUT)
+        mock_notifier.stop.assert_called_once_with()
         self.mock_warn.assert_not_called()
         
     # __teardown_async_listening
@@ -572,7 +572,7 @@ class TestPyCanTransportInterface:
         assert PyCanTransportInterface._PyCanTransportInterface__teardown_async_listening(
             self.mock_can_transport_interface) is None
         assert self.mock_can_transport_interface.async_notifier is None
-        mock_notifier.stop.assert_called_once_with(self.mock_can_transport_interface._MIN_NOTIFIER_TIMEOUT)
+        mock_notifier.stop.assert_called_once_with()
         self.mock_warn.assert_called_once()
 
     def test_teardown_async_listening__notifier_with_suppressed_warning(self):
@@ -581,7 +581,7 @@ class TestPyCanTransportInterface:
         assert PyCanTransportInterface._PyCanTransportInterface__teardown_async_listening(
             self.mock_can_transport_interface, suppress_warning=True) is None
         assert self.mock_can_transport_interface.async_notifier is None
-        mock_notifier.stop.assert_called_once_with(self.mock_can_transport_interface._MIN_NOTIFIER_TIMEOUT)
+        mock_notifier.stop.assert_called_once_with()
         self.mock_warn.assert_not_called()
 
     # __validate_timeout
