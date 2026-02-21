@@ -5,10 +5,10 @@ __all__ = [
     "AbstractClientErrorGuessing",
 ]
 
-from abc import ABC, abstractmethod
-from time import perf_counter, sleep
 import logging
+from abc import ABC, abstractmethod
 from datetime import datetime
+from time import perf_counter, sleep
 
 import pytest
 from tests.system_tests import BaseSystemTests
