@@ -1,9 +1,16 @@
-import pytest
-from mock import Mock, patch, MagicMock, call, AsyncMock
-
-from uds.transport_interface.logger import TransportLogger, INFO, AbstractTransportInterface, UdsMessageRecord, AbstractPacketRecord
 from asyncio import iscoroutine, iscoroutinefunction
 from inspect import *
+
+import pytest
+from mock import AsyncMock, MagicMock, Mock, call, patch
+
+from uds.transport_interface.logger import (
+    INFO,
+    AbstractPacketRecord,
+    AbstractTransportInterface,
+    TransportLogger,
+    UdsMessageRecord,
+)
 
 SCRIPT_LOCATION = "uds.transport_interface.logger"
 
