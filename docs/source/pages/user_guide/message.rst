@@ -183,7 +183,7 @@ To define SID and RSID values for a new (non-standard) service in both
 :class:`~uds.message.service_identifiers.RequestSID` and :class:`~uds.message.service_identifiers.ResponseSID` enums,
 use :func:`~uds.message.service_identifiers.define_service` function.
 
-This way the recommended way as both values would be consistently (with the same name) defined!
+This is the recommended way as both values would be consistently (with the same name) defined!
 
 **Example code:**
 
