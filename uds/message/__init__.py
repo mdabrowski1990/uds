@@ -17,6 +17,6 @@ from .service_identifiers import (
     RequestSID,
     ResponseSID,
     UnrecognizedSIDWarning,
-    add_sid,
+    define_service,
 )
 from .uds_message import AbstractUdsMessageContainer, UdsMessage, UdsMessageRecord

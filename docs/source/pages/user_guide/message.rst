@@ -177,11 +177,11 @@ Methods:
     uds.message.ResponseSID.validate_member(0xFA)  # new_member
 
 
-Adding new SID
-``````````````
-To define new (non-standard) members in both :class:`~uds.message.service_identifiers.RequestSID`
-and :class:`~uds.message.service_identifiers.ResponseSID` enums,
-use :func:`~uds.message.service_identifiers.add_sid` function.
+How to define custom Service
+````````````````````````````
+To define SID and RSID values for a new (non-standard) service in both
+:class:`~uds.message.service_identifiers.RequestSID` and :class:`~uds.message.service_identifiers.ResponseSID` enums,
+use :func:`~uds.message.service_identifiers.define_service` function.
 
 This way the recommended way as both values would be consistently (with the same name) defined!
 
@@ -198,7 +198,7 @@ This way the recommended way as both values would be consistently (with the same
     uds.message.ResponseSID.is_member(0xFA)  # False
 
     # define custom SID and RSID members
-    new_sid_member, new_rsid_member = uds.message.add_sid(sid=0xBA, name="CustomService")
+    new_sid_member, new_rsid_member = uds.message.define_service(sid=0xBA, name="CustomService")
 
     # check if the values were successfully added as new members
     uds.message.RequestSID.is_request_sid(0xBA)  # True

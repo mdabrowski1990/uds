@@ -11,7 +11,7 @@ __all__ = [
     "RESPONSE_REQUEST_SID_DIFF",
     "RequestSID", "ResponseSID",
     "UnrecognizedSIDWarning",
-    "add_sid",
+    "define_service",
 ]
 
 from typing import Tuple
@@ -218,9 +218,9 @@ SERVICES_WITH_SUBFUNCTION = {
 """SID and RSID values for services that contain sub-function in their message format."""
 
 
-def add_sid(sid: int, name: str) -> Tuple[RequestSID, ResponseSID]:
+def define_service(sid: int, name: str) -> Tuple[RequestSID, ResponseSID]:
     """
-    Define a new SID.
+    Define SID and RSID values for a non-standard service.
 
     :param sid: Service Identifier value.
     :param name: Name of the Service.
