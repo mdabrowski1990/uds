@@ -10,14 +10,16 @@ __all__ = [
     "SERVICES_WITH_SUBFUNCTION",
     "RESPONSE_REQUEST_SID_DIFF",
     "RequestSID", "ResponseSID",
-    "UnrecognizedSIDWarning"
+    "UnrecognizedSIDWarning",
+    "define_service",
 ]
 
+from typing import Tuple
 from warnings import warn
 
 from aenum import unique
 
-from uds.utilities import ByteEnum, ExtendableEnum, RawBytesSetAlias, ValidatedEnum
+from uds.utilities import ByteEnum, ExtendableEnum, InconsistencyError, RawBytesSetAlias, ValidatedEnum
 
 RESPONSE_REQUEST_SID_DIFF: int = 0x40
 """Difference between request and response SID values (SID = RSID + 0x40)."""
@@ -214,3 +216,30 @@ SERVICES_WITH_SUBFUNCTION = {
     ResponseSID.LinkControl,
 }
 """SID and RSID values for services that contain sub-function in their message format."""
+
+
+def define_service(sid: int, name: str) -> Tuple[RequestSID, ResponseSID]:
+    """
+    Define SID and RSID values for a non-standard service.
+
+    :param sid: Service Identifier value.
+    :param name: Name of the Service.
+
+    :raise TypeError: Incorrect value type provided.
+    :raise ValueError: Incorrect value provided.
+    :raise InconsistencyError: At least one member for provided SID value is already defined.
+
+    :return: Defined RequestSID and ResponseSID members.
+    """
+    if not isinstance(sid, int):
+        raise TypeError(f"Provided sid value is not int type. Actual type: {type(sid)}.")
+    if not isinstance(name, str):
+        raise TypeError(f"Provided name value is not str type. Actual type: {type(name)}.")
+    if sid not in ALL_REQUEST_SIDS:
+        raise ValueError(f"Provided sid value is not a SID value. Actual value: 0x{sid:02X}")
+    if RequestSID.is_member(sid):
+        raise InconsistencyError(f"Member for SID 0x{sid:02X} is already defined.")
+    rsid = sid + RESPONSE_REQUEST_SID_DIFF
+    if ResponseSID.is_member(rsid):
+        raise InconsistencyError(f"Member for RSID 0x{rsid:02X} is already defined.")
+    return RequestSID.add_member(name=name, value=sid), ResponseSID.add_member(name=name, value=rsid)

@@ -177,6 +177,36 @@ Methods:
     uds.message.ResponseSID.validate_member(0xFA)  # new_member
 
 
+How to define custom Service
+````````````````````````````
+To define SID and RSID values for a new (non-standard) service in both
+:class:`~uds.message.service_identifiers.RequestSID` and :class:`~uds.message.service_identifiers.ResponseSID` enums,
+use :func:`~uds.message.service_identifiers.define_service` function.
+
+This is the recommended way as both values would be consistently (with the same name) defined!
+
+**Example code:**
+
+  .. code-block::  python
+
+    import uds
+
+    # check if a values (0xBA and 0xFA in the example) are Request and Response SID values
+    uds.message.RequestSID.is_request_sid(0xBA)  # True
+    uds.message.ResponseSID.is_response_sid(0xFA)  # True
+    uds.message.RequestSID.is_member(0xBA)  # False
+    uds.message.ResponseSID.is_member(0xFA)  # False
+
+    # define custom SID and RSID members
+    new_sid_member, new_rsid_member = uds.message.define_service(sid=0xBA, name="CustomService")
+
+    # check if the values were successfully added as new members
+    uds.message.RequestSID.is_request_sid(0xBA)  # True
+    uds.message.ResponseSID.is_response_sid(0xFA)  # True
+    uds.message.RequestSID.is_member(0xBA)  # True
+    uds.message.ResponseSID.is_member(0xFA)  # True
+
+
 Negative Response Codes
 -----------------------
 Enum :class:`~uds.message.nrc.NRC` contains definitions of all common (defined by ISO 14229)
