@@ -1568,6 +1568,7 @@ class TestClient:
         assert Client.is_response_to_request(self.mock_client,
                                              response_message=response_message,
                                              request_message=request_message) is False
+        self.mock_warn.assert_not_called()
 
     @pytest.mark.parametrize("response_message, request_message", [
         (Mock(spec=UdsMessage,
@@ -1585,10 +1586,10 @@ class TestClient:
               payload=[0x22, 0x10, 0x13],
               addressing_type=AddressingType.FUNCTIONAL),),
     ])
-    @patch(f"{SCRIPT_LOCATION}.ResponseSID")
-    def test_is_response_to_request__false__undefined_response(self, mock_response_sid,
+    @patch(f"{SCRIPT_LOCATION}.ResponseSID.is_member")
+    def test_is_response_to_request__false__undefined_response(self, mock_is_rsid_member,
                                                                response_message, request_message):
-        mock_response_sid.side_effect = ValueError
+        mock_is_rsid_member.return_value = False
         self.mock_validate_request_sid.side_effect = RequestSID
         self.mock_client.transport_interface.addressing_information.rx_physical_params = {
             "addressing_type": AddressingType.PHYSICAL,
@@ -1601,6 +1602,8 @@ class TestClient:
         assert Client.is_response_to_request(self.mock_client,
                                              response_message=response_message,
                                              request_message=request_message) is False
+        mock_is_rsid_member.assert_called_once_with(response_message.payload[0])
+        self.mock_warn.assert_called_once()
 
     @pytest.mark.parametrize("response_message, request_message", [
         (Mock(spec=UdsMessage,
@@ -1639,6 +1642,7 @@ class TestClient:
         assert Client.is_response_to_request(self.mock_client,
                                              response_message=response_message,
                                              request_message=request_message) is True
+        self.mock_warn.assert_not_called()
 
     @pytest.mark.parametrize("response_message, request_message", [
         (Mock(spec=UdsMessage,
@@ -1677,6 +1681,7 @@ class TestClient:
         assert Client.is_response_to_request(self.mock_client,
                                              response_message=response_message,
                                              request_message=request_message) is False
+        self.mock_warn.assert_not_called()
 
     # wait_till_ready_for_physical_transmission
 

@@ -803,10 +803,10 @@ class Client:
             if rx_physical_params != rx_functional_params:
                 return False
         request_sid = RequestSID.validate_member(request_message.payload[0])
-        try:
+        if ResponseSID.is_member(response_message.payload[0]):
             response_sid = ResponseSID(response_message.payload[0])
-        except ValueError:
-            warn(message=f"Response with undefined SID (0x{response_message.payload[0]:02X}) was provided.",
+        else:
+            warn(message=f"Response with undefined RSID value (0x{response_message.payload[0]:02X}) was provided.",
                  category=RuntimeWarning)
             return False
         if request_sid.name == response_sid.name:  # Positive Response
