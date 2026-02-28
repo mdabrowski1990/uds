@@ -1,7 +1,16 @@
 import pytest
-from mock import patch
+from mock import Mock, call, patch
 
-from uds.message.service_identifiers import ByteEnum, ExtendableEnum, RequestSID, ResponseSID, ValidatedEnum
+from uds.message.service_identifiers import (
+    RESPONSE_REQUEST_SID_DIFF,
+    ByteEnum,
+    ExtendableEnum,
+    InconsistencyError,
+    RequestSID,
+    ResponseSID,
+    ValidatedEnum,
+    add_sid,
+)
 
 SCRIPT_LOCATION = "uds.message.service_identifiers"
 
@@ -112,6 +121,93 @@ class TestResponseSID:
         self.mock_all_response_sids.__contains__.assert_called_once_with(value)
 
 
+class TestFunctions:
+    """Unit tests for module functions."""
+
+    def setup_method(self):
+        self._patcher_is_sid_member = patch(f"{SCRIPT_LOCATION}.RequestSID.is_member")
+        self.mock_is_sid_member = self._patcher_is_sid_member.start()
+        self._patcher_is_rsid_member = patch(f"{SCRIPT_LOCATION}.ResponseSID.is_member")
+        self.mock_is_rsid_member = self._patcher_is_rsid_member.start()
+        self._patcher_add_sid_member = patch(f"{SCRIPT_LOCATION}.RequestSID.add_member")
+        self.mock_add_sid_member = self._patcher_add_sid_member.start()
+        self._patcher_add_rsid_member = patch(f"{SCRIPT_LOCATION}.ResponseSID.add_member")
+        self.mock_add_rsid_member = self._patcher_add_rsid_member.start()
+
+    def teardown_method(self):
+        self._patcher_is_sid_member.stop()
+        self._patcher_is_rsid_member.stop()
+        self._patcher_add_sid_member.stop()
+        self._patcher_add_rsid_member.stop()
+    # add_sid
+
+    @patch(f"{SCRIPT_LOCATION}.isinstance")
+    def test_add_sid__type_error_1(self, mock_isinstance):
+        mock_isinstance.return_value = False
+        mock_sid = Mock()
+        mock_name = Mock()
+        with pytest.raises(TypeError):
+            add_sid(sid=mock_sid, name=mock_name)
+        mock_isinstance.assert_called_once_with(mock_sid, int)
+        self.mock_add_sid_member.assert_not_called()
+        self.mock_add_rsid_member.assert_not_called()
+
+    @patch(f"{SCRIPT_LOCATION}.isinstance")
+    def test_add_sid__type_error_2(self, mock_isinstance):
+        mock_isinstance.side_effect = [True, False]
+        mock_sid = Mock()
+        mock_name = Mock()
+        with pytest.raises(TypeError):
+            add_sid(sid=mock_sid, name=mock_name)
+        mock_isinstance.assert_has_calls([call(mock_sid, int), call(mock_name, str)])
+        self.mock_add_sid_member.assert_not_called()
+        self.mock_add_rsid_member.assert_not_called()
+
+    @pytest.mark.parametrize("sid", [-1, 0x100, 0x7F])
+    def test_add_sid__value_error(self, sid):
+        mock_name = Mock(spec=str)
+        with pytest.raises(ValueError):
+            add_sid(sid=sid, name=mock_name)
+        self.mock_add_sid_member.assert_not_called()
+        self.mock_add_rsid_member.assert_not_called()
+
+    @pytest.mark.parametrize("sid", [RequestSID.DiagnosticSessionControl, RequestSID.LinkControl])
+    def test_add_sid__sid_inconsistency_error(self, sid):
+        mock_name = Mock(spec=str)
+        self.mock_is_sid_member.return_value = True
+        self.mock_is_rsid_member.return_value = True
+        with pytest.raises(InconsistencyError):
+            add_sid(sid=sid, name=mock_name)
+        self.mock_is_sid_member.assert_called_once_with(sid)
+        self.mock_is_rsid_member.assert_not_called()
+        self.mock_add_sid_member.assert_not_called()
+        self.mock_add_rsid_member.assert_not_called()
+
+    @pytest.mark.parametrize("sid", [RequestSID.DiagnosticSessionControl, RequestSID.LinkControl])
+    def test_add_sid__rsid_inconsistency_error(self, sid):
+        mock_name = Mock(spec=str)
+        self.mock_is_sid_member.return_value = False
+        self.mock_is_rsid_member.return_value = True
+        with pytest.raises(InconsistencyError):
+            add_sid(sid=sid, name=mock_name)
+        self.mock_is_sid_member.assert_called_once_with(sid)
+        self.mock_is_rsid_member.assert_called_once_with(sid + RESPONSE_REQUEST_SID_DIFF)
+        self.mock_add_sid_member.assert_not_called()
+        self.mock_add_rsid_member.assert_not_called()
+
+    @pytest.mark.parametrize("sid", [RequestSID.DiagnosticSessionControl, RequestSID.LinkControl])
+    def test_add_sid__valid(self, sid):
+        mock_name = Mock(spec=str)
+        self.mock_is_sid_member.return_value = False
+        self.mock_is_rsid_member.return_value = False
+        assert add_sid(sid=sid, name=mock_name) == (self.mock_add_sid_member.return_value,
+                                                    self.mock_add_rsid_member.return_value)
+        self.mock_is_sid_member.assert_called_once_with(sid)
+        self.mock_is_rsid_member.assert_called_once_with(sid + RESPONSE_REQUEST_SID_DIFF)
+        self.mock_add_sid_member.assert_called_once_with(name=mock_name, value=sid)
+        self.mock_add_rsid_member.assert_called_once_with(name=mock_name, value=sid + RESPONSE_REQUEST_SID_DIFF)
+
+
 @pytest.mark.integration
 class TestSIDIntegration:
 
@@ -136,3 +232,13 @@ class TestSIDIntegration:
     def test_undefined_response_sid(self, undefined_value):
         assert ResponseSID.is_response_sid(undefined_value) is True
         assert ResponseSID.is_member(undefined_value) is False
+
+    @pytest.mark.parametrize("sid, name", [
+        (SYSTEM_SPECIFIC_REQUEST_SID_VALUES[0], "NewSID"),
+        (SYSTEM_SPECIFIC_REQUEST_SID_VALUES[1], "Another"),
+    ])
+    def test_add_sid(self, sid, name):
+        sid_member, rsid_member = add_sid(sid=sid, name=name)
+        assert sid_member.value == sid
+        assert rsid_member.value == sid + RESPONSE_REQUEST_SID_DIFF
+        assert sid_member.name == rsid_member.name == name
