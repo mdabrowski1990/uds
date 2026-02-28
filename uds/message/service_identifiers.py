@@ -227,7 +227,7 @@ def add_sid(sid: int, name: str) -> Tuple[RequestSID, ResponseSID]:
 
     :raise TypeError: Incorrect value type provided.
     :raise ValueError: Incorrect value provided.
-    :raise InconsistencyError: Member for provided SID is already defined.
+    :raise InconsistencyError: At least one member for provided SID value is already defined.
 
     :return: Defined RequestSID and ResponseSID members.
     """
