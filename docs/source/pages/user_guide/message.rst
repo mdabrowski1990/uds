@@ -179,8 +179,11 @@ Methods:
 
 Adding new SID
 ``````````````
-To define a new (non-standard) SID and RSID value at the same time,
+To define new (non-standard) members in both :class:`~uds.message.service_identifiers.RequestSID`
+and :class:`~uds.message.service_identifiers.ResponseSID` enums,
 use :func:`~uds.message.service_identifiers.add_sid` function.
+
+This way the recommended way as both values would be consistently (with the same name) defined!
 
 **Example code:**
 
