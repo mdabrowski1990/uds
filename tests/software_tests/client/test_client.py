@@ -1584,6 +1584,39 @@ class TestClient:
               transmission_end_timestamp=1.234,
               payload=[0x22, 0x10, 0x13],
               addressing_type=AddressingType.FUNCTIONAL),),
+    ])
+    @patch(f"{SCRIPT_LOCATION}.ResponseSID")
+    def test_is_response_to_request__false__undefined_response(self, mock_response_sid,
+                                                               response_message, request_message):
+        mock_response_sid.side_effect = ValueError
+        self.mock_validate_request_sid.side_effect = RequestSID
+        self.mock_client.transport_interface.addressing_information.rx_physical_params = {
+            "addressing_type": AddressingType.PHYSICAL,
+            "some_attr": "some value",
+        }
+        self.mock_client.transport_interface.addressing_information.rx_functional_params = {
+            "addressing_type": AddressingType.FUNCTIONAL,
+            "some_attr": "some other value",
+        }
+        assert Client.is_response_to_request(self.mock_client,
+                                             response_message=response_message,
+                                             request_message=request_message) is False
+
+    @pytest.mark.parametrize("response_message, request_message", [
+        (Mock(spec=UdsMessage,
+              payload=[0x7E, 0x00],
+              addressing_type=AddressingType.PHYSICAL),
+         Mock(spec=UdsMessage,
+              payload=[0x3E, 0x00],
+              addressing_type=AddressingType.PHYSICAL),),
+        (Mock(spec=UdsMessageRecord,
+              transmission_start_timestamp=1.234,
+              payload=[0x62, 0x10, 0x13, 0xB4],
+              addressing_type=AddressingType.FUNCTIONAL),
+         Mock(spec=UdsMessageRecord,
+              transmission_end_timestamp=1.234,
+              payload=[0x22, 0x10, 0x13],
+              addressing_type=AddressingType.FUNCTIONAL),),
         (Mock(spec=UdsMessageRecord,
               payload=[0x7F, 0x10, 0x78],
               addressing_type=AddressingType.PHYSICAL,
