@@ -19,4 +19,4 @@ from .service_identifiers import (
     UnrecognizedSIDWarning,
     define_service,
 )
-from .uds_message import AbstractUdsMessageContainer, UdsMessage, UdsMessageRecord
+from .uds_message import NEGATIVE_RESPONSE_MESSAGE_LENGTH, AbstractUdsMessageContainer, UdsMessage, UdsMessageRecord

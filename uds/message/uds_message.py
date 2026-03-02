@@ -4,7 +4,11 @@ Module with common implementation of all diagnostic messages (requests and respo
 :ref:`Diagnostic message <knowledge-base-diagnostic-message>` are defined on upper layers of UDS OSI Model.
 """
 
-__all__ = ["AbstractUdsMessageContainer", "UdsMessage", "UdsMessageRecord"]
+__all__ = [
+    "NEGATIVE_RESPONSE_MESSAGE_LENGTH",
+    "AbstractUdsMessageContainer",
+    "UdsMessage", "UdsMessageRecord",
+]
 
 from abc import ABC, abstractmethod
 from datetime import datetime
@@ -13,6 +17,9 @@ from typing import Sequence, Union
 from uds.addressing import AddressingType, TransmissionDirection
 from uds.packet import AbstractPacketRecord, PacketsRecordsSequence, PacketsRecordsTuple
 from uds.utilities import RawBytesAlias, ReassignmentError, bytes_to_hex, validate_raw_bytes
+
+NEGATIVE_RESPONSE_MESSAGE_LENGTH: int = 3
+"""Payload length of :ref:`Negative Response Message <knowledge-base-negative-response-message>`."""
 
 
 class AbstractUdsMessageContainer(ABC):
