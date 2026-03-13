@@ -588,7 +588,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
         self.__n_bs_measured = None
         self.__n_cr_measured = None
 
-    # Packets transmission
+    # Packets transmission and reception
 
     @abstractmethod
     def send_packet(self, packet: CanPacket) -> CanPacketRecord:  # type: ignore
