@@ -2,7 +2,8 @@
 
 __all__ = ["AbstractCanTransportInterface"]
 
-from abc import ABC
+from abc import ABC, abstractmethod
+from asyncio import AbstractEventLoop
 from typing import Any, Optional, Tuple
 from warnings import warn
 
@@ -13,7 +14,13 @@ from uds.utilities import TimeMillisecondsAlias, ValueWarning
 
 from ..addressing import AbstractCanAddressingInformation
 from ..frame import CanVersion
-from ..packet import AbstractFlowControlParametersGenerator, CanPacketType, DefaultFlowControlParametersGenerator
+from ..packet import (
+    AbstractFlowControlParametersGenerator,
+    CanPacket,
+    CanPacketRecord,
+    CanPacketType,
+    DefaultFlowControlParametersGenerator,
+)
 from ..segmenter import CanSegmenter
 
 
@@ -41,6 +48,8 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
     (:ref:`Flow Status <knowledge-base-can-flow-status>`,
     :ref:`Block Size <knowledge-base-can-block-size>`,
     :ref:`Separation Time minimum <knowledge-base-can-st-min>`)."""
+
+    addressing_information: AbstractCanAddressingInformation
 
     def __init__(self,
                  network_manager: Any,
@@ -578,3 +587,58 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
         self.__n_as_measured = None
         self.__n_bs_measured = None
         self.__n_cr_measured = None
+
+    # Packets transmission
+
+    @abstractmethod
+    def send_packet(self, packet: CanPacket) -> CanPacketRecord:  # type: ignore
+        """
+        Transmit CAN packet.
+
+        :param packet: CAN packet to send.
+
+        :return: Record with historic information about transmitted packet.
+        """
+
+    @abstractmethod
+    async def async_send_packet(self,
+                                packet: CanPacket,  # type: ignore
+                                loop: Optional[AbstractEventLoop] = None) -> CanPacketRecord:
+        """
+        Transmit CAN packet asynchronously.
+
+        :param packet: CAN packet to send.
+        :param loop: An asyncio event loop to use for scheduling this task.
+
+        :return: Record with historic information about transmitted packet.
+        """
+
+    @abstractmethod
+    def receive_packet(self, timeout: Optional[TimeMillisecondsAlias] = None) -> CanPacketRecord:
+        """
+        Receive CAN packet.
+
+        :param timeout: Maximal time (in milliseconds) to wait.
+            Leave None to wait forever.
+
+        :raise TimeoutError: Timeout was reached.
+
+        :return: Record with historic information about received packet.
+        """
+
+    @abstractmethod
+    async def async_receive_packet(self,
+                                   timeout: Optional[TimeMillisecondsAlias] = None,
+                                   loop: Optional[AbstractEventLoop] = None) -> CanPacketRecord:
+        """
+        Receive CAN packet asynchronously.
+
+        :param timeout: Maximal time (in milliseconds) to wait.
+            Leave None to wait forever.
+        :param loop: An asyncio event loop to use for scheduling this task.
+
+        :raise TimeoutError: Timeout was reached.
+        :raise asyncio.TimeoutError: Timeout was reached.
+
+        :return: Record with historic information about received packet.
+        """
