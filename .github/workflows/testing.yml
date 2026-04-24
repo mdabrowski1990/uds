@@ -66,7 +66,7 @@ jobs:
           pytest tests/software_tests --cov-report=xml --cov=uds -m "not integration and not performance"
 
       - name: Upload unit tests report with instruction coverage [CodeCov]
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v6
         with:
           fail_ci_if_error: true
           token: ${{ secrets.CODECOV_TOKEN }}
@@ -78,7 +78,7 @@ jobs:
           pytest tests/software_tests --cov-report=xml --cov=uds -m "not integration and not performance" --cov-branch
 
       - name: Upload unit tests report with branch coverage [CodeCov]
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v6
         with:
           fail_ci_if_error: true
           token: ${{ secrets.CODECOV_TOKEN }}
@@ -90,7 +90,7 @@ jobs:
           pytest tests/software_tests --cov-report=xml --cov=uds -m "integration"
 
       - name: Upload integration tests report with instruction coverage [CodeCov]
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v6
         with:
           fail_ci_if_error: true
           token: ${{ secrets.CODECOV_TOKEN }}
@@ -102,7 +102,7 @@ jobs:
           pytest tests/software_tests --cov-report=xml --cov=uds -m "integration" --cov-branch
 
       - name: Upload integration tests report with branch coverage [CodeCov]
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v6
         with:
           fail_ci_if_error: true
           token: ${{ secrets.CODECOV_TOKEN }}
