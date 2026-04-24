@@ -78,7 +78,7 @@ static-code-analysis = [
     "mypy == 1.16.1",
     "vulture == 2.14",
     "bandit == 1.8.5",
-    "pyroma == 5.0",
+    "pyroma == 5.0.1",
 ]
 dependency-scan = [
     "pip-audit == 2.9.0",
