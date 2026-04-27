@@ -67,9 +67,10 @@ jobs:
 
       - name: Upload unit tests report with instruction coverage [CodeCov]
         uses: codecov/codecov-action@v6
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         with:
           fail_ci_if_error: true
-          token: ${{ secrets.CODECOV_TOKEN }}
           files: coverage.xml
           flags: unit-tests
 
@@ -79,9 +80,10 @@ jobs:
 
       - name: Upload unit tests report with branch coverage [CodeCov]
         uses: codecov/codecov-action@v6
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         with:
           fail_ci_if_error: true
-          token: ${{ secrets.CODECOV_TOKEN }}
           files: coverage.xml
           flags: unit-tests-branch
 
@@ -91,9 +93,10 @@ jobs:
 
       - name: Upload integration tests report with instruction coverage [CodeCov]
         uses: codecov/codecov-action@v6
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         with:
           fail_ci_if_error: true
-          token: ${{ secrets.CODECOV_TOKEN }}
           files: coverage.xml
           flags: integration-tests
 
@@ -103,9 +106,10 @@ jobs:
 
       - name: Upload integration tests report with branch coverage [CodeCov]
         uses: codecov/codecov-action@v6
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         with:
           fail_ci_if_error: true
-          token: ${{ secrets.CODECOV_TOKEN }}
           files: coverage.xml
           flags: integration-tests-branch
 
