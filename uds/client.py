@@ -712,6 +712,7 @@ class Client:
                              "It was put into response_queue.",
                      category=RuntimeWarning)
             self.__response_queue.put_nowait(response_record)
+            timestamp_now = perf_counter()
         raise TimeoutError("P2Client timeout exceeded.")
 
     def _receive_following_response(self,
