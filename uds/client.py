@@ -106,7 +106,7 @@ class Client:
         self.__physical_transmission_lock: Lock = Lock()
         self.__functional_transmission_lock: Lock = Lock()
         # other
-        self.__response_queue: Queue[UdsMessageRecord] = Queue(maxsize=100)
+        self.__response_queue: Queue[UdsMessageRecord] = Queue()
         self.__last_physical_request: Optional[UdsMessageRecord] = None
         self.__last_physical_response: Optional[UdsMessageRecord] = None
         self.__last_functional_request: Optional[UdsMessageRecord] = None
