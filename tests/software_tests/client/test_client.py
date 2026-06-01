@@ -1394,6 +1394,7 @@ class TestClient:
                 == self.mock_client._receive_response.return_value)
         assert self.mock_client._receive_response.call_count == 2
         assert self.mock_client.is_response_to_request.call_count == 2
+        assert self.mock_perf_counter.call_count == 2
         self.mock_warn.assert_not_called()
         self.mock_client._Client__response_queue.put_nowait.assert_called_once_with(
             self.mock_client._receive_response.return_value)
