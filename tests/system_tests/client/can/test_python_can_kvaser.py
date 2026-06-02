@@ -4,7 +4,7 @@ from time import sleep
 from tests.conftest import make_can_addressing_information
 
 from can import Bus
-from uds.can import CanAddressingFormat, DefaultFlowControlParametersGenerator, PyCanTransportInterface
+from uds.can import CanAddressingFormat, DefaultFlowControlParametersGenerator, PythonCanTransportInterface
 from uds.utilities import TimeMillisecondsAlias
 
 from ..client import (
@@ -18,8 +18,8 @@ from ..client import (
 class PythonCanKvaserConfig(AbstractClientTests):
     """Client tests for UDS over CAN with python-can package as network manager."""
 
-    transport_interface_1: PyCanTransportInterface
-    transport_interface_2: PyCanTransportInterface
+    transport_interface_1: PythonCanTransportInterface
+    transport_interface_2: PythonCanTransportInterface
 
     TIMESTAMP_TOLERANCE: TimeMillisecondsAlias = 2  # python-can has low accuracy
 
@@ -33,11 +33,11 @@ class PythonCanKvaserConfig(AbstractClientTests):
         self.can_interface_2 = Bus(interface="kvaser",
                                    channel=1,
                                    fd=True)
-        transport_interface_1 = PyCanTransportInterface(
+        transport_interface_1 = PythonCanTransportInterface(
             network_manager=self.can_interface_1,
             addressing_information=addressing_information)
         self.transport_interface_1 = self.transport_logger(transport_interface_1)
-        self.transport_interface_2 = PyCanTransportInterface(
+        self.transport_interface_2 = PythonCanTransportInterface(
             network_manager=self.can_interface_2,
             addressing_information=addressing_information.get_other_end())
 

@@ -3,7 +3,7 @@
 import asyncio
 
 from can import Bus
-from uds.can import CanAddressingFormat, CanAddressingInformation, PyCanTransportInterface
+from uds.can import CanAddressingFormat, CanAddressingInformation, PythonCanTransportInterface
 
 
 async def main():
@@ -28,7 +28,7 @@ async def main():
                                                       tx_functional_params={"can_id": 0x6FE})
 
     # create Transport Interface object for Diagnostics on CAN communication
-    can_ti = PyCanTransportInterface(
+    can_ti = PythonCanTransportInterface(
         network_manager=can_interface,
         addressing_information=addressing_information)
 

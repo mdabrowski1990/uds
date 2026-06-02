@@ -90,12 +90,12 @@ It is also possible to decorate existing Transport Interfaces.
 .. code-block::  python
 
   from uds.transport_interface import TransportLogger
-  from uds.can import PyCanTransportInterface
+  from uds.can import PythonCanTransportInterface
 
   # let's assume that we have `transport_logger` already configured
   transport_logger: TransportLogger
 
-  PyCanTransportInterfaceWithLogging = transport_logger(PyCanTransportInterface)
+  PythonCanTransportInterfaceWithLogging = transport_logger(PythonCanTransportInterface)
 
 .. seealso:: :ref:`An example script <example-transport-logger-class>`
 

@@ -1,6 +1,6 @@
 """Implementation of UDS Transport Interface for CAN bus using python-can as bus manager."""
 
-__all__ = ["PyCanTransportInterface"]
+__all__ = ["PythonCanTransportInterface"]
 
 from asyncio import AbstractEventLoop, create_task, get_running_loop
 from asyncio import sleep as async_sleep
@@ -30,7 +30,7 @@ from ..packet import CanFlowStatus, CanPacket, CanPacketRecord, CanPacketType, C
 from .common import AbstractCanTransportInterface
 
 
-class PyCanTransportInterface(AbstractCanTransportInterface):
+class PythonCanTransportInterface(AbstractCanTransportInterface):
     """
     Transport Interface for managing UDS on CAN with python-can package as bus handler.
 
@@ -224,10 +224,10 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
             self.notifier = None
             if not suppress_warning:
                 warn(message="Notifier (python-can) was stopped. "
-                             "Asynchronous (`PyCanTransportInterface.async_send_packet`, "
-                             "`PyCanTransportInterface.async_receive_packet methods`) "
-                             "and synchronous (`PyCanTransportInterface.send_packet`, "
-                             "`PyCanTransportInterface.receive_packet methods`) calls shall not be used together.",
+                             "Asynchronous (`PythonCanTransportInterface.async_send_packet`, "
+                             "`PythonCanTransportInterface.async_receive_packet methods`) "
+                             "and synchronous (`PythonCanTransportInterface.send_packet`, "
+                             "`PythonCanTransportInterface.receive_packet methods`) calls shall not be used together.",
                      category=UserWarning)
 
     def __teardown_async_listening(self, suppress_warning: bool = False) -> None:
@@ -241,10 +241,10 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
             self.async_notifier = None
             if not suppress_warning:
                 warn(message="Async notifier (python-can) was stopped. "
-                             "Asynchronous (`PyCanTransportInterface.async_send_packet`, "
-                             "`PyCanTransportInterface.async_receive_packet methods`) "
-                             "and synchronous (`PyCanTransportInterface.send_packet`, "
-                             "`PyCanTransportInterface.receive_packet methods`) calls shall not be used together.",
+                             "Asynchronous (`PythonCanTransportInterface.async_send_packet`, "
+                             "`PythonCanTransportInterface.async_receive_packet methods`) "
+                             "and synchronous (`PythonCanTransportInterface.send_packet`, "
+                             "`PythonCanTransportInterface.receive_packet methods`) calls shall not be used together.",
                      category=UserWarning)
 
     @staticmethod

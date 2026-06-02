@@ -817,7 +817,7 @@ are sent and received by so called Transport Interfaces.
 For CAN bus, currently there are following Transport Interfaces defined:
 
 - `AbstractCanTransportInterface`_
-- `PyCanTransportInterface`_
+- `PythonCanTransportInterface`_
 
 .. seealso:: :ref:`Abstract Transport Interface <implementation-abstract-transport-interface>`
 
@@ -873,18 +873,18 @@ Methods:
 
 .. _implementation-can-python-can-transport-interface:
 
-PyCanTransportInterface
+PythonCanTransportInterface
 ```````````````````````
-:class:`~uds.can.transport_interface.python_can.PyCanTransportInterface` class is concrete Transport Interface
+:class:`~uds.can.transport_interface.python_can.PythonCanTransportInterface` class is concrete Transport Interface
 implementation that uses `python-can package <https://python-can.readthedocs.io>`_ for CAN bus communication
 (sending and receiving :ref:`CAN frames <knowledge-base-can-frame>`).
 Implementation is located in :mod:`uds.can.transport_interface.python_can`.
 
-Following functionalities are provided by :class:`~uds.can.transport_interface.python_can.PyCanTransportInterface`:
+Following functionalities are provided by :class:`~uds.can.transport_interface.python_can.PythonCanTransportInterface`:
 
 - Configuration of the transport interface:
 
-  The configuration takes place during :meth:`uds.can.transport_interface.python_can.PyCanTransportInterface.__init__`
+  The configuration takes place during :meth:`uds.can.transport_interface.python_can.PythonCanTransportInterface.__init__`
   call.
 
   User can provide `notifier` and `async_notifier` objects on top of other arguments defined in
@@ -909,7 +909,7 @@ Following functionalities are provided by :class:`~uds.can.transport_interface.p
     can_node_addressing_information: uds.can.CanAddressingInformation
 
     # configure example CAN Transport Interface
-    can_transport_interface = uds.can.PyCanTransportInterface(
+    can_transport_interface = uds.can.PythonCanTransportInterface(
         network_manager=python_can_interface,
         addressing_information=can_node_addressing_information,
         n_as_timeout=50,
@@ -930,12 +930,12 @@ Following functionalities are provided by :class:`~uds.can.transport_interface.p
         bitrate_switch=True)
 
     # change CAN Transport Interface configuration
-    can_transport_interface.n_as_timeout = uds.can.PyCanTransportInterface.N_AS_TIMEOUT
-    can_transport_interface.n_ar_timeout = uds.can.PyCanTransportInterface.N_AR_TIMEOUT
-    can_transport_interface.n_bs_timeout = uds.can.PyCanTransportInterface.N_BS_TIMEOUT
-    can_transport_interface.n_br = uds.can.PyCanTransportInterface.DEFAULT_N_BR
-    can_transport_interface.n_cs = uds.can.PyCanTransportInterface.DEFAULT_N_CS
-    can_transport_interface.n_cr_timeout = uds.can.PyCanTransportInterface.N_CR_TIMEOUT
+    can_transport_interface.n_as_timeout = uds.can.PythonCanTransportInterface.N_AS_TIMEOUT
+    can_transport_interface.n_ar_timeout = uds.can.PythonCanTransportInterface.N_AR_TIMEOUT
+    can_transport_interface.n_bs_timeout = uds.can.PythonCanTransportInterface.N_BS_TIMEOUT
+    can_transport_interface.n_br = uds.can.PythonCanTransportInterface.DEFAULT_N_BR
+    can_transport_interface.n_cs = uds.can.PythonCanTransportInterface.DEFAULT_N_CS
+    can_transport_interface.n_cr_timeout = uds.can.PythonCanTransportInterface.N_CR_TIMEOUT
     can_transport_interface.dlc = 8
     can_transport_interface.use_data_optimization = False
     can_transport_interface.filler_byte = 0xAA
@@ -949,23 +949,23 @@ Following functionalities are provided by :class:`~uds.can.transport_interface.p
 
 - Synchronous communication
 
-  :class:`~uds.can.transport_interface.python_can.PyCanTransportInterface` defines following methods for synchronous
+  :class:`~uds.can.transport_interface.python_can.PythonCanTransportInterface` defines following methods for synchronous
   CAN communication:
 
-  - :meth:`~uds.can.transport_interface.python_can.PyCanTransportInterface.send_message`
-  - :meth:`~uds.can.transport_interface.python_can.PyCanTransportInterface.receive_message`
-  - :meth:`~uds.can.transport_interface.python_can.PyCanTransportInterface.send_packet`
-  - :meth:`~uds.can.transport_interface.python_can.PyCanTransportInterface.receive_packet`
+  - :meth:`~uds.can.transport_interface.python_can.PythonCanTransportInterface.send_message`
+  - :meth:`~uds.can.transport_interface.python_can.PythonCanTransportInterface.receive_message`
+  - :meth:`~uds.can.transport_interface.python_can.PythonCanTransportInterface.send_packet`
+  - :meth:`~uds.can.transport_interface.python_can.PythonCanTransportInterface.receive_packet`
 
 - Asynchronous communication
 
-  :class:`~uds.can.transport_interface.python_can.PyCanTransportInterface` defines following methods for synchronous
+  :class:`~uds.can.transport_interface.python_can.PythonCanTransportInterface` defines following methods for synchronous
   CAN communication:
 
-  - :meth:`~uds.can.transport_interface.python_can.PyCanTransportInterface.async_send_message`
-  - :meth:`~uds.can.transport_interface.python_can.PyCanTransportInterface.async_receive_message`
-  - :meth:`~uds.can.transport_interface.python_can.PyCanTransportInterface.async_send_packet`
-  - :meth:`~uds.can.transport_interface.python_can.PyCanTransportInterface.async_receive_packet`
+  - :meth:`~uds.can.transport_interface.python_can.PythonCanTransportInterface.async_send_message`
+  - :meth:`~uds.can.transport_interface.python_can.PythonCanTransportInterface.async_receive_message`
+  - :meth:`~uds.can.transport_interface.python_can.PythonCanTransportInterface.async_send_packet`
+  - :meth:`~uds.can.transport_interface.python_can.PythonCanTransportInterface.async_receive_packet`
 
 .. seealso:: :ref:`Examples for python-can Transport Interface <examples-python-can>`
 
