@@ -184,9 +184,9 @@ class TimeSync:
     _instance = None
     """Instance of this Singleton."""
 
-    DEFAULT_SAMPLES_NUMBER = 20
+    DEFAULT_SAMPLES_NUMBER = 100
     """Default number of samples collected during synchronization."""
-    DEFAULT_SYNC_EXPIRATION_S = 10
+    DEFAULT_SYNC_EXPIRATION_S = 1
     """Default expiration time (in seconds) of the offset calculated during last synchronization."""
 
     def __init__(self,
