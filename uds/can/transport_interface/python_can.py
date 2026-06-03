@@ -2,9 +2,9 @@
 
 __all__ = ["PythonCanTransportInterface"]
 
-from asyncio import AbstractEventLoop, create_task, get_running_loop
+from asyncio import AbstractEventLoop, get_running_loop
 from asyncio import sleep as async_sleep
-from asyncio import wait
+from asyncio import timeout as async_timeout
 from asyncio.exceptions import TimeoutError as AsyncioTimeoutError
 from datetime import datetime
 from time import perf_counter, sleep
@@ -366,7 +366,7 @@ class PythonCanTransportInterface(AbstractCanTransportInterface):
         timestamp_timeout = perf_counter() + timeout_left_s
         packet_addressing_type = None
         received_frame = None
-        while packet_addressing_type is None or received_frame is None:
+        while packet_addressing_type is None:
             timestamp_now = perf_counter()
             timeout_left_s = self._MAX_LISTENER_TIMEOUT if timeout is None else timestamp_timeout - timestamp_now
             if timeout_left_s <= 0:
@@ -403,20 +403,20 @@ class PythonCanTransportInterface(AbstractCanTransportInterface):
         timestamp_timeout = perf_counter() + timeout_left_s
         packet_addressing_type = None
         received_frame = None
-        receive_frame_task = create_task(buffer.get_message())
-        while packet_addressing_type is None or received_frame is None:
-            if receive_frame_task.done():
-                received_frame = receive_frame_task.result()
+        while packet_addressing_type is None:
+            timestamp_now = perf_counter()
+            timeout_left_s = self._MAX_LISTENER_TIMEOUT if timeout is None else timestamp_timeout - timestamp_now
+            if timeout_left_s <= 0:
+                raise TimeoutError("Timeout was reached before a CAN packet was received.")
+            try:
+                async with async_timeout(timeout_left_s):
+                    received_frame =  await buffer.get_message()
+            except TimeoutError:
+                received_frame = None
             if received_frame is not None:
                 packet_addressing_type = self.addressing_information.is_input_packet(
                     can_id=received_frame.arbitration_id,
                     raw_frame_data=received_frame.data)
-            timestamp_now = perf_counter()
-            timeout_left_s = self._MAX_LISTENER_TIMEOUT if timeout is None else timestamp_timeout - timestamp_now
-            if timeout_left_s <= 0:
-                receive_frame_task.cancel()
-                raise TimeoutError("Timeout was reached before a CAN packet was received.")
-            await wait([receive_frame_task], timeout=timeout_left_s)
         frame_datetime = datetime.fromtimestamp(received_frame.timestamp)
         frame_timestamp = self.time_sync.time_to_perf_counter(received_frame.timestamp)
         return CanPacketRecord(frame=received_frame,
@@ -425,6 +425,7 @@ class PythonCanTransportInterface(AbstractCanTransportInterface):
                                addressing_format=self.segmenter.addressing_format,
                                transmission_time=frame_datetime,
                                transmission_timestamp=frame_timestamp)
+
 
     def _wait_for_tx_frame(self,
                            buffer: BufferedReader,
@@ -472,22 +473,19 @@ class PythonCanTransportInterface(AbstractCanTransportInterface):
         timeout_left_s = self._MAX_WAIT_FOR_TX_PACKET
         timestamp_timeout = perf_counter() + timeout_left_s
         sent_frame = None
-        observed_frame_task = create_task(buffer.get_message())
         while sent_frame is None:
             timestamp_now = perf_counter()
             timeout_left_s = timestamp_timeout - timestamp_now
             if timeout_left_s <= 0:
                 raise TimeoutError("Timeout was reached before a CAN frame was observed.")
-            await wait([observed_frame_task], timeout=timeout_left_s)
-            if observed_frame_task.done():
-                sent_frame = observed_frame_task.result()
+            async with async_timeout(timeout_left_s):
+                sent_frame =  await buffer.get_message()
             if (sent_frame is None
                     or sent_frame.is_rx
                     or sent_frame.is_remote_frame
                     or sent_frame.arbitration_id != frame.arbitration_id
                     or sent_frame.data != frame.data):
                 sent_frame = None  # clear as this is a record of another frame
-                observed_frame_task = create_task(buffer.get_message())
         return sent_frame
 
     def _receive_cf_packets_block(self,
@@ -794,7 +792,7 @@ class PythonCanTransportInterface(AbstractCanTransportInterface):
             self.__async_tx_frames_buffer.buffer.get_nowait()
 
     def clear_fc_frames_buffers(self) -> None:
-        """Clear buffers used for storing received CAN frames wtih Flow Control CAN packets."""
+        """Clear buffers used for storing received CAN frames with Flow Control CAN packets."""
         while not self.__fc_frames_buffer.buffer.empty():
             self.__fc_frames_buffer.buffer.get_nowait()
         while not self.__async_fc_frames_buffer.buffer.empty():
@@ -825,8 +823,8 @@ class PythonCanTransportInterface(AbstractCanTransportInterface):
         """
         if not isinstance(packet, CanPacket):
             raise TypeError(f"Provided value is not an instance of CanPacket class. Actual type: {type(packet)}.")
-        self.clear_tx_frames_buffers()
         self.__setup_sync_listening()
+        self.clear_tx_frames_buffers()
         is_flow_control_packet = packet.packet_type == CanPacketType.FLOW_CONTROL
         timeout_ms = self.n_ar_timeout if is_flow_control_packet else self.n_as_timeout
         fd = self.can_version == CanVersion.CAN_FD or CanDlcHandler.is_can_fd_specific_dlc(packet.dlc)
@@ -884,9 +882,9 @@ class PythonCanTransportInterface(AbstractCanTransportInterface):
         """
         if not isinstance(packet, CanPacket):
             raise TypeError(f"Provided value is not an instance of CanPacket class. Actual type: {type(packet)}.")
-        self.clear_tx_frames_buffers()
         loop = loop if isinstance(loop, AbstractEventLoop) else get_running_loop()
         self.__setup_async_listening(loop=loop)
+        self.clear_tx_frames_buffers()
         is_flow_control_packet = packet.packet_type == CanPacketType.FLOW_CONTROL
         timeout_ms = self.n_ar_timeout if is_flow_control_packet else self.n_as_timeout
         fd = self.can_version == CanVersion.CAN_FD or CanDlcHandler.is_can_fd_specific_dlc(packet.dlc)
