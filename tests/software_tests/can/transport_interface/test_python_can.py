@@ -5,7 +5,7 @@ from random import randint
 from time import perf_counter, sleep
 
 import pytest
-from mock import MagicMock, Mock, call, patch, AsyncMock
+from mock import AsyncMock, MagicMock, Mock, call, patch
 
 from can import Bus
 from uds.addressing import AddressingType
