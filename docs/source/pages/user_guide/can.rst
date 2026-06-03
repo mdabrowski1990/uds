@@ -874,7 +874,7 @@ Methods:
 .. _implementation-can-python-can-transport-interface:
 
 PythonCanTransportInterface
-```````````````````````
+```````````````````````````
 :class:`~uds.can.transport_interface.python_can.PythonCanTransportInterface` class is concrete Transport Interface
 implementation that uses `python-can package <https://python-can.readthedocs.io>`_ for CAN bus communication
 (sending and receiving :ref:`CAN frames <knowledge-base-can-frame>`).
@@ -884,8 +884,8 @@ Following functionalities are provided by :class:`~uds.can.transport_interface.p
 
 - Configuration of the transport interface:
 
-  The configuration takes place during :meth:`uds.can.transport_interface.python_can.PythonCanTransportInterface.__init__`
-  call.
+  The configuration takes place during
+  :meth:`uds.can.transport_interface.python_can.PythonCanTransportInterface.__init__` call.
 
   User can provide `notifier` and `async_notifier` objects on top of other arguments defined in
   :meth:`uds.can.transport_interface.common.AbstractCanTransportInterface.__init__`.
