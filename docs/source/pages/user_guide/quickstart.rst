@@ -66,7 +66,7 @@ Example for CAN and `python-can <https://python-can.readthedocs.io>`_:
         data_bitrate=4_000_000)
 
     # create Transport Interface object
-    transport_interface = uds.can.PyCanTransportInterface(
+    transport_interface = uds.can.PythonCanTransportInterface(
         network_manager=can_bus,
         addressing_information=can_ai)
 
@@ -94,7 +94,7 @@ Example for CAN:
 
     # let's assume Transport Interface and Addressing Information objects are created
     can_ai: uds.can.addressing.NormalCanAddressingInformation
-    transport_interface: uds.can.PyCanTransportInterface
+    transport_interface: uds.can.PythonCanTransportInterface
 
     # define example packet to send (depends on network type - example for CAN bus)
     sf = uds.can.CanPacket(packet_type=uds.can.CanPacketType.SINGLE_FRAME,

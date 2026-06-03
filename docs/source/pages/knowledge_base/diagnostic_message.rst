@@ -97,6 +97,8 @@ where:
   - RSID - :ref:`Response Service Identifier <knowledge-base-rsid>` in the positive response message
 
 
+.. _knowledge-base-negative-response-message:
+
 Negative Response Message
 `````````````````````````
 If a server responds with a negative response message, it means that (for some reason) the server could not execute

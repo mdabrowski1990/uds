@@ -44,11 +44,10 @@ class BaseSystemTests(ABC):
         if self._timers:
             for _timer in self._timers:
                 _timer.join(self.TASK_TIMING_TOLERANCE / 1000.)
-            self._timers = []
             sleep(self.TASK_TIMING_TOLERANCE / 1000.)
-            for _timer in self._timers:
-                _timer.join()
-                del _timer
+        for _timer in self._timers:
+            del _timer
+        self._timers = []
 
     def send_packet(self,
                     transport_interface: AbstractTransportInterface,
@@ -77,18 +76,21 @@ class BaseSystemTests(ABC):
     @staticmethod
     async def async_send_packet(transport_interface: AbstractTransportInterface,
                                 packet: AbstractPacket,
-                                delay: TimeMillisecondsAlias) -> AbstractPacketRecord:
+                                delay: TimeMillisecondsAlias,
+                                loop: Optional[asyncio.AbstractEventLoop] = None) -> AbstractPacketRecord:
         """
         Send a packet asynchronously over Transport Interface.
 
         :param transport_interface: Transport Interface to use for transmission.
         :param packet: Packet to send.
         :param delay: Time [ms] after which the transmission will be started.
+        :param loop: An asyncio event loop to use for scheduling this task.
 
         :return: Future CAN packet record.
         """
         await asyncio.sleep(delay / 1000.)
-        return await transport_interface.async_send_packet(packet=packet)
+        return await transport_interface.async_send_packet(packet=packet,
+                                                           loop=loop)
 
     def receive_message(self,
                         transport_interface: AbstractTransportInterface,
@@ -143,15 +145,18 @@ class BaseSystemTests(ABC):
     @staticmethod
     async def async_send_message(transport_interface: AbstractTransportInterface,
                                  message: UdsMessage,
-                                 delay: TimeMillisecondsAlias) -> UdsMessageRecord:
+                                 delay: TimeMillisecondsAlias,
+                                 loop: Optional[asyncio.AbstractEventLoop] = None) -> UdsMessageRecord:
         """
         Send UDS message asynchronously over Transport Interface.
 
         :param transport_interface: Transport Interface to use for transmission.
         :param message: UDS message to send.
         :param delay: Time [ms] after which the transmission will be started.
+        :param loop: An asyncio event loop to use for scheduling this task.
 
         :return: Future UDS message record.
         """
         await asyncio.sleep(delay / 1000.)
-        return await transport_interface.async_send_message(message=message)
+        return await transport_interface.async_send_message(message=message,
+                                                            loop=loop)

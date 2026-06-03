@@ -21,10 +21,12 @@ class KvaserConfig(AbstractPythonCanTests):
         """Configure CAN bus objects that manage CAN interfaces."""
         self.can_interface_1 = Bus(interface="kvaser",
                                    channel=0,
-                                   fd=True)
+                                   fd=True,
+                                   receive_own_messages=True)
         self.can_interface_2 = Bus(interface="kvaser",
                                    channel=1,
-                                   fd=True)
+                                   fd=True,
+                                   receive_own_messages=True)
 
 
 # Can Packets Transmission and Reception

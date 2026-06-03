@@ -212,7 +212,7 @@ class TestTransportLogger:
 
     @pytest.mark.parametrize("name, log_sending, log_receiving, message_logging_level, packet_logging_level", [
         ("AbstractTransportInterface", False, False, None, None),
-        ("PyCanTransportInterface", True, False, 10, None),
+        ("PythonCanTransportInterface", True, False, 10, None),
         ("EthernetTransportInterface", True, False, None, INFO),
         ("AbstractCanTransportInterface", False, True, None, 1),
         ("CustomTransportInterface", False, True, 2, None),

@@ -269,4 +269,4 @@ Requires implementation in concrete classes (abstract attributes and methods):
   - :class:`uds.can.transport_interface.common.AbstractCanTransportInterface`.
 
   CAN Transport Interface integrated with python-can package -
-  :class:`uds.can.transport_interface.python_can.PyCanTransportInterface`
+  :class:`uds.can.transport_interface.python_can.PythonCanTransportInterface`
