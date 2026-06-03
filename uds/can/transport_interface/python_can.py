@@ -369,7 +369,7 @@ class PythonCanTransportInterface(AbstractCanTransportInterface):
         timestamp_timeout = perf_counter() + timeout_left_s
         packet_addressing_type = None
         received_frame = None
-        while packet_addressing_type is None:
+        while packet_addressing_type is None or received_frame is None:
             timestamp_now = perf_counter()
             timeout_left_s = self._MAX_LISTENER_TIMEOUT if timeout is None else timestamp_timeout - timestamp_now
             if timeout_left_s <= 0:
@@ -406,14 +406,14 @@ class PythonCanTransportInterface(AbstractCanTransportInterface):
         timestamp_timeout = perf_counter() + timeout_left_s
         packet_addressing_type = None
         received_frame = None
-        while packet_addressing_type is None:
+        while packet_addressing_type is None or received_frame is None:
             timestamp_now = perf_counter()
             timeout_left_s = self._MAX_LISTENER_TIMEOUT if timeout is None else timestamp_timeout - timestamp_now
             if timeout_left_s <= 0:
                 raise TimeoutError("Timeout was reached before a CAN packet was received.")
             try:
                 async with async_timeout(timeout_left_s):
-                    received_frame =  await buffer.get_message()
+                    received_frame = await buffer.get_message()
             except TimeoutError:
                 received_frame = None
             if received_frame is not None:
@@ -428,7 +428,6 @@ class PythonCanTransportInterface(AbstractCanTransportInterface):
                                addressing_format=self.segmenter.addressing_format,
                                transmission_time=frame_datetime,
                                transmission_timestamp=frame_timestamp)
-
 
     def _wait_for_tx_frame(self,
                            buffer: BufferedReader,
@@ -458,17 +457,16 @@ class PythonCanTransportInterface(AbstractCanTransportInterface):
             sent_frame = buffer.get_message(timeout=timeout_left_s)
             if (sent_frame is None
                     or sent_frame.is_rx
-                    or sent_frame.is_remote_frame
                     or sent_frame.arbitration_id != frame.arbitration_id
                     or sent_frame.data != frame.data
-                    or not (min_time_arrived <= frame.timestamp <= max_time_arrived)):
+                    or not min_time_arrived <= sent_frame.timestamp <= max_time_arrived):
                 sent_frame = None  # clear as this is a record of another frame
         return sent_frame
 
     async def _async_wait_for_tx_frame(self,
                                        buffer: AsyncBufferedReader,
                                        frame: PythonCanFrame,
-                                       timestamp: float) -> Optional[PythonCanFrame]:
+                                       timestamp: float) -> PythonCanFrame:
         """
         Wait for record of sent CAN frame.
 
@@ -491,13 +489,12 @@ class PythonCanTransportInterface(AbstractCanTransportInterface):
             if timeout_left_s <= 0:
                 raise TimeoutError("Timeout was reached before a CAN frame was observed.")
             async with async_timeout(timeout_left_s):
-                sent_frame =  await buffer.get_message()
+                sent_frame = await buffer.get_message()
             if (sent_frame is None
                     or sent_frame.is_rx
-                    or sent_frame.is_remote_frame
                     or sent_frame.arbitration_id != frame.arbitration_id
                     or sent_frame.data != frame.data
-                    or not (min_time_arrived <= frame.timestamp <= max_time_arrived)):
+                    or not min_time_arrived <= sent_frame.timestamp <= max_time_arrived):
                 sent_frame = None  # clear as this is a record of another frame
         return sent_frame
 
