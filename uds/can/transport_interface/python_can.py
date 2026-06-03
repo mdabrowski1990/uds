@@ -37,8 +37,11 @@ class PythonCanTransportInterface(AbstractCanTransportInterface):
     .. note:: Documentation for python-can package: https://python-can.readthedocs.io/
     """
 
-    _MAX_WAIT_FOR_TX_PACKET: float = 0.005  # s
-    """Maximal time to wait for a transmitted packet."""
+    _TX_TOLERANCE: float = 0.01  # s
+    """Tolerance of CAN frames transmission."""
+    _MAX_TX_WAIT: float = 0.005  # s
+    """Tolerance of CAN frames transmission."""
+
     _MAX_LISTENER_TIMEOUT: float = 4280.  # s
     """Maximal timeout value accepted by python-can listeners."""
     _MIN_NOTIFIER_TIMEOUT: float = 0.001  # s
@@ -429,19 +432,23 @@ class PythonCanTransportInterface(AbstractCanTransportInterface):
 
     def _wait_for_tx_frame(self,
                            buffer: BufferedReader,
-                           frame: PythonCanFrame) -> PythonCanFrame:
+                           frame: PythonCanFrame,
+                           timestamp: float) -> PythonCanFrame:
         """
         Wait for record of sent CAN frame.
 
         :param buffer: Listener to which CAN Frame would be delivered.
         :param frame: Object of CAN frame that was scheduled for sending.
+        :param timestamp: Timestamp when CAN frame transmission was started.
 
         :raise TimeoutError: Timeout was reached before a CAN frame was observed.
 
         :return: Record with historic information about sent CAN frame or None if not observed.
         """
-        timeout_left_s = self._MAX_WAIT_FOR_TX_PACKET
-        timestamp_timeout = perf_counter() + timeout_left_s
+        timestamp_timeout = perf_counter() + self._MAX_TX_WAIT
+        time_sent = self.time_sync.perf_counter_to_time(timestamp)
+        min_time_arrived = time_sent - self._TX_TOLERANCE
+        max_time_arrived = time_sent + self._TX_TOLERANCE
         sent_frame = None
         while sent_frame is None:
             timestamp_now = perf_counter()
@@ -453,25 +460,30 @@ class PythonCanTransportInterface(AbstractCanTransportInterface):
                     or sent_frame.is_rx
                     or sent_frame.is_remote_frame
                     or sent_frame.arbitration_id != frame.arbitration_id
-                    or sent_frame.data != frame.data):
+                    or sent_frame.data != frame.data
+                    or not (min_time_arrived <= frame.timestamp <= max_time_arrived)):
                 sent_frame = None  # clear as this is a record of another frame
         return sent_frame
 
     async def _async_wait_for_tx_frame(self,
                                        buffer: AsyncBufferedReader,
-                                       frame: PythonCanFrame) -> Optional[PythonCanFrame]:
+                                       frame: PythonCanFrame,
+                                       timestamp: float) -> Optional[PythonCanFrame]:
         """
         Wait for record of sent CAN frame.
 
         :param buffer: Listener to which CAN Frame would be delivered.
         :param frame: Object of CAN frame that was scheduled for sending.
+        :param timestamp: Timestamp when CAN frame transmission was started.
 
         :raise TimeoutError: Timeout was reached before a CAN frame was observed.
 
         :return: Record with historic information about sent CAN frame or None if not observed.
         """
-        timeout_left_s = self._MAX_WAIT_FOR_TX_PACKET
-        timestamp_timeout = perf_counter() + timeout_left_s
+        timestamp_timeout = perf_counter() + self._MAX_TX_WAIT
+        time_sent = self.time_sync.perf_counter_to_time(timestamp)
+        min_time_arrived = time_sent - self._TX_TOLERANCE
+        max_time_arrived = time_sent + self._TX_TOLERANCE
         sent_frame = None
         while sent_frame is None:
             timestamp_now = perf_counter()
@@ -484,7 +496,8 @@ class PythonCanTransportInterface(AbstractCanTransportInterface):
                     or sent_frame.is_rx
                     or sent_frame.is_remote_frame
                     or sent_frame.arbitration_id != frame.arbitration_id
-                    or sent_frame.data != frame.data):
+                    or sent_frame.data != frame.data
+                    or not (min_time_arrived <= frame.timestamp <= max_time_arrived)):
                 sent_frame = None  # clear as this is a record of another frame
         return sent_frame
 
@@ -824,7 +837,6 @@ class PythonCanTransportInterface(AbstractCanTransportInterface):
         if not isinstance(packet, CanPacket):
             raise TypeError(f"Provided value is not an instance of CanPacket class. Actual type: {type(packet)}.")
         self.__setup_sync_listening()
-        self.clear_tx_frames_buffers()
         is_flow_control_packet = packet.packet_type == CanPacketType.FLOW_CONTROL
         timeout_ms = self.n_ar_timeout if is_flow_control_packet else self.n_as_timeout
         fd = self.can_version == CanVersion.CAN_FD or CanDlcHandler.is_can_fd_specific_dlc(packet.dlc)
@@ -837,12 +849,14 @@ class PythonCanTransportInterface(AbstractCanTransportInterface):
                                    is_error_frame=False,
                                    is_remote_frame=False)
         self.time_sync.sync()
+        self.clear_tx_frames_buffers()
         timestamp_start = perf_counter()
         self.network_manager.send(msg=can_frame, timeout=timeout_ms / 1000.)
         timestamp_end = perf_counter()
         try:
             sent_can_frame = self._wait_for_tx_frame(buffer=self.__tx_frames_buffer,
-                                                     frame=can_frame)
+                                                     frame=can_frame,
+                                                     timestamp=timestamp_start)
         except TimeoutError:
             warn(message="CAN frame that was sent, was not observed. Transmission time will be approximated.",
                  category=RuntimeWarning)
@@ -884,7 +898,6 @@ class PythonCanTransportInterface(AbstractCanTransportInterface):
             raise TypeError(f"Provided value is not an instance of CanPacket class. Actual type: {type(packet)}.")
         loop = loop if isinstance(loop, AbstractEventLoop) else get_running_loop()
         self.__setup_async_listening(loop=loop)
-        self.clear_tx_frames_buffers()
         is_flow_control_packet = packet.packet_type == CanPacketType.FLOW_CONTROL
         timeout_ms = self.n_ar_timeout if is_flow_control_packet else self.n_as_timeout
         fd = self.can_version == CanVersion.CAN_FD or CanDlcHandler.is_can_fd_specific_dlc(packet.dlc)
@@ -897,12 +910,14 @@ class PythonCanTransportInterface(AbstractCanTransportInterface):
                                    is_error_frame=False,
                                    is_remote_frame=False)
         self.time_sync.sync()
+        self.clear_tx_frames_buffers()
         timestamp_start = perf_counter()
         self.network_manager.send(msg=can_frame, timeout=timeout_ms / 1000.)
         timestamp_end = perf_counter()
         try:
             sent_can_frame = await self._async_wait_for_tx_frame(buffer=self.__async_tx_frames_buffer,
-                                                                 frame=can_frame)
+                                                                 frame=can_frame,
+                                                                 timestamp=timestamp_start)
         except (TimeoutError, AsyncioTimeoutError):
             warn(message="CAN frame that was sent, was not observed. Transmission time will be approximated.",
                  category=RuntimeWarning)
