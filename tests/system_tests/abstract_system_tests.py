@@ -44,7 +44,7 @@ class BaseSystemTests(ABC):
         if self._timers:
             for _timer in self._timers:
                 _timer.join(self.TASK_TIMING_TOLERANCE / 1000.)
-        sleep(self.TASK_TIMING_TOLERANCE / 1000.)
+            sleep(self.TASK_TIMING_TOLERANCE / 1000.)
         for _timer in self._timers:
             del _timer
         self._timers = []
