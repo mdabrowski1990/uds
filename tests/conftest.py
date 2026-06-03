@@ -71,9 +71,9 @@ def make_can_addressing_information(addressing_format: CanAddressingFormat) -> A
             tx_functional_params={"source_address": 0x9F, "target_address": 0xF0})
     if addressing_format == CanAddressingFormat.EXTENDED_ADDRESSING:
         return ExtendedCanAddressingInformation(rx_physical_params={"can_id": 0x741, "target_address": 0x76},
-                                                tx_physical_params={"can_id": 0x742, "target_address": 0xFF},
+                                                tx_physical_params={"can_id": 0x742, "target_address": 0xE2},
                                                 rx_functional_params={"can_id": 0x7DE, "target_address": 0xFF},
-                                                tx_functional_params={"can_id": 0x742, "target_address": 0xE2})
+                                                tx_functional_params={"can_id": 0x742, "target_address": 0xFF})
     if addressing_format == CanAddressingFormat.MIXED_11BIT_ADDRESSING:
         return Mixed11BitCanAddressingInformation(rx_physical_params={"can_id": 0x741, "address_extension": 0x76},
                                                   tx_physical_params={"can_id": 0x742, "address_extension": 0x76},

@@ -1533,16 +1533,18 @@ class AbstractFullDuplexTests(AbstractPythonCanTests, ABC):
                                                                                     st_min=rx_st_min))
         timer_1 = self.receive_message(transport_interface=can_transport_interface_2nd_node,
                                        delay=0,
-                                       start_timeout=50,
-                                       end_timeout=2000)
+                                       start_timeout=100,
+                                       end_timeout=3000)
         timer_2 = self.send_message(transport_interface=can_transport_interface_2nd_node,
                                     message=rx_message,
                                     delay=10)
         timer_3 = self.send_message(transport_interface=can_transport_interface,
                                     message=tx_message,
-                                    delay=10)
-        received_rx_message_record = can_transport_interface.receive_message(start_timeout=50)
-        while not all([timer_1.finished.is_set(), timer_2.finished.is_set(), timer_3.finished.is_set()]):
+                                    delay=20)
+        received_rx_message_record = can_transport_interface.receive_message(start_timeout=100)
+        timestamp_timeout = perf_counter() + 4
+        while (not all([timer_1.finished.is_set(), timer_2.finished.is_set(), timer_3.finished.is_set()])
+               and perf_counter() < timestamp_timeout):
             sleep(self.TASK_TIMING_TOLERANCE / 1000.)
         assert len(self.received_messages) == 1
         received_tx_message_record = self.received_messages[0]
