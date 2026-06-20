@@ -697,7 +697,9 @@ class Client:
             except MessageTransmissionNotStartedError as exception:
                 if request_record.addressing_type == AddressingType.FUNCTIONAL:
                     return None
-                if sid in SERVICES_WITH_SUBFUNCTION and request_record.payload[1] & SPRMIB_MASK:
+                if (sid in SERVICES_WITH_SUBFUNCTION
+                        and len(request_record.payload) >= 2
+                        and request_record.payload[1] & SPRMIB_MASK):
                     return None
                 raise TimeoutError("P2Client timeout exceeded.") from exception
             except TimeoutError as exception:
