@@ -1271,6 +1271,9 @@ class TestClient:
         (Mock(spec=UdsMessageRecord, payload=[0x3E, 0x00], addressing_type=AddressingType.PHYSICAL),
          MagicMock(),
          MagicMock()),
+        (Mock(spec=UdsMessageRecord, payload=[0x10], addressing_type=AddressingType.PHYSICAL),
+         MagicMock(),
+         MagicMock()),
     ])
     def test_receive_initial_response__p2_timeout(self, request_record, p2_client_timeout, p6_client_timeout):
         self.mock_client.p2_client_timeout = p2_client_timeout
