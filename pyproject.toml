@@ -73,7 +73,7 @@ test = [
     "pytest-asyncio",
 ]
 static-code-analysis = [
-    "prospector == 1.18.0",
+    "prospector == 1.19.0",
     "mypy == 2.1.0",
     "vulture == 2.16",
     "bandit == 1.9.4",
