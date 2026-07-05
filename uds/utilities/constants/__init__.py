@@ -44,7 +44,7 @@ from .other import (
     UNIT_OR_FORMAT_MAPPING,
 )
 from .rid import RID_BIT_LENGTH, RID_MAPPING
-from .sub_functions import (
+from .subfunctions import (
     AUTHENTICATION_TASK_MAPPING,
     CONTROL_TYPE_MAPPING,
     DEFINITION_TYPE_MAPPING,
@@ -61,5 +61,5 @@ from .sub_functions import (
     SPRMIB_MASK,
     STORAGE_STATE_MAPPING,
     TIMING_PARAMETER_ACCESS_TYPE_MAPPING_2013,
-    ZERO_SUB_FUNCTION_MAPPING,
+    ZERO_SUBFUNCTION_MAPPING,
 )

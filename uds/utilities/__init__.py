@@ -73,7 +73,7 @@ from .constants import (
     TIMING_PARAMETER_ACCESS_TYPE_MAPPING_2013,
     TRANSMISSION_MODE_MAPPING,
     UNIT_OR_FORMAT_MAPPING,
-    ZERO_SUB_FUNCTION_MAPPING,
+    ZERO_SUBFUNCTION_MAPPING,
 )
 from .conversions import (
     TimeSync,

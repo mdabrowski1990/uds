@@ -10,7 +10,7 @@ __all__ = [
     "AUTHENTICATION_TASK_MAPPING",  # SID 0x29
     "DEFINITION_TYPE_MAPPING",  # SID 0x2C
     "ROUTINE_CONTROL_TYPE_MAPPING",  # SID 0x31
-    "ZERO_SUB_FUNCTION_MAPPING",  # SID 0x3E
+    "ZERO_SUBFUNCTION_MAPPING",  # SID 0x3E
     "TIMING_PARAMETER_ACCESS_TYPE_MAPPING_2013",  # SID 0x83
     "DTC_SETTING_TYPE_MAPPING",  # SID 0x85
     "EVENT_MAPPING_2020", "EVENT_MAPPING_2013", "STORAGE_STATE_MAPPING",  # SID 0x86
@@ -110,16 +110,16 @@ REPORT_TYPE_MAPPING_2013: Dict[int, str] = {
 # SID 0x27
 
 SECURITY_ACCESS_TYPE_MAPPING = {
-    sub_function_value: sub_function_description
+    subfunction_value: subfunction_description
     for i in range(1, 0x42, 2)
-    for sub_function_value, sub_function_description in {
+    for subfunction_value, subfunction_description in {
         i: f"Request Seed - level {i} (vehicle manufacturer specific)",
         i + 1: f"Send Key - level {i} (vehicle manufacturer specific)",
     }.items()
 } | {
-    sub_function_value: sub_function_description
+    subfunction_value: subfunction_description
     for i in range(0x61, 0x7E, 2)
-    for sub_function_value, sub_function_description in {
+    for subfunction_value, subfunction_description in {
         i: f"Request Seed - level {i} (system supplier specific)",
         i + 1: f"Send Key - level {i} (system supplier specific)"
     }.items()
@@ -181,7 +181,7 @@ ROUTINE_CONTROL_TYPE_MAPPING: Dict[int, str] = {
 
 # SID 0x3E
 
-ZERO_SUB_FUNCTION_MAPPING: Dict[int, str] = {
+ZERO_SUBFUNCTION_MAPPING: Dict[int, str] = {
     0x00: "zeroSubFunction",
 }
 """Values mapping for `zeroSubFunction` Data Record that is part of

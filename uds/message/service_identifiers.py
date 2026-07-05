@@ -7,7 +7,7 @@ Service Identifier (SID) data parameter implementation.
 
 __all__ = [
     "ALL_REQUEST_SIDS", "ALL_RESPONSE_SIDS",
-    "SERVICES_WITH_SUBFUNCTION",
+    "SERVICES_WITH_SUBFUNCTION", "SERVICES_WITH_DID", "SERVICES_WITH_RID",
     "RESPONSE_REQUEST_SID_DIFF",
     "RequestSID", "ResponseSID",
     "UnrecognizedSIDWarning",
@@ -216,6 +216,25 @@ SERVICES_WITH_SUBFUNCTION = {
     ResponseSID.LinkControl,
 }
 """SID and RSID values for services that contain sub-function in their message format."""
+
+SERVICES_WITH_DID = {
+    RequestSID.ReadDataByIdentifier,
+    ResponseSID.ReadDataByIdentifier,
+    RequestSID.ReadScalingDataByIdentifier,
+    ResponseSID.ReadScalingDataByIdentifier,
+    RequestSID.WriteDataByIdentifier,
+    ResponseSID.WriteDataByIdentifier,
+    RequestSID.InputOutputControlByIdentifier,
+    ResponseSID.InputOutputControlByIdentifier,
+}
+"""SID and RSID values for services that contain :ref:`DataIdentifier <knowledge-base-did>` in their message format."""
+
+SERVICES_WITH_RID = {
+    RequestSID.RoutineControl,
+    ResponseSID.RoutineControl,
+}
+"""SID and RSID values for services that contain :ref:`RoutineIdentifier <knowledge-base-rid>`
+in their message format."""
 
 
 def define_service(sid: int, name: str) -> Tuple[RequestSID, ResponseSID]:

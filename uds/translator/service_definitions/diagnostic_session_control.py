@@ -4,12 +4,12 @@ __all__ = ["DIAGNOSTIC_SESSION_CONTROL"]
 
 from uds.message import RequestSID
 
-from ..data_record_definitions import DIAGNOSTIC_SESSION_CONTROL_SUB_FUNCTION, SESSION_PARAMETER_RECORD
+from ..data_record_definitions import DIAGNOSTIC_SESSION_CONTROL_SUBFUNCTION, SESSION_PARAMETER_RECORD
 from ..service import Service
 
 DIAGNOSTIC_SESSION_CONTROL = Service(request_sid=RequestSID.DiagnosticSessionControl,
-                                     request_structure=(DIAGNOSTIC_SESSION_CONTROL_SUB_FUNCTION,),
-                                     response_structure=(DIAGNOSTIC_SESSION_CONTROL_SUB_FUNCTION,
+                                     request_structure=(DIAGNOSTIC_SESSION_CONTROL_SUBFUNCTION,),
+                                     response_structure=(DIAGNOSTIC_SESSION_CONTROL_SUBFUNCTION,
                                                          SESSION_PARAMETER_RECORD))
 """Default translator for :ref:`DiagnosticSessionControl <knowledge-base-service-diagnostic-session-control>`
 service."""
