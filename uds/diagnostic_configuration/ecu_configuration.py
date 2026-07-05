@@ -1,10 +1,11 @@
 """Implementation of container for storing diagnostic messages restrictions."""
 
-from typing import Collection, Dict, Any, Union, Set
+from typing import Collection, Dict, Any, Union, Set, Optional
 
-from uds.message import RequestSID, UdsMessage, UdsMessageRecord, ResponseSID, SERVICES_WITH_SUBFUNCTION
+from uds.message import RequestSID, UdsMessage, UdsMessageRecord, ResponseSID, SERVICES_WITH_SUBFUNCTION, SERVICES_WITH_DID, SERVICES_WITH_RID
 from uds.utilities import ReassignmentError, SPRMIB_MASK
 from .state import State
+from uds.translator import BASE_TRANSLATOR
 
 
 class EcuDiagnosticConfiguration:
@@ -64,6 +65,10 @@ class EcuDiagnosticConfiguration:
             raise TypeError
         self.__sid_restrictions = value
 
+    # TODO: subfunction_restrictions
+    # TODO: did_restrictions
+    # TODO: rid_restrictions
+
     def get_restrictions(self, message: Union[UdsMessage, UdsMessageRecord]) -> RequiredStatesAlias:
         """
         Get restrictions used by ECU for given diagnostic message.
@@ -75,7 +80,26 @@ class EcuDiagnosticConfiguration:
             - value is a collection of values that given state have to take to successfully execute the message
         """
         sid = message.payload[0]
+        dids = set()
+        rids = set()
+        subfunction = None
+        try:
+            decoded_message = BASE_TRANSLATOR.decode(message)
+        except ValueError:
+            decoded_message = None
         if sid in SERVICES_WITH_SUBFUNCTION and len(message.payload) > 1:
             subfunction = message.payload[1] & (0xFF ^ SPRMIB_MASK)
-        else:
-            subfunction = None
+        if sid in SERVICES_WITH_DID and decoded_message is not None:
+            for decoded_data_record in decoded_message:
+                if decoded_data_record.name == "DID" or (decoded_data_record.name.startwith("DID#") and decoded_data_record.name[4:].isdigit()):
+                    if isinstance(decoded_data_record.raw_value, int):
+                        dids.add(decoded_data_record.raw_value)
+                    else:
+                        dids.update(decoded_data_record.raw_value)
+        if sid in SERVICES_WITH_RID and decoded_message is not None:
+            for decoded_data_record in decoded_message:
+                if decoded_data_record.name == "RID":
+                    rids.add(decoded_data_record.raw_value)
+        # TODO: collect states values
+        # TODO: perform intersection on values of each state
+        # TODO: return the outcome
