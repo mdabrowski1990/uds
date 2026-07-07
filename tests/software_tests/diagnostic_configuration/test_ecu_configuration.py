@@ -106,7 +106,7 @@ class TestEcuDiagnosticConfiguration:
         (Mock(), Mock()),
         {"State 1", "State 2", "State 3"},
     ])
-    def test_states__get__valid(self, states):
+    def test_states__set__valid(self, states):
         assert EcuDiagnosticConfiguration.states.fset(self.mock_ecu_diagnostic_configuration, states) is None
         assert self.mock_ecu_diagnostic_configuration._EcuDiagnosticConfiguration__states == self.mock_set.return_value
         self.mock_set.assert_called_once_with(states)

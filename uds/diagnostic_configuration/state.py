@@ -2,7 +2,7 @@
 
 __all__ = ["State"]
 
-from typing import Any, Collection, Optional, Set
+from typing import Any, Collection, Optional, FrozenSet
 from warnings import warn
 
 
@@ -52,18 +52,19 @@ class State:
         if stripped_name != name:
             warn(category=UserWarning,
                  message="Given name was containing whitespaces as suffix or prefix. "
-                         f"They were removed and {stripped_name!r} is assigned instead.")
+                         f"They were removed and {stripped_name!r} is assigned instead.",
+                 stacklevel=2)
         self.__name = stripped_name
 
     @property
-    def possible_values(self) -> Set[Any]:
+    def possible_values(self) -> FrozenSet[Any]:
         """Get set with all values that can be assigned to this state."""
         return self.__possible_values
 
     @possible_values.setter
     def possible_values(self, values: Collection[Any]) -> None:
         """Set all potential values that can be assigned to a state."""
-        self.__possible_values = set(values)
+        self.__possible_values = frozenset(values)
         self.__current_value = None  # if possible values are change, then the current state is also affected
 
     @property

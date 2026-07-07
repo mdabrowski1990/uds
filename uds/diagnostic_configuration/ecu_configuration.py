@@ -310,7 +310,7 @@ class EcuDiagnosticConfiguration:
         sid = message_payload[0]
         try:
             decoded_message = BASE_TRANSLATOR.decode(message_payload)
-        except ValueError:
+        except (ValueError, KeyError):
             dids = set()
             rids = set()
         else:

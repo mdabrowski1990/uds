@@ -105,12 +105,12 @@ REPORT_TYPE_2013 = MappingDataRecord(name="reportType",
 READ_DTC_INFORMATION_SUBFUNCTION_2020 = RawDataRecord(name="SubFunction",
                                                       length=8,
                                                       children=(SPRMIB, REPORT_TYPE_2020))
-"""Definition (compatible with SIO 14229-1:2020) of
+"""Definition (compatible with ISO 14229-1:2020) of
 :ref:`ReadDTCInformation <knowledge-base-service-read-dtc-information>` SubFunction."""
 READ_DTC_INFORMATION_SUBFUNCTION_2013 = RawDataRecord(name="SubFunction",
                                                       length=8,
                                                       children=(SPRMIB, REPORT_TYPE_2013))
-"""Definition (compatible with SIO 14229-1:2013) of
+"""Definition (compatible with ISO 14229-1:2013) of
 :ref:`ReadDTCInformation <knowledge-base-service-read-dtc-information>` SubFunction."""
 
 # SID 0x27
@@ -184,7 +184,7 @@ ROUTINE_CONTROL_SUBFUNCTION = RawDataRecord(name="SubFunction",
 ZERO_SUBFUNCTION = MappingDataRecord(name="zeroSubFunction",
                                      length=7,
                                      values_mapping=ZERO_SUBFUNCTION_MAPPING)
-"""Definition of `zeroSubFunction` Data Recird that is part of
+"""Definition of `zeroSubFunction` Data Record that is part of
 :ref:`TesterPresent <knowledge-base-service-tester-present>` SubFunction."""
 
 TESTER_PRESENT_SUBFUNCTION = RawDataRecord(name="SubFunction",
@@ -203,7 +203,7 @@ TIMING_PARAMETER_ACCESS_TYPE_2013 = MappingDataRecord(name="timingParameterAcces
 ACCESS_TIMING_PARAMETER_SUBFUNCTION_2013 = RawDataRecord(name="SubFunction",
                                                          length=8,
                                                          children=(SPRMIB, TIMING_PARAMETER_ACCESS_TYPE_2013))
-"""Definition (compatible with SIO 14229-1:2013) of
+"""Definition (compatible with ISO 14229-1:2013) of
 :ref:`AccessTimingParameter <knowledge-base-service-access-timing-parameter>` SubFunction."""
 
 # SID 0x85
@@ -253,12 +253,12 @@ EVENT_TYPE_2013 = RawDataRecord(name="eventType",
 RESPONSE_ON_EVENT_SUBFUNCTION_2020 = RawDataRecord(name="SubFunction",
                                                    length=8,
                                                    children=(SPRMIB, EVENT_TYPE_2020))
-"""Definition (compatible with SIO 14229-1:2020) of
+"""Definition (compatible with ISO 14229-1:2020) of
 :ref:`ResponseOnEvent <knowledge-base-service-response-on-event>` SubFunction."""
 RESPONSE_ON_EVENT_SUBFUNCTION_2013 = RawDataRecord(name="SubFunction",
                                                    length=8,
                                                    children=(SPRMIB, EVENT_TYPE_2013))
-"""Definition (compatible with SIO 14229-1:2013) of
+"""Definition (compatible with ISO 14229-1:2013) of
 :ref:`ResponseOnEvent <knowledge-base-service-response-on-event>` SubFunction."""
 
 # SID 0x87

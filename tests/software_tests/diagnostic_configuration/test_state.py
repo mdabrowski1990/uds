@@ -12,13 +12,13 @@ class TestState:
     def setup_method(self):
         self.mock_state = Mock(spec=State)
         # patching
-        self._patcher_set = patch(f"{SCRIPT_LOCATION}.set")
-        self.mock_set = self._patcher_set.start()
+        self._patcher_frozenset = patch(f"{SCRIPT_LOCATION}.frozenset")
+        self.mock_frozenset = self._patcher_frozenset.start()
         self._patcher_warn = patch(f"{SCRIPT_LOCATION}.warn")
         self.mock_warn = self._patcher_warn.start()
 
     def teardown_method(self):
-        self._patcher_set.stop()
+        self._patcher_frozenset.stop()
         self._patcher_warn.stop()
 
     # __init__
@@ -89,8 +89,8 @@ class TestState:
     ])
     def test_possible_values__set(self, possible_values):
         assert State.possible_values.fset(self.mock_state, possible_values) is None
-        assert self.mock_state._State__possible_values == self.mock_set.return_value
-        self.mock_set.assert_called_once_with(possible_values)
+        assert self.mock_state._State__possible_values == self.mock_frozenset.return_value
+        self.mock_frozenset.assert_called_once_with(possible_values)
 
     # current_value
 
