@@ -566,7 +566,7 @@ class TestEcuDiagnosticConfiguration:
     @pytest.mark.parametrize("message_payload", [[0x10], (0x20, 0x01, 0x23)])
     def test_get_restrictions__sid_only(self, message_payload):
         mock_sid_restrictions = Mock()
-        self.mock_translator_decode.side_effect = ValueError
+        self.mock_translator_decode.side_effect = KeyError
         self.mock_ecu_diagnostic_configuration._EcuDiagnosticConfiguration__extract_subfunction = Mock(
             return_value=None)
         self.mock_ecu_diagnostic_configuration.sid_restrictions = MagicMock(

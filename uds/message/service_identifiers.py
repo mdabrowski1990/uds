@@ -188,7 +188,7 @@ class ResponseSID(ValidatedEnum, ExtendableEnum, ByteEnum):
 
 
 SidAlias = Union[RequestSID, ResponseSID, int]
-"""Alist for Request SID or Response SID value."""
+"""Alias for Request SID or Response SID value."""
 
 
 SERVICES_WITH_SUBFUNCTION = {

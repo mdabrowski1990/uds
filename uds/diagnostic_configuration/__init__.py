@@ -1,7 +1,7 @@
 """
-Implementation for diagnostic messages databases.
+Implementation for diagnostic configuration.
 
-Tools for assessing states in which diagnostic message can be executed.
+Tools for assessing states in which diagnostic message are accessible by ECU.
 """
 
 from .ecu_configuration import EcuDiagnosticConfiguration

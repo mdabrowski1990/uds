@@ -132,6 +132,8 @@ class EcuDiagnosticConfiguration:
 
         :raise TypeError: Value is not Mapping type.
         :raise ValueError: Keys in the Mapping are not SID values only.
+        :raise InconsistencyError: Key in provided mapping does not belong to service that contains SubFunctions
+            in their message format.
         """
         if not isinstance(value, Mapping):
             raise TypeError(f"Provided value is not a Mapping. Actual type: {type(value)}.")
@@ -165,6 +167,9 @@ class EcuDiagnosticConfiguration:
         :param value: Value to set.
 
         :raise TypeError: Value is not Mapping type.
+        :raise ValueError: Keys in the Mapping are not SID values only.
+        :raise InconsistencyError: Key in provided mapping does not belong to service that contains DIDs
+            in their message format.
         """
         if not isinstance(value, Mapping):
             raise TypeError(f"Provided value is not a Mapping. Actual type: {type(value)}.")
@@ -198,6 +203,8 @@ class EcuDiagnosticConfiguration:
 
         :raise TypeError: Value is not Mapping type.
         :raise ValueError: Keys in the Mapping are not SID values only.
+        :raise InconsistencyError: Key in provided mapping does not belong to service that contains RIDs
+            in their message format.
         """
         if not isinstance(value, Mapping):
             raise TypeError(f"Provided value is not a Mapping. Actual type: {type(value)}.")

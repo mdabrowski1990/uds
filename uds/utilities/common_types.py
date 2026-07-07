@@ -57,7 +57,7 @@ def validate_raw_2byte_value(value: int) -> None:
     :param value: Value to validate.
 
     :raise TypeError: Value is not int type.
-    :raise ValueError: Value is out of byte range (0x00-0xFF).
+    :raise ValueError: Value is out of byte range (0x0000-0xFFFF).
     """
     if not isinstance(value, int):
         raise TypeError(f"Provided value is not int type. Actual type: {type(value)}")
