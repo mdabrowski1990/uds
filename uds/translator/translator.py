@@ -5,8 +5,8 @@ __all__ = ["Translator"]
 from types import MappingProxyType
 from typing import Collection, Dict, FrozenSet, Mapping, Optional, Union
 
-from uds.message import RequestSID, ResponseSID, UdsMessage, UdsMessageRecord
-from uds.utilities import InconsistencyError
+from uds.message import RequestSID, ResponseSID
+from uds.utilities import InconsistencyError, RawBytesAlias, validate_raw_bytes
 
 from .service import DataRecordsValuesAlias, DecodedMessageAlias, Service
 
@@ -92,20 +92,21 @@ class Translator:
         raise ValueError("Either SID or RSID value is missing or incorrect. "
                          f"Provided values: SID = {sid}. RSID = {rsid}.")
 
-    def decode(self, message: Union[UdsMessage, UdsMessageRecord]) -> DecodedMessageAlias:
+    def decode(self, payload: RawBytesAlias) -> DecodedMessageAlias:
         """
-        Decode physical values carried in payload of a diagnostic message.
+        Decode physical values carried by given payload of a diagnostic message.
 
-        :param message: A diagnostic message that is carrying payload to decode.
+        :param payload: Payload of a diagnostic message.
 
         :raise ValueError: This translator has no service implementation for provided diagnostic message SID.
 
-        :return: Decoded Data Records values from provided diagnostic message.
+        :return: Decoded Data Records values.
         """
-        if message.payload[0] == ResponseSID.NegativeResponse:
-            sid = message.payload[1]
-            return self.services_mapping[sid].decode_negative_response(message.payload)
-        sid = message.payload[0]
+        validate_raw_bytes(payload, allow_empty=False)
+        if payload[0] == ResponseSID.NegativeResponse:
+            sid = payload[1]
+            return self.services_mapping[sid].decode_negative_response(payload)
+        sid = payload[0]
         if sid not in self.services_mapping:
             raise ValueError("Database has no decoding defined for SID/RSID value of the provided message.")
-        return self.services_mapping[sid].decode(message.payload)
+        return self.services_mapping[sid].decode(payload)

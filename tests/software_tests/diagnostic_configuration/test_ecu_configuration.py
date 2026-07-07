@@ -1,6 +1,7 @@
 import pytest
 from mock import MagicMock, Mock, call, patch
 
+from uds.addressing import AddressingType
 from uds.diagnostic_configuration.ecu_configuration import (
     SERVICES_WITH_DID,
     SERVICES_WITH_RID,
@@ -11,11 +12,16 @@ from uds.diagnostic_configuration.ecu_configuration import (
     Mapping,
     ReassignmentError,
 )
+from uds.diagnostic_configuration.state_definitions import (
+    DEFAULT_ADDRESSING_TYPE_STATE,
+    DEFAULT_DIAGNOSTIC_SESSION_STATE,
+    DEFAULT_SECURITY_ACCESS_STATE,
+)
 
 SCRIPT_LOCATION = "uds.diagnostic_configuration.ecu_configuration"
 
 
-class TestState:
+class TestEcuDiagnosticConfiguration:
     """Unit tests for 'EcuDiagnosticConfiguration' class."""
 
     def setup_method(self):
@@ -411,8 +417,8 @@ class TestState:
     # __extract_dids
 
     @pytest.mark.parametrize("decoded_message", [
-        (Mock(raw_value=0x00), Mock(), Mock(), Mock()),
-        (Mock(raw_value=0x10), Mock(), Mock()),
+        ({"raw_value": 0x00}, Mock(), Mock(), Mock()),
+        ({"raw_value":0x10}, Mock(), Mock()),
     ])
     def test_extract_dids__wrong_service(self, decoded_message):
         assert (EcuDiagnosticConfiguration._EcuDiagnosticConfiguration__extract_dids(decoded_message)
@@ -420,48 +426,40 @@ class TestState:
         self.mock_set.return_value.add.assert_not_called()
         self.mock_set.return_value.update.assert_not_called()
 
-    @pytest.mark.parametrize("decoded_message, names, dids", [
+    @pytest.mark.parametrize("decoded_message, dids", [
         [
-            (Mock(raw_value=list(SERVICES_WITH_DID)[0]),
-             Mock(raw_value=0xF012)),
-            ("SID", "DID"),
+            ({"raw_value": list(SERVICES_WITH_DID)[0], "name": "SID"},
+             {"raw_value": 0xF012, "name": "DID"}),
             {0xF012}
         ],
         [
-            (Mock(raw_value=list(SERVICES_WITH_DID)[0]),
-             Mock(raw_value=0x9153),
-             Mock(raw_value=0xFFFF),
-             Mock(raw_value=0x0000)),
-            ("SID", "DID#1", "DID#2", "Not a DID"),
+            ({"raw_value": list(SERVICES_WITH_DID)[0], "name": "SID"},
+             dict(raw_value=0x9153, name="DID#1"),
+             dict(raw_value=0xFFFF, name="DID#2"),
+             dict(raw_value=0x0000, name="Not a DID")),
             {0x9153, 0xFFFF}
         ],
     ])
-    def test_extract_dids__add(self, decoded_message, names, dids):
-        for i, decoded_data_record in enumerate(decoded_message):
-            setattr(decoded_data_record, "name", names[i])
+    def test_extract_dids__add(self, decoded_message, dids):
         assert (EcuDiagnosticConfiguration._EcuDiagnosticConfiguration__extract_dids(decoded_message)
                 == self.mock_set.return_value)
         self.mock_set.return_value.add.assert_has_calls([call(did) for did in dids], any_order=True)
         self.mock_set.return_value.update.assert_not_called()
 
-    @pytest.mark.parametrize("decoded_message, names, dids", [
+    @pytest.mark.parametrize("decoded_message, dids", [
         [
-            (Mock(raw_value=list(SERVICES_WITH_DID)[0]),
-             Mock(raw_value=(0xF012, 0x0000))),
-            ("SID", "DID"),
+            (dict(raw_value=list(SERVICES_WITH_DID)[0], name="SID"),
+             dict(raw_value=(0xF012, 0x0000), name="DID")),
             {(0xF012, 0x0000)}
         ],
         [
-            (Mock(raw_value=list(SERVICES_WITH_DID)[0]),
-             Mock(raw_value=(0x9153, 0xFFFF)),
-             Mock(raw_value=0x1234)),
-            ("SID", "DID", "Not a DID"),
+            (dict(raw_value=list(SERVICES_WITH_DID)[0], name="SID"),
+             dict(raw_value=(0x9153, 0xFFFF), name="DID"),
+             dict(raw_value=0x1234, name="Something")),
             {(0x9153, 0xFFFF)}
         ],
     ])
-    def test_extract_dids__update(self, decoded_message, names, dids):
-        for i, decoded_data_record in enumerate(decoded_message):
-            setattr(decoded_data_record, "name", names[i])
+    def test_extract_dids__update(self, decoded_message, dids):
         assert (EcuDiagnosticConfiguration._EcuDiagnosticConfiguration__extract_dids(decoded_message)
                 == self.mock_set.return_value)
         self.mock_set.return_value.add.assert_not_called()
@@ -470,8 +468,8 @@ class TestState:
     # __extract_rids
 
     @pytest.mark.parametrize("decoded_message", [
-        (Mock(raw_value=0x00), Mock(), Mock(), Mock()),
-        (Mock(raw_value=0x10), Mock(), Mock()),
+        (dict(raw_value=0x00), Mock(), Mock(), Mock()),
+        (dict(raw_value=0x10), Mock(), Mock()),
     ])
     def test_extract_rids__wrong_service(self, decoded_message):
         assert (EcuDiagnosticConfiguration._EcuDiagnosticConfiguration__extract_rids(decoded_message)
@@ -479,48 +477,40 @@ class TestState:
         self.mock_set.return_value.add.assert_not_called()
         self.mock_set.return_value.update.assert_not_called()
 
-    @pytest.mark.parametrize("decoded_message, names, rids", [
+    @pytest.mark.parametrize("decoded_message, rids", [
         [
-            (Mock(raw_value=list(SERVICES_WITH_RID)[0]),
-             Mock(raw_value=0xF012)),
-            ("SID", "RID"),
+            (dict(raw_value=list(SERVICES_WITH_RID)[0], name="SID"),
+             dict(raw_value=0xF012, name="RID")),
             {0xF012}
         ],
         [
-            (Mock(raw_value=list(SERVICES_WITH_RID)[0]),
-             Mock(raw_value=0x9153),
-             Mock(raw_value=0xFFFF),
-             Mock(raw_value=0x0000)),
-            ("SID", "RID#1", "RID#2", "Not a RID"),
+            (dict(raw_value=list(SERVICES_WITH_RID)[0], name="SID"),
+             dict(raw_value=0x9153, name="RID#1"),
+             dict(raw_value=0xFFFF, name="RID#2"),
+             dict(raw_value=0x0000, name="Not a RID")),
             {0x9153, 0xFFFF}
         ],
     ])
-    def test_extract_rids__add(self, decoded_message, names, rids):
-        for i, decoded_data_record in enumerate(decoded_message):
-            setattr(decoded_data_record, "name", names[i])
+    def test_extract_rids__add(self, decoded_message, rids):
         assert (EcuDiagnosticConfiguration._EcuDiagnosticConfiguration__extract_rids(decoded_message)
                 == self.mock_set.return_value)
         self.mock_set.return_value.add.assert_has_calls([call(rid) for rid in rids], any_order=True)
         self.mock_set.return_value.update.assert_not_called()
 
-    @pytest.mark.parametrize("decoded_message, names, rids", [
+    @pytest.mark.parametrize("decoded_message, rids", [
         [
-            (Mock(raw_value=list(SERVICES_WITH_RID)[0]),
-             Mock(raw_value=(0xF012, 0x0000))),
-            ("SID", "RID"),
+            (dict(raw_value=list(SERVICES_WITH_RID)[0], name="SID"),
+             dict(raw_value=(0xF012, 0x0000), name="RID")),
             {(0xF012, 0x0000)}
         ],
         [
-            (Mock(raw_value=list(SERVICES_WITH_RID)[0]),
-             Mock(raw_value=(0x9153, 0xFFFF)),
-             Mock(raw_value=0x1234)),
-            ("SID", "RID", "Not a RID"),
+            (dict(raw_value=list(SERVICES_WITH_RID)[0], name="SID"),
+             dict(raw_value=(0x9153, 0xFFFF), name="RID"),
+             dict(raw_value=0x1234, name="fdkuhtw")),
             {(0x9153, 0xFFFF)}
         ],
     ])
-    def test_extract_rids__update(self, decoded_message, names, rids):
-        for i, decoded_data_record in enumerate(decoded_message):
-            setattr(decoded_data_record, "name", names[i])
+    def test_extract_rids__update(self, decoded_message, rids):
         assert (EcuDiagnosticConfiguration._EcuDiagnosticConfiguration__extract_rids(decoded_message)
                 == self.mock_set.return_value)
         self.mock_set.return_value.add.assert_not_called()
@@ -573,23 +563,23 @@ class TestState:
 
     # get_restrictions
 
-    @pytest.mark.parametrize("message", [Mock(payload=[0x10]), Mock(payload=(0x20, 0x01, 0x23))])
-    def test_get_restrictions__sid_only(self, message):
+    @pytest.mark.parametrize("message_payload", [[0x10], (0x20, 0x01, 0x23)])
+    def test_get_restrictions__sid_only(self, message_payload):
         mock_sid_restrictions = Mock()
         self.mock_translator_decode.side_effect = ValueError
         self.mock_ecu_diagnostic_configuration._EcuDiagnosticConfiguration__extract_subfunction = Mock(
             return_value=None)
         self.mock_ecu_diagnostic_configuration.sid_restrictions = MagicMock(
             __getitem__=Mock(return_value=mock_sid_restrictions))
-        assert (EcuDiagnosticConfiguration.get_restrictions(self.mock_ecu_diagnostic_configuration, message)
+        assert (EcuDiagnosticConfiguration.get_restrictions(self.mock_ecu_diagnostic_configuration, message_payload)
                 == self.mock_ecu_diagnostic_configuration.combine_restrictions.return_value)
         self.mock_ecu_diagnostic_configuration._EcuDiagnosticConfiguration__extract_subfunction.assert_called_once_with(
-            message_payload=message.payload)
-        self.mock_ecu_diagnostic_configuration.sid_restrictions.__getitem__.assert_called_once_with(message.payload[0])
+            message_payload=message_payload)
+        self.mock_ecu_diagnostic_configuration.sid_restrictions.__getitem__.assert_called_once_with(message_payload[0])
         self.mock_ecu_diagnostic_configuration.combine_restrictions.assert_called_once_with(mock_sid_restrictions)
 
-    @pytest.mark.parametrize("message", [Mock(payload=[0x10]), Mock(payload=(0x20, 0x01, 0x23))])
-    def test_get_restrictions__sid_subfunction(self, message):
+    @pytest.mark.parametrize("message_payload", [[0x10], (0x20, 0x01, 0x23)])
+    def test_get_restrictions__sid_subfunction(self, message_payload):
         mock_sid_restrictions = Mock()
         mock_subfunction_restrictions = Mock()
         self.mock_translator_decode.side_effect = ValueError
@@ -597,25 +587,25 @@ class TestState:
             __getitem__=Mock(return_value=mock_sid_restrictions))
         self.mock_ecu_diagnostic_configuration.subfunction_restrictions = MagicMock(
             __getitem__=Mock(return_value=MagicMock(__getitem__=Mock(return_value=mock_subfunction_restrictions))))
-        assert (EcuDiagnosticConfiguration.get_restrictions(self.mock_ecu_diagnostic_configuration, message)
+        assert (EcuDiagnosticConfiguration.get_restrictions(self.mock_ecu_diagnostic_configuration, message_payload)
                 == self.mock_ecu_diagnostic_configuration.combine_restrictions.return_value)
         self.mock_ecu_diagnostic_configuration._EcuDiagnosticConfiguration__extract_subfunction.assert_called_once_with(
-            message_payload=message.payload)
-        self.mock_ecu_diagnostic_configuration.sid_restrictions.__getitem__.assert_called_once_with(message.payload[0])
+            message_payload=message_payload)
+        self.mock_ecu_diagnostic_configuration.sid_restrictions.__getitem__.assert_called_once_with(message_payload[0])
         self.mock_ecu_diagnostic_configuration.subfunction_restrictions.__getitem__.assert_called_once_with(
-            message.payload[0])
+            message_payload[0])
         self.mock_ecu_diagnostic_configuration.subfunction_restrictions.__getitem__.return_value.__getitem__.assert_called_once_with(
             self.mock_ecu_diagnostic_configuration._EcuDiagnosticConfiguration__extract_subfunction.return_value)
         self.mock_ecu_diagnostic_configuration.combine_restrictions.assert_called_once_with(
             mock_sid_restrictions,
             mock_subfunction_restrictions)
 
-    @pytest.mark.parametrize("message, dids, rids", [
-        (Mock(payload=(0x20, 0x01, 0x23)), [0x0000], []),
-        (Mock(payload=(0x20, 0x01, 0x23)), [], [0xFFFF]),
-        (Mock(payload=[0x22, 0x12, 0x34, 0x56, 0x78]), [0xF0E1, 0x5AB9], [0x258C, 0x94A0, 0xFD8E]),
+    @pytest.mark.parametrize("message_payload, dids, rids", [
+        ((0x20, 0x01, 0x23), [0x0000], []),
+        ((0x20, 0x01, 0x23), [], [0xFFFF]),
+        ([0x22, 0x12, 0x34, 0x56, 0x78], [0xF0E1, 0x5AB9], [0x258C, 0x94A0, 0xFD8E]),
     ])
-    def test_get_restrictions__sid_dids_rids(self, message, dids, rids):
+    def test_get_restrictions__sid_dids_rids(self, message_payload, dids, rids):
         mock_sid_restrictions = Mock()
         mock_did_restrictions = Mock()
         mock_rid_restrictions = Mock()
@@ -629,14 +619,188 @@ class TestState:
             __getitem__=Mock(return_value=MagicMock(__getitem__=Mock(return_value=mock_did_restrictions))))
         self.mock_ecu_diagnostic_configuration.rid_restrictions = MagicMock(
             __getitem__=Mock(return_value=MagicMock(__getitem__=Mock(return_value=mock_rid_restrictions))))
-        assert (EcuDiagnosticConfiguration.get_restrictions(self.mock_ecu_diagnostic_configuration, message)
+        assert (EcuDiagnosticConfiguration.get_restrictions(self.mock_ecu_diagnostic_configuration, message_payload)
                 == self.mock_ecu_diagnostic_configuration.combine_restrictions.return_value)
         self.mock_ecu_diagnostic_configuration._EcuDiagnosticConfiguration__extract_subfunction.assert_called_once_with(
-            message_payload=message.payload)
-        self.mock_ecu_diagnostic_configuration.sid_restrictions.__getitem__.assert_called_once_with(message.payload[0])
+            message_payload=message_payload)
+        self.mock_ecu_diagnostic_configuration.sid_restrictions.__getitem__.assert_called_once_with(message_payload[0])
         self.mock_ecu_diagnostic_configuration.did_restrictions.__getitem__.return_value.__getitem__.assert_has_calls(
             [call(did) for did in dids], any_order=True)
         self.mock_ecu_diagnostic_configuration.rid_restrictions.__getitem__.return_value.__getitem__.assert_has_calls(
             [call(rid) for rid in rids], any_order=True)
         self.mock_ecu_diagnostic_configuration.combine_restrictions.assert_called_once_with(
-            mock_sid_restrictions, *[mock_did_restrictions]*len(dids), *[mock_rid_restrictions]*len(rids))
+            mock_sid_restrictions, *[mock_did_restrictions] * len(dids), *[mock_rid_restrictions] * len(rids))
+
+
+class TestEcuDiagnosticConfigurationIntegration:
+    """Integration tests for 'EcuDiagnosticConfiguration' class."""
+
+    EXAMPLE_STATES = (DEFAULT_DIAGNOSTIC_SESSION_STATE, DEFAULT_SECURITY_ACCESS_STATE, DEFAULT_ADDRESSING_TYPE_STATE)
+    EXAMPLE_SID_RESTRICTIONS = {
+        0x10: {
+            DEFAULT_DIAGNOSTIC_SESSION_STATE.name: DEFAULT_DIAGNOSTIC_SESSION_STATE.possible_values,
+            DEFAULT_SECURITY_ACCESS_STATE.name: DEFAULT_SECURITY_ACCESS_STATE.possible_values,
+            DEFAULT_ADDRESSING_TYPE_STATE.name: DEFAULT_ADDRESSING_TYPE_STATE.possible_values,
+        },
+        0x22: {
+            DEFAULT_DIAGNOSTIC_SESSION_STATE.name: {0x01, 0x03, 0x04},
+            DEFAULT_SECURITY_ACCESS_STATE.name: DEFAULT_SECURITY_ACCESS_STATE.possible_values,
+            DEFAULT_ADDRESSING_TYPE_STATE.name: DEFAULT_ADDRESSING_TYPE_STATE.possible_values,
+        },
+        0x2E: {
+            DEFAULT_DIAGNOSTIC_SESSION_STATE.name: {0x03, 0x04},
+            DEFAULT_SECURITY_ACCESS_STATE.name: {0x01, 0x03, 0x05},
+            DEFAULT_ADDRESSING_TYPE_STATE.name: {AddressingType.PHYSICAL},
+        },
+        0x31: {
+            DEFAULT_DIAGNOSTIC_SESSION_STATE.name: {0x02, 0x03, 0x04},
+            DEFAULT_SECURITY_ACCESS_STATE.name: {0x01, 0x03, 0x05},
+            DEFAULT_ADDRESSING_TYPE_STATE.name: {AddressingType.PHYSICAL},
+        }
+    }
+    EXAMPLE_SUBFUNCTION_RESTRICTIONS = {
+        0x10: {
+            0x01: {
+                DEFAULT_DIAGNOSTIC_SESSION_STATE.name: DEFAULT_DIAGNOSTIC_SESSION_STATE.possible_values,
+                DEFAULT_SECURITY_ACCESS_STATE.name: DEFAULT_SECURITY_ACCESS_STATE.possible_values,
+                DEFAULT_ADDRESSING_TYPE_STATE.name: DEFAULT_ADDRESSING_TYPE_STATE.possible_values,
+            },
+            0x02: {
+                DEFAULT_DIAGNOSTIC_SESSION_STATE.name: DEFAULT_DIAGNOSTIC_SESSION_STATE.possible_values,
+                DEFAULT_SECURITY_ACCESS_STATE.name: DEFAULT_SECURITY_ACCESS_STATE.possible_values,
+                DEFAULT_ADDRESSING_TYPE_STATE.name: DEFAULT_ADDRESSING_TYPE_STATE.possible_values,
+            },
+            0x03: {
+                DEFAULT_DIAGNOSTIC_SESSION_STATE.name: {0x01, 0x03, 0x04},
+                DEFAULT_SECURITY_ACCESS_STATE.name: DEFAULT_SECURITY_ACCESS_STATE.possible_values,
+                DEFAULT_ADDRESSING_TYPE_STATE.name: DEFAULT_ADDRESSING_TYPE_STATE.possible_values,
+            },
+            0x04: {
+                DEFAULT_DIAGNOSTIC_SESSION_STATE.name: {0x01, 0x03, 0x04},
+                DEFAULT_SECURITY_ACCESS_STATE.name: DEFAULT_SECURITY_ACCESS_STATE.possible_values,
+                DEFAULT_ADDRESSING_TYPE_STATE.name: DEFAULT_ADDRESSING_TYPE_STATE.possible_values,
+            },
+        },
+        0x31: {
+            0x01: {
+                DEFAULT_DIAGNOSTIC_SESSION_STATE.name: {0x02, 0x03, 0x04},
+                DEFAULT_SECURITY_ACCESS_STATE.name: {0x01, 0x03, 0x05},
+                DEFAULT_ADDRESSING_TYPE_STATE.name: {AddressingType.PHYSICAL},
+            },
+            0x02: {
+                DEFAULT_DIAGNOSTIC_SESSION_STATE.name: {0x02, 0x03, 0x04},
+                DEFAULT_SECURITY_ACCESS_STATE.name: {0x01, 0x03, 0x05},
+                DEFAULT_ADDRESSING_TYPE_STATE.name: {AddressingType.PHYSICAL},
+            },
+            0x03: {
+                DEFAULT_DIAGNOSTIC_SESSION_STATE.name: {0x02, 0x03, 0x04},
+                DEFAULT_SECURITY_ACCESS_STATE.name: {0x01, 0x03, 0x05},
+                DEFAULT_ADDRESSING_TYPE_STATE.name: {AddressingType.PHYSICAL},
+            },
+        },
+    }
+    EXAMPLE_DID_RESTRICTIONS = {
+        0x22: {
+            0x0100: {
+                DEFAULT_DIAGNOSTIC_SESSION_STATE.name: {0x03, 0x04},
+                DEFAULT_SECURITY_ACCESS_STATE.name: DEFAULT_SECURITY_ACCESS_STATE.possible_values,
+                DEFAULT_ADDRESSING_TYPE_STATE.name: {AddressingType.PHYSICAL},
+            },
+            0xF186: {
+                DEFAULT_DIAGNOSTIC_SESSION_STATE.name: DEFAULT_DIAGNOSTIC_SESSION_STATE.possible_values,
+                DEFAULT_SECURITY_ACCESS_STATE.name: DEFAULT_SECURITY_ACCESS_STATE.possible_values,
+                DEFAULT_ADDRESSING_TYPE_STATE.name: DEFAULT_ADDRESSING_TYPE_STATE.possible_values,
+            },
+        },
+        0x2E: {
+            0x0100: {
+                DEFAULT_DIAGNOSTIC_SESSION_STATE.name: {0x03, 0x04},
+                DEFAULT_SECURITY_ACCESS_STATE.name: {0x01, 0x03, 0x05},
+                DEFAULT_ADDRESSING_TYPE_STATE.name: {AddressingType.PHYSICAL},
+            },
+        }
+    }
+    EXAMPLE_RID_RESTRICTIONS = {
+        0x31: {
+            0x1234: {
+                DEFAULT_DIAGNOSTIC_SESSION_STATE.name: {0x02},
+                DEFAULT_SECURITY_ACCESS_STATE.name: {0x01},
+                DEFAULT_ADDRESSING_TYPE_STATE.name: {AddressingType.PHYSICAL},
+            },
+            0xABCD: {
+                DEFAULT_DIAGNOSTIC_SESSION_STATE.name: {0x03, 0x4},
+                DEFAULT_SECURITY_ACCESS_STATE.name: {0x03, 0x05},
+                DEFAULT_ADDRESSING_TYPE_STATE.name: {AddressingType.PHYSICAL},
+            },
+        },
+    }
+
+    def test_init(self):
+        ecu_diag_config = EcuDiagnosticConfiguration(states=self.EXAMPLE_STATES,
+                                                     sid_restrictions=self.EXAMPLE_SID_RESTRICTIONS,
+                                                     subfunction_restrictions=self.EXAMPLE_SUBFUNCTION_RESTRICTIONS,
+                                                     did_restrictions=self.EXAMPLE_DID_RESTRICTIONS,
+                                                     rid_restrictions=self.EXAMPLE_RID_RESTRICTIONS)
+        assert ecu_diag_config.states == set(self.EXAMPLE_STATES)
+        assert ecu_diag_config.states_names == set([state.name for state in self.EXAMPLE_STATES])
+        assert ecu_diag_config.states_mapping == {
+            state.name: state for state in self.EXAMPLE_STATES
+        }
+
+    @pytest.mark.parametrize("message_payload, message_restrictions", [
+        (
+            [0x10, 0x01],
+            {
+                DEFAULT_DIAGNOSTIC_SESSION_STATE.name: DEFAULT_DIAGNOSTIC_SESSION_STATE.possible_values,
+                DEFAULT_SECURITY_ACCESS_STATE.name: DEFAULT_SECURITY_ACCESS_STATE.possible_values,
+                DEFAULT_ADDRESSING_TYPE_STATE.name: DEFAULT_ADDRESSING_TYPE_STATE.possible_values,
+            }
+        ),
+        (
+            [0x10, 0x03],
+            {
+                DEFAULT_DIAGNOSTIC_SESSION_STATE.name: {0x01, 0x03, 0x04},
+                DEFAULT_SECURITY_ACCESS_STATE.name: DEFAULT_SECURITY_ACCESS_STATE.possible_values,
+                DEFAULT_ADDRESSING_TYPE_STATE.name: DEFAULT_ADDRESSING_TYPE_STATE.possible_values,
+            }
+        ),
+        (
+            [0x22, 0x01, 0x00],
+            {
+                DEFAULT_DIAGNOSTIC_SESSION_STATE.name: {0x03, 0x04},
+                DEFAULT_SECURITY_ACCESS_STATE.name: DEFAULT_SECURITY_ACCESS_STATE.possible_values,
+                DEFAULT_ADDRESSING_TYPE_STATE.name: {AddressingType.PHYSICAL},
+            }
+        ),
+        (
+            [0x2E, 0x01, 0x00],
+            {
+                DEFAULT_DIAGNOSTIC_SESSION_STATE.name: {0x03, 0x04},
+                DEFAULT_SECURITY_ACCESS_STATE.name: {0x01, 0x03, 0x05},
+                DEFAULT_ADDRESSING_TYPE_STATE.name: {AddressingType.PHYSICAL},
+            }
+        ),
+        (
+            [0x31, 0x01, 0x12, 0x34],
+            {
+                DEFAULT_DIAGNOSTIC_SESSION_STATE.name: {0x02},
+                DEFAULT_SECURITY_ACCESS_STATE.name: {0x01},
+                DEFAULT_ADDRESSING_TYPE_STATE.name: {AddressingType.PHYSICAL},
+            }
+        ),
+        (
+                [0x31, 0x03, 0xAB, 0xCD],
+                {
+                    DEFAULT_DIAGNOSTIC_SESSION_STATE.name: {0x03, 0x4},
+                    DEFAULT_SECURITY_ACCESS_STATE.name: {0x03, 0x05},
+                    DEFAULT_ADDRESSING_TYPE_STATE.name: {AddressingType.PHYSICAL},
+                }
+        ),
+    ])
+    def test_get_restrictions(self, message_payload, message_restrictions):
+        ecu_diag_config = EcuDiagnosticConfiguration(states=self.EXAMPLE_STATES,
+                                                     sid_restrictions=self.EXAMPLE_SID_RESTRICTIONS,
+                                                     subfunction_restrictions=self.EXAMPLE_SUBFUNCTION_RESTRICTIONS,
+                                                     did_restrictions=self.EXAMPLE_DID_RESTRICTIONS,
+                                                     rid_restrictions=self.EXAMPLE_RID_RESTRICTIONS)
+        assert ecu_diag_config.get_restrictions(message_payload=message_payload) == message_restrictions

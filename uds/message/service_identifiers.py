@@ -187,7 +187,7 @@ class ResponseSID(ValidatedEnum, ExtendableEnum, ByteEnum):
         return False
 
 
-SidAlias = Union[RequestSID, ResponseSID]
+SidAlias = Union[RequestSID, ResponseSID, int]
 """Alist for Request SID or Response SID value."""
 
 

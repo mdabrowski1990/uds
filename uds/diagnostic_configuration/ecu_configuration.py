@@ -2,7 +2,7 @@
 
 from operator import getitem
 from types import MappingProxyType
-from typing import Any, Collection, Mapping, Optional, Set, Union
+from typing import Any, Collection, Mapping, Optional, Set
 
 from uds.message import (
     SERVICES_WITH_DID,
@@ -11,8 +11,6 @@ from uds.message import (
     RequestSID,
     ResponseSID,
     SidAlias,
-    UdsMessage,
-    UdsMessageRecord,
 )
 from uds.translator import BASE_TRANSLATOR, DecodedMessageAlias
 from uds.utilities import (
@@ -22,6 +20,7 @@ from uds.utilities import (
     ReassignmentError,
     validate_raw_2byte_value,
     validate_raw_byte,
+    validate_raw_bytes,
 )
 
 from .state import State
@@ -252,28 +251,30 @@ class EcuDiagnosticConfiguration:
     def __extract_dids(decoded_message: DecodedMessageAlias) -> Set[int]:
         """Extract DIDs from decoded message."""
         dids = set()
-        if decoded_message[0].raw_value in SERVICES_WITH_DID:
+        if decoded_message[0]["raw_value"] in SERVICES_WITH_DID:
             for decoded_data_record in decoded_message:
-                if (decoded_data_record.name == "DID"
-                        or (decoded_data_record.name.startswith("DID#") and decoded_data_record.name[4:].isdigit())):
-                    if isinstance(decoded_data_record.raw_value, int):
-                        dids.add(decoded_data_record.raw_value)
+                if (decoded_data_record["name"] == "DID"
+                        or (decoded_data_record["name"].startswith("DID#") and decoded_data_record["name"][
+                            4:].isdigit())):
+                    if isinstance(decoded_data_record["raw_value"], int):
+                        dids.add(decoded_data_record["raw_value"])
                     else:
-                        dids.update(decoded_data_record.raw_value)
+                        dids.update(decoded_data_record["raw_value"])
         return dids
 
     @staticmethod
     def __extract_rids(decoded_message: DecodedMessageAlias) -> Set[int]:
         """Extract RIDs from decoded message."""
         rids = set()
-        if decoded_message[0].raw_value in SERVICES_WITH_RID:
+        if decoded_message[0]["raw_value"] in SERVICES_WITH_RID:
             for decoded_data_record in decoded_message:
-                if (decoded_data_record.name == "RID"
-                        or (decoded_data_record.name.startswith("RID#") and decoded_data_record.name[4:].isdigit())):
-                    if isinstance(decoded_data_record.raw_value, int):
-                        rids.add(decoded_data_record.raw_value)
+                if (decoded_data_record["name"] == "RID"
+                        or (decoded_data_record["name"].startswith("RID#") and decoded_data_record["name"][
+                            4:].isdigit())):
+                    if isinstance(decoded_data_record["raw_value"], int):
+                        rids.add(decoded_data_record["raw_value"])
                     else:
-                        rids.update(decoded_data_record.raw_value)
+                        rids.update(decoded_data_record["raw_value"])
         return rids
 
     def combine_restrictions(self, *restrictions: RequiredStatesAlias) -> RequiredStatesAlias:
@@ -291,30 +292,31 @@ class EcuDiagnosticConfiguration:
         combined_restrictions = {}
         for state_name in self.states_names:
             all_possible_values = self.states_mapping[state_name].possible_values
-            combined_restrictions[state_name] = set.intersection(restriction.get(state_name, all_possible_values)
-                                                                 for restriction in restrictions)
+            combined_restrictions[state_name] = set.intersection(*[set(restriction.get(state_name, all_possible_values))
+                                                                   for restriction in restrictions])
         return combined_restrictions
 
-    def get_restrictions(self, message: Union[UdsMessage, UdsMessageRecord]) -> RequiredStatesAlias:
+    def get_restrictions(self, message_payload: RawBytesAlias) -> RequiredStatesAlias:
         """
         Get restrictions used by ECU for given diagnostic message.
 
-        :param message: Message to get restrictions for.
+        :param message_payload: Payload of message to get restrictions for.
 
         :return: Mapping with diagnostic message restrictions, where:
             - key is a state name
             - value is a collection of values that given state have to take to successfully execute the message
         """
-        sid = message.payload[0]
+        validate_raw_bytes(message_payload, allow_empty=False)
+        sid = message_payload[0]
         try:
-            decoded_message = BASE_TRANSLATOR.decode(message)
+            decoded_message = BASE_TRANSLATOR.decode(message_payload)
         except ValueError:
             dids = set()
             rids = set()
         else:
             dids = self.__extract_dids(decoded_message=decoded_message)
             rids = self.__extract_rids(decoded_message=decoded_message)
-        subfunction = self.__extract_subfunction(message_payload=message.payload)
+        subfunction = self.__extract_subfunction(message_payload=message_payload)
         restrictions = [self.sid_restrictions[sid]]
         if subfunction is not None:
             restrictions.append(self.subfunction_restrictions[sid][subfunction])
