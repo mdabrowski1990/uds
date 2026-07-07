@@ -6,7 +6,7 @@ Service Identifier (SID) data parameter implementation.
 """
 
 __all__ = [
-    "ALL_REQUEST_SIDS", "ALL_RESPONSE_SIDS",
+    "ALL_REQUEST_SIDS", "ALL_RESPONSE_SIDS", "SidAlias",
     "SERVICES_WITH_SUBFUNCTION", "SERVICES_WITH_DID", "SERVICES_WITH_RID",
     "RESPONSE_REQUEST_SID_DIFF",
     "RequestSID", "ResponseSID",
@@ -14,7 +14,7 @@ __all__ = [
     "define_service",
 ]
 
-from typing import Tuple
+from typing import Tuple, Union
 from warnings import warn
 
 from aenum import unique
@@ -185,6 +185,10 @@ class ResponseSID(ValidatedEnum, ExtendableEnum, ByteEnum):
                      category=UnrecognizedSIDWarning)
             return True
         return False
+
+
+SidAlias = Union[RequestSID, ResponseSID]
+"""Alist for Request SID or Response SID value."""
 
 
 SERVICES_WITH_SUBFUNCTION = {

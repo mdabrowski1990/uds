@@ -18,6 +18,7 @@ from .service_identifiers import (
     SERVICES_WITH_SUBFUNCTION,
     RequestSID,
     ResponseSID,
+    SidAlias,
     UnrecognizedSIDWarning,
     define_service,
 )

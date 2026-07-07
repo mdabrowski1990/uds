@@ -21,6 +21,8 @@ from typing import Dict
 
 SPRMIB_MASK = 0x80
 """Bit mask of suppressPosRspMsgIndicationBit in SubFunction byte."""
+SUBFUNCTION_MASK = 0x7F
+"""Bit mask of functional values in SubFunction byte."""
 
 # SID 0x10
 

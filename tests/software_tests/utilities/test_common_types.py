@@ -1,6 +1,6 @@
 import pytest
 
-from uds.utilities.common_types import validate_nibble, validate_raw_byte, validate_raw_bytes
+from uds.utilities.common_types import validate_nibble, validate_raw_2byte_value, validate_raw_byte, validate_raw_bytes
 
 
 class TestFunctions:
@@ -63,3 +63,19 @@ class TestFunctions:
     def test_validate_raw_bytes__invalid_value(self, invalid_raw_bytes, allow_empty):
         with pytest.raises(ValueError):
             validate_raw_bytes(value=invalid_raw_bytes, allow_empty=allow_empty)
+
+    # validate_raw_2byte_value
+    
+    @pytest.mark.parametrize("value", [0x0000, 0x1234, 0xF0E1, 0xFFFF])
+    def test_validate_raw_2byte_value__valid(self, value):
+        assert validate_raw_2byte_value(value=value) is None
+
+    @pytest.mark.parametrize("value", [None, float("inf"), 0.0, "5"])
+    def test_validate_raw_2byte_value__invalid_type(self, value):
+        with pytest.raises(TypeError):
+            validate_raw_2byte_value(value=value)
+
+    @pytest.mark.parametrize("value", [-3298761, -1, 0x10000, 999999])
+    def test_validate_raw_2byte_value__invalid_value(self, value):
+        with pytest.raises(ValueError):
+            validate_raw_2byte_value(value=value)

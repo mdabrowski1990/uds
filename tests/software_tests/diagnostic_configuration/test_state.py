@@ -87,7 +87,7 @@ class TestState:
         ("State 1", "State 2"),
         range(0x80)
     ])
-    def test_name__set(self, possible_values):
+    def test_possible_values__set(self, possible_values):
         assert State.possible_values.fset(self.mock_state, possible_values) is None
         assert self.mock_state._State__possible_values == self.mock_set.return_value
         self.mock_set.assert_called_once_with(possible_values)
@@ -102,7 +102,7 @@ class TestState:
         ("abc", {"State 1", "State 2, State 3"}),
         (0x80, range(0x80)),
     ])
-    def test_name__set__value_error(self, current_value, possible_values):
+    def test_current_value__set__value_error(self, current_value, possible_values):
         self.mock_state.possible_values = possible_values
         with pytest.raises(ValueError):
             State.current_value.fset(self.mock_state, current_value)
@@ -112,7 +112,7 @@ class TestState:
         (0x5, range(0x80)),
         (None, range(0x80)),
     ])
-    def test_name__set__valid(self, current_value, possible_values):
+    def test_current_value__set__valid(self, current_value, possible_values):
         self.mock_state.possible_values = possible_values
         assert State.current_value.fset(self.mock_state, current_value) is None
         assert self.mock_state._State__current_value == current_value
