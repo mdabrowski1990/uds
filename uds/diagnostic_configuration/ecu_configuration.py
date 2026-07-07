@@ -16,7 +16,6 @@ from uds.message import (
 )
 from uds.translator import BASE_TRANSLATOR
 from uds.utilities import (
-    SPRMIB_MASK,
     SUBFUNCTION_MASK,
     InconsistencyError,
     ReassignmentError,
