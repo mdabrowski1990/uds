@@ -6,8 +6,9 @@ __all__ = ["DEFAULT_DIAGNOSTIC_SESSION_STATE",
            "DEFAULT_SECURED_TRANSMISSION_STATE",
            "DEFAULT_ENGINE_STATE", ]
 
-from .state import State
 from uds.addressing import AddressingType
+
+from .state import State
 
 DEFAULT_DIAGNOSTIC_SESSION_STATE = State(name="Session",
                                          possible_values=range(0x80))

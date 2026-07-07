@@ -2,7 +2,7 @@
 
 __all__ = ["State"]
 
-from typing import Any, Optional, Collection, Set
+from typing import Any, Collection, Optional, Set
 from warnings import warn
 
 

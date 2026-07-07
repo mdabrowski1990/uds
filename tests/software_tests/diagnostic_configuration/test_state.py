@@ -3,7 +3,6 @@ from mock import Mock, patch
 
 from uds.diagnostic_configuration.state import State
 
-
 SCRIPT_LOCATION = "uds.diagnostic_configuration.state"
 
 
