@@ -29,7 +29,7 @@ from .state import State
 class EcuDiagnosticConfiguration:
     """Configuration of restrictions used by ECU for diagnostic messages."""
 
-    RequiredStatesAlias = Mapping[str, Set[Any]]
+    RequiredStatesAlias = Mapping[str, Collection[Any]]
     """Alias storing states names and required values."""
 
     def __init__(self, *,
