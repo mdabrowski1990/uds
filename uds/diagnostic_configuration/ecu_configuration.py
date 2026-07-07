@@ -2,7 +2,7 @@
 
 from operator import getitem
 from types import MappingProxyType
-from typing import Any, Collection, Mapping, Set
+from typing import Any, Collection, Mapping, Optional, Set, Union
 
 from uds.message import (
     SERVICES_WITH_DID,
@@ -14,10 +14,11 @@ from uds.message import (
     UdsMessage,
     UdsMessageRecord,
 )
-from uds.translator import BASE_TRANSLATOR
+from uds.translator import BASE_TRANSLATOR, DecodedMessageAlias
 from uds.utilities import (
     SUBFUNCTION_MASK,
     InconsistencyError,
+    RawBytesAlias,
     ReassignmentError,
     validate_raw_2byte_value,
     validate_raw_byte,
@@ -29,7 +30,7 @@ from .state import State
 class EcuDiagnosticConfiguration:
     """Configuration of restrictions used by ECU for diagnostic messages."""
 
-    RequiredStatesAlias = Mapping[str, Collection[Any]]
+    RequiredStatesAlias = Mapping[str, Set[Any]]
     """Alias storing states names and required values."""
 
     def __init__(self, *,
@@ -43,15 +44,16 @@ class EcuDiagnosticConfiguration:
 
         :param states: ECU states relevant for diagnostic communication.
         :param sid_restrictions: Requirements on states to execute request message successfully with given SID value.
-        :param subfunction_restrictions: Requirements on states to execute request message successfully with given SubFunction value.
+        :param subfunction_restrictions: Requirements on states to execute request message successfully with given
+            SubFunction value.
         :param did_restrictions: Requirements on states to execute request message successfully with given DID value.
         :param rid_restrictions: Requirements on states to execute request message successfully with given RID value.
 
         .. note:: By default all possible restrictions are applied.
 
             Conclusions:
-                If some parameter is always supported, all states have to be provided.
-                If some parameter is never support, no need to provide include it as that is default assumption.
+                If some parameter is always supported, all states and their values have to be provided.
+                If some parameter is never support, no need to include restrictions with empty values.
         """
         self.states = states
         self.sid_restrictions = sid_restrictions
@@ -239,37 +241,85 @@ class EcuDiagnosticConfiguration:
             mapping[state_name] = frozenset(state_values)
         return MappingProxyType(mapping)
 
-    # def get_restrictions(self, message: Union[UdsMessage, UdsMessageRecord]) -> RequiredStatesAlias:
-    #     """
-    #     Get restrictions used by ECU for given diagnostic message.
-    #
-    #     :param message: Message to get restrictions for.
-    #
-    #     :return: Mapping with diagnostic message restrictions, where:
-    #         - key is a state name
-    #         - value is a collection of values that given state have to take to successfully execute the message
-    #     """
-    #     sid = message.payload[0]
-    #     dids = set()
-    #     rids = set()
-    #     subfunction = None
-    #     try:
-    #         decoded_message = BASE_TRANSLATOR.decode(message)
-    #     except ValueError:
-    #         decoded_message = None
-    #     if sid in SERVICES_WITH_SUBFUNCTION and len(message.payload) > 1:
-    #         subfunction = message.payload[1] & (0xFF ^ SPRMIB_MASK)
-    #     if sid in SERVICES_WITH_DID and decoded_message is not None:
-    #         for decoded_data_record in decoded_message:
-    #             if decoded_data_record.name == "DID" or (decoded_data_record.name.startwith("DID#") and decoded_data_record.name[4:].isdigit()):
-    #                 if isinstance(decoded_data_record.raw_value, int):
-    #                     dids.add(decoded_data_record.raw_value)
-    #                 else:
-    #                     dids.update(decoded_data_record.raw_value)
-    #     if sid in SERVICES_WITH_RID and decoded_message is not None:
-    #         for decoded_data_record in decoded_message:
-    #             if decoded_data_record.name == "RID":
-    #                 rids.add(decoded_data_record.raw_value)
-    #     # TODO: collect states values
-    #     # TODO: perform intersection on values of each state
-    #     # TODO: return the outcome
+    @staticmethod
+    def __extract_subfunction(message_payload: RawBytesAlias) -> Optional[int]:
+        """Extract subfunction from message payload."""
+        if message_payload[0] in SERVICES_WITH_SUBFUNCTION and len(message_payload) > 1:
+            return message_payload[1] & SUBFUNCTION_MASK
+        return None
+
+    @staticmethod
+    def __extract_dids(decoded_message: DecodedMessageAlias) -> Set[int]:
+        """Extract DIDs from decoded message."""
+        dids = set()
+        if decoded_message[0].raw_value in SERVICES_WITH_DID:
+            for decoded_data_record in decoded_message:
+                if (decoded_data_record.name == "DID"
+                        or (decoded_data_record.name.startswith("DID#") and decoded_data_record.name[4:].isdigit())):
+                    if isinstance(decoded_data_record.raw_value, int):
+                        dids.add(decoded_data_record.raw_value)
+                    else:
+                        dids.update(decoded_data_record.raw_value)
+        return dids
+
+    @staticmethod
+    def __extract_rids(decoded_message: DecodedMessageAlias) -> Set[int]:
+        """Extract RIDs from decoded message."""
+        rids = set()
+        if decoded_message[0].raw_value in SERVICES_WITH_RID:
+            for decoded_data_record in decoded_message:
+                if (decoded_data_record.name == "RID"
+                        or (decoded_data_record.name.startswith("RID#") and decoded_data_record.name[4:].isdigit())):
+                    if isinstance(decoded_data_record.raw_value, int):
+                        rids.add(decoded_data_record.raw_value)
+                    else:
+                        rids.update(decoded_data_record.raw_value)
+        return rids
+
+    def combine_restrictions(self, *restrictions: RequiredStatesAlias) -> RequiredStatesAlias:
+        """
+        Combine multiple restrictions.
+
+        :param restrictions: Restrictions to combine.
+
+        :raise ValueError: At least one restriction must be provided.
+
+        :return: Combined restrictions.
+        """
+        if not restrictions:
+            raise ValueError("No restrictions to combine were provided")
+        combined_restrictions = {}
+        for state_name in self.states_names:
+            all_possible_values = self.states_mapping[state_name].possible_values
+            combined_restrictions[state_name] = set.intersection(restriction.get(state_name, all_possible_values)
+                                                                 for restriction in restrictions)
+        return combined_restrictions
+
+    def get_restrictions(self, message: Union[UdsMessage, UdsMessageRecord]) -> RequiredStatesAlias:
+        """
+        Get restrictions used by ECU for given diagnostic message.
+
+        :param message: Message to get restrictions for.
+
+        :return: Mapping with diagnostic message restrictions, where:
+            - key is a state name
+            - value is a collection of values that given state have to take to successfully execute the message
+        """
+        sid = message.payload[0]
+        try:
+            decoded_message = BASE_TRANSLATOR.decode(message)
+        except ValueError:
+            dids = set()
+            rids = set()
+        else:
+            dids = self.__extract_dids(decoded_message=decoded_message)
+            rids = self.__extract_rids(decoded_message=decoded_message)
+        subfunction = self.__extract_subfunction(message_payload=message.payload)
+        restrictions = [self.sid_restrictions[sid]]
+        if subfunction is not None:
+            restrictions.append(self.subfunction_restrictions[sid][subfunction])
+        for did in dids:
+            restrictions.append(self.did_restrictions[sid][did])
+        for rid in rids:
+            restrictions.append(self.rid_restrictions[sid][rid])
+        return self.combine_restrictions(*restrictions)

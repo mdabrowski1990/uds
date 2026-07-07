@@ -5,6 +5,7 @@ from uds.diagnostic_configuration.ecu_configuration import (
     SERVICES_WITH_DID,
     SERVICES_WITH_RID,
     SERVICES_WITH_SUBFUNCTION,
+    SUBFUNCTION_MASK,
     EcuDiagnosticConfiguration,
     InconsistencyError,
     Mapping,
@@ -22,8 +23,12 @@ class TestState:
         # patching
         self._patcher_set = patch(f"{SCRIPT_LOCATION}.set")
         self.mock_set = self._patcher_set.start()
+        self._patcher_frozenset = patch(f"{SCRIPT_LOCATION}.frozenset")
+        self.mock_frozenset = self._patcher_frozenset.start()
         self._patcher_mapping_proxy_type = patch(f"{SCRIPT_LOCATION}.MappingProxyType")
         self.mock_mapping_proxy_type = self._patcher_mapping_proxy_type.start()
+        self._patcher_getitem = patch(f"{SCRIPT_LOCATION}.getitem")
+        self.mock_getitem = self._patcher_getitem.start()
         self._patcher_validate_raw_byte = patch(f"{SCRIPT_LOCATION}.validate_raw_byte")
         self.mock_validate_raw_byte = self._patcher_validate_raw_byte.start()
         self._patcher_validate_raw_2byte_value = patch(f"{SCRIPT_LOCATION}.validate_raw_2byte_value")
@@ -32,14 +37,19 @@ class TestState:
         self.mock_is_request_sid = self._patcher_is_request_sid.start()
         self._patcher_is_response_sid = patch(f"{SCRIPT_LOCATION}.ResponseSID.is_response_sid")
         self.mock_is_response_sid = self._patcher_is_response_sid.start()
+        self._patcher_translator_decode = patch(f"{SCRIPT_LOCATION}.BASE_TRANSLATOR.decode")
+        self.mock_translator_decode = self._patcher_translator_decode.start()
 
     def teardown_method(self):
         self._patcher_set.stop()
+        self._patcher_frozenset.stop()
         self._patcher_mapping_proxy_type.stop()
+        self._patcher_getitem.stop()
         self._patcher_validate_raw_byte.stop()
         self._patcher_validate_raw_2byte_value.stop()
         self._patcher_is_request_sid.stop()
         self._patcher_is_response_sid.stop()
+        self._patcher_translator_decode.stop()
 
     # __init__
 
@@ -230,7 +240,7 @@ class TestState:
         self.mock_is_response_sid.return_value = False
         with pytest.raises(ValueError):
             EcuDiagnosticConfiguration.did_restrictions.fset(self.mock_ecu_diagnostic_configuration,
-                                                                     value=value)
+                                                             value=value)
 
     @pytest.mark.parametrize("value", [
         {0: Mock()},
@@ -241,7 +251,7 @@ class TestState:
         self.mock_is_response_sid.return_value = True
         with pytest.raises(InconsistencyError):
             EcuDiagnosticConfiguration.did_restrictions.fset(self.mock_ecu_diagnostic_configuration,
-                                                                     value=value)
+                                                             value=value)
 
     @pytest.mark.parametrize("is_request_sid, is_response_sid, value", [
         (True, False, {list(SERVICES_WITH_DID)[0]: {0x0000: Mock()}}),
@@ -288,7 +298,7 @@ class TestState:
         self.mock_is_response_sid.return_value = False
         with pytest.raises(ValueError):
             EcuDiagnosticConfiguration.rid_restrictions.fset(self.mock_ecu_diagnostic_configuration,
-                                                                     value=value)
+                                                             value=value)
 
     @pytest.mark.parametrize("value", [
         {0: Mock()},
@@ -299,7 +309,7 @@ class TestState:
         self.mock_is_response_sid.return_value = True
         with pytest.raises(InconsistencyError):
             EcuDiagnosticConfiguration.rid_restrictions.fset(self.mock_ecu_diagnostic_configuration,
-                                                                     value=value)
+                                                             value=value)
 
     @pytest.mark.parametrize("is_request_sid, is_response_sid, value", [
         (True, False, {list(SERVICES_WITH_RID)[0]: {0x0000: Mock()}}),
@@ -324,8 +334,309 @@ class TestState:
 
     # __validate_required_states
 
-    # TODO
+    @pytest.mark.parametrize("required_states", [
+        {"State 1": Mock()},
+        {"A": Mock(), "B": Mock(), "C": Mock()},
+    ])
+    def test_validate_required_states__inconsistency_error__state_name(self, required_states):
+        mock_contains = Mock(return_value=False)
+        self.mock_ecu_diagnostic_configuration.states_names = MagicMock(__contains__=mock_contains)
+        with pytest.raises(InconsistencyError):
+            EcuDiagnosticConfiguration._EcuDiagnosticConfiguration__validate_required_states(
+                self.mock_ecu_diagnostic_configuration, required_states)
+        mock_contains.assert_called_once()
+
+    @pytest.mark.parametrize("required_states", [
+        {"State 1": Mock()},
+        {"A": Mock(), "B": Mock(), "C": Mock()},
+    ])
+    def test_validate_required_states__inconsistency_error__possible_values(self, required_states):
+        mock_contains = Mock(return_value=True)
+        self.mock_ecu_diagnostic_configuration.states_names = MagicMock(__contains__=mock_contains)
+        mock_issuperset = Mock(return_value=False)
+        mock_state = Mock(possible_values=Mock(issuperset=mock_issuperset))
+        self.mock_getitem.return_value = mock_state
+        with pytest.raises(InconsistencyError):
+            EcuDiagnosticConfiguration._EcuDiagnosticConfiguration__validate_required_states(
+                self.mock_ecu_diagnostic_configuration, required_states)
+        mock_contains.assert_called_once()
+        self.mock_getitem.assert_called_once()
+        mock_issuperset.assert_called_once()
+
+    @pytest.mark.parametrize("required_states", [
+        {"State 1": Mock()},
+        {"A": Mock(), "B": Mock(), "C": Mock()},
+    ])
+    def test_validate_required_states__valid(self, required_states):
+        mock_contains = Mock(return_value=True)
+        self.mock_ecu_diagnostic_configuration.states_names = MagicMock(__contains__=mock_contains)
+        mock_issuperset = Mock(return_value=True)
+        mock_state = Mock(possible_values=Mock(issuperset=mock_issuperset))
+        self.mock_getitem.return_value = mock_state
+        assert EcuDiagnosticConfiguration._EcuDiagnosticConfiguration__validate_required_states(
+            self.mock_ecu_diagnostic_configuration, required_states) == self.mock_mapping_proxy_type.return_value
+        mock_contains.assert_has_calls([call(state_name) for state_name in required_states.keys()], any_order=True)
+        self.mock_getitem.assert_has_calls([call(self.mock_ecu_diagnostic_configuration, state_name)
+                                            for state_name in required_states.keys()], any_order=True)
+        mock_issuperset.assert_has_calls([call(values) for values in required_states.values()], any_order=True)
+        self.mock_frozenset.assert_has_calls([call(value) for value in required_states.values()], any_order=True)
+        self.mock_mapping_proxy_type.assert_called_once_with({
+            state_name: self.mock_frozenset.return_value for state_name in required_states.keys()
+        })
+
+    # __extract_subfunction
+
+    @pytest.mark.parametrize("message_payload", [
+        (0x22, 0x12, 0x34),
+        (0xFF, 0x00),
+    ])
+    def test_extract_subfunction__wrong_service(self, message_payload):
+        assert EcuDiagnosticConfiguration._EcuDiagnosticConfiguration__extract_subfunction(message_payload) is None
+
+    @pytest.mark.parametrize("message_payload", [
+        (list(SERVICES_WITH_SUBFUNCTION)[0],),
+        (list(SERVICES_WITH_SUBFUNCTION)[-1],),
+    ])
+    def test_extract_subfunction__too_short(self, message_payload):
+        assert EcuDiagnosticConfiguration._EcuDiagnosticConfiguration__extract_subfunction(message_payload) is None
+
+    @pytest.mark.parametrize("message_payload", [
+        (list(SERVICES_WITH_SUBFUNCTION)[0], 0x01),
+        (list(SERVICES_WITH_SUBFUNCTION)[0], 0xCF, *range(100)),
+    ])
+    def test_extract_subfunction(self, message_payload):
+        assert (EcuDiagnosticConfiguration._EcuDiagnosticConfiguration__extract_subfunction(message_payload)
+                == message_payload[1] & SUBFUNCTION_MASK)
+
+    # __extract_dids
+
+    @pytest.mark.parametrize("decoded_message", [
+        (Mock(raw_value=0x00), Mock(), Mock(), Mock()),
+        (Mock(raw_value=0x10), Mock(), Mock()),
+    ])
+    def test_extract_dids__wrong_service(self, decoded_message):
+        assert (EcuDiagnosticConfiguration._EcuDiagnosticConfiguration__extract_dids(decoded_message)
+                == self.mock_set.return_value)
+        self.mock_set.return_value.add.assert_not_called()
+        self.mock_set.return_value.update.assert_not_called()
+
+    @pytest.mark.parametrize("decoded_message, names, dids", [
+        [
+            (Mock(raw_value=list(SERVICES_WITH_DID)[0]),
+             Mock(raw_value=0xF012)),
+            ("SID", "DID"),
+            {0xF012}
+        ],
+        [
+            (Mock(raw_value=list(SERVICES_WITH_DID)[0]),
+             Mock(raw_value=0x9153),
+             Mock(raw_value=0xFFFF),
+             Mock(raw_value=0x0000)),
+            ("SID", "DID#1", "DID#2", "Not a DID"),
+            {0x9153, 0xFFFF}
+        ],
+    ])
+    def test_extract_dids__add(self, decoded_message, names, dids):
+        for i, decoded_data_record in enumerate(decoded_message):
+            setattr(decoded_data_record, "name", names[i])
+        assert (EcuDiagnosticConfiguration._EcuDiagnosticConfiguration__extract_dids(decoded_message)
+                == self.mock_set.return_value)
+        self.mock_set.return_value.add.assert_has_calls([call(did) for did in dids], any_order=True)
+        self.mock_set.return_value.update.assert_not_called()
+
+    @pytest.mark.parametrize("decoded_message, names, dids", [
+        [
+            (Mock(raw_value=list(SERVICES_WITH_DID)[0]),
+             Mock(raw_value=(0xF012, 0x0000))),
+            ("SID", "DID"),
+            {(0xF012, 0x0000)}
+        ],
+        [
+            (Mock(raw_value=list(SERVICES_WITH_DID)[0]),
+             Mock(raw_value=(0x9153, 0xFFFF)),
+             Mock(raw_value=0x1234)),
+            ("SID", "DID", "Not a DID"),
+            {(0x9153, 0xFFFF)}
+        ],
+    ])
+    def test_extract_dids__update(self, decoded_message, names, dids):
+        for i, decoded_data_record in enumerate(decoded_message):
+            setattr(decoded_data_record, "name", names[i])
+        assert (EcuDiagnosticConfiguration._EcuDiagnosticConfiguration__extract_dids(decoded_message)
+                == self.mock_set.return_value)
+        self.mock_set.return_value.add.assert_not_called()
+        self.mock_set.return_value.update.assert_has_calls([call(did) for did in dids], any_order=True)
+
+    # __extract_rids
+
+    @pytest.mark.parametrize("decoded_message", [
+        (Mock(raw_value=0x00), Mock(), Mock(), Mock()),
+        (Mock(raw_value=0x10), Mock(), Mock()),
+    ])
+    def test_extract_rids__wrong_service(self, decoded_message):
+        assert (EcuDiagnosticConfiguration._EcuDiagnosticConfiguration__extract_rids(decoded_message)
+                == self.mock_set.return_value)
+        self.mock_set.return_value.add.assert_not_called()
+        self.mock_set.return_value.update.assert_not_called()
+
+    @pytest.mark.parametrize("decoded_message, names, rids", [
+        [
+            (Mock(raw_value=list(SERVICES_WITH_RID)[0]),
+             Mock(raw_value=0xF012)),
+            ("SID", "RID"),
+            {0xF012}
+        ],
+        [
+            (Mock(raw_value=list(SERVICES_WITH_RID)[0]),
+             Mock(raw_value=0x9153),
+             Mock(raw_value=0xFFFF),
+             Mock(raw_value=0x0000)),
+            ("SID", "RID#1", "RID#2", "Not a RID"),
+            {0x9153, 0xFFFF}
+        ],
+    ])
+    def test_extract_rids__add(self, decoded_message, names, rids):
+        for i, decoded_data_record in enumerate(decoded_message):
+            setattr(decoded_data_record, "name", names[i])
+        assert (EcuDiagnosticConfiguration._EcuDiagnosticConfiguration__extract_rids(decoded_message)
+                == self.mock_set.return_value)
+        self.mock_set.return_value.add.assert_has_calls([call(rid) for rid in rids], any_order=True)
+        self.mock_set.return_value.update.assert_not_called()
+
+    @pytest.mark.parametrize("decoded_message, names, rids", [
+        [
+            (Mock(raw_value=list(SERVICES_WITH_RID)[0]),
+             Mock(raw_value=(0xF012, 0x0000))),
+            ("SID", "RID"),
+            {(0xF012, 0x0000)}
+        ],
+        [
+            (Mock(raw_value=list(SERVICES_WITH_RID)[0]),
+             Mock(raw_value=(0x9153, 0xFFFF)),
+             Mock(raw_value=0x1234)),
+            ("SID", "RID", "Not a RID"),
+            {(0x9153, 0xFFFF)}
+        ],
+    ])
+    def test_extract_rids__update(self, decoded_message, names, rids):
+        for i, decoded_data_record in enumerate(decoded_message):
+            setattr(decoded_data_record, "name", names[i])
+        assert (EcuDiagnosticConfiguration._EcuDiagnosticConfiguration__extract_rids(decoded_message)
+                == self.mock_set.return_value)
+        self.mock_set.return_value.add.assert_not_called()
+        self.mock_set.return_value.update.assert_has_calls([call(rid) for rid in rids], any_order=True)
+
+    # combine_restrictions
+
+    def test_combine_restrictions__value_error(self):
+        with pytest.raises(ValueError):
+            EcuDiagnosticConfiguration.combine_restrictions(self.mock_ecu_diagnostic_configuration)
+
+    @pytest.mark.parametrize("states_names, possible_values, restrictions", [
+        (
+                ["State 1", "State 2"],
+                [(1, 2, 3, 4, 5), ("ON", "OFF")],
+                [
+                    {
+                        "State 1": {1, 2, 3},
+                        "State 2": {"ON", "OFF"},
+                    },
+                    {
+                        "State 1": {1, 2, 3, 4, 5},
+                        "State 2": {"ON"},
+                    },
+                ],
+        ),
+        (
+                ["Session", "Security Access level"],
+                [("Default", "Programming", "Extended", "Safety"), (1, 3, 5, 7, 9, 11, 61)],
+                [
+                    {
+                        "Session": {"Default", "Extended", "Safety"},
+                    },
+                    {
+                        "Session": {"Default", "Programming", "Extended", "Safety"},
+                        "State 2": {5, 7, 9},
+                    },
+                ],
+        ),
+    ])
+    def test_combine_restrictions__valid(self, states_names, possible_values, restrictions):
+        self.mock_ecu_diagnostic_configuration.states_names = states_names
+        self.mock_ecu_diagnostic_configuration.states_mapping = {
+            state_name: Mock(possible_values=possible_values[i]) for i, state_name in enumerate(states_names)
+        }
+        assert EcuDiagnosticConfiguration.combine_restrictions(self.mock_ecu_diagnostic_configuration,
+                                                               *restrictions) == {
+                   state_name: self.mock_set.intersection.return_value for state_name in states_names
+               }
 
     # get_restrictions
 
-    # TODO
+    @pytest.mark.parametrize("message", [Mock(payload=[0x10]), Mock(payload=(0x20, 0x01, 0x23))])
+    def test_get_restrictions__sid_only(self, message):
+        mock_sid_restrictions = Mock()
+        self.mock_translator_decode.side_effect = ValueError
+        self.mock_ecu_diagnostic_configuration._EcuDiagnosticConfiguration__extract_subfunction = Mock(
+            return_value=None)
+        self.mock_ecu_diagnostic_configuration.sid_restrictions = MagicMock(
+            __getitem__=Mock(return_value=mock_sid_restrictions))
+        assert (EcuDiagnosticConfiguration.get_restrictions(self.mock_ecu_diagnostic_configuration, message)
+                == self.mock_ecu_diagnostic_configuration.combine_restrictions.return_value)
+        self.mock_ecu_diagnostic_configuration._EcuDiagnosticConfiguration__extract_subfunction.assert_called_once_with(
+            message_payload=message.payload)
+        self.mock_ecu_diagnostic_configuration.sid_restrictions.__getitem__.assert_called_once_with(message.payload[0])
+        self.mock_ecu_diagnostic_configuration.combine_restrictions.assert_called_once_with(mock_sid_restrictions)
+
+    @pytest.mark.parametrize("message", [Mock(payload=[0x10]), Mock(payload=(0x20, 0x01, 0x23))])
+    def test_get_restrictions__sid_subfunction(self, message):
+        mock_sid_restrictions = Mock()
+        mock_subfunction_restrictions = Mock()
+        self.mock_translator_decode.side_effect = ValueError
+        self.mock_ecu_diagnostic_configuration.sid_restrictions = MagicMock(
+            __getitem__=Mock(return_value=mock_sid_restrictions))
+        self.mock_ecu_diagnostic_configuration.subfunction_restrictions = MagicMock(
+            __getitem__=Mock(return_value=MagicMock(__getitem__=Mock(return_value=mock_subfunction_restrictions))))
+        assert (EcuDiagnosticConfiguration.get_restrictions(self.mock_ecu_diagnostic_configuration, message)
+                == self.mock_ecu_diagnostic_configuration.combine_restrictions.return_value)
+        self.mock_ecu_diagnostic_configuration._EcuDiagnosticConfiguration__extract_subfunction.assert_called_once_with(
+            message_payload=message.payload)
+        self.mock_ecu_diagnostic_configuration.sid_restrictions.__getitem__.assert_called_once_with(message.payload[0])
+        self.mock_ecu_diagnostic_configuration.subfunction_restrictions.__getitem__.assert_called_once_with(
+            message.payload[0])
+        self.mock_ecu_diagnostic_configuration.subfunction_restrictions.__getitem__.return_value.__getitem__.assert_called_once_with(
+            self.mock_ecu_diagnostic_configuration._EcuDiagnosticConfiguration__extract_subfunction.return_value)
+        self.mock_ecu_diagnostic_configuration.combine_restrictions.assert_called_once_with(
+            mock_sid_restrictions,
+            mock_subfunction_restrictions)
+
+    @pytest.mark.parametrize("message, dids, rids", [
+        (Mock(payload=(0x20, 0x01, 0x23)), [0x0000], []),
+        (Mock(payload=(0x20, 0x01, 0x23)), [], [0xFFFF]),
+        (Mock(payload=[0x22, 0x12, 0x34, 0x56, 0x78]), [0xF0E1, 0x5AB9], [0x258C, 0x94A0, 0xFD8E]),
+    ])
+    def test_get_restrictions__sid_dids_rids(self, message, dids, rids):
+        mock_sid_restrictions = Mock()
+        mock_did_restrictions = Mock()
+        mock_rid_restrictions = Mock()
+        self.mock_ecu_diagnostic_configuration._EcuDiagnosticConfiguration__extract_subfunction = Mock(
+            return_value=None)
+        self.mock_ecu_diagnostic_configuration._EcuDiagnosticConfiguration__extract_dids = Mock(return_value=dids)
+        self.mock_ecu_diagnostic_configuration._EcuDiagnosticConfiguration__extract_rids = Mock(return_value=rids)
+        self.mock_ecu_diagnostic_configuration.sid_restrictions = MagicMock(
+            __getitem__=Mock(return_value=mock_sid_restrictions))
+        self.mock_ecu_diagnostic_configuration.did_restrictions = MagicMock(
+            __getitem__=Mock(return_value=MagicMock(__getitem__=Mock(return_value=mock_did_restrictions))))
+        self.mock_ecu_diagnostic_configuration.rid_restrictions = MagicMock(
+            __getitem__=Mock(return_value=MagicMock(__getitem__=Mock(return_value=mock_rid_restrictions))))
+        assert (EcuDiagnosticConfiguration.get_restrictions(self.mock_ecu_diagnostic_configuration, message)
+                == self.mock_ecu_diagnostic_configuration.combine_restrictions.return_value)
+        self.mock_ecu_diagnostic_configuration._EcuDiagnosticConfiguration__extract_subfunction.assert_called_once_with(
+            message_payload=message.payload)
+        self.mock_ecu_diagnostic_configuration.sid_restrictions.__getitem__.assert_called_once_with(message.payload[0])
+        self.mock_ecu_diagnostic_configuration.did_restrictions.__getitem__.return_value.__getitem__.assert_has_calls(
+            [call(did) for did in dids], any_order=True)
+        self.mock_ecu_diagnostic_configuration.rid_restrictions.__getitem__.return_value.__getitem__.assert_has_calls(
+            [call(rid) for rid in rids], any_order=True)
+        self.mock_ecu_diagnostic_configuration.combine_restrictions.assert_called_once_with(
+            mock_sid_restrictions, *[mock_did_restrictions]*len(dids), *[mock_rid_restrictions]*len(rids))

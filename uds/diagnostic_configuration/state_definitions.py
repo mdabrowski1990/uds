@@ -4,7 +4,8 @@ __all__ = ["DEFAULT_DIAGNOSTIC_SESSION_STATE",
            "DEFAULT_SECURITY_ACCESS_STATE",
            "DEFAULT_AUTHENTICATION_STATE",
            "DEFAULT_SECURED_TRANSMISSION_STATE",
-           "DEFAULT_ENGINE_STATE", ]
+           "DEFAULT_ENGINE_STATE",
+           "DEFAULT_ADDRESSING_TYPE_STATE"]
 
 from uds.addressing import AddressingType
 
