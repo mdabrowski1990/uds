@@ -1,8 +1,7 @@
 import pytest
 
 import uds.translator.service_definitions
-from uds.addressing import AddressingType
-from uds.message import NRC, RequestSID, ResponseSID, UdsMessage
+from uds.message import NRC, RequestSID, ResponseSID
 from uds.translator import BASE_TRANSLATOR, BASE_TRANSLATOR_2013, BASE_TRANSLATOR_2020
 
 
@@ -69,9 +68,9 @@ class TestTranslatorDefinitions:
                                  data_records_values=data_records_values) == payload
 
     @pytest.mark.parametrize("translator", [BASE_TRANSLATOR_2020, BASE_TRANSLATOR_2013])
-    @pytest.mark.parametrize("message, decoded_message", [
+    @pytest.mark.parametrize("payload, decoded_message", [
         (
-            UdsMessage(payload=[0x10, 0x81], addressing_type=AddressingType.PHYSICAL),
+            [0x10, 0x81],
             (
                 {
                     'children': (),
@@ -109,7 +108,7 @@ class TestTranslatorDefinitions:
             )
         ),
         (
-            UdsMessage(payload=[0x50, 0x03, 0x12, 0x34, 0x56, 0x78], addressing_type=AddressingType.FUNCTIONAL),
+            [0x50, 0x03, 0x12, 0x34, 0x56, 0x78],
             (
                 {
                     'children': (),
@@ -170,7 +169,7 @@ class TestTranslatorDefinitions:
             )
         ),
         (
-            UdsMessage(payload=[0x7F, 0x10, 0x22], addressing_type=AddressingType.PHYSICAL),
+            [0x7F, 0x10, 0x22],
             (
                 {
                     'children': (),
@@ -199,5 +198,5 @@ class TestTranslatorDefinitions:
             )
         ),
     ])
-    def test_decode(self, translator, message, decoded_message):
-        assert translator.decode(message=message) == decoded_message
+    def test_decode(self, translator, payload, decoded_message):
+        assert translator.decode(payload=payload) == decoded_message

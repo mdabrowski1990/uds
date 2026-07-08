@@ -8,6 +8,7 @@ from .common_types import (
     TimeMillisecondsAlias,
     TimestampAlias,
     validate_nibble,
+    validate_raw_2byte_value,
     validate_raw_byte,
     validate_raw_bytes,
 )
@@ -69,11 +70,12 @@ from .constants import (
     STATE_AND_CONNECTION_TYPE_STATE_MAPPING,
     STATE_AND_CONNECTION_TYPE_TYPE_MAPPING,
     STORAGE_STATE_MAPPING,
+    SUBFUNCTION_MASK,
     TIMER_SCHEDULE_MAPPING_2013,
     TIMING_PARAMETER_ACCESS_TYPE_MAPPING_2013,
     TRANSMISSION_MODE_MAPPING,
     UNIT_OR_FORMAT_MAPPING,
-    ZERO_SUB_FUNCTION_MAPPING,
+    ZERO_SUBFUNCTION_MAPPING,
 )
 from .conversions import (
     TimeSync,

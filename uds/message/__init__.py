@@ -13,9 +13,12 @@ from .service_identifiers import (
     ALL_REQUEST_SIDS,
     ALL_RESPONSE_SIDS,
     RESPONSE_REQUEST_SID_DIFF,
+    SERVICES_WITH_DID,
+    SERVICES_WITH_RID,
     SERVICES_WITH_SUBFUNCTION,
     RequestSID,
     ResponseSID,
+    SidAlias,
     UnrecognizedSIDWarning,
     define_service,
 )

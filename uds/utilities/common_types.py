@@ -2,7 +2,7 @@
 
 __all__ = ["TimeMillisecondsAlias", "TimestampAlias",
            "RawBytesAlias", "RawBytesTupleAlias", "RawBytesListAlias", "RawBytesSetAlias",
-           "validate_nibble", "validate_raw_byte", "validate_raw_bytes"]
+           "validate_nibble", "validate_raw_byte", "validate_raw_2byte_value", "validate_raw_bytes"]
 
 from typing import List, Set, Tuple, Union
 
@@ -48,6 +48,21 @@ def validate_raw_byte(value: int) -> None:
         raise TypeError(f"Provided value is not int type. Actual type: {type(value)}")
     if not 0x00 <= value <= 0xFF:
         raise ValueError(f"Provided value is out of byte values range (0x00-0xFF). Actual value: {value}")
+
+
+def validate_raw_2byte_value(value: int) -> None:
+    """
+    Validate whether provided value stores a raw 2-byte value.
+
+    :param value: Value to validate.
+
+    :raise TypeError: Value is not int type.
+    :raise ValueError: Value is out of byte range (0x0000-0xFFFF).
+    """
+    if not isinstance(value, int):
+        raise TypeError(f"Provided value is not int type. Actual type: {type(value)}")
+    if not 0x0000 <= value <= 0xFFFF:
+        raise ValueError(f"Provided value is out of byte values range (0x0000-0xFFFF). Actual value: {value}")
 
 
 def validate_raw_bytes(value: RawBytesAlias, allow_empty: bool = False) -> None:

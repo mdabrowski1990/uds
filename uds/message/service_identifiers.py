@@ -6,15 +6,15 @@ Service Identifier (SID) data parameter implementation.
 """
 
 __all__ = [
-    "ALL_REQUEST_SIDS", "ALL_RESPONSE_SIDS",
-    "SERVICES_WITH_SUBFUNCTION",
+    "ALL_REQUEST_SIDS", "ALL_RESPONSE_SIDS", "SidAlias",
+    "SERVICES_WITH_SUBFUNCTION", "SERVICES_WITH_DID", "SERVICES_WITH_RID",
     "RESPONSE_REQUEST_SID_DIFF",
     "RequestSID", "ResponseSID",
     "UnrecognizedSIDWarning",
     "define_service",
 ]
 
-from typing import Tuple
+from typing import Tuple, Union
 from warnings import warn
 
 from aenum import unique
@@ -192,6 +192,10 @@ class ResponseSID(ValidatedEnum, ExtendableEnum, ByteEnum):
         return False
 
 
+SidAlias = Union[RequestSID, ResponseSID, int]
+"""Alias for Request SID or Response SID value."""
+
+
 SERVICES_WITH_SUBFUNCTION = {
     RequestSID.DiagnosticSessionControl,
     ResponseSID.DiagnosticSessionControl,
@@ -221,6 +225,25 @@ SERVICES_WITH_SUBFUNCTION = {
     ResponseSID.LinkControl,
 }
 """SID and RSID values for services that contain sub-function in their message format."""
+
+SERVICES_WITH_DID = {
+    RequestSID.ReadDataByIdentifier,
+    ResponseSID.ReadDataByIdentifier,
+    RequestSID.ReadScalingDataByIdentifier,
+    ResponseSID.ReadScalingDataByIdentifier,
+    RequestSID.WriteDataByIdentifier,
+    ResponseSID.WriteDataByIdentifier,
+    RequestSID.InputOutputControlByIdentifier,
+    ResponseSID.InputOutputControlByIdentifier,
+}
+"""SID and RSID values for services that contain :ref:`DataIdentifier <knowledge-base-did>` in their message format."""
+
+SERVICES_WITH_RID = {
+    RequestSID.RoutineControl,
+    ResponseSID.RoutineControl,
+}
+"""SID and RSID values for services that contain :ref:`RoutineIdentifier <knowledge-base-rid>`
+in their message format."""
 
 
 def define_service(sid: int, name: str) -> Tuple[RequestSID, ResponseSID]:

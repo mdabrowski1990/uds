@@ -7,7 +7,7 @@ from copy import deepcopy
 from typing import Collection, Dict, List, Mapping, Optional, Sequence, Set, Tuple, Union
 from warnings import warn
 
-from uds.message import NRC, RESPONSE_REQUEST_SID_DIFF, RequestSID, ResponseSID
+from uds.message import NEGATIVE_RESPONSE_MESSAGE_LENGTH, NRC, RESPONSE_REQUEST_SID_DIFF, RequestSID, ResponseSID
 from uds.utilities import Endianness, InconsistencyError, RawBytesAlias, bytes_to_int, int_to_bytes, validate_raw_bytes
 
 from .data_record import (
@@ -51,8 +51,6 @@ class Service:
      - provides tools for decoding meaningful information (physical values) from diagnostic messages
      - provides tools for creating diagnostic messages out of meaningful information (physical values)
     """
-
-    NEGATIVE_RESPONSE_LENGTH = 3
 
     def __init__(self,
                  request_sid: RequestSID,
@@ -496,8 +494,9 @@ class Service:
         :return: Decoded information from the provided payload.
         """
         validate_raw_bytes(payload, allow_empty=False)
-        if len(payload) != self.NEGATIVE_RESPONSE_LENGTH:
-            raise ValueError(f"Negative Response Message must be exactly {self.NEGATIVE_RESPONSE_LENGTH}-bytes long.")
+        if len(payload) != NEGATIVE_RESPONSE_MESSAGE_LENGTH:
+            raise ValueError(f"Negative Response Message must be exactly {NEGATIVE_RESPONSE_MESSAGE_LENGTH}-bytes "
+                             f"long.")
         rsid = payload[0]
         sid = payload[1]
         nrc = payload[2]

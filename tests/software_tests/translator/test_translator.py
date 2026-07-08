@@ -1,7 +1,6 @@
 import pytest
 from mock import MagicMock, Mock, patch
 
-from uds.addressing import AddressingType
 from uds.message import NRC
 from uds.translator.data_record import (
     ConditionalFormulaDataRecord,
@@ -22,8 +21,6 @@ from uds.translator.translator import (
     ResponseSID,
     Service,
     Translator,
-    UdsMessage,
-    UdsMessageRecord,
 )
 
 SCRIPT_LOCATION = "uds.translator.translator"
@@ -149,34 +146,43 @@ class TestTranslator:
 
     # decode
 
-    @pytest.mark.parametrize("message", [
-        UdsMessage(payload=[0x10, 0x03], addressing_type=AddressingType.PHYSICAL),
-        Mock(spec=UdsMessageRecord, payload=[0x62, *range(255)])
+    @pytest.mark.parametrize("payload", [
+        [0x10, 0x03],
+        [0x62, *range(255)],
+        [0x7F, 0x00, 0x01],
     ])
-    def test_decode__value_error(self, message):
+    def test_decode__value_error__undefined(self, payload):
         self.mock_translator.services_mapping = {}
         with pytest.raises(ValueError):
-            Translator.decode(self.mock_translator, message)
+            Translator.decode(self.mock_translator, payload)
 
-    @pytest.mark.parametrize("message", [
-        UdsMessage(payload=[0x10, 0x03], addressing_type=AddressingType.PHYSICAL),
-        Mock(spec=UdsMessageRecord, payload=[0x62, *range(255)])
+    @pytest.mark.parametrize("payload", [
+        [0x7F],
+        (0x7F, *range(255))
     ])
-    def test_decode(self, message):
-        mock_service = Mock()
-        self.mock_translator.services_mapping = {message.payload[0]: mock_service}
-        assert Translator.decode(self.mock_translator, message) == mock_service.decode.return_value
-        mock_service.decode.assert_called_once_with(message.payload)
+    def test_decode__value_error__negative_response_length(self, payload):
+        with pytest.raises(ValueError):
+            Translator.decode(self.mock_translator, payload)
 
-    @pytest.mark.parametrize("message", [
-        UdsMessage(payload=[0x7F, 0x10, 0x65], addressing_type=AddressingType.PHYSICAL),
-        Mock(spec=UdsMessageRecord, payload=[0x7F, 0x3E, 0xAB])
+    @pytest.mark.parametrize("payload", [
+        [0x10, 0x03],
+        [0x62, *range(255)]
     ])
-    def test_decode__negative_response(self, message):
+    def test_decode(self, payload):
         mock_service = Mock()
-        self.mock_translator.services_mapping = {message.payload[1]: mock_service}
-        assert Translator.decode(self.mock_translator, message) == mock_service.decode_negative_response.return_value
-        mock_service.decode_negative_response.assert_called_once_with(message.payload)
+        self.mock_translator.services_mapping = {payload[0]: mock_service}
+        assert Translator.decode(self.mock_translator, payload) == mock_service.decode.return_value
+        mock_service.decode.assert_called_once_with(payload)
+
+    @pytest.mark.parametrize("payload", [
+        [0x7F, 0x10, 0x65],
+        [0x7F, 0x3E, 0xAB],
+    ])
+    def test_decode__negative_response(self, payload):
+        mock_service = Mock()
+        self.mock_translator.services_mapping = {payload[1]: mock_service}
+        assert Translator.decode(self.mock_translator, payload) == mock_service.decode_negative_response.return_value
+        mock_service.decode_negative_response.assert_called_once_with(payload)
 
 
 @pytest.mark.integration
@@ -507,10 +513,10 @@ class TestTranslatorIntegration:
 
     # decode
 
-    @pytest.mark.parametrize("message, decoded_message", [
+    @pytest.mark.parametrize("payload, decoded_message", [
         (
             # Diagnostic Session Control
-            UdsMessage(payload=[0x10, 0x40], addressing_type=AddressingType.FUNCTIONAL),
+            [0x10, 0x40],
             (
                 SingleOccurrenceInfo(name="SID",
                                      length=8,
@@ -540,7 +546,7 @@ class TestTranslatorIntegration:
             )
         ),
         (
-            UdsMessage(payload=[0x50, 0x83, 0x12, 0x34, 0x56, 0x78], addressing_type=AddressingType.FUNCTIONAL),
+            [0x50, 0x83, 0x12, 0x34, 0x56, 0x78],
             (
                 SingleOccurrenceInfo(name="RSID",
                                      length=8,
@@ -589,7 +595,7 @@ class TestTranslatorIntegration:
             )
         ),
         (
-            Mock(spec=UdsMessageRecord, payload=b"\x7F\x10\x84"),
+            b"\x7F\x10\x84",
             (
                 SingleOccurrenceInfo(name="RSID",
                                      length=8,
@@ -613,7 +619,7 @@ class TestTranslatorIntegration:
         ),
         # Read Data By Identifier
         (
-            UdsMessage(payload=[0x22, 0x12, 0x34, 0xF1, 0x86, 0xF1, 0x91], addressing_type=AddressingType.PHYSICAL),
+            [0x22, 0x12, 0x34, 0xF1, 0x86, 0xF1, 0x91],
             (
                 SingleOccurrenceInfo(name="SID",
                                      length=8,
@@ -632,7 +638,7 @@ class TestTranslatorIntegration:
             )
         ),
         (
-            UdsMessage(payload=b"\x62\xF1\x86\x01\xF1\x88\x52\x49\xF1\x87\x49\x30\x41\x31\x42\x39", addressing_type=AddressingType.FUNCTIONAL),
+            b"\x62\xF1\x86\x01\xF1\x88\x52\x49\xF1\x87\x49\x30\x41\x31\x42\x39",
             (
                 SingleOccurrenceInfo(name="RSID",
                                      length=8,
@@ -679,7 +685,7 @@ class TestTranslatorIntegration:
             )
         ),
         (
-            Mock(spec=UdsMessageRecord, payload=b"\x7F\x22\x10"),
+            b"\x7F\x22\x10",
             (
                 SingleOccurrenceInfo(name="RSID",
                                      length=8,
@@ -703,8 +709,7 @@ class TestTranslatorIntegration:
         ),
         # Read Memory By Address
         (
-            UdsMessage(payload=[0x23, 0x24, 0x20, 0x48, 0x13, 0x92, 0x01, 0x03],
-                       addressing_type=AddressingType.FUNCTIONAL),
+            [0x23, 0x24, 0x20, 0x48, 0x13, 0x92, 0x01, 0x03],
             (
                 SingleOccurrenceInfo(name="SID",
                                      length=8,
@@ -746,8 +751,7 @@ class TestTranslatorIntegration:
             )
         ),
         (
-            UdsMessage(payload=b"\x63\xF0\xE1\xD2\xC3\xB4\xA5\x96\x87\x78\x69\x5A\x4B\x3C\x2D\x1E\x0F",
-                       addressing_type=AddressingType.FUNCTIONAL),
+            b"\x63\xF0\xE1\xD2\xC3\xB4\xA5\x96\x87\x78\x69\x5A\x4B\x3C\x2D\x1E\x0F",
             (
                 SingleOccurrenceInfo(name="RSID",
                                      length=8,
@@ -766,7 +770,7 @@ class TestTranslatorIntegration:
             )
         ),
         (
-            Mock(spec=UdsMessageRecord, payload=b"\x7F\x23\x7F"),
+            b"\x7F\x23\x7F",
             (
                 SingleOccurrenceInfo(name="RSID",
                                      length=8,
@@ -789,5 +793,5 @@ class TestTranslatorIntegration:
             )
         ),
     ])
-    def test_decode(self, message, decoded_message):
-        assert self.translator.decode(message=message) == decoded_message
+    def test_decode(self, payload, decoded_message):
+        assert self.translator.decode(payload=payload) == decoded_message
