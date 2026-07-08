@@ -5,8 +5,8 @@ __all__ = ["Translator"]
 from types import MappingProxyType
 from typing import Collection, Dict, FrozenSet, Mapping, Optional, Union
 
-from uds.message import RequestSID, ResponseSID, NEGATIVE_RESPONSE_MESSAGE_LENGTH
-from uds.utilities import InconsistencyError, RawBytesAlias, validate_raw_bytes, bytes_to_hex
+from uds.message import NEGATIVE_RESPONSE_MESSAGE_LENGTH, RequestSID, ResponseSID
+from uds.utilities import InconsistencyError, RawBytesAlias, bytes_to_hex, validate_raw_bytes
 
 from .service import DataRecordsValuesAlias, DecodedMessageAlias, Service
 

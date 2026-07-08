@@ -7,7 +7,7 @@ from copy import deepcopy
 from typing import Collection, Dict, List, Mapping, Optional, Sequence, Set, Tuple, Union
 from warnings import warn
 
-from uds.message import NRC, RESPONSE_REQUEST_SID_DIFF, RequestSID, ResponseSID, NEGATIVE_RESPONSE_MESSAGE_LENGTH
+from uds.message import NEGATIVE_RESPONSE_MESSAGE_LENGTH, NRC, RESPONSE_REQUEST_SID_DIFF, RequestSID, ResponseSID
 from uds.utilities import Endianness, InconsistencyError, RawBytesAlias, bytes_to_int, int_to_bytes, validate_raw_bytes
 
 from .data_record import (
