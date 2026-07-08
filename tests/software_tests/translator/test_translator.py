@@ -148,7 +148,8 @@ class TestTranslator:
 
     @pytest.mark.parametrize("payload", [
         [0x10, 0x03],
-        [0x62, *range(255)]
+        [0x62, *range(255)],
+        [0x7F, 0x00, 0x01],
     ])
     def test_decode__value_error__undefined(self, payload):
         self.mock_translator.services_mapping = {}

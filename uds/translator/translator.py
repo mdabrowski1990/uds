@@ -110,6 +110,8 @@ class Translator:
                                  f"Actual length: {len(payload)}. "
                                  f"Payload: {bytes_to_hex(payload)}.")
             sid = payload[1]
+            if sid not in self.services_mapping:
+                raise ValueError("Database has no decoding defined for SID/RSID value of the provided message.")
             return self.services_mapping[sid].decode_negative_response(payload)
         sid = payload[0]
         if sid not in self.services_mapping:
