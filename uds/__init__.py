@@ -22,6 +22,7 @@ __all__ = [
     "can",
     "client",
     "translator",
+    "diagnostic_configuration",
     "message",
     "packet",
     "segmentation",
