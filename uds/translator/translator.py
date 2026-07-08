@@ -5,8 +5,8 @@ __all__ = ["Translator"]
 from types import MappingProxyType
 from typing import Collection, Dict, FrozenSet, Mapping, Optional, Union
 
-from uds.message import RequestSID, ResponseSID
-from uds.utilities import InconsistencyError, RawBytesAlias, validate_raw_bytes
+from uds.message import RequestSID, ResponseSID, NEGATIVE_RESPONSE_MESSAGE_LENGTH
+from uds.utilities import InconsistencyError, RawBytesAlias, validate_raw_bytes, bytes_to_hex
 
 from .service import DataRecordsValuesAlias, DecodedMessageAlias, Service
 
@@ -104,6 +104,11 @@ class Translator:
         """
         validate_raw_bytes(payload, allow_empty=False)
         if payload[0] == ResponseSID.NegativeResponse:
+            if len(payload) != NEGATIVE_RESPONSE_MESSAGE_LENGTH:
+                raise ValueError(f"Negative response message payload has unexpected length. "
+                                 f"Expected length: {NEGATIVE_RESPONSE_MESSAGE_LENGTH}. "
+                                 f"Actual length: {len(payload)}. "
+                                 f"Payload: {bytes_to_hex(payload)}.")
             sid = payload[1]
             return self.services_mapping[sid].decode_negative_response(payload)
         sid = payload[0]

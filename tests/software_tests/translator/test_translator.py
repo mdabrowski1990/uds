@@ -150,8 +150,16 @@ class TestTranslator:
         [0x10, 0x03],
         [0x62, *range(255)]
     ])
-    def test_decode__value_error(self, payload):
+    def test_decode__value_error__undefined(self, payload):
         self.mock_translator.services_mapping = {}
+        with pytest.raises(ValueError):
+            Translator.decode(self.mock_translator, payload)
+
+    @pytest.mark.parametrize("payload", [
+        [0x7F],
+        (0x7F, *range(255))
+    ])
+    def test_decode__value_error__negative_response_length(self, payload):
         with pytest.raises(ValueError):
             Translator.decode(self.mock_translator, payload)
 
