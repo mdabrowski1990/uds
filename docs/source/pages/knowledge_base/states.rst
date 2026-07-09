@@ -27,6 +27,8 @@ In addition to these diagnostic states, many ECUs also consider vehicle-specific
 Manufacturers may define additional ECU-specific states depending on the functionality being protected.
 
 
+.. _knowledge-base-state-session:
+
 Diagnostic Session
 ------------------
 The Diagnostic Session defines the current operating mode of the ECU. It is controlled through the
@@ -38,6 +40,8 @@ A client may request a different session, such as Programming Session or Extende
 to gain access to additional diagnostic features.
 
 
+.. _knowledge-base-state-security-access:
+
 Security Access
 ---------------
 Security Access protects diagnostic functionality that should not be available to every client.
@@ -48,6 +52,8 @@ successfully completing the Security Access sequence (`requestSeed` → `sendKey
 
 The unlocked security level shall be cleared whenever the diagnostic session changes or the ECU is reset.
 
+
+.. _knowledge-base-state-authentication:
 
 Authentication
 --------------
