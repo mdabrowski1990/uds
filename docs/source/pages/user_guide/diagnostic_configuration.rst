@@ -16,8 +16,8 @@ the following components:
 
 State
 -----
-The :class:`~uds.diagnostic_configuration.state.State` class represents a single ECU state that may affect
-the availability of diagnostic functions.
+The :class:`~uds.diagnostic_configuration.state.State` class represents a single
+:ref:`ECU state <knowledge-base-states>` that may affect the availability of diagnostic functions.
 A state has a name, a predefined set of allowed values, and a current value representing the ECU's current operating
 condition.
 

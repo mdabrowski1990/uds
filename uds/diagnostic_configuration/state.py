@@ -1,4 +1,4 @@
-"""Implementation for diagnostic communication state."""
+"""Implementation for :ref:`diagnostic communication state <knowledge-base-states>`."""
 
 __all__ = ["State"]
 
