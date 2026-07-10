@@ -66,13 +66,13 @@ class EcuDiagnosticConfiguration:
 
     @property
     def states(self) -> Set[State]:
-        """Get ECU states that are relevant for diagnostic communication."""
+        """Get :ref:`ECU states <knowledge-base-states>` relevant for diagnostic communication."""
         return self.__states
 
     @states.setter
     def states(self, states: Collection[State]) -> None:
         """
-        Set ECU states relevant for diagnostic communication.
+        Set :ref:`ECU states <knowledge-base-states>` relevant for diagnostic communication.
 
         :param states: ECU states relevant for diagnostic communication.
         """
