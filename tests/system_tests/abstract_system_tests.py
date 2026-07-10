@@ -4,7 +4,6 @@ import asyncio
 from abc import ABC
 from threading import Timer
 from time import sleep
-from typing import List, Optional
 
 from uds.message import UdsMessage, UdsMessageRecord
 from uds.packet import AbstractPacket, AbstractPacketRecord
@@ -19,20 +18,20 @@ class BaseSystemTests(ABC):
     TASK_TIMING_TOLERANCE: TimeMillisecondsAlias = 30
     TIMESTAMP_TOLERANCE: TimeMillisecondsAlias = 1
 
-    sent_messages: List[UdsMessageRecord]
-    received_messages: List[UdsMessageRecord]
-    sent_packets: List[AbstractPacketRecord]
-    _timers: List[Timer]
+    sent_messages: list[UdsMessageRecord]
+    received_messages: list[UdsMessageRecord]
+    sent_packets: list[AbstractPacketRecord]
+    _timers: list[Timer]
 
     def setup_method(self):
         """
         Common setup:
         - define common variables
         """
-        self.sent_messages: List[UdsMessageRecord] = []
-        self.received_messages: List[UdsMessageRecord] = []
-        self.sent_packets: List[AbstractPacketRecord] = []
-        self._timers: List[Timer] = []
+        self.sent_messages: list[UdsMessageRecord] = []
+        self.received_messages: list[UdsMessageRecord] = []
+        self.sent_packets: list[AbstractPacketRecord] = []
+        self._timers: list[Timer] = []
 
     def teardown_method(self):
         """
@@ -77,7 +76,7 @@ class BaseSystemTests(ABC):
     async def async_send_packet(transport_interface: AbstractTransportInterface,
                                 packet: AbstractPacket,
                                 delay: TimeMillisecondsAlias,
-                                loop: Optional[asyncio.AbstractEventLoop] = None) -> AbstractPacketRecord:
+                                loop: None | asyncio.AbstractEventLoop = None) -> AbstractPacketRecord:
         """
         Send a packet asynchronously over Transport Interface.
 
@@ -94,8 +93,8 @@ class BaseSystemTests(ABC):
 
     def receive_message(self,
                         transport_interface: AbstractTransportInterface,
-                        start_timeout: Optional[TimeMillisecondsAlias],
-                        end_timeout: Optional[TimeMillisecondsAlias],
+                        start_timeout: None | TimeMillisecondsAlias,
+                        end_timeout: None | TimeMillisecondsAlias,
                         delay: TimeMillisecondsAlias) -> Timer:
         """
         Receive UDS message over Transport Interface.
@@ -146,7 +145,7 @@ class BaseSystemTests(ABC):
     async def async_send_message(transport_interface: AbstractTransportInterface,
                                  message: UdsMessage,
                                  delay: TimeMillisecondsAlias,
-                                 loop: Optional[asyncio.AbstractEventLoop] = None) -> UdsMessageRecord:
+                                 loop: None | asyncio.AbstractEventLoop = None) -> UdsMessageRecord:
         """
         Send UDS message asynchronously over Transport Interface.
 
