@@ -13,9 +13,9 @@ from uds.utilities import Endianness, InconsistencyError, RawBytesAlias, bytes_t
 from .data_record import (
     AbstractConditionalDataRecord,
     AbstractDataRecord,
-    MessageStructureAlias,
     ChildrenValuesAlias,
     DataRecordInfoAlias,
+    MessageStructureAlias,
     SingleOccurrenceInfo,
 )
 

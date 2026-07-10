@@ -6,11 +6,11 @@ from uds.translator.data_record.conditional_data_record import (
     DEFAULT_DIAGNOSTIC_MESSAGE_CONTINUATION,
     AbstractConditionalDataRecord,
     AbstractDataRecord,
-    MessageStructureAlias,
     Callable,
     ConditionalFormulaDataRecord,
     ConditionalMappingDataRecord,
     Mapping,
+    MessageStructureAlias,
     Sequence,
 )
 from uds.utilities import InconsistencyError

@@ -82,9 +82,9 @@ __all__ = [
 from uds.utilities import REPEATED_DATA_RECORDS_NUMBER
 
 from ..data_record import (
-    MessageStructureAlias,
     ConditionalFormulaDataRecord,
     ConditionalMappingDataRecord,
+    MessageStructureAlias,
     RawDataRecord,
 )
 from .did import (

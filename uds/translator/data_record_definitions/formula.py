@@ -66,11 +66,11 @@ from uds.utilities import (
 
 from ..data_record import (
     AbstractDataRecord,
-    MessageStructureAlias,
     ConditionalFormulaDataRecord,
     ConditionalMappingDataRecord,
     CustomFormulaDataRecord,
     MappingDataRecord,
+    MessageStructureAlias,
     RawDataRecord,
     TextDataRecord,
     TextEncoding,

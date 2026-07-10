@@ -34,7 +34,7 @@ When processing multiple occurrences, physical values are either:
 """
 PhysicalValueAlias = SinglePhysicalValueAlias | MultiplePhysicalValuesAlias
 """Alias for all physical values."""
-ChildrenValuesAlias = Mapping[str, int | "ChildrenValuesAlias"]
+type ChildrenValuesAlias = Mapping[str, int | ChildrenValuesAlias]
 """Alias for children values mapping."""
 
 
