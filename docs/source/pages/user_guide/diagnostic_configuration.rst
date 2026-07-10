@@ -59,7 +59,7 @@ The following state definitions are provided:
   - currently unlocked security access level
 - :obj:`~uds.diagnostic_configuration.state_definitions.DEFAULT_AUTHENTICATION_STATE`
   - current authentication state
-- :obj:`~~uds.diagnostic_configuration.state_definitions.DEFAULT_IGNITION_STATE`
+- :obj:`~uds.diagnostic_configuration.state_definitions.DEFAULT_IGNITION_STATE`
   - current ignition status
 - :obj:`~uds.diagnostic_configuration.state_definitions.DEFAULT_ENGINE_STATE`
   - current engine state

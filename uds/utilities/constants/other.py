@@ -45,7 +45,7 @@ NO_YES_MAPPING: Dict[int, str] = {0: "no", 1: "yes"}
 """Generic `no` and `yes` values mapping."""
 
 OFF_ON_MAPPING: Dict[int, str] = {0: "OFF", 1: "ON"}
-"""Generic `OFF` and `NO` values mapping."""
+"""Generic `OFF` and `ON` values mapping."""
 
 COMPRESSION_METHOD_MAPPING: Dict[int, str] = ({0: "no compression"}
                                               | {value: f"compression #{value}" for value in range(1, 0x10)})
