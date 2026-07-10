@@ -3,7 +3,7 @@
 __all__ = [
     # Shared
     "REPEATED_DATA_RECORDS_NUMBER",
-    "NO_YES_MAPPING",
+    "NO_YES_MAPPING", "OFF_ON_MAPPING",
     "COMPRESSION_METHOD_MAPPING", "ENCRYPTION_METHOD_MAPPING",
     # SID 0x11
     "POWER_DOWN_TIME_MAPPING",
@@ -43,6 +43,9 @@ REPEATED_DATA_RECORDS_NUMBER: int = 100
 
 NO_YES_MAPPING: Dict[int, str] = {0: "no", 1: "yes"}
 """Generic `no` and `yes` values mapping."""
+
+OFF_ON_MAPPING: Dict[int, str] = {0: "OFF", 1: "ON"}
+"""Generic `OFF` and `NO` values mapping."""
 
 COMPRESSION_METHOD_MAPPING: Dict[int, str] = ({0: "no compression"}
                                               | {value: f"compression #{value}" for value in range(1, 0x10)})

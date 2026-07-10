@@ -10,8 +10,8 @@ for getting started.
   user_guide/message.rst
   user_guide/addressing.rst
   user_guide/client.rst
-  user_guide/states.rst
   user_guide/message_translation.rst
+  user_guide/diagnostic_configuration.rst
   user_guide/logging.rst
   user_guide/can.rst
   user_guide/custom.rst

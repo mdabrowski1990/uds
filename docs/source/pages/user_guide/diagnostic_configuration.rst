@@ -126,7 +126,7 @@ Methods:
             0x22: {
                 0xF190: {
                     "Session": {0x03},
-                    "Unlocked SecurityAccess level": {0x01},
+                    "SecurityAccess": {0x01},
                     "AddressingType": {uds.addressing.AddressingType.PHYSICAL}}
                     }},
         rid_restrictions={},

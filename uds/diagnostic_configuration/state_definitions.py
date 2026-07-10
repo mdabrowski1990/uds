@@ -1,15 +1,15 @@
-"""Predefined :class:`~uds.diagnostic_configuration.state.State` objects representing
-common :ref:`diagnostic communication states <knowledge-base-states>`."""
+"""Predefined State objects representing common :ref:`diagnostic communication states <knowledge-base-states>`."""
 
 __all__ = ["DEFAULT_DIAGNOSTIC_SESSION_STATE",
            "DEFAULT_SECURITY_ACCESS_STATE",
            "DEFAULT_AUTHENTICATION_STATE",
-           "DEFAULT_SECURED_TRANSMISSION_STATE",
            "DEFAULT_IGNITION_STATE",
            "DEFAULT_ENGINE_STATE",
+           "DEFAULT_SECURED_TRANSMISSION_STATE",
            "DEFAULT_ADDRESSING_TYPE_STATE"]
 
 from uds.addressing import AddressingType
+from uds.utilities import OFF_ON_MAPPING
 
 from .state import State
 
@@ -29,11 +29,11 @@ DEFAULT_AUTHENTICATION_STATE = State(name="Authentication",
 """State representing the current :ref:`Authentication <knowledge-base-state-authentication>` status."""
 
 DEFAULT_IGNITION_STATE = State(name="Ignition",
-                             possible_values={"ON", "OFF"})
+                               possible_values=OFF_ON_MAPPING.values())
 """State indicating whether the vehicle ignition is ON or OFF."""
 
 DEFAULT_ENGINE_STATE = State(name="Engine",
-                             possible_values={"ON", "OFF"})
+                             possible_values=OFF_ON_MAPPING.values())
 """State indicating whether the engine is running."""
 
 DEFAULT_SECURED_TRANSMISSION_STATE = State(name="SecuredTransmission",
