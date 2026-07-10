@@ -3,7 +3,7 @@
 __all__ = ["SegmentationError", "AbstractSegmenter"]
 
 from abc import ABC, abstractmethod
-from typing import Sequence, Type, Union
+from collections.abc import Sequence
 
 from uds.addressing import AbstractAddressingInformation
 from uds.message import UdsMessage, UdsMessageRecord
@@ -11,8 +11,8 @@ from uds.packet import (
     AbstractPacket,
     AbstractPacketContainer,
     AbstractPacketRecord,
-    PacketsContainersSequence,
-    PacketsTuple,
+    PacketsContainersSequenceAlias,
+    PacketsTupleAlias,
 )
 
 
@@ -42,17 +42,17 @@ class AbstractSegmenter(ABC):
 
     @property
     @abstractmethod
-    def supported_addressing_information_class(self) -> Type[AbstractAddressingInformation]:
+    def supported_addressing_information_class(self) -> type[AbstractAddressingInformation]:
         """Addressing Information class supported by this segmenter."""
 
     @property
     @abstractmethod
-    def supported_packet_class(self) -> Type[AbstractPacket]:
+    def supported_packet_class(self) -> type[AbstractPacket]:
         """Packet class supported by this segmenter."""
 
     @property
     @abstractmethod
-    def supported_packet_record_class(self) -> Type[AbstractPacketRecord]:
+    def supported_packet_record_class(self) -> type[AbstractPacketRecord]:
         """Packet Record class supported by this segmenter."""
 
     @property
@@ -102,7 +102,7 @@ class AbstractSegmenter(ABC):
         return len({type(packet) for packet in packets}) == 1
 
     @abstractmethod
-    def is_desegmented_message(self, packets: PacketsContainersSequence) -> bool:
+    def is_desegmented_message(self, packets: PacketsContainersSequenceAlias) -> bool:
         """
         Check whether provided packets are full sequence of packets that form exactly one diagnostic message.
 
@@ -113,7 +113,7 @@ class AbstractSegmenter(ABC):
         """
 
     @abstractmethod
-    def desegmentation(self, packets: PacketsContainersSequence) -> Union[UdsMessage, UdsMessageRecord]:
+    def desegmentation(self, packets: PacketsContainersSequenceAlias) -> UdsMessage | UdsMessageRecord:
         """
         Perform desegmentation of packets.
 
@@ -125,7 +125,7 @@ class AbstractSegmenter(ABC):
         """
 
     @abstractmethod
-    def segmentation(self, message: UdsMessage) -> PacketsTuple:
+    def segmentation(self, message: UdsMessage) -> PacketsTupleAlias:
         """
         Perform segmentation of a diagnostic message.
 

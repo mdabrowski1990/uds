@@ -6,11 +6,11 @@ from uds.translator.data_record.conditional_data_record import (
     DEFAULT_DIAGNOSTIC_MESSAGE_CONTINUATION,
     AbstractConditionalDataRecord,
     AbstractDataRecord,
-    AliasMessageStructure,
     Callable,
     ConditionalFormulaDataRecord,
     ConditionalMappingDataRecord,
     Mapping,
+    MessageStructureAlias,
     Sequence,
 )
 from uds.utilities import InconsistencyError
@@ -531,7 +531,7 @@ class TestConditionalFormulaDataRecordIntegration:
     """Integration tests for `ConditionalFormulaDataRecord` class."""
 
     def setup_class(self):
-        def continuation_length_formula(raw_value: int) -> AliasMessageStructure:
+        def continuation_length_formula(raw_value: int) -> MessageStructureAlias:
             if raw_value <= 0 or raw_value > 20:
                 raise ValueError
             return [RawDataRecord(name="Entries",

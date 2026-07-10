@@ -2,21 +2,18 @@
 
 __all__ = ["CustomFormulaDataRecord", "LinearFormulaDataRecord"]
 
-from typing import Callable, Optional, Sequence, Union
+from collections.abc import Callable, Sequence
 
 from .abstract_data_record import AbstractDataRecord
 
-AliasPhysicalValueEncodingFormula = Union[
-    Callable[[int], int],
-    Callable[[float], int],
-    Callable[[Union[int, float]], int],
-]
+AliasPhysicalValueEncodingFormula = (Callable[[int], int]
+                                     | Callable[[float], int]
+                                     | Callable[[int | float], int])
 """Type alias for encoding formulas that convert physical values to raw values."""
-AliasPhysicalValueDecodingFormula = Union[
-    Callable[[int], int],
-    Callable[[int], float],
-    Callable[[int], Union[int, float]],
-]
+
+AliasPhysicalValueDecodingFormula = (Callable[[int], int]
+                                     | Callable[[int], float]
+                                     | Callable[[int], int | float])
 """Type alias for decoding formulas that convert raw values to physical values."""
 
 
@@ -43,11 +40,11 @@ class LinearFormulaDataRecord(AbstractDataRecord):
     def __init__(self,
                  name: str,
                  length: int,
-                 factor: Union[float, int],
-                 offset: Union[float, int],
+                 factor: float | int,
+                 offset: float | int,
                  min_occurrences: int = 1,
-                 max_occurrences: Optional[int] = 1,
-                 unit: Optional[str] = None,
+                 max_occurrences: None | int = 1,
+                 unit: None | str = None,
                  enforce_reoccurring: bool = False) -> None:
         """
         Configure Linear Formula Data Record.
@@ -73,12 +70,12 @@ class LinearFormulaDataRecord(AbstractDataRecord):
                          enforce_reoccurring=enforce_reoccurring)
 
     @property
-    def factor(self) -> Union[float, int]:
+    def factor(self) -> float | int:
         """Get the factor value for the linear transformation."""
         return self.__factor
 
     @factor.setter
-    def factor(self, value: Union[float, int]) -> None:
+    def factor(self, value: float | int) -> None:
         """
         Set the factor value for the linear transformation.
 
@@ -94,12 +91,12 @@ class LinearFormulaDataRecord(AbstractDataRecord):
         self.__factor = value
 
     @property
-    def offset(self) -> Union[float, int]:
+    def offset(self) -> float | int:
         """Get the offset value for the linear transformation."""
         return self.__offset
 
     @offset.setter
-    def offset(self, value: Union[float, int]) -> None:
+    def offset(self, value: float | int) -> None:
         """
         Set the offset value for the linear transformation.
 
@@ -112,18 +109,18 @@ class LinearFormulaDataRecord(AbstractDataRecord):
         self.__offset = value
 
     @property  # noqa: vulture
-    def min_physical_value(self) -> Union[float, int]:
+    def min_physical_value(self) -> float | int:
         """Get the minimum physical value."""
         raw_value = self.min_raw_value if self.factor > 0 else self.max_raw_value
         return (raw_value * self.factor) + self.offset
 
     @property  # noqa: vulture
-    def max_physical_value(self) -> Union[float, int]:
+    def max_physical_value(self) -> float | int:
         """Get the maximum physical value."""
         raw_value = self.max_raw_value if self.factor > 0 else self.min_raw_value
         return (raw_value * self.factor) + self.offset
 
-    def get_physical_value(self, raw_value: int) -> Union[float, int]:
+    def get_physical_value(self, raw_value: int) -> float | int:
         """
         Get physical value representing provided raw value.
 
@@ -136,7 +133,7 @@ class LinearFormulaDataRecord(AbstractDataRecord):
         self._validate_raw_value(raw_value)
         return (raw_value * self.factor) + self.offset
 
-    def get_raw_value(self, physical_value: Union[float, int]) -> int:  # type: ignore
+    def get_raw_value(self, physical_value: float | int) -> int:  # type: ignore
         """
         Get raw value that represents provided physical value.
 
@@ -190,8 +187,8 @@ class CustomFormulaDataRecord(AbstractDataRecord):
                  decoding_formula: AliasPhysicalValueDecodingFormula,
                  children: Sequence[AbstractDataRecord] = tuple(),
                  min_occurrences: int = 1,
-                 max_occurrences: Optional[int] = 1,
-                 unit: Optional[str] = None,
+                 max_occurrences: None | int = 1,
+                 unit: None | str = None,
                  enforce_reoccurring: bool = False) -> None:
         """
         Configure custom formula Data Record.
@@ -252,7 +249,7 @@ class CustomFormulaDataRecord(AbstractDataRecord):
             raise TypeError(f"Decoding formula must be callable. Actual type: {type(value)}.")
         self.__decoding_formula = value
 
-    def get_physical_value(self, raw_value: int) -> Union[float, int]:
+    def get_physical_value(self, raw_value: int) -> float | int:
         """
         Get physical value representing provided raw value.
 
@@ -263,7 +260,7 @@ class CustomFormulaDataRecord(AbstractDataRecord):
         self._validate_raw_value(raw_value)
         return self.decoding_formula(raw_value)
 
-    def get_raw_value(self, physical_value: Union[float, int]) -> int:  # type: ignore
+    def get_raw_value(self, physical_value: float | int) -> int:  # type: ignore
         """
         Get raw value that represents provided physical value.
 

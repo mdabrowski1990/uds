@@ -19,7 +19,6 @@ __all__ = ["FLOW_CONTROL_N_PCI", "FS_BYTES_USED", "BS_BYTE_POSITION", "ST_MIN_BY
 
 from abc import ABC, abstractmethod
 from copy import deepcopy
-from typing import Optional, Tuple
 from warnings import warn
 
 from aenum import unique
@@ -222,12 +221,12 @@ def validate_flow_control_data(addressing_format: CanAddressingFormat, raw_frame
 
 def create_flow_control_data(addressing_format: CanAddressingFormat,
                              flow_status: CanFlowStatus,
-                             block_size: Optional[int] = None,
-                             st_min: Optional[int] = None,
-                             dlc: Optional[int] = None,
+                             block_size: None | int = None,
+                             st_min: None | int = None,
+                             dlc: None | int = None,
                              filler_byte: int = DEFAULT_FILLER_BYTE,
-                             target_address: Optional[int] = None,
-                             address_extension: Optional[int] = None) -> bytearray:
+                             target_address: None | int = None,
+                             address_extension: None | int = None) -> bytearray:
     """
     Create a data field of a CAN frame that carries a valid Flow Control packet.
 
@@ -289,11 +288,11 @@ def create_flow_control_data(addressing_format: CanAddressingFormat,
 def generate_flow_control_data(addressing_format: CanAddressingFormat,
                                flow_status: int,
                                dlc: int,
-                               block_size: Optional[int] = None,
-                               st_min: Optional[int] = None,
+                               block_size: None | int = None,
+                               st_min: None | int = None,
                                filler_byte: int = DEFAULT_FILLER_BYTE,
-                               target_address: Optional[int] = None,
-                               address_extension: Optional[int] = None) -> bytearray:
+                               target_address: None | int = None,
+                               address_extension: None | int = None) -> bytearray:
     """
     Generate CAN frame data field that carries any combination of Flow Control packet data parameters.
 
@@ -427,7 +426,7 @@ def generate_flow_status(flow_status: int) -> bytearray:
     return bytearray([(FLOW_CONTROL_N_PCI << 4) + flow_status])
 
 
-FlowControlParametersAlias = Tuple[CanFlowStatus, Optional[int], Optional[int]]
+FlowControlParametersAlias = tuple[CanFlowStatus, None | int, None | int]
 """Alias of :ref:`Flow Control <knowledge-base-can-flow-control>` parameters which contain:
 - :ref:`Flow Status <knowledge-base-can-flow-status>`
 - :ref:`Block Size <knowledge-base-can-block-size>`
@@ -474,7 +473,7 @@ class DefaultFlowControlParametersGenerator(AbstractFlowControlParametersGenerat
         self.st_min = st_min
         self.wait_count = wait_count
         self.repeat_wait = repeat_wait
-        self._remaining_wait: Optional[int] = None
+        self._remaining_wait: None | int = None
 
     def __iter__(self) -> "DefaultFlowControlParametersGenerator":
         """Get iterator object."""

@@ -1,12 +1,14 @@
 """Abstract definition of packets that is common for all bus/network types."""
 
 __all__ = ["AbstractPacketContainer", "AbstractPacket", "AbstractPacketRecord",
-           "PacketsContainersSequence", "PacketsTuple", "PacketsRecordsTuple", "PacketsRecordsSequence"]
+           "PacketsContainersSequenceAlias", "PacketsTupleAlias", "PacketsRecordsTupleAlias",
+           "PacketsRecordsSequenceAlias"]
 
 from abc import ABC, abstractmethod
+from collections.abc import Sequence
 from datetime import datetime
 from time import perf_counter
-from typing import Any, Optional, Sequence, Tuple
+from typing import Any
 from warnings import warn
 
 from uds.addressing import AddressingType, TransmissionDirection
@@ -38,7 +40,7 @@ class AbstractPacketContainer(ABC):
 
     @property
     @abstractmethod
-    def data_length(self) -> Optional[int]:
+    def data_length(self) -> None | int:
         """Payload bytes number of a diagnostic message."""
 
     @property
@@ -48,7 +50,7 @@ class AbstractPacketContainer(ABC):
 
     @property
     @abstractmethod
-    def payload(self) -> Optional[bytes]:
+    def payload(self) -> None | bytes:
         """Diagnostic message payload carried by this packet."""
 
 
@@ -195,12 +197,12 @@ class AbstractPacketRecord(AbstractPacketContainer, ABC):
         """Validate whether attributes that were set are a valid for a Packet record."""
 
 
-PacketsContainersSequence = Sequence[AbstractPacketContainer]
+PacketsContainersSequenceAlias = Sequence[AbstractPacketContainer]
 """Alias for a sequence filled with packet or packet record objects."""
 
-PacketsTuple = Tuple[AbstractPacket, ...]
+PacketsTupleAlias = tuple[AbstractPacket, ...]
 """Alias for a packet objects tuple."""
-PacketsRecordsTuple = Tuple[AbstractPacketRecord, ...]
+PacketsRecordsTupleAlias = tuple[AbstractPacketRecord, ...]
 """Alias for a packet record objects tuple."""
-PacketsRecordsSequence = Sequence[AbstractPacketRecord]
+PacketsRecordsSequenceAlias = Sequence[AbstractPacketRecord]
 """Alias for a packet record objects sequence."""

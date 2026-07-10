@@ -12,9 +12,9 @@ from .abstract_packet import (
     AbstractPacket,
     AbstractPacketContainer,
     AbstractPacketRecord,
-    PacketsContainersSequence,
-    PacketsRecordsSequence,
-    PacketsRecordsTuple,
-    PacketsTuple,
+    PacketsContainersSequenceAlias,
+    PacketsRecordsSequenceAlias,
+    PacketsRecordsTupleAlias,
+    PacketsTupleAlias,
 )
 from .abstract_packet_type import AbstractPacketType

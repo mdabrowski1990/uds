@@ -2,7 +2,6 @@
 
 __all__ = ["CanSegmenter"]
 
-from typing import Optional, Tuple, Type, Union
 from warnings import warn
 
 from uds.addressing import AbstractAddressingInformation, AddressingType
@@ -19,7 +18,7 @@ from .packet import (
     CanFlowStatus,
     CanPacket,
     CanPacketRecord,
-    CanPacketsContainersSequence,
+    CanPacketsContainersSequenceAlias,
     CanPacketType,
     get_consecutive_frame_max_payload_size,
     get_consecutive_frame_min_dlc,
@@ -34,7 +33,7 @@ class CanSegmenter(AbstractSegmenter):
     def __init__(self, *,
                  addressing_information: AbstractCanAddressingInformation,
                  dlc: int = CanDlcHandler.MIN_BASE_UDS_DLC,
-                 min_dlc: Optional[int] = None,
+                 min_dlc: None | int = None,
                  use_data_optimization: bool = False,
                  filler_byte: int = DEFAULT_FILLER_BYTE) -> None:
         """
@@ -58,17 +57,17 @@ class CanSegmenter(AbstractSegmenter):
         self.filler_byte = filler_byte
 
     @property
-    def supported_addressing_information_class(self) -> Type[AbstractAddressingInformation]:
+    def supported_addressing_information_class(self) -> type[AbstractAddressingInformation]:
         """Addressing Information class supported by this segmenter."""
         return AbstractCanAddressingInformation
 
     @property
-    def supported_packet_class(self) -> Type[AbstractPacket]:
+    def supported_packet_class(self) -> type[AbstractPacket]:
         """Packet class supported by CAN segmenter."""
         return CanPacket
 
     @property
-    def supported_packet_record_class(self) -> Type[AbstractPacketRecord]:
+    def supported_packet_record_class(self) -> type[AbstractPacketRecord]:
         """Packet Record class supported by CAN segmenter."""
         return CanPacketRecord
 
@@ -108,7 +107,7 @@ class CanSegmenter(AbstractSegmenter):
             self.min_dlc = value
 
     @property
-    def min_dlc(self) -> Optional[int]:
+    def min_dlc(self) -> None | int:
         """
         Value of minimal CAN DLC to use for CAN Packets during Data Optimization.
 
@@ -119,7 +118,7 @@ class CanSegmenter(AbstractSegmenter):
         return self.__min_dlc
 
     @min_dlc.setter
-    def min_dlc(self, value: Optional[int]) -> None:
+    def min_dlc(self, value: None | int) -> None:
         """
         Set value of minimal CAN DLC to use for CAN Packets during Data Optimization.
 
@@ -132,7 +131,7 @@ class CanSegmenter(AbstractSegmenter):
             if value > self.dlc:
                 raise ValueError(f"Min DLC must be less or equal than base DLC. DLC = {self.dlc}. "
                                  f"Actual value: {value}")
-        self.__min_dlc: Optional[int] = value
+        self.__min_dlc: None | int = value
 
     @property
     def use_data_optimization(self) -> bool:
@@ -163,7 +162,7 @@ class CanSegmenter(AbstractSegmenter):
         validate_raw_byte(value)
         self.__filler_byte: int = value
 
-    def __physical_segmentation(self, message: UdsMessage) -> Tuple[CanPacket, ...]:
+    def __physical_segmentation(self, message: UdsMessage) -> tuple[CanPacket, ...]:
         """
         Segment physically addressed diagnostic message.
 
@@ -226,7 +225,7 @@ class CanSegmenter(AbstractSegmenter):
             consecutive_frames.append(consecutive_frame)
         return first_frame, *consecutive_frames
 
-    def __functional_segmentation(self, message: UdsMessage) -> Tuple[CanPacket, ...]:
+    def __functional_segmentation(self, message: UdsMessage) -> tuple[CanPacket, ...]:
         """
         Segment functionally addressed diagnostic message.
 
@@ -256,7 +255,7 @@ class CanSegmenter(AbstractSegmenter):
                                  **self.addressing_information.tx_functional_params)
         return (single_frame,)
 
-    def is_desegmented_message(self, packets: CanPacketsContainersSequence) -> bool:
+    def is_desegmented_message(self, packets: CanPacketsContainersSequenceAlias) -> bool:
         """
         Check whether provided packets are full sequence of packets that form exactly one diagnostic message.
 
@@ -296,8 +295,8 @@ class CanSegmenter(AbstractSegmenter):
 
     def get_flow_control_packet(self,
                                 flow_status: CanFlowStatus,
-                                block_size: Optional[int] = None,
-                                st_min: Optional[int] = None) -> CanPacket:
+                                block_size: None | int = None,
+                                st_min: None | int = None) -> CanPacket:
         """
         Create Flow Control CAN packet.
 
@@ -317,7 +316,7 @@ class CanSegmenter(AbstractSegmenter):
                          dlc=None if self.use_data_optimization else self.dlc,
                          **self.addressing_information.tx_physical_params)
 
-    def desegmentation(self, packets: CanPacketsContainersSequence) -> Union[UdsMessage, UdsMessageRecord]:
+    def desegmentation(self, packets: CanPacketsContainersSequenceAlias) -> UdsMessage | UdsMessageRecord:
         """
         Perform desegmentation of CAN packets.
 
@@ -346,7 +345,7 @@ class CanSegmenter(AbstractSegmenter):
             raise SegmentationError("Unexpectedly, something went wrong...")
         raise NotImplementedError("Missing implementation for the provided CAN Packet type.")
 
-    def segmentation(self, message: UdsMessage) -> Tuple[CanPacket, ...]:
+    def segmentation(self, message: UdsMessage) -> tuple[CanPacket, ...]:
         """
         Perform segmentation of a diagnostic message.
 

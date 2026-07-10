@@ -7,7 +7,6 @@ __all__ = ["FIRST_FRAME_N_PCI", "MAX_SHORT_FF_DL_VALUE", "MAX_LONG_FF_DL_VALUE",
            "extract_first_frame_payload", "extract_ff_dl", "get_first_frame_payload_size",
            "extract_ff_dl_data_bytes", "encode_ff_dl", "generate_ff_dl_bytes", "validate_ff_dl"]
 
-from typing import Optional
 
 from uds.can.frame import CanDlcHandler
 from uds.utilities import InconsistencyError, RawBytesAlias, bytes_to_int, int_to_bytes, validate_raw_bytes
@@ -74,8 +73,8 @@ def create_first_frame_data(addressing_format: CanAddressingFormat,
                             payload: RawBytesAlias,
                             dlc: int,
                             data_length: int,
-                            target_address: Optional[int] = None,
-                            address_extension: Optional[int] = None) -> bytearray:
+                            target_address: None | int = None,
+                            address_extension: None | int = None) -> bytearray:
     """
     Create a data field of a CAN frame that carries a valid First Frame packet.
 
@@ -117,8 +116,8 @@ def generate_first_frame_data(addressing_format: CanAddressingFormat,
                               dlc: int,
                               ff_dl: int,
                               long_ff_dl_format: bool = False,
-                              target_address: Optional[int] = None,
-                              address_extension: Optional[int] = None) -> bytearray:
+                              target_address: None | int = None,
+                              address_extension: None | int = None) -> bytearray:
     """
     Generate CAN frame data field that carries any combination of First Frame packet data parameters.
 
@@ -282,9 +281,9 @@ def generate_ff_dl_bytes(ff_dl: int, long_ff_dl_format: bool) -> bytearray:
 
 
 def validate_ff_dl(ff_dl: int,
-                   ff_dl_bytes_number: Optional[int] = None,
-                   dlc: Optional[int] = None,
-                   addressing_format: Optional[CanAddressingFormat] = None) -> None:
+                   ff_dl_bytes_number: None | int = None,
+                   dlc: None | int = None,
+                   addressing_format: None | CanAddressingFormat = None) -> None:
     """
     Validate a value of First Frame Data Length.
 

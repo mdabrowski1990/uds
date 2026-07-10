@@ -10,7 +10,6 @@ Handlers for :ref:`CAN Frame <knowledge-base-can-frame>` fields:
 __all__ = ["CanVersion", "CanIdHandler", "CanDlcHandler", "DEFAULT_FILLER_BYTE"]
 
 from bisect import bisect_left
-from typing import Dict, Optional, Set, Tuple
 
 from uds.utilities import ValidatedEnum
 
@@ -106,7 +105,7 @@ class CanIdHandler:
         return isinstance(can_id, int) and cls.MIN_EXTENDED_VALUE <= can_id <= cls.MAX_EXTENDED_VALUE
 
     @classmethod
-    def validate_can_id(cls, value: int, extended_can_id: Optional[bool] = None) -> None:
+    def validate_can_id(cls, value: int, extended_can_id: None | bool = None) -> None:
         """
         Validate whether provided value is either Standard or Extended CAN ID.
 
@@ -167,11 +166,11 @@ class CanDlcHandler:
      - 0x9-0xF - discrete range which is supported by CAN FD only
     """
 
-    __DLC_VALUES: Tuple[int, ...] = tuple(range(0x10))
-    __DATA_BYTES_NUMBERS: Tuple[int, ...] = (0, 1, 2, 3, 4, 5, 6, 7, 8, 12, 16, 20, 24, 32, 48, 64)
-    __DLC_MAPPING: Dict[int, int] = dict(zip(__DLC_VALUES, __DATA_BYTES_NUMBERS))
-    __DATA_BYTES_NUMBER_MAPPING: Dict[int, int] = dict(zip(__DATA_BYTES_NUMBERS, __DLC_VALUES))
-    __DLC_SPECIFIC_FOR_CAN_FD: Set[int] = set(dlc for dlc in __DLC_VALUES if dlc > 8)
+    __DLC_VALUES: tuple[int, ...] = tuple(range(0x10))
+    __DATA_BYTES_NUMBERS: tuple[int, ...] = (0, 1, 2, 3, 4, 5, 6, 7, 8, 12, 16, 20, 24, 32, 48, 64)
+    __DLC_MAPPING: dict[int, int] = dict(zip(__DLC_VALUES, __DATA_BYTES_NUMBERS))
+    __DATA_BYTES_NUMBER_MAPPING: dict[int, int] = dict(zip(__DATA_BYTES_NUMBERS, __DLC_VALUES))
+    __DLC_SPECIFIC_FOR_CAN_FD: set[int] = set(dlc for dlc in __DLC_VALUES if dlc > 8)
 
     MIN_DATA_BYTES_NUMBER: int = min(__DATA_BYTES_NUMBERS)
     """Minimum number of data bytes in a CAN frame."""

@@ -46,8 +46,8 @@ __all__ = [
     "get_activated_events_2020", "get_activated_events_2013",
 ]
 
+from collections.abc import Callable
 from decimal import Decimal
-from typing import Callable, List, Optional, Tuple, Union
 
 from uds.utilities import (
     DID_BIT_LENGTH,
@@ -66,11 +66,11 @@ from uds.utilities import (
 
 from ..data_record import (
     AbstractDataRecord,
-    AliasMessageStructure,
     ConditionalFormulaDataRecord,
     ConditionalMappingDataRecord,
     CustomFormulaDataRecord,
     MappingDataRecord,
+    MessageStructureAlias,
     RawDataRecord,
     TextDataRecord,
     TextEncoding,
@@ -106,7 +106,7 @@ from .subfunctions import EVENT_TYPE_2013, EVENT_TYPE_2020, REPORT_TYPE_2020
 
 def get_raw_data_record_with_length_formula(data_record_name: str,
                                             accept_zero_length: bool
-                                            ) -> Callable[[int], Union[Tuple[RawDataRecord], Tuple[()]]]:
+                                            ) -> Callable[[int], tuple[RawDataRecord] | tuple[()]]:
     """
     Get formula for Conditional Data Record that returns Raw Data Record with length of proceeding value.
 
@@ -115,7 +115,7 @@ def get_raw_data_record_with_length_formula(data_record_name: str,
 
     :return: Formula for creating Raw Data Record that is following (bytes) length parameter.
     """
-    def get_raw_data_record(length: int) -> Union[Tuple[RawDataRecord], Tuple[()]]:
+    def get_raw_data_record(length: int) -> tuple[RawDataRecord] | tuple[()]:
         if accept_zero_length and length == 0:
             return ()
         if length > 0:
@@ -221,7 +221,7 @@ def get_did_data_2020(name: str = "DID data") -> ConditionalFormulaDataRecord:
                                      min_occurrences=1,
                                      max_occurrences=None)
 
-    def _get_did_data(did: int) -> Tuple[RawDataRecord]:
+    def _get_did_data(did: int) -> tuple[RawDataRecord]:
         data_records = DID_DATA_MAPPING_2020.get(did, None)
         if data_records is None:
             raise ValueError(f"No data structure defined for DID 0x{did:04X}.")
@@ -254,7 +254,7 @@ def get_did_data_2013(name: str = "DID data") -> ConditionalFormulaDataRecord:
                                      min_occurrences=1,
                                      max_occurrences=None)
 
-    def _get_did_data(did: int) -> Tuple[RawDataRecord]:
+    def _get_did_data(did: int) -> tuple[RawDataRecord]:
         data_records = DID_DATA_MAPPING_2013.get(did, None)
         if data_records is None:
             raise ValueError(f"No data structure defined for DID 0x{did:04X}.")
@@ -275,8 +275,8 @@ def get_did_data_2013(name: str = "DID data") -> ConditionalFormulaDataRecord:
 
 
 def get_did_record_2020(did_count: int,
-                        record_number: Optional[int],
-                        optional: bool = False) -> Tuple[Union[MappingDataRecord, ConditionalFormulaDataRecord], ...]:
+                        record_number: None | int,
+                        optional: bool = False) -> tuple[MappingDataRecord | ConditionalFormulaDataRecord, ...]:
     """
     Get DID record (e.g. for DTC Snapshot or DTC Stored Data) with DID numbers and data.
 
@@ -289,7 +289,7 @@ def get_did_record_2020(did_count: int,
 
     :return: Data Records that are part of the DID record.
     """
-    data_records: List[Union[MappingDataRecord, ConditionalFormulaDataRecord]] = []
+    data_records: list[MappingDataRecord | ConditionalFormulaDataRecord] = []
     for did_number in range(1, did_count + 1):
         name = f"DID#{did_number}" if record_number is None else f"DID#{record_number}_{did_number}"
         data_records.append(get_did_2020(name=name, optional=optional))
@@ -298,8 +298,8 @@ def get_did_record_2020(did_count: int,
 
 
 def get_did_record_2013(did_count: int,
-                        record_number: Optional[int],
-                        optional: bool = False) -> Tuple[Union[MappingDataRecord, ConditionalFormulaDataRecord], ...]:
+                        record_number: None | int,
+                        optional: bool = False) -> tuple[MappingDataRecord | ConditionalFormulaDataRecord, ...]:
     """
     Get DID record (e.g. for DTC Snapshot or DTC Stored Data) with DID numbers and data.
 
@@ -312,7 +312,7 @@ def get_did_record_2013(did_count: int,
 
     :return: Data Records that are part of the DID record.
     """
-    data_records: List[Union[MappingDataRecord, ConditionalFormulaDataRecord]] = []
+    data_records: list[MappingDataRecord | ConditionalFormulaDataRecord] = []
     for did_number in range(1, did_count + 1):
         name = f"DID#{did_number}" if record_number is None else f"DID#{record_number}_{did_number}"
         data_records.append(get_did_2013(name=name, optional=optional))
@@ -321,7 +321,7 @@ def get_did_record_2013(did_count: int,
 
 
 def get_memory_size_and_memory_address(address_and_length_format_identifier: int
-                                       ) -> Tuple[RawDataRecord, RawDataRecord]:
+                                       ) -> tuple[RawDataRecord, RawDataRecord]:
     """
     Get `memoryAddress` and `memorySize` Data Records for given `addressAndLengthFormatIdentifier` value.
 
@@ -343,7 +343,7 @@ def get_memory_size_and_memory_address(address_and_length_format_identifier: int
             RawDataRecord(name="memorySize", length=8 * memory_size_length, unit="bytes"))
 
 
-def get_max_number_of_block_length(length_format_identifier: int) -> Tuple[RawDataRecord]:
+def get_max_number_of_block_length(length_format_identifier: int) -> tuple[RawDataRecord]:
     """
     Get `maxNumberOfBlockLength` Data Record for given `lengthFormatIdentifier` value.
 
@@ -368,7 +368,7 @@ def get_max_number_of_block_length(length_format_identifier: int) -> Tuple[RawDa
 # SID 0x19
 
 
-def get_did_records_formula_2020(record_number: Optional[int]) -> Callable[[int], AliasMessageStructure]:
+def get_did_records_formula_2020(record_number: None | int) -> Callable[[int], MessageStructureAlias]:
     """
     Get formula that can be used by Conditional Data Record for getting DID related Data Records.
 
@@ -383,7 +383,7 @@ def get_did_records_formula_2020(record_number: Optional[int]) -> Callable[[int]
                                                  record_number=record_number)
 
 
-def get_did_records_formula_2013(record_number: Optional[int]) -> Callable[[int], AliasMessageStructure]:
+def get_did_records_formula_2013(record_number: None | int) -> Callable[[int], MessageStructureAlias]:
     """
     Get formula that can be used by Conditional Data Record for getting DID related Data Records.
 
@@ -402,8 +402,7 @@ def get_did_records_formula_2013(record_number: Optional[int]) -> Callable[[int]
 
 
 def get_scaling_byte_extension(scaling_byte: int,
-                               scaling_byte_number: int
-                               ) -> Tuple[Union[RawDataRecord, ConditionalFormulaDataRecord], ...]:
+                               scaling_byte_number: int) -> tuple[RawDataRecord | ConditionalFormulaDataRecord, ...]:
     """
     Get `scalingByteExtension` Data Records for given `scalingByte` value.
 
@@ -439,7 +438,7 @@ def get_scaling_byte_extension(scaling_byte: int,
     return ()
 
 
-def get_scaling_byte_extension_formula(scaling_byte_number: int) -> Callable[[int], AliasMessageStructure]:
+def get_scaling_byte_extension_formula(scaling_byte_number: int) -> Callable[[int], MessageStructureAlias]:
     """
     Get formula that can be used by Conditional Data Record for getting `scalingByteExtension` Data Records.
 
@@ -451,7 +450,7 @@ def get_scaling_byte_extension_formula(scaling_byte_number: int) -> Callable[[in
                                                            scaling_byte_number=scaling_byte_number)
 
 
-def get_coefficients(formula_identifier: int, scaling_byte_number: int) -> Tuple[CustomFormulaDataRecord, ...]:
+def get_coefficients(formula_identifier: int, scaling_byte_number: int) -> tuple[CustomFormulaDataRecord, ...]:
     """
     Get coefficients' Data Records for formula type parameter.
 
@@ -482,7 +481,7 @@ def get_coefficients(formula_identifier: int, scaling_byte_number: int) -> Tuple
     raise ValueError(f"Unknown formula identifier was provided: 0x{formula_identifier:02X}.")
 
 
-def get_coefficients_formula(scaling_byte_number: int) -> Callable[[int], Tuple[CustomFormulaDataRecord, ...]]:
+def get_coefficients_formula(scaling_byte_number: int) -> Callable[[int], tuple[CustomFormulaDataRecord, ...]]:
     """
     Get formula that can be used by Conditional Data Record for getting formula coefficients.
 
@@ -497,7 +496,7 @@ def get_coefficients_formula(scaling_byte_number: int) -> Callable[[int], Tuple[
 # SID 0x27
 
 
-def get_security_access_request(subfunction: int) -> Tuple[RawDataRecord]:
+def get_security_access_request(subfunction: int) -> tuple[RawDataRecord]:
     """
     Get Data Records that are part of SecurityAccess request message.
 
@@ -510,7 +509,7 @@ def get_security_access_request(subfunction: int) -> Tuple[RawDataRecord]:
     return (SECURITY_KEY,)
 
 
-def get_security_access_response(subfunction: int) -> Union[Tuple[RawDataRecord], Tuple[()]]:
+def get_security_access_response(subfunction: int) -> tuple[RawDataRecord] | tuple[()]:
     """
     Get Data Records that are part of SecurityAccess response message.
 
@@ -526,7 +525,7 @@ def get_security_access_response(subfunction: int) -> Union[Tuple[RawDataRecord]
 # SID 0x2C
 
 
-def get_data_from_memory(address_and_length_format_identifier: int) -> Tuple[RawDataRecord]:
+def get_data_from_memory(address_and_length_format_identifier: int) -> tuple[RawDataRecord]:
     """
     Get `Data from Memory` Data Record for given `addressAndLengthFormatIdentifier` value.
 
@@ -578,7 +577,7 @@ def get_did_data_mask_2020(name: str, optional: bool) -> ConditionalFormulaDataR
                                  min_occurrences=data_record.min_occurrences,
                                  max_occurrences=data_record.max_occurrences)
 
-    def _get_did_data_mask(did: int) -> Tuple[RawDataRecord]:
+    def _get_did_data_mask(did: int) -> tuple[RawDataRecord]:
         data_records = DID_DATA_MAPPING_2020.get(did, None)
         if data_records is None:
             raise ValueError(f"No data structure defined for DID 0x{did:04X}.")
@@ -623,7 +622,7 @@ def get_did_data_mask_2013(name: str, optional: bool) -> ConditionalFormulaDataR
                                  min_occurrences=data_record.min_occurrences,
                                  max_occurrences=data_record.max_occurrences)
 
-    def _get_did_data_mask(did: int) -> Tuple[RawDataRecord]:
+    def _get_did_data_mask(did: int) -> tuple[RawDataRecord]:
         data_records = DID_DATA_MAPPING_2013.get(did, None)
         if data_records is None:
             raise ValueError(f"No data structure defined for DID 0x{did:04X}.")
@@ -648,7 +647,7 @@ def get_did_data_mask_2013(name: str, optional: bool) -> ConditionalFormulaDataR
 # SID 0x38
 
 
-def get_file_path_and_name(file_path_and_name_length: int) -> Tuple[TextDataRecord]:
+def get_file_path_and_name(file_path_and_name_length: int) -> tuple[TextDataRecord]:
     """
     Get `filePathAndName` Data Record of given bytes length.
 
@@ -667,7 +666,7 @@ def get_file_path_and_name(file_path_and_name_length: int) -> Tuple[TextDataReco
                            enforce_reoccurring=True),)
 
 
-def get_file_sizes(file_size_parameter_length: int) -> Tuple[RawDataRecord, RawDataRecord]:
+def get_file_sizes(file_size_parameter_length: int) -> tuple[RawDataRecord, RawDataRecord]:
     """
     Get `fileSizeUnCompressed` and `fileSizeCompressed` Data Records of given bytes length.
 
@@ -687,7 +686,7 @@ def get_file_sizes(file_size_parameter_length: int) -> Tuple[RawDataRecord, RawD
                           unit="bytes"))
 
 
-def get_file_sizes_or_dir_info(file_size_or_dir_info_parameter_length: int) -> Tuple[RawDataRecord, RawDataRecord]:
+def get_file_sizes_or_dir_info(file_size_or_dir_info_parameter_length: int) -> tuple[RawDataRecord, RawDataRecord]:
     """
     Get fileSizeUncompressedOrDirInfoLength` and `fileSizeCompressed` Data Records of given bytes length.
 
@@ -708,7 +707,7 @@ def get_file_sizes_or_dir_info(file_size_or_dir_info_parameter_length: int) -> T
                           unit="bytes"))
 
 
-def get_dir_info(file_size_or_dir_info_parameter_length: int) -> Tuple[RawDataRecord]:
+def get_dir_info(file_size_or_dir_info_parameter_length: int) -> tuple[RawDataRecord]:
     """
     Get `fileSizeUncompressedOrDirInfoLength` Data Record of given bytes length.
 
@@ -726,7 +725,7 @@ def get_dir_info(file_size_or_dir_info_parameter_length: int) -> Tuple[RawDataRe
                           unit="bytes"),)
 
 
-def get_max_number_of_block_length_file_transfer(length_format_identifier: int) -> Tuple[RawDataRecord]:
+def get_max_number_of_block_length_file_transfer(length_format_identifier: int) -> tuple[RawDataRecord]:
     """
     Get `maxNumberOfBlockLength` Data Record of given bytes length.
 
@@ -747,7 +746,7 @@ def get_max_number_of_block_length_file_transfer(length_format_identifier: int) 
 # SID 0x3D
 
 
-def get_data(memory_size_length: int) -> Tuple[RawDataRecord]:
+def get_data(memory_size_length: int) -> tuple[RawDataRecord]:
     """
     Get `data` Data Record of given bytes length.
 
@@ -768,9 +767,9 @@ def get_data(memory_size_length: int) -> Tuple[RawDataRecord]:
 # SID 0x84
 
 
-def get_secured_data_transmission_request(signature_length: int) -> Union[
-        Tuple[RawDataRecord, RawDataRecord, RawDataRecord, RawDataRecord],
-        Tuple[RawDataRecord, RawDataRecord, RawDataRecord]]:
+def get_secured_data_transmission_request(signature_length: int) -> (
+        tuple[RawDataRecord, RawDataRecord, RawDataRecord, RawDataRecord]
+        | tuple[RawDataRecord, RawDataRecord, RawDataRecord]):
     """
     Get Data Records that are part of SecuredDataTransmission request message.
 
@@ -793,9 +792,9 @@ def get_secured_data_transmission_request(signature_length: int) -> Union[
             signature)
 
 
-def get_secured_data_transmission_response(signature_length: int) -> Union[
-        Tuple[RawDataRecord, RawDataRecord, RawDataRecord, RawDataRecord],
-        Tuple[RawDataRecord, RawDataRecord, RawDataRecord]]:
+def get_secured_data_transmission_response(signature_length: int) -> (
+        tuple[RawDataRecord, RawDataRecord, RawDataRecord, RawDataRecord]
+        | tuple[RawDataRecord, RawDataRecord, RawDataRecord]):
     """
     Get Data Records that are part of SecuredDataTransmission response message.
 
@@ -821,7 +820,7 @@ def get_secured_data_transmission_response(signature_length: int) -> Union[
 # SID 0x86
 
 
-def get_event_window_2020(event_number: Optional[int] = None) -> MappingDataRecord:
+def get_event_window_2020(event_number: None | int = None) -> MappingDataRecord:
     """
     Get `eventWindowTime` Data Record (compatible with ISO 14229-1:2020).
 
@@ -835,7 +834,7 @@ def get_event_window_2020(event_number: Optional[int] = None) -> MappingDataReco
                              values_mapping=EVENT_WINDOW_TIME_MAPPING_2020)
 
 
-def get_event_window_2013(event_number: Optional[int] = None) -> MappingDataRecord:
+def get_event_window_2013(event_number: None | int = None) -> MappingDataRecord:
     """
     Get `eventWindowTime` Data Record (compatible with ISO 14229-1:2013).
 
@@ -877,7 +876,7 @@ def get_event_type_of_active_event_2013(event_number: int) -> RawDataRecord:
                                    EVENT_TYPE_2013))
 
 
-def get_event_type_record_01(event_number: Optional[int] = None) -> RawDataRecord:
+def get_event_type_record_01(event_number: None | int = None) -> RawDataRecord:
     """
     Get `eventTypeRecord` Data Record for `event` equal to 0x01.
 
@@ -891,7 +890,7 @@ def get_event_type_record_01(event_number: Optional[int] = None) -> RawDataRecor
                          children=(DTC_STATUS_MASK,))
 
 
-def get_event_type_record_02_2013(event_number: Optional[int] = None) -> RawDataRecord:
+def get_event_type_record_02_2013(event_number: None | int = None) -> RawDataRecord:
     """
     Get `eventTypeRecord` Data Record (compatible with ISO 14229-1:2013) for `event` equal to 0x02.
 
@@ -905,7 +904,7 @@ def get_event_type_record_02_2013(event_number: Optional[int] = None) -> RawData
                          children=(TIMER_SCHEDULE_2013,))
 
 
-def get_event_type_record_03_2020(event_number: Optional[int] = None) -> RawDataRecord:
+def get_event_type_record_03_2020(event_number: None | int = None) -> RawDataRecord:
     """
     Get `eventTypeRecord` Data Record (compatible with ISO 14229-1:2020) for `event` equal to 0x03.
 
@@ -919,7 +918,7 @@ def get_event_type_record_03_2020(event_number: Optional[int] = None) -> RawData
                          children=(DID_2020,))
 
 
-def get_event_type_record_03_2013(event_number: Optional[int] = None) -> RawDataRecord:
+def get_event_type_record_03_2013(event_number: None | int = None) -> RawDataRecord:
     """
     Get `eventTypeRecord` Data Record (compatible with ISO 14229-1:2013) for `event` equal to 0x03.
 
@@ -933,7 +932,7 @@ def get_event_type_record_03_2013(event_number: Optional[int] = None) -> RawData
                          children=(DID_2013,))
 
 
-def get_event_type_record_07_2020(event_number: Optional[int] = None) -> RawDataRecord:
+def get_event_type_record_07_2020(event_number: None | int = None) -> RawDataRecord:
     """
     Get `eventTypeRecord` Data Record (compatible with ISO 14229-1:2020) for `event` equal to 0x07.
 
@@ -951,7 +950,7 @@ def get_event_type_record_07_2020(event_number: Optional[int] = None) -> RawData
                                    LOCALIZATION))
 
 
-def get_event_type_record_07_2013(event_number: Optional[int] = None) -> RawDataRecord:
+def get_event_type_record_07_2013(event_number: None | int = None) -> RawDataRecord:
     """
     Get `eventTypeRecord` Data Record (compatible with ISO 14229-1:2013) for `event` equal to 0x07.
 
@@ -969,7 +968,7 @@ def get_event_type_record_07_2013(event_number: Optional[int] = None) -> RawData
                                    LOCALIZATION))
 
 
-def get_event_type_record_08_2020(event_number: Optional[int] = None) -> RawDataRecord:
+def get_event_type_record_08_2020(event_number: None | int = None) -> RawDataRecord:
     """
     Get `eventTypeRecord` Data Record (compatible with ISO 14229-1:2020) for `event` equal to 0x08.
 
@@ -984,7 +983,7 @@ def get_event_type_record_08_2020(event_number: Optional[int] = None) -> RawData
                                    REPORT_TYPE_2020))
 
 
-def get_event_type_record_09_2020(event_number: Optional[int] = None) -> RawDataRecord:
+def get_event_type_record_09_2020(event_number: None | int = None) -> RawDataRecord:
     """
     Get `eventTypeRecord` Data Record (compatible with ISO 14229-1:2020) for `event` equal to 0x09.
 
@@ -1000,7 +999,7 @@ def get_event_type_record_09_2020(event_number: Optional[int] = None) -> RawData
                                    REPORT_TYPE_2020))
 
 
-def get_event_type_record_09_2020_continuation(event_number: Optional[int] = None) -> ConditionalMappingDataRecord:
+def get_event_type_record_09_2020_continuation(event_number: None | int = None) -> ConditionalMappingDataRecord:
     """
     Get continuation for `eventTypeRecord` Data Record (`event` equal to 0x09).
 
@@ -1042,7 +1041,7 @@ def get_event_type_record_09_2020_continuation(event_number: Optional[int] = Non
         value_mask=0x7F)
 
 
-def get_service_to_respond(event_number: Optional[int] = None) -> RawDataRecord:
+def get_service_to_respond(event_number: None | int = None) -> RawDataRecord:
     """
     Get `serviceToRespondToRecord` Data Record.
 
@@ -1058,8 +1057,9 @@ def get_service_to_respond(event_number: Optional[int] = None) -> RawDataRecord:
                          max_occurrences=None)
 
 
-def get_activated_events_2020(number_of_activated_events: int
-                              ) -> Tuple[Union[RawDataRecord, MappingDataRecord, ConditionalMappingDataRecord], ...]:
+def get_activated_events_2020(number_of_activated_events: int) -> tuple[RawDataRecord
+                                                                        | MappingDataRecord
+                                                                        | ConditionalMappingDataRecord, ...]:
     """
     Get activated events (compatible with ISO 14229-1:2020).
 
@@ -1067,7 +1067,7 @@ def get_activated_events_2020(number_of_activated_events: int
 
     :return: Data Records for activated events.
     """
-    data_records: List[Union[RawDataRecord, MappingDataRecord, ConditionalMappingDataRecord]] = []
+    data_records: list[RawDataRecord | MappingDataRecord | ConditionalMappingDataRecord] = []
     for event_number in range(1, number_of_activated_events + 1):
         event_window = get_event_window_2020(event_number)
         service_to_respond = get_service_to_respond(event_number)
@@ -1092,8 +1092,9 @@ def get_activated_events_2020(number_of_activated_events: int
     return tuple(data_records)
 
 
-def get_activated_events_2013(number_of_activated_events: int
-                              ) -> Tuple[Union[RawDataRecord, MappingDataRecord, ConditionalMappingDataRecord], ...]:
+def get_activated_events_2013(number_of_activated_events: int) -> tuple[RawDataRecord
+                                                                        | MappingDataRecord
+                                                                        | ConditionalMappingDataRecord, ...]:
     """
     Get activated events (compatible with ISO 14229-1:2013).
 
@@ -1101,7 +1102,7 @@ def get_activated_events_2013(number_of_activated_events: int
 
     :return: Data Records for activated events.
     """
-    data_records: List[Union[RawDataRecord, MappingDataRecord, ConditionalMappingDataRecord]] = []
+    data_records: list[RawDataRecord | MappingDataRecord | ConditionalMappingDataRecord] = []
     for event_number in range(1, number_of_activated_events + 1):
         event_window = get_event_window_2013(event_number)
         service_to_respond = get_service_to_respond(event_number)

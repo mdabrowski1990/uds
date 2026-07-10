@@ -2,7 +2,7 @@
 
 __all__ = ["RawDataRecord"]
 
-from typing import Optional, Sequence
+from collections.abc import Sequence
 
 from .abstract_data_record import AbstractDataRecord
 
@@ -24,8 +24,8 @@ class RawDataRecord(AbstractDataRecord):
                  length: int,
                  children: Sequence[AbstractDataRecord] = tuple(),
                  min_occurrences: int = 1,
-                 max_occurrences: Optional[int] = 1,
-                 unit: Optional[str] = None,
+                 max_occurrences: None | int = 1,
+                 unit: None | str = None,
                  enforce_reoccurring: bool = False) -> None:
         """
         Create Raw Data Record.

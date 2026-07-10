@@ -3,8 +3,8 @@
 __all__ = ["MappingDataRecord", "MappingAndLinearFormulaDataRecord"]
 
 from abc import ABC, abstractmethod
+from collections.abc import Sequence
 from types import MappingProxyType
-from typing import Dict, Optional, Sequence, Union
 from warnings import warn
 
 from uds.utilities import ValueWarning
@@ -17,7 +17,7 @@ from .raw_data_record import RawDataRecord
 class AbstractMappingDataRecord(ABC):
     """Mapping functionality for Data Records."""
 
-    def __init__(self, values_mapping: Dict[int, str]) -> None:
+    def __init__(self, values_mapping: dict[int, str]) -> None:
         """
         Define mapping to use by this Data Record.
 
@@ -32,7 +32,7 @@ class AbstractMappingDataRecord(ABC):
         return self.__values_mapping
 
     @values_mapping.setter
-    def values_mapping(self, value: Dict[int, str]) -> None:
+    def values_mapping(self, value: dict[int, str]) -> None:
         """
         Set the mapping between raw values and their labels.
 
@@ -89,11 +89,11 @@ class MappingDataRecord(RawDataRecord, AbstractMappingDataRecord):
     def __init__(self,
                  name: str,
                  length: int,
-                 values_mapping: Dict[int, str],
+                 values_mapping: dict[int, str],
                  children: Sequence[AbstractDataRecord] = tuple(),
                  min_occurrences: int = 1,
-                 max_occurrences: Optional[int] = 1,
-                 unit: Optional[str] = None,
+                 max_occurrences: None | int = 1,
+                 unit: None | str = None,
                  enforce_reoccurring: bool = False) -> None:
         """
         Create Mapping Data Record.
@@ -120,7 +120,7 @@ class MappingDataRecord(RawDataRecord, AbstractMappingDataRecord):
         AbstractMappingDataRecord.__init__(self,
                                            values_mapping=values_mapping)
 
-    def get_physical_value(self, raw_value: int) -> Union[str, int]:  # type: ignore
+    def get_physical_value(self, raw_value: int) -> str | int:  # type: ignore
         """
         Get physical value representing provided raw value.
 
@@ -135,7 +135,7 @@ class MappingDataRecord(RawDataRecord, AbstractMappingDataRecord):
              stacklevel=2)
         return super().get_physical_value(raw_value)
 
-    def get_raw_value(self, physical_value: Union[str, int]) -> int:  # type: ignore
+    def get_raw_value(self, physical_value: str | int) -> int:  # type: ignore
         """
         Get raw value that represents provided physical value.
 
@@ -175,12 +175,12 @@ class MappingAndLinearFormulaDataRecord(LinearFormulaDataRecord, AbstractMapping
     def __init__(self,
                  name: str,
                  length: int,
-                 values_mapping: Dict[int, str],
-                 factor: Union[float, int],
-                 offset: Union[float, int],
+                 values_mapping: dict[int, str],
+                 factor: float | int,
+                 offset: float | int,
                  min_occurrences: int = 1,
-                 max_occurrences: Optional[int] = 1,
-                 unit: Optional[str] = None,
+                 max_occurrences: None | int = 1,
+                 unit: None | str = None,
                  enforce_reoccurring: bool = False) -> None:
         """
         Create Mapping and Linear Formula Data Record.
@@ -209,7 +209,7 @@ class MappingAndLinearFormulaDataRecord(LinearFormulaDataRecord, AbstractMapping
         AbstractMappingDataRecord.__init__(self,
                                            values_mapping=values_mapping)
 
-    def get_physical_value(self, raw_value: int) -> Union[str, int, float]:  # type: ignore
+    def get_physical_value(self, raw_value: int) -> str | int | float:  # type: ignore
         """
         Get physical value representing provided raw value.
 
@@ -221,7 +221,7 @@ class MappingAndLinearFormulaDataRecord(LinearFormulaDataRecord, AbstractMapping
             return self.values_mapping[raw_value]
         return super().get_physical_value(raw_value)
 
-    def get_raw_value(self, physical_value: Union[str, int, float]) -> int:
+    def get_raw_value(self, physical_value: str | int | float) -> int:
         """
         Get raw value that represents provided physical value.
 

@@ -2,10 +2,10 @@
 
 __all__ = ["Client"]
 
+from collections.abc import Sequence
 from queue import Empty, Queue
 from threading import Event, Lock, Thread
 from time import perf_counter, sleep
-from typing import List, Optional, Sequence, Tuple, Union
 from warnings import warn
 
 from uds.addressing import AddressingType
@@ -65,10 +65,10 @@ class Client:
         :param s3_client: Value of S3Client time parameter.
         """
         # TIMING PARAMETERS
-        self.__p2_client_measured: Optional[TimeMillisecondsAlias] = None
-        self.__p2_ext_client_measured: Optional[Tuple[TimeMillisecondsAlias, ...]] = None
-        self.__p6_client_measured: Optional[TimeMillisecondsAlias] = None
-        self.__p6_ext_client_measured: Optional[TimeMillisecondsAlias] = None
+        self.__p2_client_measured: None | TimeMillisecondsAlias = None
+        self.__p2_ext_client_measured: None | tuple[TimeMillisecondsAlias, ...] = None
+        self.__p6_client_measured: None | TimeMillisecondsAlias = None
+        self.__p6_ext_client_measured: None | TimeMillisecondsAlias = None
         # set default values to avoid errors on values assignment
         self.__p2_client_timeout = self.DEFAULT_P2_CLIENT_TIMEOUT
         self.__p2_ext_client_timeout = self.DEFAULT_P2_EXT_CLIENT_TIMEOUT
@@ -89,12 +89,12 @@ class Client:
         # tasks and threads
         self.__tester_present_task_event: Event = Event()
         self.__tester_present_task_event.clear()
-        self.__tester_present_thread: Optional[Thread] = None
+        self.__tester_present_thread: None | Thread = None
         self.__background_receiving_task_event: Event = Event()
         self.__background_receiving_task_event.clear()
         self.__break_in_background_receiving_event: Event = Event()
         self.__break_in_background_receiving_event.clear()
-        self.__background_receiving_thread: Optional[Thread] = None
+        self.__background_receiving_thread: None | Thread = None
         self.__send_and_receive_not_in_progress_event: Event = Event()
         self.__send_and_receive_not_in_progress_event.set()
         self.__receiving_not_in_progress_event: Event = Event()
@@ -107,11 +107,11 @@ class Client:
         self.__functional_transmission_lock: Lock = Lock()
         # other
         self.__response_queue: Queue[UdsMessageRecord] = Queue()
-        self.__last_physical_request: Optional[UdsMessageRecord] = None
-        self.__last_physical_response: Optional[UdsMessageRecord] = None
-        self.__last_functional_request: Optional[UdsMessageRecord] = None
-        self.__last_functional_response: Optional[UdsMessageRecord] = None
-        self.__last_tester_present_requests: List[UdsMessageRecord] = []
+        self.__last_physical_request: None | UdsMessageRecord = None
+        self.__last_physical_response: None | UdsMessageRecord = None
+        self.__last_functional_request: None | UdsMessageRecord = None
+        self.__last_functional_response: None | UdsMessageRecord = None
+        self.__last_tester_present_requests: list[UdsMessageRecord] = []
 
     def __del__(self) -> None:
         """Safely finish all tasks."""
@@ -176,7 +176,7 @@ class Client:
             self.p6_client_timeout = value
 
     @property  # noqa: vulture
-    def p2_client_measured(self) -> Optional[TimeMillisecondsAlias]:
+    def p2_client_measured(self) -> None | TimeMillisecondsAlias:
         """
         Get last measured value of P2Client parameter.
 
@@ -210,7 +210,7 @@ class Client:
             self.p6_ext_client_timeout = value
 
     @property  # noqa: vulture
-    def p2_ext_client_measured(self) -> Optional[Tuple[TimeMillisecondsAlias, ...]]:
+    def p2_ext_client_measured(self) -> None | tuple[TimeMillisecondsAlias, ...]:
         """
         Get last measured values of P2*Client parameter.
 
@@ -306,7 +306,7 @@ class Client:
             self.p6_ext_client_timeout = value
 
     @property  # noqa: vulture
-    def p6_client_measured(self) -> Optional[TimeMillisecondsAlias]:
+    def p6_client_measured(self) -> None | TimeMillisecondsAlias:
         """
         Get last measured value of P6Client parameter.
 
@@ -342,7 +342,7 @@ class Client:
         self.__p6_ext_client_timeout = value
 
     @property  # noqa: vulture
-    def p6_ext_client_measured(self) -> Optional[TimeMillisecondsAlias]:
+    def p6_ext_client_measured(self) -> None | TimeMillisecondsAlias:
         """
         Get last measured value of P6*Client parameter.
 
@@ -379,12 +379,12 @@ class Client:
         self.__s3_client = value
 
     @property  # noqa: vulture
-    def last_sent_tester_present_requests(self) -> Tuple[UdsMessageRecord, ...]:
+    def last_sent_tester_present_requests(self) -> tuple[UdsMessageRecord, ...]:
         """Get records with the last few request with Tester Present messages."""
         return tuple(self.__last_tester_present_requests)
 
     @property
-    def last_sent_request(self) -> Optional[UdsMessageRecord]:
+    def last_sent_request(self) -> None | UdsMessageRecord:
         """Get record with the last request message sent."""
         records = []
         if self.__last_physical_request is not None:
@@ -396,7 +396,7 @@ class Client:
         return max(records, key=lambda record: record.transmission_end_timestamp)
 
     @property  # noqa: vulture
-    def last_received_response(self) -> Optional[UdsMessageRecord]:
+    def last_received_response(self) -> None | UdsMessageRecord:
         """
         Get record with the last response message sent.
 
@@ -673,7 +673,7 @@ class Client:
             self._update_last_response(response_record)
         return response_record
 
-    def _receive_initial_response(self, request_record: UdsMessageRecord) -> Optional[UdsMessageRecord]:
+    def _receive_initial_response(self, request_record: UdsMessageRecord) -> None | UdsMessageRecord:
         """
         Receive the first UDS response to a request message.
 
@@ -751,7 +751,7 @@ class Client:
         raise TimeoutError("P6*Client timeout exceeded.")
 
     @staticmethod
-    def is_response_pending_message(response_message: Union[UdsMessage, UdsMessageRecord],
+    def is_response_pending_message(response_message: UdsMessage | UdsMessageRecord,
                                     request_sid: RequestSID) -> bool:
         """
         Check if provided UDS message is Response Pending Message to a diagnostic service of given SID.
@@ -776,8 +776,8 @@ class Client:
                 and response_message.payload[2] == NRC.RequestCorrectlyReceived_ResponsePending)
 
     def is_response_to_request(self,
-                               response_message: Union[UdsMessage, UdsMessageRecord],
-                               request_message: Union[UdsMessage, UdsMessageRecord]) -> bool:
+                               response_message: UdsMessage | UdsMessageRecord,
+                               request_message: UdsMessage | UdsMessageRecord) -> bool:
         """
         Check if provided UDS message is a response message to a diagnostic service of given SID.
 
@@ -854,7 +854,7 @@ class Client:
         raise NotImplementedError("Request message with unexpected `addressing_type` attribute value was provided: "
                                   f"{request.addressing_type!r}")
 
-    def get_response(self, timeout: Optional[TimeMillisecondsAlias] = None) -> Optional[UdsMessageRecord]:
+    def get_response(self, timeout: None | TimeMillisecondsAlias = None) -> None | UdsMessageRecord:
         """
         Wait for the first received response message.
 
@@ -883,7 +883,7 @@ class Client:
         except Empty:
             return None
 
-    def get_response_no_wait(self) -> Optional[UdsMessageRecord]:
+    def get_response_no_wait(self) -> None | UdsMessageRecord:
         """
         Get the first received response message, but do not wait for its arrival.
 
@@ -973,7 +973,7 @@ class Client:
                  category=UserWarning)
 
     def send_request_receive_responses(self,
-                                       request: UdsMessage) -> Tuple[UdsMessageRecord, Tuple[UdsMessageRecord, ...]]:
+                                       request: UdsMessage) -> tuple[UdsMessageRecord, tuple[UdsMessageRecord, ...]]:
         """
         Send diagnostic request and receive all responses (till the final one).
 
@@ -991,7 +991,7 @@ class Client:
             raise TypeError(f"Provided request value is not an instance of UdsMessage class. "
                             f"Actual type: {type(request)}.")
         sid = RequestSID(request.payload[0])
-        response_records: List[UdsMessageRecord] = []
+        response_records: list[UdsMessageRecord] = []
         self.__send_and_receive_not_in_progress_event.clear()
         if self.is_background_receiving:
             self.__receiving_not_in_progress_event.wait(timeout=self.p6_ext_client_timeout)

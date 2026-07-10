@@ -2,7 +2,6 @@ import asyncio
 from abc import ABC, abstractmethod
 from threading import Timer
 from time import perf_counter, sleep
-from typing import List
 
 import pytest
 from tests.system_tests import BaseSystemTests
@@ -36,7 +35,7 @@ class AbstractPythonCanTests(BaseSystemTests, ABC):
 
     can_interface_1: Bus
     can_interface_2: Bus
-    sent_packets: List[CanPacketRecord]
+    sent_packets: list[CanPacketRecord]
 
     @abstractmethod
     def _define_interfaces(self):

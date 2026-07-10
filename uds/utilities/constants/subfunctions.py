@@ -17,7 +17,6 @@ __all__ = [
     "LINK_CONTROL_TYPE_MAPPING",  # SID 0x87
 ]
 
-from typing import Dict
 
 SPRMIB_MASK = 0x80
 """Bit mask of suppressPosRspMsgIndicationBit in SubFunction byte."""
@@ -26,7 +25,7 @@ SUBFUNCTION_MASK = 0x7F
 
 # SID 0x10
 
-DIAGNOSTIC_SESSION_TYPE_MAPPING: Dict[int, str] = {
+DIAGNOSTIC_SESSION_TYPE_MAPPING: dict[int, str] = {
     0x01: "defaultSession",
     0x02: "programmingSession",
     0x03: "extendedDiagnosticSession",
@@ -37,7 +36,7 @@ DIAGNOSTIC_SESSION_TYPE_MAPPING: Dict[int, str] = {
 
 # SID 0x11
 
-RESET_TYPE_MAPPING: Dict[int, str] = {
+RESET_TYPE_MAPPING: dict[int, str] = {
     0x01: "hardReset",
     0x02: "keyOffOnReset",
     0x03: "softReset",
@@ -49,7 +48,7 @@ RESET_TYPE_MAPPING: Dict[int, str] = {
 
 # SID 0x19
 
-REPORT_TYPE_MAPPING_2020: Dict[int, str] = {
+REPORT_TYPE_MAPPING_2020: dict[int, str] = {
     0x01: "reportNumberOfDTCByStatusMask",
     0x02: "reportDTCByStatusMask",
     0x03: "reportDTCSnapshotIdentification",
@@ -77,7 +76,7 @@ REPORT_TYPE_MAPPING_2020: Dict[int, str] = {
 }
 """Values mapping for `reportType` Data Record (compatible with ISO 14229-1:2020) that is part of
 :ref:`ReadDTCInformation <knowledge-base-service-read-dtc-information>` SubFunction."""
-REPORT_TYPE_MAPPING_2013: Dict[int, str] = {
+REPORT_TYPE_MAPPING_2013: dict[int, str] = {
     0x01: "reportNumberOfDTCByStatusMask",
     0x02: "reportDTCByStatusMask",
     0x03: "reportDTCSnapshotIdentification",
@@ -134,7 +133,7 @@ SECURITY_ACCESS_TYPE_MAPPING = {
 
 # SID 0x28
 
-CONTROL_TYPE_MAPPING: Dict[int, str] = {
+CONTROL_TYPE_MAPPING: dict[int, str] = {
     0x00: "enableRxAndTx",
     0x01: "enableRxAndDisableTx",
     0x02: "disableRxAndEnableTx",
@@ -147,7 +146,7 @@ CONTROL_TYPE_MAPPING: Dict[int, str] = {
 
 # SID 0x29
 
-AUTHENTICATION_TASK_MAPPING: Dict[int, str] = {
+AUTHENTICATION_TASK_MAPPING: dict[int, str] = {
     0x00: "deAuthenticate",
     0x01: "verifyCertificateUnidirectional",
     0x02: "verifyCertificateBidirectional",
@@ -163,7 +162,7 @@ AUTHENTICATION_TASK_MAPPING: Dict[int, str] = {
 
 # SID 0x2C
 
-DEFINITION_TYPE_MAPPING: Dict[int, str] = {
+DEFINITION_TYPE_MAPPING: dict[int, str] = {
     0x01: "defineByIdentifier",
     0x02: "defineByMemoryAddress",
     0x03: "clearDynamicallyDefinedDataIdentifier",
@@ -173,7 +172,7 @@ DEFINITION_TYPE_MAPPING: Dict[int, str] = {
 
 # SID 0x31
 
-ROUTINE_CONTROL_TYPE_MAPPING: Dict[int, str] = {
+ROUTINE_CONTROL_TYPE_MAPPING: dict[int, str] = {
     0x01: "startRoutine",
     0x02: "stopRoutine",
     0x03: "requestRoutineResults",
@@ -183,7 +182,7 @@ ROUTINE_CONTROL_TYPE_MAPPING: Dict[int, str] = {
 
 # SID 0x3E
 
-ZERO_SUBFUNCTION_MAPPING: Dict[int, str] = {
+ZERO_SUBFUNCTION_MAPPING: dict[int, str] = {
     0x00: "zeroSubFunction",
 }
 """Values mapping for `zeroSubFunction` Data Record that is part of
@@ -191,7 +190,7 @@ ZERO_SUBFUNCTION_MAPPING: Dict[int, str] = {
 
 # SID 0x83
 
-TIMING_PARAMETER_ACCESS_TYPE_MAPPING_2013: Dict[int, str] = {
+TIMING_PARAMETER_ACCESS_TYPE_MAPPING_2013: dict[int, str] = {
     0x01: "readExtendedTimingParameterSet",
     0x02: "setTimingParametersToDefaultValues",
     0x03: "readCurrentlyActiveTimingParameters",
@@ -202,7 +201,7 @@ TIMING_PARAMETER_ACCESS_TYPE_MAPPING_2013: Dict[int, str] = {
 
 # SID 0x85
 
-DTC_SETTING_TYPE_MAPPING: Dict[int, str] = {
+DTC_SETTING_TYPE_MAPPING: dict[int, str] = {
     0x01: "on",
     0x02: "off",
 }
@@ -211,7 +210,7 @@ DTC_SETTING_TYPE_MAPPING: Dict[int, str] = {
 
 # SID 0x86
 
-EVENT_MAPPING_2020: Dict[int, str] = {
+EVENT_MAPPING_2020: dict[int, str] = {
     0x00: "stopResponseOnEvent",
     0x01: "onDTCStatusChange",
     0x03: "onChangeOfDataIdentifier",
@@ -224,7 +223,7 @@ EVENT_MAPPING_2020: Dict[int, str] = {
 }
 """Values mapping for `event` Data Record (compatible with ISO 14229-1:2020) that is part of
 :ref:`ResponseOnEvent <knowledge-base-service-response-on-event>` SubFunction."""
-EVENT_MAPPING_2013: Dict[int, str] = {
+EVENT_MAPPING_2013: dict[int, str] = {
     0x00: "stopResponseOnEvent",
     0x01: "onDTCStatusChange",
     0x02: "onTimerInterrupt",
@@ -237,7 +236,7 @@ EVENT_MAPPING_2013: Dict[int, str] = {
 """Values mapping for `event` Data Record (compatible with ISO 14229-1:2013) that is part of
 :ref:`ResponseOnEvent <knowledge-base-service-response-on-event>` SubFunction."""
 
-STORAGE_STATE_MAPPING: Dict[int, str] = {
+STORAGE_STATE_MAPPING: dict[int, str] = {
     0x00: "doNotStoreEvent",
     0x01: "storeEvent",
 }
@@ -246,7 +245,7 @@ STORAGE_STATE_MAPPING: Dict[int, str] = {
 
 # SID 0x87
 
-LINK_CONTROL_TYPE_MAPPING: Dict[int, str] = {
+LINK_CONTROL_TYPE_MAPPING: dict[int, str] = {
     0x01: "verifyModeTransitionWithFixedParameter",
     0x02: "verifyModeTransitionWithSpecificParameter",
     0x03: "transitionMode",

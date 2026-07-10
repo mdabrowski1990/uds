@@ -3,8 +3,9 @@
 __all__ = ["AbstractAddressingInformation"]
 
 from abc import ABC, abstractmethod
+from collections.abc import Mapping
 from types import MappingProxyType
-from typing import Any, Dict, Mapping, Optional
+from typing import Any
 
 from uds.utilities import ReassignmentError
 
@@ -140,11 +141,11 @@ class AbstractAddressingInformation(ABC):
         """Check whether the provided addressing information are valid."""
 
     @abstractmethod
-    def validate_addressing_params(self, **addressing_params: Any) -> Dict[str, Any]:
+    def validate_addressing_params(self, **addressing_params: Any) -> dict[str, Any]:
         """Check whether the provided parameters are complete and correct."""
 
     @abstractmethod
-    def is_input_packet(self, **frame_attributes: Any) -> Optional[AddressingType]:  # noqa: vulture
+    def is_input_packet(self, **frame_attributes: Any) -> None | AddressingType:  # noqa: vulture
         """
         Check if a frame with provided attributes is an input packet for this UDS Entity.
 

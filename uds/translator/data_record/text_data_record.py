@@ -2,7 +2,8 @@
 
 __all__ = ["TextDataRecord", "TextEncoding"]
 
-from typing import Callable, Dict, Optional, TypedDict
+from collections.abc import Callable
+from typing import TypedDict
 
 from uds.utilities import MAX_DTC_VALUE, ValidatedEnum, int_to_obd_dtc, obd_dtc_to_int
 
@@ -91,7 +92,7 @@ class TextDataRecord(AbstractDataRecord):
         encode: Callable[[int], str]  # noqa: vulture
         decode: Callable[[str], int]
 
-    __ENCODINGS: Dict[TextEncoding, _EncodingInfo] = {
+    __ENCODINGS: dict[TextEncoding, _EncodingInfo] = {
         TextEncoding.ASCII: _EncodingInfo(length=8,
                                           encode=chr,
                                           decode=decode_ascii),
@@ -107,7 +108,7 @@ class TextDataRecord(AbstractDataRecord):
                  name: str,
                  encoding: TextEncoding,
                  min_occurrences: int = 1,
-                 max_occurrences: Optional[int] = None,
+                 max_occurrences: None | int = None,
                  enforce_reoccurring: bool = True) -> None:
         """
         Configure Text Data Record.

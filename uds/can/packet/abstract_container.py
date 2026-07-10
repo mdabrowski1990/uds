@@ -1,9 +1,9 @@
 """Abstract definition of a container for a CAN packet."""
 
-__all__ = ["AbstractCanPacketContainer", "CanPacketsContainersSequence"]
+__all__ = ["AbstractCanPacketContainer", "CanPacketsContainersSequenceAlias"]
 
 from abc import ABC, abstractmethod
-from typing import Optional, Sequence
+from collections.abc import Sequence
 
 from uds.addressing import AddressingType
 from uds.packet.abstract_packet import AbstractPacketContainer
@@ -41,7 +41,7 @@ class AbstractCanPacketContainer(AbstractPacketContainer, ABC):
         """CAN addressing format used by this CAN packet."""
 
     @property
-    def target_address(self) -> Optional[int]:
+    def target_address(self) -> None | int:
         """
         Target Address (TA) value of this CAN Packet.
 
@@ -58,7 +58,7 @@ class AbstractCanPacketContainer(AbstractPacketContainer, ABC):
                                                                raw_frame_data=self.raw_frame_data)["target_address"]
 
     @property
-    def source_address(self) -> Optional[int]:
+    def source_address(self) -> None | int:
         """
         Source Address (SA) value of this CAN Packet.
 
@@ -74,7 +74,7 @@ class AbstractCanPacketContainer(AbstractPacketContainer, ABC):
                                                                raw_frame_data=self.raw_frame_data)["source_address"]
 
     @property
-    def address_extension(self) -> Optional[int]:
+    def address_extension(self) -> None | int:
         """
         Address Extension (AE) value of this CAN Packet.
 
@@ -96,7 +96,7 @@ class AbstractCanPacketContainer(AbstractPacketContainer, ABC):
         return CanPacketType(self.raw_frame_data[ai_data_bytes_number] >> 4)
 
     @property
-    def data_length(self) -> Optional[int]:
+    def data_length(self) -> None | int:
         """
         Payload bytes number of a diagnostic message that is carried by this CAN packet.
 
@@ -124,7 +124,7 @@ class AbstractCanPacketContainer(AbstractPacketContainer, ABC):
                                   f"{self.packet_type}.")
 
     @property
-    def sequence_number(self) -> Optional[int]:
+    def sequence_number(self) -> None | int:
         """
         Sequence Number carried by this CAN packet.
 
@@ -147,7 +147,7 @@ class AbstractCanPacketContainer(AbstractPacketContainer, ABC):
         raise NotImplementedError("No handling for given CAN Packet Packet Type.")
 
     @property
-    def flow_status(self) -> Optional[CanFlowStatus]:
+    def flow_status(self) -> None | CanFlowStatus:
         """
         Flow Status carried by this CAN packet.
 
@@ -169,7 +169,7 @@ class AbstractCanPacketContainer(AbstractPacketContainer, ABC):
         raise NotImplementedError("No handling for given CAN Packet Packet Type.")
 
     @property
-    def block_size(self) -> Optional[int]:
+    def block_size(self) -> None | int:
         """
         Block Size value carried by this CAN packet.
 
@@ -191,7 +191,7 @@ class AbstractCanPacketContainer(AbstractPacketContainer, ABC):
         raise NotImplementedError("No handling for given CAN Packet Packet Type.")
 
     @property
-    def st_min(self) -> Optional[int]:
+    def st_min(self) -> None | int:
         """
         Separation Time minimum (STmin) value carried by this CAN packet.
 
@@ -218,7 +218,7 @@ class AbstractCanPacketContainer(AbstractPacketContainer, ABC):
         """Addressing type for which this CAN packet is relevant."""
 
     @property
-    def payload(self) -> Optional[bytes]:
+    def payload(self) -> None | bytes:
         """
         Diagnostic message payload carried by this CAN packet.
 
@@ -252,5 +252,5 @@ class AbstractCanPacketContainer(AbstractPacketContainer, ABC):
         raise NotImplementedError("No handling for given CAN Packet Packet Type.")
 
 
-CanPacketsContainersSequence = Sequence[AbstractPacketContainer]
+CanPacketsContainersSequenceAlias = Sequence[AbstractPacketContainer]
 """Alias for a sequence filled with CAN packet or packet record objects."""
