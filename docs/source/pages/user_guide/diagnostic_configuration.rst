@@ -54,17 +54,19 @@ diagnostic configurations.
 The following state definitions are provided:
 
 - :obj:`~uds.diagnostic_configuration.state_definitions.DEFAULT_DIAGNOSTIC_SESSION_STATE`
-  - current diagnostic session.
+  - current diagnostic session
 - :obj:`~uds.diagnostic_configuration.state_definitions.DEFAULT_SECURITY_ACCESS_STATE`
-  - currently unlocked security access level.
+  - currently unlocked security access level
 - :obj:`~uds.diagnostic_configuration.state_definitions.DEFAULT_AUTHENTICATION_STATE`
-  - current authentication state.
-- :obj:`~uds.diagnostic_configuration.state_definitions.DEFAULT_SECURED_TRANSMISSION_STATE`
-  – indicates whether secured data transmission is active.
+  - current authentication state
+- :obj:`~~uds.diagnostic_configuration.state_definitions.DEFAULT_IGNITION_STATE`
+  - current ignition status
 - :obj:`~uds.diagnostic_configuration.state_definitions.DEFAULT_ENGINE_STATE`
-  - current engine state.
+  - current engine state
+- :obj:`~uds.diagnostic_configuration.state_definitions.DEFAULT_SECURED_TRANSMISSION_STATE`
+  – indicates whether secured data transmission is active
 - :obj:`~uds.diagnostic_configuration.state_definitions.DEFAULT_ADDRESSING_TYPE_STATE`
-  – current addressing type (physical or functional).
+  – current addressing type (physical or functional)
 
 
 ECU Diagnostic Configuration
@@ -101,9 +103,9 @@ Attributes:
 
 Methods:
 
-- :attr:`~uds.diagnostic_configuration.ecu_configuration.EcuDiagnosticConfiguration.combine_restrictions`
+- :meth:`~uds.diagnostic_configuration.ecu_configuration.EcuDiagnosticConfiguration.combine_restrictions`
   - combines multiple restriction definitions into a single effective restriction
-- :attr:`~uds.diagnostic_configuration.ecu_configuration.EcuDiagnosticConfiguration.get_restrictions`
+- :meth:`~uds.diagnostic_configuration.ecu_configuration.EcuDiagnosticConfiguration.get_restrictions`
   - returns the effective restrictions for a diagnostic message
 
 
