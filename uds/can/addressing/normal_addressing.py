@@ -2,7 +2,6 @@
 
 __all__ = ["NormalCanAddressingInformation", "NormalFixedCanAddressingInformation"]
 
-from typing import Optional
 
 from uds.addressing import AddressingType
 from uds.can.addressing.addressing_format import CanAddressingFormat
@@ -39,10 +38,10 @@ class NormalCanAddressingInformation(AbstractCanAddressingInformation):
     def validate_addressing_params(cls,  # type: ignore
                                    addressing_type: AddressingType,
                                    addressing_format: CanAddressingFormat = ADDRESSING_FORMAT,
-                                   can_id: Optional[int] = None,
-                                   target_address: Optional[int] = None,
-                                   source_address: Optional[int] = None,
-                                   address_extension: Optional[int] = None) -> CANAddressingParams:
+                                   can_id: None | int = None,
+                                   target_address: None | int = None,
+                                   source_address: None | int = None,
+                                   address_extension: None | int = None) -> CANAddressingParams:
         """
         Validate Addressing Information parameters in Normal Addressing format.
 
@@ -77,7 +76,7 @@ class NormalCanAddressingInformation(AbstractCanAddressingInformation):
 
     @staticmethod
     def is_compatible_can_id(can_id: int,
-                             addressing_type: Optional[AddressingType] = None) -> bool:
+                             addressing_type: None | AddressingType = None) -> bool:
         """
         Check whether provided CAN ID is consistent with Normal Addressing format.
 
@@ -117,8 +116,8 @@ class NormalCanAddressingInformation(AbstractCanAddressingInformation):
 
     @classmethod
     def encode_ai_data_bytes(cls,
-                             target_address: Optional[int] = None,
-                             address_extension: Optional[int] = None) -> bytearray:
+                             target_address: None | int = None,
+                             address_extension: None | int = None) -> bytearray:
         """
         Generate data bytes that carry Addressing Information.
 
@@ -157,10 +156,10 @@ class NormalFixedCanAddressingInformation(AbstractCanAddressingInformation):
     def validate_addressing_params(cls,  # type: ignore
                                    addressing_type: AddressingType,
                                    addressing_format: CanAddressingFormat = ADDRESSING_FORMAT,
-                                   can_id: Optional[int] = None,
-                                   target_address: Optional[int] = None,
-                                   source_address: Optional[int] = None,
-                                   address_extension: Optional[int] = None) -> CANAddressingParams:
+                                   can_id: None | int = None,
+                                   target_address: None | int = None,
+                                   source_address: None | int = None,
+                                   address_extension: None | int = None) -> CANAddressingParams:
         """
         Validate Addressing Information parameters of a CAN packet that uses Normal Fixed Addressing format.
 
@@ -216,7 +215,7 @@ class NormalFixedCanAddressingInformation(AbstractCanAddressingInformation):
 
     @staticmethod
     def is_compatible_can_id(can_id: int,
-                             addressing_type: Optional[AddressingType] = None) -> bool:
+                             addressing_type: None | AddressingType = None) -> bool:
         """
         Check whether provided CAN ID is consistent with Normal Fixed Addressing format.
 
@@ -317,8 +316,8 @@ class NormalFixedCanAddressingInformation(AbstractCanAddressingInformation):
 
     @classmethod
     def encode_ai_data_bytes(cls,
-                             target_address: Optional[int] = None,
-                             address_extension: Optional[int] = None) -> bytearray:
+                             target_address: None | int = None,
+                             address_extension: None | int = None) -> bytearray:
         """
         Generate data bytes that carry Addressing Information.
 

@@ -3,7 +3,7 @@
 __all__ = ["CanPacketRecord", "CanFrameAlias"]
 
 from datetime import datetime
-from typing import Any, Union
+from typing import Any
 
 from can import Message as PythonCanFrame
 from uds.addressing import AddressingType, TransmissionDirection
@@ -14,7 +14,7 @@ from ..addressing import CanAddressingFormat, CanAddressingInformation
 from .abstract_container import AbstractCanPacketContainer
 from .can_packet_type import CanPacketType
 
-CanFrameAlias = Union[PythonCanFrame]
+CanFrameAlias = PythonCanFrame
 """Alias of supported CAN frames objects."""
 
 

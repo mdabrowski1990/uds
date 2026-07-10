@@ -8,8 +8,9 @@ __all__ = [
 ]
 
 import re
+from collections.abc import Callable
 from time import perf_counter, time
-from typing import Any, Callable, Optional, Union
+from typing import Any
 
 from .common_types import RawBytesAlias, validate_raw_bytes
 from .constants import BITS_TO_DTC_CHARACTER_MAPPING, DTC_CHARACTERS_MAPPING, MAX_DTC_VALUE, MIN_DTC_VALUE
@@ -49,7 +50,7 @@ def bytes_to_int(bytes_list: RawBytesAlias, endianness: Endianness = Endianness.
 
 
 def int_to_bytes(int_value: int,
-                 size: Optional[int] = None,
+                 size: None | int = None,
                  endianness: Endianness = Endianness.BIG_ENDIAN) -> bytes:
     """
     Convert integer value to a list of bytes.
@@ -190,8 +191,8 @@ class TimeSync:
     """Default expiration time (in seconds) of the offset calculated during last synchronization."""
 
     def __init__(self,
-                 samples_number: Optional[int] = None,
-                 sync_expiration: Optional[Union[int, float]] = None) -> None:
+                 samples_number: None | int = None,
+                 sync_expiration: None | int | float = None) -> None:
         """
         Get time synchronization object.
 
@@ -205,9 +206,9 @@ class TimeSync:
         if not hasattr(self, "_TimeSync__sync_expiration"):
             self.sync_expiration = self.DEFAULT_SYNC_EXPIRATION_S
         if not hasattr(self, "_TimeSync__last_sync_timestamp"):
-            self.__last_sync_timestamp: Optional[float] = None
+            self.__last_sync_timestamp: None | float = None
         if not hasattr(self, "_TimeSync__offset"):
-            self.__offset: Optional[float] = None
+            self.__offset: None | float = None
         if samples_number is not None:
             self.samples_number = samples_number
         if sync_expiration is not None:
@@ -246,7 +247,7 @@ class TimeSync:
         return self.__sync_expiration
 
     @sync_expiration.setter
-    def sync_expiration(self, value: Union[int, float]) -> None:
+    def sync_expiration(self, value: float | int) -> None:
         """
         Set time in seconds after which synchronization value is considered outdated.
 
@@ -262,7 +263,7 @@ class TimeSync:
         self.__sync_expiration = float(value)
 
     @property
-    def last_sync_timestamp(self) -> Optional[float]:
+    def last_sync_timestamp(self) -> None | float:
         """Value of performance counter for the last synchronization point."""
         return self.__last_sync_timestamp
 
@@ -274,7 +275,7 @@ class TimeSync:
         return perf_counter() - self.last_sync_timestamp > self.sync_expiration
 
     @property
-    def offset(self) -> Optional[float]:
+    def offset(self) -> None | float:
         """Difference between wall clock and performance counter."""
         return self.__offset
 
@@ -296,8 +297,8 @@ class TimeSync:
 
     def time_to_perf_counter(self,
                              time_value: float,
-                             min_value: Optional[float] = None,
-                             max_value: Optional[float] = None) -> float:
+                             min_value: None | float = None,
+                             max_value: None | float = None) -> float:
         """
         Convert wall clock time to performance counter.
 
@@ -318,8 +319,8 @@ class TimeSync:
 
     def perf_counter_to_time(self,
                              perf_counter_value: float,
-                             min_value: Optional[float] = None,
-                             max_value: Optional[float] = None) -> float:
+                             min_value: None | float = None,
+                             max_value: None | float = None) -> float:
         """
         Convert performance counter to wall clock time.
 

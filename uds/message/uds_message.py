@@ -11,8 +11,8 @@ __all__ = [
 ]
 
 from abc import ABC, abstractmethod
+from collections.abc import Sequence
 from datetime import datetime
-from typing import Sequence, Union
 
 from uds.addressing import AddressingType, TransmissionDirection
 from uds.packet import AbstractPacketRecord, PacketsRecordsSequence, PacketsRecordsTuple
@@ -43,7 +43,7 @@ class AbstractUdsMessageContainer(ABC):
 
     @property
     @abstractmethod
-    def payload(self) -> Union[bytes, bytearray]:
+    def payload(self) -> bytes | bytearray:
         """Raw payload bytes carried by this diagnostic message."""
 
     @property

@@ -35,29 +35,28 @@ __all__ = [
     "LINK_CONTROL_MODE_IDENTIFIER_MAPPING",
 ]
 
-from typing import Dict
 
 # Shared
 
 REPEATED_DATA_RECORDS_NUMBER: int = 100
 
-NO_YES_MAPPING: Dict[int, str] = {0: "no", 1: "yes"}
+NO_YES_MAPPING: dict[int, str] = {0: "no", 1: "yes"}
 """Generic `no` and `yes` values mapping."""
 
-OFF_ON_MAPPING: Dict[int, str] = {0: "OFF", 1: "ON"}
+OFF_ON_MAPPING: dict[int, str] = {0: "OFF", 1: "ON"}
 """Generic `OFF` and `ON` values mapping."""
 
-COMPRESSION_METHOD_MAPPING: Dict[int, str] = ({0: "no compression"}
+COMPRESSION_METHOD_MAPPING: dict[int, str] = ({0: "no compression"}
                                               | {value: f"compression #{value}" for value in range(1, 0x10)})
 """Values mapping for compressionMethod Data Record that is part of messages for multiple services."""
 
-ENCRYPTION_METHOD_MAPPING: Dict[int, str] = ({0: "no encryption"}
+ENCRYPTION_METHOD_MAPPING: dict[int, str] = ({0: "no encryption"}
                                              | {value: f"encryption #{value}" for value in range(1, 0x10)})
 """Values mapping for encryptingMethod Data Record that is part of messages for multiple services."""
 
 # SID 0x11
 
-POWER_DOWN_TIME_MAPPING: Dict[int, str] = {
+POWER_DOWN_TIME_MAPPING: dict[int, str] = {
     0xFF: "failure or time unavailable"
 }
 """Values mapping for `powerDownTime` Data Record that is part of
@@ -73,7 +72,7 @@ MANTISSA_BIT_LENGTH: int = 12
 """Number of bits used for constant's mantissa value by
 :ref:`ReadScalingDataByIdentifier service <knowledge-base-service-read-scaling-data-by-identifier>`"""
 
-SCALING_BYTE_TYPE_MAPPING: Dict[int, str] = {
+SCALING_BYTE_TYPE_MAPPING: dict[int, str] = {
     0x0: "unSignedNumeric",
     0x1: "signedNumeric",
     0x2: "bitMappedReportedWithOutMask",
@@ -90,7 +89,7 @@ SCALING_BYTE_TYPE_MAPPING: Dict[int, str] = {
 """Values mapping for (scalingByte) `type` Data Record that is part of
 :ref:`ReadScalingDataByIdentifier <knowledge-base-service-read-scaling-data-by-identifier>` message."""
 
-FORMULA_IDENTIFIER_MAPPING: Dict[int, str] = {
+FORMULA_IDENTIFIER_MAPPING: dict[int, str] = {
     0x00: "y = C0 * x + C1",
     0x01: "y = C0 * (x + C1)",
     0x02: "y = C0 / (x + C1) + C2",
@@ -105,7 +104,7 @@ FORMULA_IDENTIFIER_MAPPING: Dict[int, str] = {
 """Values mapping for `formulaIdentifier` Data Record that is part of
 :ref:`ReadScalingDataByIdentifier <knowledge-base-service-read-scaling-data-by-identifier>` message."""
 
-UNIT_OR_FORMAT_MAPPING: Dict[int, str] = {
+UNIT_OR_FORMAT_MAPPING: dict[int, str] = {
     0x00: "No unit, no prefix",
     0x01: "Meter [m] - length",
     0x02: "Foot [ft] - length",
@@ -201,7 +200,7 @@ UNIT_OR_FORMAT_MAPPING: Dict[int, str] = {
 """Values mapping for `unit/format` Data Record that is part of
 :ref:`ReadScalingDataByIdentifier <knowledge-base-service-read-scaling-data-by-identifier>` message."""
 
-STATE_AND_CONNECTION_TYPE_TYPE_MAPPING: Dict[int, str] = {
+STATE_AND_CONNECTION_TYPE_TYPE_MAPPING: dict[int, str] = {
     0x0: "Internal signal",
     0x1: "2 states (low by default)",
     0x2: "2 states (high by default)",
@@ -210,14 +209,14 @@ STATE_AND_CONNECTION_TYPE_TYPE_MAPPING: Dict[int, str] = {
 """Values mapping for (stateAndConnectionType) `type` Data Record that is part of
 :ref:`ReadScalingDataByIdentifier <knowledge-base-service-read-scaling-data-by-identifier>` message."""
 
-STATE_AND_CONNECTION_TYPE_DIRECTION_MAPPING: Dict[int, str] = {
+STATE_AND_CONNECTION_TYPE_DIRECTION_MAPPING: dict[int, str] = {
     0x0: "Input signal",
     0x1: "Output signal",
 }
 """Values mapping for (stateAndConnectionType) `direction` Data Record that is part of
 :ref:`ReadScalingDataByIdentifier <knowledge-base-service-read-scaling-data-by-identifier>` message."""
 
-STATE_AND_CONNECTION_TYPE_LEVEL_MAPPING: Dict[int, str] = {
+STATE_AND_CONNECTION_TYPE_LEVEL_MAPPING: dict[int, str] = {
     0x0: "Signal at low level (ground)",
     0x1: "Signal at middle level (between ground and +)",
     0x2: "Signal at high level (+)",
@@ -225,7 +224,7 @@ STATE_AND_CONNECTION_TYPE_LEVEL_MAPPING: Dict[int, str] = {
 """Values mapping for (stateAndConnectionType) `level` Data Record that is part of
 :ref:`ReadScalingDataByIdentifier <knowledge-base-service-read-scaling-data-by-identifier>` message."""
 
-STATE_AND_CONNECTION_TYPE_STATE_MAPPING: Dict[int, str] = {
+STATE_AND_CONNECTION_TYPE_STATE_MAPPING: dict[int, str] = {
     0x0: "Not Active",
     0x1: "Active, function 1",
     0x2: "Error detected",
@@ -237,7 +236,7 @@ STATE_AND_CONNECTION_TYPE_STATE_MAPPING: Dict[int, str] = {
 
 # SID 0x28
 
-MESSAGE_TYPE_MAPPING: Dict[int, str] = {
+MESSAGE_TYPE_MAPPING: dict[int, str] = {
     0: "reserved",
     1: "normalCommunicationMessages",
     2: "networkManagementCommunicationMessages",
@@ -246,13 +245,13 @@ MESSAGE_TYPE_MAPPING: Dict[int, str] = {
 """Values mapping for `messagesType` Data Record that is part of
 :ref:`CommunicationControl <knowledge-base-service-communication-control>` message."""
 
-NETWORKS_MAPPING: Dict[int, str] = ({0x0: "all connected networks",
+NETWORKS_MAPPING: dict[int, str] = ({0x0: "all connected networks",
                                      0xF: "network on which this request is received"}
                                     | {raw_value: f"subnet {raw_value}" for raw_value in range(1, 0xF)})
 """Values mapping for `networks` Data Record that is part of
 :ref:`CommunicationControl <knowledge-base-service-communication-control>` message."""
 
-NODE_IDENTIFICATION_NUMBER_MAPPING: Dict[int, str] = {
+NODE_IDENTIFICATION_NUMBER_MAPPING: dict[int, str] = {
     0: "reserved"
 }
 """Values mapping for `nodeIdentificationNumber` Data Record that is part of
@@ -260,7 +259,7 @@ NODE_IDENTIFICATION_NUMBER_MAPPING: Dict[int, str] = {
 
 # SID 0x29
 
-AUTHENTICATION_RETURN_PARAMETER_MAPPING: Dict[int, str] = {
+AUTHENTICATION_RETURN_PARAMETER_MAPPING: dict[int, str] = {
     0x00: "RequestAccepted",
     0x01: "GeneralReject",
     0x02: "AuthenticationConfiguration",
@@ -276,7 +275,7 @@ AUTHENTICATION_RETURN_PARAMETER_MAPPING: Dict[int, str] = {
 
 # SID 0x2A
 
-TRANSMISSION_MODE_MAPPING: Dict[int, str] = {
+TRANSMISSION_MODE_MAPPING: dict[int, str] = {
     0x01: "sendAtSlowRate",
     0x02: "sendAtMediumRate",
     0x03: "sendAtFastRate",
@@ -287,7 +286,7 @@ TRANSMISSION_MODE_MAPPING: Dict[int, str] = {
 
 # SID 0x2F
 
-INPUT_OUTPUT_CONTROL_PARAMETER_MAPPING: Dict[int, str] = {
+INPUT_OUTPUT_CONTROL_PARAMETER_MAPPING: dict[int, str] = {
     0x00: "returnControlToECU",
     0x01: "resetToDefault",
     0x02: "freezeCurrentState",
@@ -298,7 +297,7 @@ INPUT_OUTPUT_CONTROL_PARAMETER_MAPPING: Dict[int, str] = {
 
 # SID 0x38
 
-MODE_OF_OPERATION_MAPPING_2020: Dict[int, str] = {
+MODE_OF_OPERATION_MAPPING_2020: dict[int, str] = {
     0x01: "AddFile",
     0x02: "DeleteFile",
     0x03: "ReplaceFile",
@@ -308,7 +307,7 @@ MODE_OF_OPERATION_MAPPING_2020: Dict[int, str] = {
 }
 """Values mapping for `modeOfOperation` Data Record (compatible with ISO 14229-1:2020) that is part of
 :ref:`RequestFileTransfer <knowledge-base-service-request-file-transfer>` message."""
-MODE_OF_OPERATION_MAPPING_2013: Dict[int, str] = {
+MODE_OF_OPERATION_MAPPING_2013: dict[int, str] = {
     0x01: "AddFile",
     0x02: "DeleteFile",
     0x03: "ReplaceFile",
@@ -320,7 +319,7 @@ MODE_OF_OPERATION_MAPPING_2013: Dict[int, str] = {
 
 # SID 0x86
 
-EVENT_WINDOW_TIME_MAPPING_2020: Dict[int, str] = {
+EVENT_WINDOW_TIME_MAPPING_2020: dict[int, str] = {
     0x02: "infiniteTimeToResponse",
     0x03: "shortEventWindowTime",
     0x04: "mediumEventWindowTime",
@@ -331,13 +330,13 @@ EVENT_WINDOW_TIME_MAPPING_2020: Dict[int, str] = {
 }
 """Values mapping for `eventWindowTime` Data Record (compatible with ISO 14229-1:2020) that is part of
 :ref:`ResponseOnEvent <knowledge-base-service-response-on-event>` message."""
-EVENT_WINDOW_TIME_MAPPING_2013: Dict[int, str] = {
+EVENT_WINDOW_TIME_MAPPING_2013: dict[int, str] = {
     0x02: "infiniteTimeToResponse"
 }
 """Values mapping for `eventWindowTime` Data Record (compatible with ISO 14229-1:2013) that is part of
 :ref:`ResponseOnEvent <knowledge-base-service-response-on-event>` message."""
 
-COMPARISON_LOGIC_MAPPING: Dict[int, str] = {
+COMPARISON_LOGIC_MAPPING: dict[int, str] = {
     0x01: "<",
     0x02: ">",
     0x03: "=",
@@ -346,14 +345,14 @@ COMPARISON_LOGIC_MAPPING: Dict[int, str] = {
 """Values mapping for `Comparison logic` Data Record that is part of
 :ref:`ResponseOnEvent <knowledge-base-service-response-on-event>` message."""
 
-COMPARE_SIGN_MAPPING: Dict[int, str] = {
+COMPARE_SIGN_MAPPING: dict[int, str] = {
     0: "Comparison without sign",
     1: "Comparison with sign",
 }
 """Values mapping for `Compare Sign` Data Record that is part of
 :ref:`ResponseOnEvent <knowledge-base-service-response-on-event>` message."""
 
-TIMER_SCHEDULE_MAPPING_2013: Dict[int, str] = {
+TIMER_SCHEDULE_MAPPING_2013: dict[int, str] = {
     0x01: "Slow rate",
     0x02: "Medium rate",
     0x03: "Fast rate",
@@ -363,7 +362,7 @@ TIMER_SCHEDULE_MAPPING_2013: Dict[int, str] = {
 
 # SID 0x87
 
-LINK_CONTROL_MODE_IDENTIFIER_MAPPING: Dict[int, str] = {
+LINK_CONTROL_MODE_IDENTIFIER_MAPPING: dict[int, str] = {
     0x01: "PC9600Baud",
     0x02: "PC19200Baud",
     0x03: "PC38400Baud",

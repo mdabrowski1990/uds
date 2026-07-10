@@ -7,11 +7,12 @@ __all__ = ["AbstractDataRecord",
 
 from abc import ABC, abstractmethod
 from collections import OrderedDict
-from typing import List, Mapping, Optional, Sequence, Tuple, TypedDict, Union
+from collections.abc import Mapping, Sequence
+from typing import TypedDict
 
 from uds.utilities import InconsistencyError, ReassignmentError
 
-SinglePhysicalValueAlias = Union[int, float, str]
+SinglePhysicalValueAlias = int | float | str
 """
 Physical value from a single Data Record occurrence.
 
@@ -21,7 +22,7 @@ Physical values represent the human-readable interpretation of raw integer value
 - float: Scaled/calculated values (e.g., 25.5°C after scaling)
 - str: Mapped labels (e.g., "Active", "Inactive", "Warning")
 """
-MultiplePhysicalValuesAlias = Union[str, Tuple[SinglePhysicalValueAlias, ...]]
+MultiplePhysicalValuesAlias = str | tuple[SinglePhysicalValueAlias, ...]
 """
 Physical values from multiple Data Record occurrences.
 
@@ -31,9 +32,9 @@ When processing multiple occurrences, physical values are either:
   (e.g. ASCII, UTF-8)
 - tuple: Individual values per occurrence
 """
-PhysicalValueAlias = Union[SinglePhysicalValueAlias, MultiplePhysicalValuesAlias]
+PhysicalValueAlias = SinglePhysicalValueAlias | MultiplePhysicalValuesAlias
 """Alias for all physical values."""
-ChildrenValuesAlias = Mapping[str, Union[int, "ChildrenValuesAlias"]]
+ChildrenValuesAlias = Mapping[str, int | "ChildrenValuesAlias"]
 """Alias for children values mapping."""
 
 
@@ -53,8 +54,8 @@ class SingleOccurrenceInfo(TypedDict, total=True):
     length: int
     raw_value: int
     physical_value: SinglePhysicalValueAlias
-    children: Tuple["SingleOccurrenceInfo", ...]
-    unit: Optional[str]
+    children: tuple["SingleOccurrenceInfo", ...]
+    unit: None | str
 
 
 class MultipleOccurrencesInfo(TypedDict, total=True):
@@ -72,13 +73,13 @@ class MultipleOccurrencesInfo(TypedDict, total=True):
 
     name: str
     length: int
-    raw_value: Tuple[int, ...]
+    raw_value: tuple[int, ...]
     physical_value: MultiplePhysicalValuesAlias
-    children: Tuple[Tuple["SingleOccurrenceInfo", ...], ...]
-    unit: Optional[str]
+    children: tuple[tuple["SingleOccurrenceInfo", ...], ...]
+    unit: None | str
 
 
-DataRecordInfoAlias = Union[SingleOccurrenceInfo, MultipleOccurrencesInfo]
+DataRecordInfoAlias = SingleOccurrenceInfo | MultipleOccurrencesInfo
 """Comprehensive information Data Record occurrence(s)."""
 
 
@@ -103,8 +104,8 @@ class AbstractDataRecord(ABC):
                  length: int,
                  children: Sequence["AbstractDataRecord"],
                  min_occurrences: int,
-                 max_occurrences: Optional[int],
-                 unit: Optional[str] = None,
+                 max_occurrences: None | int,
+                 unit: None | str = None,
                  enforce_reoccurring: bool = False) -> None:
         """
         Initialize common part for all Data Records.
@@ -188,7 +189,7 @@ class AbstractDataRecord(ABC):
         self.__length = value
 
     @property
-    def children(self) -> Tuple["AbstractDataRecord", ...]:
+    def children(self) -> tuple["AbstractDataRecord", ...]:
         """Get Data Records contained by this Data Record."""
         return self.__children
 
@@ -245,7 +246,7 @@ class AbstractDataRecord(ABC):
         self.__min_occurrences = value
 
     @property
-    def max_occurrences(self) -> Optional[int]:
+    def max_occurrences(self) -> None | int:
         """
         Maximal number of occurrences for this Data Record.
 
@@ -254,7 +255,7 @@ class AbstractDataRecord(ABC):
         return self.__max_occurrences
 
     @max_occurrences.setter
-    def max_occurrences(self, value: Optional[int]) -> None:
+    def max_occurrences(self, value: None | int) -> None:
         """
         Set maximal number of occurrences.
 
@@ -275,12 +276,12 @@ class AbstractDataRecord(ABC):
         self.__max_occurrences = value
 
     @property
-    def unit(self) -> Optional[str]:
+    def unit(self) -> None | str:
         """Get unit in which Physical Value is presented. None if unused."""
         return self.__unit
 
     @unit.setter
-    def unit(self, value: Optional[str]) -> None:
+    def unit(self, value: None | str) -> None:
         """
         Set unit in which Physical Value is presented.
 
@@ -369,7 +370,7 @@ class AbstractDataRecord(ABC):
             children_values[child.name] = child_value
         return children_values
 
-    def get_children_occurrence_info(self, raw_value: int) -> Tuple[SingleOccurrenceInfo, ...]:
+    def get_children_occurrence_info(self, raw_value: int) -> tuple[SingleOccurrenceInfo, ...]:
         """
         Get occurrence information for all children.
 
@@ -378,7 +379,7 @@ class AbstractDataRecord(ABC):
         :return: Children occurrence information.
         """
         children_values = self.get_children_values(raw_value)
-        children_occurrence_info: List[SingleOccurrenceInfo] \
+        children_occurrence_info: list[SingleOccurrenceInfo] \
             = [child.get_occurrence_info(children_values[child.name]) for child in self.children]  # type: ignore
         return tuple(children_occurrence_info)
 

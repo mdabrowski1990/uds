@@ -1,8 +1,9 @@
 """Implementation for diagnostic ECU Configuration."""
 
+from collections.abc import Collection, Mapping
 from operator import getitem
 from types import MappingProxyType
-from typing import Any, Collection, Mapping, Optional, Set
+from typing import Any
 
 from uds.message import (
     SERVICES_WITH_DID,
@@ -65,7 +66,7 @@ class EcuDiagnosticConfiguration:
         return self.states_mapping[item]
 
     @property
-    def states(self) -> Set[State]:
+    def states(self) -> set[State]:
         """Get :ref:`ECU states <knowledge-base-states>` relevant for diagnostic communication."""
         return self.__states
 
@@ -84,7 +85,7 @@ class EcuDiagnosticConfiguration:
         self.__states_mapping = {state.name: state for state in self.__states}
 
     @property
-    def states_names(self) -> Set[str]:
+    def states_names(self) -> set[str]:
         """Get names of all ECU states."""
         return self.__states_names
 
@@ -248,14 +249,14 @@ class EcuDiagnosticConfiguration:
         return MappingProxyType(mapping)
 
     @staticmethod
-    def __extract_subfunction(message_payload: RawBytesAlias) -> Optional[int]:
+    def __extract_subfunction(message_payload: RawBytesAlias) -> None | int:
         """Extract subfunction from message payload."""
         if message_payload[0] in SERVICES_WITH_SUBFUNCTION and len(message_payload) > 1:
             return message_payload[1] & SUBFUNCTION_MASK
         return None
 
     @staticmethod
-    def __extract_dids(decoded_message: DecodedMessageAlias) -> Set[int]:
+    def __extract_dids(decoded_message: DecodedMessageAlias) -> set[int]:
         """Extract DIDs from decoded message."""
         dids = set()
         if decoded_message[0]["raw_value"] in SERVICES_WITH_DID:
@@ -270,7 +271,7 @@ class EcuDiagnosticConfiguration:
         return dids
 
     @staticmethod
-    def __extract_rids(decoded_message: DecodedMessageAlias) -> Set[int]:
+    def __extract_rids(decoded_message: DecodedMessageAlias) -> set[int]:
         """Extract RIDs from decoded message."""
         rids = set()
         if decoded_message[0]["raw_value"] in SERVICES_WITH_RID:

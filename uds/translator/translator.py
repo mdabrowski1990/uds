@@ -2,10 +2,10 @@
 
 __all__ = ["Translator"]
 
+from collections.abc import Collection, Mapping
 from types import MappingProxyType
-from typing import Collection, Dict, FrozenSet, Mapping, Optional, Union
 
-from uds.message import NEGATIVE_RESPONSE_MESSAGE_LENGTH, RequestSID, ResponseSID
+from uds.message import NEGATIVE_RESPONSE_MESSAGE_LENGTH, RequestSID, ResponseSID, SidAlias
 from uds.utilities import InconsistencyError, RawBytesAlias, bytes_to_hex, validate_raw_bytes
 
 from .service import DataRecordsValuesAlias, DecodedMessageAlias, Service
@@ -30,7 +30,7 @@ class Translator:
         self.services = services
 
     @property
-    def services(self) -> FrozenSet[Service]:
+    def services(self) -> frozenset[Service]:
         """Get diagnostic services translators."""
         return self.__services
 
@@ -47,7 +47,7 @@ class Translator:
         """
         if not isinstance(value, Collection):
             raise TypeError(f"Provided value is not a collection. Actual type: {type(value)}.")
-        services_mapping: Dict[Union[RequestSID, ResponseSID], Service] = {}
+        services_mapping: dict[SidAlias, Service] = {}
         for service in value:
             if not isinstance(service, Service):
                 raise ValueError("At least one collection element is not instance of Service class.")
@@ -60,14 +60,14 @@ class Translator:
         self.__services_mapping = MappingProxyType(services_mapping)
 
     @property
-    def services_mapping(self) -> Mapping[Union[int, RequestSID, ResponseSID], Service]:
+    def services_mapping(self) -> Mapping[SidAlias, Service]:
         """Get mapping from SID/RSID values to corresponding Service Translators."""
         return self.__services_mapping  # type: ignore
 
     def encode(self,
                data_records_values: DataRecordsValuesAlias,
-               sid: Optional[RequestSID] = None,
-               rsid: Optional[ResponseSID] = None) -> bytearray:
+               sid: None | RequestSID = None,
+               rsid: None | ResponseSID = None) -> bytearray:
         """
         Encode diagnostic message payload from data records values.
 

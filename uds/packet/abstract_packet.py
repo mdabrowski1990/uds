@@ -4,9 +4,10 @@ __all__ = ["AbstractPacketContainer", "AbstractPacket", "AbstractPacketRecord",
            "PacketsContainersSequence", "PacketsTuple", "PacketsRecordsTuple", "PacketsRecordsSequence"]
 
 from abc import ABC, abstractmethod
+from collections.abc import Sequence
 from datetime import datetime
 from time import perf_counter
-from typing import Any, Optional, Sequence, Tuple
+from typing import Any
 from warnings import warn
 
 from uds.addressing import AddressingType, TransmissionDirection
@@ -38,7 +39,7 @@ class AbstractPacketContainer(ABC):
 
     @property
     @abstractmethod
-    def data_length(self) -> Optional[int]:
+    def data_length(self) -> None | int:
         """Payload bytes number of a diagnostic message."""
 
     @property
@@ -48,7 +49,7 @@ class AbstractPacketContainer(ABC):
 
     @property
     @abstractmethod
-    def payload(self) -> Optional[bytes]:
+    def payload(self) -> None | bytes:
         """Diagnostic message payload carried by this packet."""
 
 
@@ -198,9 +199,9 @@ class AbstractPacketRecord(AbstractPacketContainer, ABC):
 PacketsContainersSequence = Sequence[AbstractPacketContainer]
 """Alias for a sequence filled with packet or packet record objects."""
 
-PacketsTuple = Tuple[AbstractPacket, ...]
+PacketsTuple = tuple[AbstractPacket, ...]
 """Alias for a packet objects tuple."""
-PacketsRecordsTuple = Tuple[AbstractPacketRecord, ...]
+PacketsRecordsTuple = tuple[AbstractPacketRecord, ...]
 """Alias for a packet record objects tuple."""
 PacketsRecordsSequence = Sequence[AbstractPacketRecord]
 """Alias for a packet record objects sequence."""

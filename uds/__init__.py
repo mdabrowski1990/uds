@@ -53,7 +53,7 @@ __license__ = "MIT"
 
 import importlib
 import sys
-from typing import Sequence
+from collections.abc import Sequence
 
 
 def __getattr__(name: str) -> object:  # noqa: vulture

@@ -6,8 +6,6 @@ This module contains helper class for managing :ref:`Addressing Information <kno
 
 __all__ = ["CanAddressingInformation"]
 
-from typing import Dict, Optional, Type
-
 from uds.addressing import AddressingType
 from uds.utilities import InconsistencyError, RawBytesAlias, validate_raw_bytes
 
@@ -22,7 +20,7 @@ from .normal_addressing import NormalCanAddressingInformation, NormalFixedCanAdd
 class CanAddressingInformation:
     """CAN Entity (either server or client) Addressing Information."""
 
-    ADDRESSING_INFORMATION_MAPPING: Dict[CanAddressingFormat, Type[AbstractCanAddressingInformation]] = {
+    ADDRESSING_INFORMATION_MAPPING: dict[CanAddressingFormat, type[AbstractCanAddressingInformation]] = {
         CanAddressingFormat.NORMAL_ADDRESSING: NormalCanAddressingInformation,
         CanAddressingFormat.NORMAL_FIXED_ADDRESSING: NormalFixedCanAddressingInformation,
         CanAddressingFormat.EXTENDED_ADDRESSING: ExtendedCanAddressingInformation,
@@ -93,10 +91,10 @@ class CanAddressingInformation:
     def validate_addressing_params(cls,
                                    addressing_format: CanAddressingFormat,
                                    addressing_type: AddressingType,
-                                   can_id: Optional[int] = None,
-                                   target_address: Optional[int] = None,
-                                   source_address: Optional[int] = None,
-                                   address_extension: Optional[int] = None) -> CANAddressingParams:
+                                   can_id: None | int = None,
+                                   target_address: None | int = None,
+                                   source_address: None | int = None,
+                                   address_extension: None | int = None) -> CANAddressingParams:
         """
         Validate Addressing Information parameters of a CAN packet.
 
@@ -122,7 +120,7 @@ class CanAddressingInformation:
     def is_compatible_can_id(cls,
                              addressing_format: CanAddressingFormat,
                              can_id: int,
-                             addressing_type: Optional[AddressingType] = None) -> bool:
+                             addressing_type: None | AddressingType = None) -> bool:
         """
         Check whether provided CAN ID is consistent the provided CAN Addressing Format.
 
@@ -223,8 +221,8 @@ class CanAddressingInformation:
     @classmethod
     def encode_ai_data_bytes(cls,
                              addressing_format: CanAddressingFormat,
-                             target_address: Optional[int] = None,
-                             address_extension: Optional[int] = None) -> bytearray:
+                             target_address: None | int = None,
+                             address_extension: None | int = None) -> bytearray:
         """
         Generate data bytes that carry Addressing Information.
 

@@ -2,7 +2,7 @@
 
 __all__ = ["CanPacket"]
 
-from typing import Any, Optional
+from typing import Any
 
 from uds.addressing import AddressingType
 from uds.packet import AbstractPacket
@@ -32,11 +32,11 @@ class CanPacket(AbstractCanPacketContainer, AbstractPacket):
                  addressing_format: CanAddressingFormat,
                  packet_type: CanPacketType,
                  addressing_type: AddressingType,
-                 can_id: Optional[int] = None,
-                 target_address: Optional[int] = None,
-                 source_address: Optional[int] = None,
-                 address_extension: Optional[int] = None,
-                 dlc: Optional[int] = None,
+                 can_id: None | int = None,
+                 target_address: None | int = None,
+                 source_address: None | int = None,
+                 address_extension: None | int = None,
+                 dlc: None | int = None,
                  **packet_type_specific_kwargs: Any) -> None:
         """
         Create a storage for a single CAN packet.
@@ -135,10 +135,10 @@ class CanPacket(AbstractCanPacketContainer, AbstractPacket):
 
     def set_addressing_information(self, *,
                                    addressing_type: AddressingType,
-                                   can_id: Optional[int] = None,
-                                   target_address: Optional[int] = None,
-                                   source_address: Optional[int] = None,
-                                   address_extension: Optional[int] = None) -> None:
+                                   can_id: None | int = None,
+                                   target_address: None | int = None,
+                                   source_address: None | int = None,
+                                   address_extension: None | int = None) -> None:
         """
         Change addressing information for this CAN packet.
 
@@ -171,7 +171,7 @@ class CanPacket(AbstractCanPacketContainer, AbstractPacket):
 
     def set_packet_data(self, *,
                         packet_type: CanPacketType,
-                        dlc: Optional[int] = None,
+                        dlc: None | int = None,
                         **packet_type_specific_kwargs: Any) -> None:
         """
         Change packet type and data field of this CAN packet.

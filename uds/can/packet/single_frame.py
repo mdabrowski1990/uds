@@ -7,7 +7,6 @@ __all__ = ["SINGLE_FRAME_N_PCI", "MAX_DLC_VALUE_SHORT_SF_DL", "SHORT_SF_DL_BYTES
            "extract_sf_dl_data_bytes", "get_sf_dl_bytes_number", "encode_sf_dl", "generate_sf_dl_bytes",
            "validate_sf_dl"]
 
-from typing import Optional
 from warnings import warn
 
 from uds.utilities import (
@@ -92,10 +91,10 @@ def validate_single_frame_data(addressing_format: CanAddressingFormat, raw_frame
 
 def create_single_frame_data(addressing_format: CanAddressingFormat,
                              payload: RawBytesAlias,
-                             dlc: Optional[int] = None,
+                             dlc: None | int = None,
                              filler_byte: int = DEFAULT_FILLER_BYTE,
-                             target_address: Optional[int] = None,
-                             address_extension: Optional[int] = None) -> bytearray:
+                             target_address: None | int = None,
+                             address_extension: None | int = None) -> bytearray:
     """
     Create data field of a CAN frame that carries a valid Single Frame packet.
 
@@ -149,10 +148,10 @@ def generate_single_frame_data(addressing_format: CanAddressingFormat,
                                payload: RawBytesAlias,
                                dlc: int,
                                sf_dl_short: int,
-                               sf_dl_long: Optional[int] = None,
+                               sf_dl_long: None | int = None,
                                filler_byte: int = DEFAULT_FILLER_BYTE,
-                               target_address: Optional[int] = None,
-                               address_extension: Optional[int] = None) -> bytearray:
+                               target_address: None | int = None,
+                               address_extension: None | int = None) -> bytearray:
     """
     Generate CAN frame data field that carries any combination of Single Frame packet data parameters.
 
@@ -237,7 +236,7 @@ def extract_sf_dl(addressing_format: CanAddressingFormat, raw_frame_data: RawByt
 
 
 def get_max_sf_dl(addressing_format: CanAddressingFormat,
-                  dlc: Optional[int] = None) -> int:
+                  dlc: None | int = None) -> int:
     """
     Get the maximum value Single Frame Data Length.
 
@@ -333,7 +332,7 @@ def encode_sf_dl(addressing_format: CanAddressingFormat,
     return generate_sf_dl_bytes(sf_dl_long=sf_dl)
 
 
-def generate_sf_dl_bytes(sf_dl_short: int = 0, sf_dl_long: Optional[int] = None) -> bytearray:
+def generate_sf_dl_bytes(sf_dl_short: int = 0, sf_dl_long: None | int = None) -> bytearray:
     """
     Create Single Frame bytes containing Single Frame Data Length and N_PCI values.
 

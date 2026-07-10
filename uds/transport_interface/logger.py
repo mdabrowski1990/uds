@@ -2,11 +2,12 @@
 
 __all__ = ["TransportLogger"]
 
+from collections.abc import Callable
 from copy import copy
 from functools import wraps
 from inspect import iscoroutinefunction
 from logging import INFO, Logger, getLogger
-from typing import Any, Callable, Optional, Type, Union
+from typing import Any
 
 from uds.message import UdsMessageRecord
 from uds.packet import AbstractPacketRecord
@@ -17,7 +18,7 @@ from .abstract_transport_interface import AbstractTransportInterface
 class TransportLogger:
     """Configurable logger for Transport Interface objects."""
 
-    TransportInterfaceAlias = Union[AbstractTransportInterface, Type[AbstractTransportInterface]]
+    TransportInterfaceAlias = AbstractTransportInterface | type[AbstractTransportInterface]
     """Alias of Transport Interface (either class or instance)."""
 
     DECORATED_CLASS_NAME_SUFFIX = "WithLogger"
@@ -28,9 +29,9 @@ class TransportLogger:
 
     def __init__(self,
                  *,
-                 logger_name: Optional[str] = None,
-                 message_logging_level: Optional[int] = INFO,
-                 packet_logging_level: Optional[int] = INFO,
+                 logger_name: None | str = None,
+                 message_logging_level: None | int = INFO,
+                 packet_logging_level: None | int = INFO,
                  log_sending: bool = True,
                  log_receiving: bool = True,
                  message_log_format: str = DEFAULT_LOG_FORMAT,
@@ -69,12 +70,12 @@ class TransportLogger:
         return self.__logger
 
     @property
-    def message_logging_level(self) -> Optional[int]:
+    def message_logging_level(self) -> None | int:
         """Get logging level to use for UDS Messages logging."""
         return self.__message_logging_level
 
     @message_logging_level.setter
-    def message_logging_level(self, value: Optional[int]) -> None:
+    def message_logging_level(self, value: None | int) -> None:
         """
         Set logging level to use for UDS Messages logging.
 
@@ -87,12 +88,12 @@ class TransportLogger:
         self.__message_logging_level = value
 
     @property
-    def packet_logging_level(self) -> Optional[int]:
+    def packet_logging_level(self) -> None | int:
         """Get logging level to use for Packets logging."""
         return self.__packet_logging_level
 
     @packet_logging_level.setter
-    def packet_logging_level(self, value: Optional[int]) -> None:
+    def packet_logging_level(self, value: None | int) -> None:
         """
         Set logging level to use for Packets logging.
 
@@ -162,7 +163,7 @@ class TransportLogger:
             raise TypeError(f"Provided value is not str type. Actual type: {type(value)}.")
         self.__packet_log_format = value
 
-    def _decorate_class(self, cls: Type[AbstractTransportInterface]) -> Type[AbstractTransportInterface]:
+    def _decorate_class(self, cls: type[AbstractTransportInterface]) -> type[AbstractTransportInterface]:
         """Decorate Transport Interface class."""
         attributes_to_overwrite = {}
         if self.log_sending:

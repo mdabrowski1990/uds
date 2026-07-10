@@ -2,7 +2,8 @@
 
 __all__ = ["State"]
 
-from typing import Any, Collection, FrozenSet, Optional
+from collections.abc import Collection
+from typing import Any
 from warnings import warn
 
 
@@ -27,7 +28,7 @@ class State:
         """
         self.name = name
         self.possible_values = possible_values
-        self.__current_value: Optional[Any] = None
+        self.__current_value: None | Any = None
 
     @property
     def name(self) -> str:
@@ -57,7 +58,7 @@ class State:
         self.__name = stripped_name
 
     @property
-    def possible_values(self) -> FrozenSet[Any]:
+    def possible_values(self) -> frozenset[Any]:
         """Get set with all values that can be assigned to this state."""
         return self.__possible_values
 
@@ -68,12 +69,12 @@ class State:
         self.__current_value = None  # if possible values are change, then the current state is also affected
 
     @property
-    def current_value(self) -> Optional[Any]:
+    def current_value(self) -> None | Any:
         """Get currently assigned value."""
         return self.__current_value
 
     @current_value.setter
-    def current_value(self, value: Optional[Any]) -> None:
+    def current_value(self, value: None | Any) -> None:
         """
         Set currently assigned value.
 

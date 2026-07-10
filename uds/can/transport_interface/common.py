@@ -4,7 +4,7 @@ __all__ = ["AbstractCanTransportInterface"]
 
 from abc import ABC, abstractmethod
 from asyncio import AbstractEventLoop
-from typing import Any, Optional, Tuple
+from typing import Any
 from warnings import warn
 
 from uds.addressing import TransmissionDirection
@@ -41,7 +41,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
     """Timeout value of :ref:`N_Cr <knowledge-base-can-n-cr>` time parameter according to ISO 15765-2."""
     DEFAULT_N_BR: TimeMillisecondsAlias = 0
     """Default value for :ref:`N_Br <knowledge-base-can-n-br>` time parameter."""
-    DEFAULT_N_CS: Optional[TimeMillisecondsAlias] = None
+    DEFAULT_N_CS: None | TimeMillisecondsAlias = None
     """Default value for :ref:`N_Cs <knowledge-base-can-n-cs>` time parameter."""
     DEFAULT_FLOW_CONTROL_PARAMETERS = DefaultFlowControlParametersGenerator()
     """Default values generator for :ref:`Flow Control <knowledge-base-can-flow-control>` parameters
@@ -59,7 +59,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
                  n_bs_timeout: TimeMillisecondsAlias = N_BS_TIMEOUT,
                  n_cr_timeout: TimeMillisecondsAlias = N_CR_TIMEOUT,
                  n_br: TimeMillisecondsAlias = DEFAULT_N_BR,
-                 n_cs: Optional[TimeMillisecondsAlias] = DEFAULT_N_CS,
+                 n_cs: None | TimeMillisecondsAlias = DEFAULT_N_CS,
                  flow_control_parameters_generator: AbstractFlowControlParametersGenerator
                  = DEFAULT_FLOW_CONTROL_PARAMETERS,
                  can_version: CanVersion = CanVersion.CLASSIC_CAN,
@@ -90,10 +90,10 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
                 :ref:`CAN Frame Data Padding <knowledge-base-can-frame-data-padding>`.
         """
         super().__init__(network_manager=network_manager)
-        self.__n_ar_measured: Optional[TimeMillisecondsAlias] = None
-        self.__n_as_measured: Optional[TimeMillisecondsAlias] = None
-        self.__n_bs_measured: Optional[Tuple[TimeMillisecondsAlias, ...]] = None
-        self.__n_cr_measured: Optional[Tuple[TimeMillisecondsAlias, ...]] = None
+        self.__n_ar_measured: None | TimeMillisecondsAlias = None
+        self.__n_as_measured: None | TimeMillisecondsAlias = None
+        self.__n_bs_measured: None | tuple[TimeMillisecondsAlias, ...] = None
+        self.__n_cr_measured: None | tuple[TimeMillisecondsAlias, ...] = None
         self.n_as_timeout = n_as_timeout
         self.n_ar_timeout = n_ar_timeout
         self.n_bs_timeout = n_bs_timeout
@@ -182,7 +182,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
         self.segmenter.dlc = value
 
     @property
-    def min_dlc(self) -> Optional[int]:
+    def min_dlc(self) -> None | int:
         """
         Value of minimal CAN DLC to use for CAN Packets during Data Optimization.
 
@@ -193,7 +193,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
         return self.segmenter.min_dlc
 
     @min_dlc.setter
-    def min_dlc(self, value: Optional[int]) -> None:
+    def min_dlc(self, value: None | int) -> None:
         """
         Set value of minimal CAN DLC to use for CAN Packets during Data Optimization.
 
@@ -289,7 +289,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
         self.__n_as_timeout = value
 
     @property
-    def n_as_measured(self) -> Optional[TimeMillisecondsAlias]:
+    def n_as_measured(self) -> None | TimeMillisecondsAlias:
         """
         Get the last measured value of :ref:`N_As <knowledge-base-can-n-as>` time parameter.
 
@@ -326,7 +326,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
         self.__n_ar_timeout = value
 
     @property
-    def n_ar_measured(self) -> Optional[TimeMillisecondsAlias]:
+    def n_ar_measured(self) -> None | TimeMillisecondsAlias:
         """
         Get the last measured value of :ref:`N_Ar <knowledge-base-can-n-ar>` time parameter.
 
@@ -363,7 +363,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
         self.__n_bs_timeout = value
 
     @property
-    def n_bs_measured(self) -> Optional[Tuple[TimeMillisecondsAlias, ...]]:
+    def n_bs_measured(self) -> None | tuple[TimeMillisecondsAlias, ...]:
         """
         Get the last measured values of :ref:`N_Bs <knowledge-base-can-n-bs>` time parameter.
 
@@ -416,7 +416,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
         return 0.9 * self.n_bs_timeout - n_ar_measured
 
     @property
-    def n_cs(self) -> Optional[TimeMillisecondsAlias]:
+    def n_cs(self) -> None | TimeMillisecondsAlias:
         """
         Get the value of :ref:`N_Cs <knowledge-base-can-n-cs>` time parameter which is currently set.
 
@@ -426,7 +426,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
         return self.__n_cs
 
     @n_cs.setter
-    def n_cs(self, value: Optional[TimeMillisecondsAlias]) -> None:
+    def n_cs(self, value: None | TimeMillisecondsAlias) -> None:
         """
         Set the value of :ref:`N_Cs <knowledge-base-can-n-cs>` time parameter to use.
 
@@ -485,7 +485,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
         self.__n_cr_timeout = value
 
     @property
-    def n_cr_measured(self) -> Optional[Tuple[TimeMillisecondsAlias, ...]]:
+    def n_cr_measured(self) -> None | tuple[TimeMillisecondsAlias, ...]:
         """
         Get the last measured values of :ref:`N_Cr <knowledge-base-can-n-cr>` time parameter.
 
@@ -603,7 +603,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
     @abstractmethod
     async def async_send_packet(self,
                                 packet: CanPacket,  # type: ignore
-                                loop: Optional[AbstractEventLoop] = None) -> CanPacketRecord:
+                                loop: None | AbstractEventLoop = None) -> CanPacketRecord:
         """
         Transmit CAN packet asynchronously.
 
@@ -614,7 +614,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
         """
 
     @abstractmethod
-    def receive_packet(self, timeout: Optional[TimeMillisecondsAlias] = None) -> CanPacketRecord:
+    def receive_packet(self, timeout: None | TimeMillisecondsAlias = None) -> CanPacketRecord:
         """
         Receive CAN packet.
 
@@ -628,8 +628,8 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
 
     @abstractmethod
     async def async_receive_packet(self,
-                                   timeout: Optional[TimeMillisecondsAlias] = None,
-                                   loop: Optional[AbstractEventLoop] = None) -> CanPacketRecord:
+                                   timeout: None | TimeMillisecondsAlias = None,
+                                   loop: None | AbstractEventLoop = None) -> CanPacketRecord:
         """
         Receive CAN packet asynchronously.
 

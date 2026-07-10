@@ -5,11 +5,10 @@ __all__ = [
     "RID_MAPPING",
 ]
 
-from typing import Dict
 
 RID_BIT_LENGTH = 16
 
-RID_MAPPING: Dict[int, str] = {
+RID_MAPPING: dict[int, str] = {
     0xE200: "Execute SPL",
     0xE201: "Execute DeployLoopRoutineID",
     0xFF00: "eraseMemory",

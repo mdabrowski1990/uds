@@ -3,7 +3,7 @@
 __all__ = ["SegmentationError", "AbstractSegmenter"]
 
 from abc import ABC, abstractmethod
-from typing import Sequence, Type, Union
+from collections.abc import Sequence
 
 from uds.addressing import AbstractAddressingInformation
 from uds.message import UdsMessage, UdsMessageRecord
@@ -42,17 +42,17 @@ class AbstractSegmenter(ABC):
 
     @property
     @abstractmethod
-    def supported_addressing_information_class(self) -> Type[AbstractAddressingInformation]:
+    def supported_addressing_information_class(self) -> type[AbstractAddressingInformation]:
         """Addressing Information class supported by this segmenter."""
 
     @property
     @abstractmethod
-    def supported_packet_class(self) -> Type[AbstractPacket]:
+    def supported_packet_class(self) -> type[AbstractPacket]:
         """Packet class supported by this segmenter."""
 
     @property
     @abstractmethod
-    def supported_packet_record_class(self) -> Type[AbstractPacketRecord]:
+    def supported_packet_record_class(self) -> type[AbstractPacketRecord]:
         """Packet Record class supported by this segmenter."""
 
     @property
@@ -113,7 +113,7 @@ class AbstractSegmenter(ABC):
         """
 
     @abstractmethod
-    def desegmentation(self, packets: PacketsContainersSequence) -> Union[UdsMessage, UdsMessageRecord]:
+    def desegmentation(self, packets: PacketsContainersSequence) -> UdsMessage | UdsMessageRecord:
         """
         Perform desegmentation of packets.
 

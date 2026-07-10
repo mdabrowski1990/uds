@@ -4,19 +4,17 @@ __all__ = ["TimeMillisecondsAlias", "TimestampAlias",
            "RawBytesAlias", "RawBytesTupleAlias", "RawBytesListAlias", "RawBytesSetAlias",
            "validate_nibble", "validate_raw_byte", "validate_raw_2byte_value", "validate_raw_bytes"]
 
-from typing import List, Set, Tuple, Union
-
-TimeMillisecondsAlias = Union[int, float]
+TimeMillisecondsAlias = int | float
 """Alias of a time value in milliseconds."""
 TimestampAlias = float
 """Alias of a timestamp value in seconds (used by :func:`~time.perf_counter`)."""
-RawBytesTupleAlias = Tuple[int, ...]
+RawBytesTupleAlias = tuple[int, ...]
 """Alias of a tuple filled with byte values."""
-RawBytesSetAlias = Set[int]
+RawBytesSetAlias = set[int]
 """Alias of a set filled with byte values."""
-RawBytesListAlias = List[int]
+RawBytesListAlias = list[int]
 """Alias of a list filled with byte values."""
-RawBytesAlias = Union[bytes, bytearray, RawBytesTupleAlias, RawBytesListAlias]
+RawBytesAlias = bytes | bytearray | RawBytesTupleAlias | RawBytesListAlias
 """Alias of a sequence filled with byte values."""
 
 

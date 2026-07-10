@@ -3,8 +3,8 @@
 __all__ = ["Service", "DecodedMessageAlias", "DataRecordsValuesAlias",
            "DataRecordValueAlias", "MultipleDataRecordValueAlias", "SingleDataRecordValueAlias"]
 
+from collections.abc import Collection, Mapping, Sequence
 from copy import deepcopy
-from typing import Collection, Dict, List, Mapping, Optional, Sequence, Set, Tuple, Union
 from warnings import warn
 
 from uds.message import NEGATIVE_RESPONSE_MESSAGE_LENGTH, NRC, RESPONSE_REQUEST_SID_DIFF, RequestSID, ResponseSID
@@ -19,15 +19,15 @@ from .data_record import (
     SingleOccurrenceInfo,
 )
 
-SingleDataRecordValueAlias = Optional[Union[int, ChildrenValuesAlias]]
+SingleDataRecordValueAlias = None | int | ChildrenValuesAlias
 """Alias for a single occurrence Data Record. Either:
  - int type - a single raw value
  - mapping type - children values
  - None - no occurrence"""
-MultipleDataRecordValueAlias = Sequence[Union[int, ChildrenValuesAlias]]
+MultipleDataRecordValueAlias = Sequence[int | ChildrenValuesAlias]
 """Alias for a multiple occurrences Data Record. It is a sequence where each element represents a single occurrence.
 Each element is either raw value (int type) or children values (mapping type)."""
-DataRecordValueAlias = Union[SingleDataRecordValueAlias, MultipleDataRecordValueAlias]
+DataRecordValueAlias = SingleDataRecordValueAlias | MultipleDataRecordValueAlias
 """Alias for a Data Record value that can be used in the Data Records Mapping."""
 DataRecordsValuesAlias = Mapping[str, DataRecordValueAlias]
 """Alias for Data Records values mapping.
@@ -35,7 +35,7 @@ Mapping keys are Data Records names.
 Mapping values are corresponding Data Records values.
 """
 
-DecodedMessageAlias = Tuple[DataRecordInfoAlias, ...]
+DecodedMessageAlias = tuple[DataRecordInfoAlias, ...]
 """Alias for decoded information about a Diagnostic Message."""
 
 
@@ -129,7 +129,7 @@ class Service:
         self.__response_structure = tuple(response_structure)
 
     @property
-    def supported_nrc(self) -> Set[NRC]:
+    def supported_nrc(self) -> set[NRC]:
         """Get NRC codes that are supported by this diagnostic service."""
         return self.__supported_nrc
 
@@ -193,7 +193,7 @@ class Service:
 
     @staticmethod
     def _get_single_data_record_occurrence(data_record: AbstractDataRecord,
-                                           value: SingleDataRecordValueAlias) -> List[int]:
+                                           value: SingleDataRecordValueAlias) -> list[int]:
         """
         Get occurrence value for a single occurrence Data Record.
 
@@ -226,7 +226,7 @@ class Service:
 
     @staticmethod
     def _get_reoccurring_data_record_occurrences(data_record: AbstractDataRecord,
-                                                 value: MultipleDataRecordValueAlias) -> List[int]:
+                                                 value: MultipleDataRecordValueAlias) -> list[int]:
         """
         Get occurrences values for multiple occurrences Data Record.
 
@@ -247,7 +247,7 @@ class Service:
                              f"Data Record min occurrences number = {data_record.min_occurrences}. "
                              f"Data Record max occurrences number = {data_record.max_occurrences}. "
                              f"Provided sequence = {value}.")
-        raw_values: List[int] = []
+        raw_values: list[int] = []
         for occurrence_value in value:
             if isinstance(occurrence_value, int):
                 if not data_record.min_raw_value <= occurrence_value <= data_record.max_raw_value:
@@ -268,7 +268,7 @@ class Service:
     @classmethod
     def _get_data_record_occurrences(cls,
                                      data_record: AbstractDataRecord,
-                                     value: DataRecordValueAlias) -> List[int]:
+                                     value: DataRecordValueAlias) -> list[int]:
         """
         Get raw values of all occurrences provided as value.
 
@@ -325,7 +325,7 @@ class Service:
         decoded_message_continuation = []
         remaining_length = 8 * len(payload)
         payload_int = bytes_to_int(bytes_list=payload, endianness=Endianness.BIG_ENDIAN) if payload else 0
-        raw_values: List[int] = []
+        raw_values: list[int] = []
         for i, data_record in enumerate(message_structure):
             if isinstance(data_record, AbstractDataRecord):
                 if data_record.is_reoccurring and not data_record.fixed_total_length:
@@ -378,7 +378,7 @@ class Service:
 
     @classmethod
     def _encode_message(cls,  # pylint: disable=too-many-branches
-                        data_records_values: Dict[str, DataRecordValueAlias],
+                        data_records_values: dict[str, DataRecordValueAlias],
                         message_structure: AliasMessageStructure,
                         check_unused_data_record_values: bool = True) -> bytearray:
         """
@@ -573,8 +573,8 @@ class Service:
 
     def encode(self,
                data_records_values: DataRecordsValuesAlias,
-               sid: Optional[RequestSID] = None,
-               rsid: Optional[ResponseSID] = None) -> bytearray:
+               sid: None | RequestSID = None,
+               rsid: None | ResponseSID = None) -> bytearray:
         """
         Encode diagnostic message payload for this service.
 

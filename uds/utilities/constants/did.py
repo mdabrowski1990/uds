@@ -6,7 +6,7 @@ __all__ = [
     "DID_MAPPING_2020", "DID_MAPPING_2013",
 ]
 
-from typing import Dict
+
 
 DID_BIT_LENGTH = 16
 """Number of bits used for :ref:`DID <knowledge-base-did>`"""
@@ -17,7 +17,7 @@ PERIODIC_DID_BIT_LENGTH = 8
 PERIODIC_DID_OFFSET = 0xF200
 """Offset used by `periodicDataIdentifiers`"""
 
-DID_MAPPING_2020: Dict[int, str] = {
+DID_MAPPING_2020: dict[int, str] = {
     0xF180: "BootSoftwareIdentificationDataIdentifier",
     0xF181: "applicationSoftwareIdentificationDataIdentifier",
     0xF182: "applicationDataIdentificationDataIdentifier",
@@ -58,7 +58,7 @@ DID_MAPPING_2020: Dict[int, str] = {
 }
 """:ref:`Data Identifiers mapping according to ISO 14229-1:2020 <knowledge-base-did-2020>`."""
 
-DID_MAPPING_2013: Dict[int, str] = {
+DID_MAPPING_2013: dict[int, str] = {
     0xF180: "BootSoftwareIdentificationDataIdentifier",
     0xF181: "applicationSoftwareIdentificationDataIdentifier",
     0xF182: "applicationDataIdentificationDataIdentifier",

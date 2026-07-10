@@ -14,7 +14,6 @@ __all__ = [
     "define_service",
 ]
 
-from typing import Tuple, Union
 from warnings import warn
 
 from aenum import unique
@@ -192,7 +191,7 @@ class ResponseSID(ValidatedEnum, ExtendableEnum, ByteEnum):
         return False
 
 
-SidAlias = Union[RequestSID, ResponseSID, int]
+SidAlias = RequestSID | ResponseSID | int
 """Alias for Request SID or Response SID value."""
 
 
@@ -246,7 +245,7 @@ SERVICES_WITH_RID = {
 in their message format."""
 
 
-def define_service(sid: int, name: str) -> Tuple[RequestSID, ResponseSID]:
+def define_service(sid: int, name: str) -> tuple[RequestSID, ResponseSID]:
     """
     Define SID and RSID values for a non-standard service.
 
