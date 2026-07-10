@@ -13,7 +13,7 @@ from uds.utilities import Endianness, InconsistencyError, RawBytesAlias, bytes_t
 from .data_record import (
     AbstractConditionalDataRecord,
     AbstractDataRecord,
-    AliasMessageStructure,
+    MessageStructureAlias,
     ChildrenValuesAlias,
     DataRecordInfoAlias,
     SingleOccurrenceInfo,
@@ -54,8 +54,8 @@ class Service:
 
     def __init__(self,
                  request_sid: RequestSID,
-                 request_structure: AliasMessageStructure,
-                 response_structure: AliasMessageStructure,
+                 request_structure: MessageStructureAlias,
+                 response_structure: MessageStructureAlias,
                  supported_nrc: Collection[NRC] = tuple(NRC)) -> None:
         """
         Define a translator for a single diagnostic service.
@@ -99,12 +99,12 @@ class Service:
         return self.__response_sid
 
     @property
-    def request_structure(self) -> AliasMessageStructure:
+    def request_structure(self) -> MessageStructureAlias:
         """Get Data Records used for translating request messages for this diagnostic service."""
         return self.__request_structure
 
     @request_structure.setter
-    def request_structure(self, request_structure: AliasMessageStructure) -> None:
+    def request_structure(self, request_structure: MessageStructureAlias) -> None:
         """
         Set Data Records to use for translating request messages for this diagnostic service.
 
@@ -114,12 +114,12 @@ class Service:
         self.__request_structure = tuple(request_structure)
 
     @property
-    def response_structure(self) -> AliasMessageStructure:
+    def response_structure(self) -> MessageStructureAlias:
         """Get Data Records used for translating positive response messages for this diagnostic service."""
         return self.__response_structure
 
     @response_structure.setter
-    def response_structure(self, response_structure: AliasMessageStructure) -> None:
+    def response_structure(self, response_structure: MessageStructureAlias) -> None:
         """
         Set Data Records used for translating positive response messages for this diagnostic service.
 
@@ -283,7 +283,7 @@ class Service:
         return cls._get_single_data_record_occurrence(data_record=data_record, value=value)  # type: ignore
 
     @staticmethod
-    def _get_remaining_length(message_structure: AliasMessageStructure) -> int:
+    def _get_remaining_length(message_structure: MessageStructureAlias) -> int:
         """
         Get minimal remaining length for the provided message structure.
 
@@ -306,7 +306,7 @@ class Service:
     @classmethod
     def _decode_payload(cls,  # pylint: disable=too-many-branches
                         payload: RawBytesAlias,
-                        message_structure: AliasMessageStructure,
+                        message_structure: MessageStructureAlias,
                         check_remaining_length: bool = True) -> DecodedMessageAlias:
         """
         Decode information for given message structure and payload.
@@ -379,7 +379,7 @@ class Service:
     @classmethod
     def _encode_message(cls,  # pylint: disable=too-many-branches
                         data_records_values: dict[str, DataRecordValueAlias],
-                        message_structure: AliasMessageStructure,
+                        message_structure: MessageStructureAlias,
                         check_unused_data_record_values: bool = True) -> bytearray:
         """
         Encode payload of a diagnostic message.
@@ -441,7 +441,7 @@ class Service:
                                       endianness=Endianness.BIG_ENDIAN))
 
     @staticmethod
-    def validate_message_structure(value: AliasMessageStructure) -> None:
+    def validate_message_structure(value: MessageStructureAlias) -> None:
         """
         Validate whether the provided value is a structure of diagnostic message.
 

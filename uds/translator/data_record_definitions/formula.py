@@ -66,7 +66,7 @@ from uds.utilities import (
 
 from ..data_record import (
     AbstractDataRecord,
-    AliasMessageStructure,
+    MessageStructureAlias,
     ConditionalFormulaDataRecord,
     ConditionalMappingDataRecord,
     CustomFormulaDataRecord,
@@ -368,7 +368,7 @@ def get_max_number_of_block_length(length_format_identifier: int) -> tuple[RawDa
 # SID 0x19
 
 
-def get_did_records_formula_2020(record_number: None | int) -> Callable[[int], AliasMessageStructure]:
+def get_did_records_formula_2020(record_number: None | int) -> Callable[[int], MessageStructureAlias]:
     """
     Get formula that can be used by Conditional Data Record for getting DID related Data Records.
 
@@ -383,7 +383,7 @@ def get_did_records_formula_2020(record_number: None | int) -> Callable[[int], A
                                                  record_number=record_number)
 
 
-def get_did_records_formula_2013(record_number: None | int) -> Callable[[int], AliasMessageStructure]:
+def get_did_records_formula_2013(record_number: None | int) -> Callable[[int], MessageStructureAlias]:
     """
     Get formula that can be used by Conditional Data Record for getting DID related Data Records.
 
@@ -439,7 +439,7 @@ def get_scaling_byte_extension(scaling_byte: int,
     return ()
 
 
-def get_scaling_byte_extension_formula(scaling_byte_number: int) -> Callable[[int], AliasMessageStructure]:
+def get_scaling_byte_extension_formula(scaling_byte_number: int) -> Callable[[int], MessageStructureAlias]:
     """
     Get formula that can be used by Conditional Data Record for getting `scalingByteExtension` Data Records.
 

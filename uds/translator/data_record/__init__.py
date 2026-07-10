@@ -18,7 +18,7 @@ from .abstract_data_record import (
 from .conditional_data_record import (
     DEFAULT_DIAGNOSTIC_MESSAGE_CONTINUATION,
     AbstractConditionalDataRecord,
-    AliasMessageStructure,
+    MessageStructureAlias,
     ConditionalFormulaDataRecord,
     ConditionalMappingDataRecord,
 )

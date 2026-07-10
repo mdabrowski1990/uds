@@ -82,7 +82,7 @@ __all__ = [
 from uds.utilities import REPEATED_DATA_RECORDS_NUMBER
 
 from ..data_record import (
-    AliasMessageStructure,
+    MessageStructureAlias,
     ConditionalFormulaDataRecord,
     ConditionalMappingDataRecord,
     RawDataRecord,
@@ -635,7 +635,7 @@ CONDITIONAL_OPTIONAL_CONTROL_ENABLE_MASK_2013 = get_did_data_mask_2013(name="con
 """Definition of optional conditional (compatible with ISO 14229-1:2013) `controlEnableMask` Data Record."""
 
 
-def get_input_output_control_by_identifier_request_2020(did: int) -> AliasMessageStructure:
+def get_input_output_control_by_identifier_request_2020(did: int) -> MessageStructureAlias:
     """
     Get message continuation (after DID Data Record) for InputOutputControlByIdentifier request.
 
@@ -655,7 +655,7 @@ def get_input_output_control_by_identifier_request_2020(did: int) -> AliasMessag
             }))
 
 
-def get_input_output_control_by_identifier_request_2013(did: int) -> AliasMessageStructure:
+def get_input_output_control_by_identifier_request_2013(did: int) -> MessageStructureAlias:
     """
     Get continuation (after DID Data Record) of InputOutputControlByIdentifier request message.
 
@@ -675,7 +675,7 @@ def get_input_output_control_by_identifier_request_2013(did: int) -> AliasMessag
             }))
 
 
-def get_input_output_control_by_identifier_response_2020(did: int) -> AliasMessageStructure:
+def get_input_output_control_by_identifier_response_2020(did: int) -> MessageStructureAlias:
     """
     Get message continuation (after DID Data Record) for InputOutputControlByIdentifier positive response.
 
@@ -695,7 +695,7 @@ def get_input_output_control_by_identifier_response_2020(did: int) -> AliasMessa
             }))
 
 
-def get_input_output_control_by_identifier_response_2013(did: int) -> AliasMessageStructure:
+def get_input_output_control_by_identifier_response_2013(did: int) -> MessageStructureAlias:
     """
     Get message continuation (after DID Data Record) for InputOutputControlByIdentifier positive response.
 
