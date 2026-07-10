@@ -15,7 +15,7 @@ from collections.abc import Sequence
 from datetime import datetime
 
 from uds.addressing import AddressingType, TransmissionDirection
-from uds.packet import AbstractPacketRecord, PacketsRecordsSequence, PacketsRecordsTuple
+from uds.packet import AbstractPacketRecord, PacketsRecordsSequenceAlias, PacketsRecordsTupleAlias
 from uds.utilities import RawBytesAlias, ReassignmentError, bytes_to_hex, validate_raw_bytes
 
 NEGATIVE_RESPONSE_MESSAGE_LENGTH: int = 3
@@ -121,7 +121,7 @@ class UdsMessage(AbstractUdsMessageContainer):
 class UdsMessageRecord(AbstractUdsMessageContainer):
     """Storage for historic information about a diagnostic message that was either received or transmitted."""
 
-    def __init__(self, packets_records: PacketsRecordsSequence) -> None:
+    def __init__(self, packets_records: PacketsRecordsSequenceAlias) -> None:
         """
         Create a record of historic information about a diagnostic message.
 
@@ -159,7 +159,7 @@ class UdsMessageRecord(AbstractUdsMessageContainer):
                 f"transmission_end_timestamp={self.transmission_end_timestamp})")
 
     @staticmethod
-    def __validate_packets_records(value: PacketsRecordsSequence) -> None:
+    def __validate_packets_records(value: PacketsRecordsSequenceAlias) -> None:
         """
         Validate whether the argument contains records with packets.
 
@@ -176,7 +176,7 @@ class UdsMessageRecord(AbstractUdsMessageContainer):
                              f"Actual value: {value}.")
 
     @property
-    def packets_records(self) -> PacketsRecordsTuple:
+    def packets_records(self) -> PacketsRecordsTupleAlias:
         """
         Sequence (in transmission order) of packets records that carried this diagnostic message.
 
@@ -186,7 +186,7 @@ class UdsMessageRecord(AbstractUdsMessageContainer):
         return self.__packets_records
 
     @packets_records.setter
-    def packets_records(self, value: PacketsRecordsSequence) -> None:
+    def packets_records(self, value: PacketsRecordsSequenceAlias) -> None:
         """
         Assign records value of packets that carried this diagnostic message .
 

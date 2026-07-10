@@ -1,6 +1,6 @@
 """Packets implementation for :ref:`Diagnostics over CAN (ISO 15765) <knowledge-base-docan>`."""
 
-from .abstract_container import AbstractCanPacketContainer, CanPacketsContainersSequence
+from .abstract_container import AbstractCanPacketContainer, CanPacketsContainersSequenceAlias
 from .can_packet import CanPacket
 from .can_packet_record import CanPacketRecord
 from .can_packet_type import CanPacketType

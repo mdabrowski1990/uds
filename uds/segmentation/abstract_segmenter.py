@@ -11,8 +11,8 @@ from uds.packet import (
     AbstractPacket,
     AbstractPacketContainer,
     AbstractPacketRecord,
-    PacketsContainersSequence,
-    PacketsTuple,
+    PacketsContainersSequenceAlias,
+    PacketsTupleAlias,
 )
 
 
@@ -102,7 +102,7 @@ class AbstractSegmenter(ABC):
         return len({type(packet) for packet in packets}) == 1
 
     @abstractmethod
-    def is_desegmented_message(self, packets: PacketsContainersSequence) -> bool:
+    def is_desegmented_message(self, packets: PacketsContainersSequenceAlias) -> bool:
         """
         Check whether provided packets are full sequence of packets that form exactly one diagnostic message.
 
@@ -113,7 +113,7 @@ class AbstractSegmenter(ABC):
         """
 
     @abstractmethod
-    def desegmentation(self, packets: PacketsContainersSequence) -> UdsMessage | UdsMessageRecord:
+    def desegmentation(self, packets: PacketsContainersSequenceAlias) -> UdsMessage | UdsMessageRecord:
         """
         Perform desegmentation of packets.
 
@@ -125,7 +125,7 @@ class AbstractSegmenter(ABC):
         """
 
     @abstractmethod
-    def segmentation(self, message: UdsMessage) -> PacketsTuple:
+    def segmentation(self, message: UdsMessage) -> PacketsTupleAlias:
         """
         Perform segmentation of a diagnostic message.
 

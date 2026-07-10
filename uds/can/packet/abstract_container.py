@@ -1,6 +1,6 @@
 """Abstract definition of a container for a CAN packet."""
 
-__all__ = ["AbstractCanPacketContainer", "CanPacketsContainersSequence"]
+__all__ = ["AbstractCanPacketContainer", "CanPacketsContainersSequenceAlias"]
 
 from abc import ABC, abstractmethod
 from collections.abc import Sequence
@@ -252,5 +252,5 @@ class AbstractCanPacketContainer(AbstractPacketContainer, ABC):
         raise NotImplementedError("No handling for given CAN Packet Packet Type.")
 
 
-CanPacketsContainersSequence = Sequence[AbstractPacketContainer]
+CanPacketsContainersSequenceAlias = Sequence[AbstractPacketContainer]
 """Alias for a sequence filled with CAN packet or packet record objects."""

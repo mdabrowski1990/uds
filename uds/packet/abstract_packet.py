@@ -1,7 +1,8 @@
 """Abstract definition of packets that is common for all bus/network types."""
 
 __all__ = ["AbstractPacketContainer", "AbstractPacket", "AbstractPacketRecord",
-           "PacketsContainersSequence", "PacketsTuple", "PacketsRecordsTuple", "PacketsRecordsSequence"]
+           "PacketsContainersSequenceAlias", "PacketsTupleAlias", "PacketsRecordsTupleAlias",
+           "PacketsRecordsSequenceAlias"]
 
 from abc import ABC, abstractmethod
 from collections.abc import Sequence
@@ -196,12 +197,12 @@ class AbstractPacketRecord(AbstractPacketContainer, ABC):
         """Validate whether attributes that were set are a valid for a Packet record."""
 
 
-PacketsContainersSequence = Sequence[AbstractPacketContainer]
+PacketsContainersSequenceAlias = Sequence[AbstractPacketContainer]
 """Alias for a sequence filled with packet or packet record objects."""
 
-PacketsTuple = tuple[AbstractPacket, ...]
+PacketsTupleAlias = tuple[AbstractPacket, ...]
 """Alias for a packet objects tuple."""
-PacketsRecordsTuple = tuple[AbstractPacketRecord, ...]
+PacketsRecordsTupleAlias = tuple[AbstractPacketRecord, ...]
 """Alias for a packet record objects tuple."""
-PacketsRecordsSequence = Sequence[AbstractPacketRecord]
+PacketsRecordsSequenceAlias = Sequence[AbstractPacketRecord]
 """Alias for a packet record objects sequence."""

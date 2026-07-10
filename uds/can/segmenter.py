@@ -18,7 +18,7 @@ from .packet import (
     CanFlowStatus,
     CanPacket,
     CanPacketRecord,
-    CanPacketsContainersSequence,
+    CanPacketsContainersSequenceAlias,
     CanPacketType,
     get_consecutive_frame_max_payload_size,
     get_consecutive_frame_min_dlc,
@@ -255,7 +255,7 @@ class CanSegmenter(AbstractSegmenter):
                                  **self.addressing_information.tx_functional_params)
         return (single_frame,)
 
-    def is_desegmented_message(self, packets: CanPacketsContainersSequence) -> bool:
+    def is_desegmented_message(self, packets: CanPacketsContainersSequenceAlias) -> bool:
         """
         Check whether provided packets are full sequence of packets that form exactly one diagnostic message.
 
@@ -316,7 +316,7 @@ class CanSegmenter(AbstractSegmenter):
                          dlc=None if self.use_data_optimization else self.dlc,
                          **self.addressing_information.tx_physical_params)
 
-    def desegmentation(self, packets: CanPacketsContainersSequence) -> UdsMessage | UdsMessageRecord:
+    def desegmentation(self, packets: CanPacketsContainersSequenceAlias) -> UdsMessage | UdsMessageRecord:
         """
         Perform desegmentation of CAN packets.
 
