@@ -105,8 +105,8 @@ from .subfunctions import EVENT_TYPE_2013, EVENT_TYPE_2020, REPORT_TYPE_2020
 
 
 def get_raw_data_record_with_length_formula(data_record_name: str,
-                                            accept_zero_length: bool) -> Callable[[int], tuple[RawDataRecord]
-                                                                                         | tuple[()]]:
+                                            accept_zero_length: bool
+                                            ) -> Callable[[int], tuple[RawDataRecord] | tuple[()]]:
     """
     Get formula for Conditional Data Record that returns Raw Data Record with length of proceeding value.
 
