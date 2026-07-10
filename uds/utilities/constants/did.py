@@ -7,7 +7,6 @@ __all__ = [
 ]
 
 
-
 DID_BIT_LENGTH = 16
 """Number of bits used for :ref:`DID <knowledge-base-did>`"""
 

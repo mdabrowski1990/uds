@@ -62,7 +62,7 @@ class Translator:
     @property
     def services_mapping(self) -> Mapping[SidAlias, Service]:
         """Get mapping from SID/RSID values to corresponding Service Translators."""
-        return self.__services_mapping  # type: ignore
+        return self.__services_mapping
 
     def encode(self,
                data_records_values: DataRecordsValuesAlias,
