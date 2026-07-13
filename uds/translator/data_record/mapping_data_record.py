@@ -4,8 +4,10 @@ __all__ = ["MappingDataRecord", "MappingAndLinearFormulaDataRecord"]
 
 from abc import ABC, abstractmethod
 from collections.abc import Sequence
+from copy import deepcopy
 from types import MappingProxyType
 from warnings import warn
+from typing import Any, Mapping
 
 from uds.utilities import ValueWarning
 
@@ -17,7 +19,7 @@ from .raw_data_record import RawDataRecord
 class AbstractMappingDataRecord(ABC):
     """Mapping functionality for Data Records."""
 
-    def __init__(self, values_mapping: dict[int, str]) -> None:
+    def __init__(self, values_mapping: Mapping[int, str]) -> None:
         """
         Define mapping to use by this Data Record.
 
@@ -32,7 +34,7 @@ class AbstractMappingDataRecord(ABC):
         return self.__values_mapping
 
     @values_mapping.setter
-    def values_mapping(self, value: dict[int, str]) -> None:
+    def values_mapping(self, value: Mapping[int, str]) -> None:
         """
         Set the mapping between raw values and their labels.
 
@@ -41,8 +43,8 @@ class AbstractMappingDataRecord(ABC):
         :raise TypeError: Provided value is not dict type.
         :raise ValueError: At least one key is out of raw values range.
         """
-        if not isinstance(value, dict):
-            raise TypeError(f"Provided value is not dict type. Actual type: {type(value)}.")
+        if not isinstance(value, Mapping):
+            raise TypeError(f"Provided value is not Mapping type. Actual type: {type(value)}.")
         if not all(isinstance(key, int) and self.min_raw_value <= key <= self.max_raw_value for key in value.keys()):
             raise ValueError("Provided dict contain values that are out of raw values range. "
                              f"Expected: {self.min_raw_value} <= key <= {self.max_raw_value}. "
@@ -89,7 +91,7 @@ class MappingDataRecord(RawDataRecord, AbstractMappingDataRecord):
     def __init__(self,
                  name: str,
                  length: int,
-                 values_mapping: dict[int, str],
+                 values_mapping: Mapping[int, str],
                  children: Sequence[AbstractDataRecord] = tuple(),
                  min_occurrences: int = 1,
                  max_occurrences: None | int = 1,
@@ -119,6 +121,22 @@ class MappingDataRecord(RawDataRecord, AbstractMappingDataRecord):
                                enforce_reoccurring=enforce_reoccurring)
         AbstractMappingDataRecord.__init__(self,
                                            values_mapping=values_mapping)
+
+    def __deepcopy__(self, memo: dict[int, Any]) -> MappingDataRecord:
+        """Get deep copy of the  Mapping Data Record."""
+        cls = self.__class__
+        self_copy = cls.__new__(cls)
+        memo[id(self)] = self_copy
+        MappingDataRecord.__init__(self_copy,
+                                   name=self.name,
+                                   length=self.length,
+                                   values_mapping=self.values_mapping,
+                                   children=[deepcopy(child, memo=memo) for child in self.children],
+                                   min_occurrences=self.min_occurrences,
+                                   max_occurrences=self.max_occurrences,
+                                   unit=self.unit,
+                                   enforce_reoccurring=self.enforce_reoccurring)
+        return self_copy
 
     def get_physical_value(self, raw_value: int) -> str | int:  # type: ignore
         """
@@ -175,7 +193,7 @@ class MappingAndLinearFormulaDataRecord(LinearFormulaDataRecord, AbstractMapping
     def __init__(self,
                  name: str,
                  length: int,
-                 values_mapping: dict[int, str],
+                 values_mapping: Mapping[int, str],
                  factor: float | int,
                  offset: float | int,
                  min_occurrences: int = 1,
@@ -208,6 +226,24 @@ class MappingAndLinearFormulaDataRecord(LinearFormulaDataRecord, AbstractMapping
                                          enforce_reoccurring=enforce_reoccurring)
         AbstractMappingDataRecord.__init__(self,
                                            values_mapping=values_mapping)
+
+    def __deepcopy__(self, memo: dict[int, Any]) -> MappingAndLinearFormulaDataRecord:
+        """Get deep copy of the Mapping and Linear Formula Data Record."""
+        cls = self.__class__
+        self_copy = cls.__new__(cls)
+        memo[id(self)] = self_copy
+        MappingAndLinearFormulaDataRecord.__init__(self_copy,
+                                                   name=self.name,
+                                                   length=self.length,
+                                                   values_mapping=self.values_mapping,
+                                                   factor=self.factor,
+                                                   offset=self.offset,
+                                                   min_occurrences=self.min_occurrences,
+                                                   max_occurrences=self.max_occurrences,
+                                                   unit=self.unit,
+                                                   enforce_reoccurring=self.enforce_reoccurring)
+        memo[id(self)] = self_copy
+        return self_copy
 
     def get_physical_value(self, raw_value: int) -> str | int | float:  # type: ignore
         """

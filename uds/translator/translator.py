@@ -3,7 +3,9 @@
 __all__ = ["Translator"]
 
 from collections.abc import Collection, Mapping
+from copy import deepcopy
 from types import MappingProxyType
+from typing import Any
 
 from uds.message import NEGATIVE_RESPONSE_MESSAGE_LENGTH, RequestSID, ResponseSID, SidAlias
 from uds.utilities import InconsistencyError, RawBytesAlias, bytes_to_hex, validate_raw_bytes
@@ -28,6 +30,14 @@ class Translator:
         :param services: Services translators to use.
         """
         self.services = services
+
+    def __deepcopy__(self, memo: dict[int, Any]) -> Translator:
+        """Get deep copy of the translator."""
+        cls = self.__class__
+        self_copy = cls.__new__(cls)
+        memo[id(self)] = self_copy
+        Translator.__init__(self_copy, ([deepcopy(service, memo=memo) for service in self.services]))
+        return self_copy
 
     @property
     def services(self) -> frozenset[Service]:

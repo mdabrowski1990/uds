@@ -8,6 +8,8 @@ from collections.abc import Callable, Mapping, Sequence
 from inspect import signature
 from operator import getitem
 from types import MappingProxyType
+from typing import Any, Mapping
+from copy import deepcopy
 
 from uds.utilities import InconsistencyError
 
@@ -179,6 +181,17 @@ class ConditionalMappingDataRecord(AbstractConditionalDataRecord):
         if raw_value < 0:
             raise ValueError(f"Provided value is not a raw value as it is less than 0. Actual value: {raw_value}")
         return self.mapping[raw_value if self.value_mask is None else raw_value & self.value_mask]
+
+    def __deepcopy__(self, memo: dict[int, Any]) -> ConditionalMappingDataRecord:
+        """Get deep copy of the Conditional Mapping Data Record."""
+        cls = self.__class__
+        self_copy = cls.__new__(cls)
+        memo[id(self)] = self_copy
+        ConditionalMappingDataRecord.__init__(self_copy,
+                                              mapping=self.mapping,
+                                              default_message_continuation=self.default_message_continuation,
+                                              value_mask=self.value_mask)
+        return self_copy
 
     @property
     def mapping(self) -> Mapping[int, MessageStructureAlias]:

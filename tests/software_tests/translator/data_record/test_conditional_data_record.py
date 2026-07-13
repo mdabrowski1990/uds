@@ -260,6 +260,18 @@ class TestConditionalMappingDataRecord:
         mock_isinstance.assert_called_once_with(value, int)
         mock_getitem.assert_called_once_with(value & value_mask)
 
+    # __deepcopy__
+
+    @patch(f"{SCRIPT_LOCATION}.ConditionalMappingDataRecord.__init__")
+    @patch(f"{SCRIPT_LOCATION}.ConditionalMappingDataRecord.__new__")
+    def test_deepcopy(self, mock_new, mock_init):
+        assert ConditionalMappingDataRecord.__deepcopy__(self.mock_conditional_data_record, {}) == mock_new.return_value
+        mock_init.assert_called_once_with(
+            mock_new.return_value,
+            mapping=self.mock_conditional_data_record.mapping,
+            default_message_continuation=self.mock_conditional_data_record.default_message_continuation,
+            value_mask=self.mock_conditional_data_record.value_mask)
+
     # mapping
 
     def test_mapping__get(self):
