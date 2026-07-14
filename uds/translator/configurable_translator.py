@@ -8,6 +8,7 @@ from .translator import Translator
 from .translator_definitions import BASE_TRANSLATOR
 from .data_record import MessageStructureAlias, MappingDataRecord
 from .service import Service
+from uds.utilities import DID_BIT_LENGTH
 
 
 class ConfigurableTranslator(Translator):
@@ -42,7 +43,7 @@ class ConfigurableTranslator(Translator):
                  rid_mapping: None | dict[int, str] = None,
                  did_mapping: None | dict[int, str] = None,
                  did_structure_mapping: None | dict[int, MessageStructureAlias]) -> None:
-        services: list[Service] = []
+        services_mapping: dict[RequestSID, Service] = {}
         # adapt SubFunctions (all except RoutineControl)
         for sid, subfunction_mapping in (
             (RequestSID.DiagnosticSessionControl, diagnostic_session_type_mapping),
@@ -51,6 +52,7 @@ class ConfigurableTranslator(Translator):
             (RequestSID.SecurityAccess, security_access_type_mapping),
             (RequestSID.CommunicationControl, control_type_type_mapping),
             (RequestSID.Authentication, authentication_task_mapping),
+            (RequestSID.RoutineControl, routine_control_type_mapping),
             (RequestSID.DynamicallyDefineDataIdentifier, definition_type_mapping),
             (RequestSID.TesterPresent, zero_subfunction_mapping),
             (RequestSID.AccessTimingParameter, timing_parameter_access_type_mapping),
@@ -58,23 +60,19 @@ class ConfigurableTranslator(Translator):
             (RequestSID.ResponseOnEvent, event_type_mapping),
             (RequestSID.LinkControl, link_control_type_mapping),
         ):
-            service: Service = deepcopy(BASE_TRANSLATOR.services_mapping[sid])
             if subfunction_mapping is not None:
-                request_subfunction: MappingDataRecord = service.request_structure[0].children[1]
-                response_subfunction: MappingDataRecord = service.response_structure[0].children[1]
-                request_subfunction.values_mapping = response_subfunction.values_mapping = subfunction_mapping
-            services.append(service)
+                services_mapping[sid] = self.__adapt_subfunction(
+                    service=deepcopy(BASE_TRANSLATOR.services_mapping[sid]),
+                    subfunction_mapping=subfunction_mapping)
         # adapt RoutineControl SubFunction and RID names
-        routine_control: Service = deepcopy(BASE_TRANSLATOR.services_mapping[RequestSID.RoutineControl])
-        if routine_control_type_mapping is not None:
-            request_subfunction: MappingDataRecord = routine_control.request_structure[0].children[1]
-            response_subfunction: MappingDataRecord = routine_control.response_structure[0].children[1]
-            request_subfunction.values_mapping = response_subfunction.values_mapping = subfunction_mapping
-        if rid_mapping is not None:
-            rid: MappingDataRecord = routine_control.request_structure[1]
-            rid.values_mapping = rid_mapping
+        services_mapping[RequestSID.RoutineControl] = self.__adapt_rid_mapping(
+            routine_control=services_mapping.get(RequestSID.RoutineControl,
+                                                 deepcopy(BASE_TRANSLATOR.services_mapping[RequestSID.RoutineControl])),
+            rid_mapping=rid_mapping)
         # adapt DIDs
-        # TODO: adapt DID names
+        read_data_by_identifier: Service = services_mapping.get(
+            RequestSID.ReadDataByIdentifier,
+            deepcopy(BASE_TRANSLATOR.services_mapping[RequestSID.ReadDataByIdentifier]))
         # TODO: adapt structure of DIDs
         # TODO: propagate DIDs data records to multiple services:
         #  - ReadDTCInformation
@@ -82,4 +80,23 @@ class ConfigurableTranslator(Translator):
         #  - ResponseOnEvent
         #  - ReadDataByIdentifier
         #  - WriteDataByIdentifier
-        super().__init__(services=services)
+        if did_mapping is not None:
+            ...  # TODO: update names
+        if did_structure_mapping is not None:
+            ... # TODO: update structures
+        services_mapping[RequestSID.ReadDataByIdentifier] = read_data_by_identifier
+        super().__init__(services=services_mapping.values())
+
+    @staticmethod
+    def __adapt_subfunction(service: Service, subfunction_mapping: dict[int, str]) -> Service:
+        request_subfunction: MappingDataRecord = service.request_structure[0].children[1]
+        response_subfunction: MappingDataRecord = service.response_structure[0].children[1]
+        request_subfunction.values_mapping = response_subfunction.values_mapping = subfunction_mapping
+        return service
+
+    @staticmethod
+    def __adapt_rid_mapping(routine_control: Service, rid_mapping: dict[int, str]) -> Service:
+        rid: MappingDataRecord = routine_control.request_structure[1]
+        rid.values_mapping = rid_mapping
+        return routine_control
+
