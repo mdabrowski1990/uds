@@ -5,11 +5,11 @@ __all__ = ["DEFAULT_DIAGNOSTIC_MESSAGE_CONTINUATION", "MessageStructureAlias",
 
 from abc import ABC, abstractmethod
 from collections.abc import Callable, Mapping, Sequence
+from copy import deepcopy
 from inspect import signature
 from operator import getitem
 from types import MappingProxyType
 from typing import Any, Mapping
-from copy import deepcopy
 
 from uds.utilities import InconsistencyError
 

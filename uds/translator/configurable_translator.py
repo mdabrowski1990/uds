@@ -3,12 +3,22 @@
 __all__ = ["ConfigurableTranslator"]
 
 from copy import deepcopy
+from types import MappingProxyType
+from typing import Callable, Mapping
+
 from uds.message import RequestSID
+from uds.utilities import DID_BIT_LENGTH, validate_raw_2byte_value
+
+from .data_record import (
+    AbstractDataRecord,
+    ConditionalFormulaDataRecord,
+    MappingDataRecord,
+    MessageStructureAlias,
+    RawDataRecord,
+)
+from .service import Service
 from .translator import Translator
 from .translator_definitions import BASE_TRANSLATOR
-from .data_record import MessageStructureAlias, MappingDataRecord
-from .service import Service
-from uds.utilities import DID_BIT_LENGTH
 
 
 class ConfigurableTranslator(Translator):
@@ -27,38 +37,38 @@ class ConfigurableTranslator(Translator):
     def __init__(self,
                  base: Translator = BASE_TRANSLATOR,
                  *,
-                 diagnostic_session_type_mapping: None | dict[int, str] = None,
-                 reset_type_mapping: None | dict[int, str] = None,
-                 report_type_mapping: None | dict[int, str] = None,
-                 security_access_type_mapping: None | dict[int, str] = None,
-                 control_type_type_mapping: None | dict[int, str] = None,
-                 authentication_task_mapping: None | dict[int, str] = None,
-                 definition_type_mapping: None | dict[int, str] = None,
-                 routine_control_type_mapping: None | dict[int, str] = None,
-                 zero_subfunction_mapping: None | dict[int, str] = None,
-                 timing_parameter_access_type_mapping: None | dict[int, str] = None,
-                 dtc_setting_type_mapping: None | dict[int, str] = None,
-                 event_type_mapping: None | dict[int, str] = None,
-                 link_control_type_mapping: None | dict[int, str] = None,
-                 rid_mapping: None | dict[int, str] = None,
-                 did_mapping: None | dict[int, str] = None,
-                 did_structure_mapping: None | dict[int, MessageStructureAlias]) -> None:
+                 diagnostic_session_type_mapping: None | Mapping[int, str] = None,
+                 reset_type_mapping: None | Mapping[int, str] = None,
+                 report_type_mapping: None | Mapping[int, str] = None,
+                 security_access_type_mapping: None | Mapping[int, str] = None,
+                 control_type_type_mapping: None | Mapping[int, str] = None,
+                 authentication_task_mapping: None | Mapping[int, str] = None,
+                 definition_type_mapping: None | Mapping[int, str] = None,
+                 routine_control_type_mapping: None | Mapping[int, str] = None,
+                 zero_subfunction_mapping: None | Mapping[int, str] = None,
+                 timing_parameter_access_type_mapping: None | Mapping[int, str] = None,
+                 dtc_setting_type_mapping: None | Mapping[int, str] = None,
+                 event_type_mapping: None | Mapping[int, str] = None,
+                 link_control_type_mapping: None | Mapping[int, str] = None,
+                 rid_mapping: None | Mapping[int, str] = None,
+                 did_mapping: None | Mapping[int, str] = None,
+                 did_data_mapping: None | Mapping[int, MessageStructureAlias]) -> None:
         services_mapping: dict[RequestSID, Service] = {}
         # adapt SubFunctions (all except RoutineControl)
         for sid, subfunction_mapping in (
-            (RequestSID.DiagnosticSessionControl, diagnostic_session_type_mapping),
-            (RequestSID.ECUReset, reset_type_mapping),
-            (RequestSID.ReadDTCInformation, report_type_mapping),
-            (RequestSID.SecurityAccess, security_access_type_mapping),
-            (RequestSID.CommunicationControl, control_type_type_mapping),
-            (RequestSID.Authentication, authentication_task_mapping),
-            (RequestSID.RoutineControl, routine_control_type_mapping),
-            (RequestSID.DynamicallyDefineDataIdentifier, definition_type_mapping),
-            (RequestSID.TesterPresent, zero_subfunction_mapping),
-            (RequestSID.AccessTimingParameter, timing_parameter_access_type_mapping),
-            (RequestSID.ControlDTCSetting, dtc_setting_type_mapping),
-            (RequestSID.ResponseOnEvent, event_type_mapping),
-            (RequestSID.LinkControl, link_control_type_mapping),
+                (RequestSID.DiagnosticSessionControl, diagnostic_session_type_mapping),
+                (RequestSID.ECUReset, reset_type_mapping),
+                (RequestSID.ReadDTCInformation, report_type_mapping),
+                (RequestSID.SecurityAccess, security_access_type_mapping),
+                (RequestSID.CommunicationControl, control_type_type_mapping),
+                (RequestSID.Authentication, authentication_task_mapping),
+                (RequestSID.RoutineControl, routine_control_type_mapping),
+                (RequestSID.DynamicallyDefineDataIdentifier, definition_type_mapping),
+                (RequestSID.TesterPresent, zero_subfunction_mapping),
+                (RequestSID.AccessTimingParameter, timing_parameter_access_type_mapping),
+                (RequestSID.ControlDTCSetting, dtc_setting_type_mapping),
+                (RequestSID.ResponseOnEvent, event_type_mapping),
+                (RequestSID.LinkControl, link_control_type_mapping),
         ):
             if subfunction_mapping is not None:
                 services_mapping[sid] = self.__adapt_subfunction(
@@ -69,23 +79,92 @@ class ConfigurableTranslator(Translator):
             routine_control=services_mapping.get(RequestSID.RoutineControl,
                                                  deepcopy(BASE_TRANSLATOR.services_mapping[RequestSID.RoutineControl])),
             rid_mapping=rid_mapping)
+        # get remaining services
+        for service in BASE_TRANSLATOR.services:
+            if service.request_sid not in services_mapping:
+                services_mapping[service.request_sid] = service
+        super().__init__(services=services_mapping.values())
         # adapt DIDs
-        read_data_by_identifier: Service = services_mapping.get(
-            RequestSID.ReadDataByIdentifier,
-            deepcopy(BASE_TRANSLATOR.services_mapping[RequestSID.ReadDataByIdentifier]))
         # TODO: adapt structure of DIDs
         # TODO: propagate DIDs data records to multiple services:
         #  - ReadDTCInformation
+        #    - 0x04 (resp)
+        #    - 0x05 (resp)
+        #    - 0x18 (resp)
         #  - DefineDataIdentifier
+        #    - 0x01 (req, resp)
+        #    - 0x02 (resp)
+        #    - 0x03 (req, resp)
         #  - ResponseOnEvent
+        #    - 0x03 (req, resp)
+        #    - 0x07 (req, resp)
         #  - ReadDataByIdentifier
+        #    - * (req, resp)
         #  - WriteDataByIdentifier
-        if did_mapping is not None:
-            ...  # TODO: update names
-        if did_structure_mapping is not None:
-            ... # TODO: update structures
-        services_mapping[RequestSID.ReadDataByIdentifier] = read_data_by_identifier
-        super().__init__(services=services_mapping.values())
+        #    - * (req, resp)
+        self.did_mapping = did_mapping
+        self.did_data_mapping = did_data_mapping
+
+    @property
+    def did_mapping(self) -> Mapping[int, str]:
+        return self.__did_mapping
+
+    @did_mapping.setter
+    def did_mapping(self, value: Mapping[int, str]) -> None:
+        for did in value.keys():
+            validate_raw_2byte_value(did)
+        for name in value.values():
+            if not isinstance(name, str):
+                raise TypeError("All DID names must be str type.")
+            if not name.strip():
+                raise ValueError("All DID names must not consist of whitespace only.")
+        self.__did_mapping = MappingProxyType(value)
+        # TODO: trigger value propagation
+
+    @property
+    def did_data_mapping(self) -> Mapping[int, MessageStructureAlias]:
+        return self.__did_data_mapping
+
+    @did_data_mapping.setter
+    def did_data_mapping(self, value: Mapping[int, MessageStructureAlias]) -> None:
+        for did in value.keys():
+            validate_raw_2byte_value(did)
+        self.__did_data_mapping = value
+        # TODO: trigger value propagation
+
+    @property
+    def __did(self) -> MappingDataRecord:
+        return MappingDataRecord(name="DID",
+                                 length=DID_BIT_LENGTH,
+                                 values_mapping=self.did_mapping)
+
+    @property
+    def __multiple_did(self) -> MappingDataRecord:
+        return MappingDataRecord(name="DID",
+                                 length=DID_BIT_LENGTH,
+                                 values_mapping=self.did_mapping,
+                                 min_occurrences=1,
+                                 max_occurrences=None)
+
+    @property
+    def __dynamically_defined_did(self) -> MappingDataRecord:
+        return MappingDataRecord(name="dynamicallyDefinedDataIdentifier",
+                                 length=DID_BIT_LENGTH,
+                                 values_mapping=self.did_mapping)
+
+    @property
+    def __optional_dynamically_defined_did(self) -> MappingDataRecord:
+        return MappingDataRecord(name="dynamicallyDefinedDataIdentifier",
+                                 length=DID_BIT_LENGTH,
+                                 values_mapping=self.did_mapping,
+                                 min_occurrences=0,
+                                 max_occurrences=1)
+
+    @property
+    def __source_did(self) -> MappingDataRecord:
+        return MappingDataRecord(name="sourceDataIdentifier",
+                                 length=DID_BIT_LENGTH,
+                                 values_mapping=self.did_mapping)
 
     @staticmethod
     def __adapt_subfunction(service: Service, subfunction_mapping: dict[int, str]) -> Service:
@@ -100,3 +179,82 @@ class ConfigurableTranslator(Translator):
         rid.values_mapping = rid_mapping
         return routine_control
 
+    def __get_did_records_formula(self, record_number: None | int) -> Callable[[int], MessageStructureAlias]:
+        return lambda did_count: self.__get_did_record(did_count=did_count, record_number=record_number)
+
+    def __get_did_record(self, did_count: int, record_number: None | int,
+                         optional: bool = False) -> tuple[MappingDataRecord | ConditionalFormulaDataRecord, ...]:
+        data_records: list[MappingDataRecord | ConditionalFormulaDataRecord] = []
+        for did_number in range(1, did_count + 1):
+            name = f"DID#{did_number}" if record_number is None else f"DID#{record_number}_{did_number}"
+            data_records.append(self.__get_did(name=name, optional=optional))
+            data_records.append(self.__get_did_data(name=f"{name} data"))
+        return tuple(data_records)
+
+    def __get_did(self, name: str, optional: bool = False) -> MappingDataRecord:
+        return MappingDataRecord(name=name,
+                                 length=DID_BIT_LENGTH,
+                                 values_mapping=self.did_mapping,
+                                 min_occurrences=0 if optional else 1,
+                                 max_occurrences=1)
+
+    def __get_did_data(self, name: str = "DID data") -> ConditionalFormulaDataRecord:
+        default_did_data = RawDataRecord(name=name,
+                                         length=8,
+                                         min_occurrences=1,
+                                         max_occurrences=None)
+
+        def _get_did_data(did: int) -> tuple[RawDataRecord]:
+            data_records = self.did_data_mapping.get(did, None)
+            if data_records is None:
+                raise ValueError(f"No data structure defined for DID 0x{did:04X}.")
+            total_length = 0
+            for dr in data_records:
+                if not isinstance(dr, AbstractDataRecord) or not dr.fixed_total_length:
+                    raise ValueError(f"Incorrectly defined data structure for DID 0x{did:04X}. "
+                                     f"Only fixed length data records are supported right now.")
+                total_length += dr.min_occurrences * dr.length
+            return (RawDataRecord(name=name,
+                                  children=data_records,
+                                  length=total_length,
+                                  min_occurrences=1,
+                                  max_occurrences=1),)
+
+        return ConditionalFormulaDataRecord(formula=_get_did_data,
+                                            default_message_continuation=[default_did_data])
+
+    def __get_did_data_mask(self, name: str, optional: bool) -> ConditionalFormulaDataRecord:
+        default_did_data_mask = RawDataRecord(name=name,
+                                              length=8,
+                                              min_occurrences=0 if optional else 1,
+                                              max_occurrences=None)
+
+        def _get_mask_data_record(data_record: AbstractDataRecord) -> RawDataRecord:
+            return MappingDataRecord(name=f"{data_record.name} (mask)",
+                                     length=data_record.length,
+                                     values_mapping={0: "no",
+                                                     data_record.max_raw_value: "yes"},
+                                     children=[_get_mask_data_record(child) for child in data_record.children],
+                                     min_occurrences=data_record.min_occurrences,
+                                     max_occurrences=data_record.max_occurrences)
+
+        def _get_did_data_mask(did: int) -> tuple[RawDataRecord]:
+            data_records = self.did_data_mapping.get(did, None)
+            if data_records is None:
+                raise ValueError(f"No data structure defined for DID 0x{did:04X}.")
+            total_length = 0
+            mask_data_records = []
+            for dr in data_records:
+                if not isinstance(dr, AbstractDataRecord) or not dr.fixed_total_length:
+                    raise ValueError(f"Incorrectly defined data structure for DID 0x{did:04X}. "
+                                     f"Only fixed length data records are supported right now.")
+                total_length += dr.min_occurrences * dr.length
+                mask_data_records.append(_get_mask_data_record(dr))
+            return (RawDataRecord(name=name,
+                                  children=mask_data_records,
+                                  length=total_length,
+                                  min_occurrences=0 if optional else 1,
+                                  max_occurrences=1),)
+
+        return ConditionalFormulaDataRecord(formula=_get_did_data_mask,
+                                            default_message_continuation=[default_did_data_mask])

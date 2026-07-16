@@ -6,8 +6,8 @@ from abc import ABC, abstractmethod
 from collections.abc import Sequence
 from copy import deepcopy
 from types import MappingProxyType
-from warnings import warn
 from typing import Any, Mapping
+from warnings import warn
 
 from uds.utilities import ValueWarning
 
