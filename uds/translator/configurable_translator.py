@@ -7,7 +7,7 @@ from types import MappingProxyType
 from typing import Callable, Mapping
 
 from uds.message import RequestSID
-from uds.utilities import DID_BIT_LENGTH, validate_raw_2byte_value
+from uds.utilities import DID_BIT_LENGTH, REPEATED_DATA_RECORDS_NUMBER, validate_raw_2byte_value
 
 from .data_record import (
     AbstractDataRecord,
@@ -16,6 +16,7 @@ from .data_record import (
     MessageStructureAlias,
     RawDataRecord,
 )
+from .data_record_definitions import DID_COUNT_RECORDS, DTC_AND_STATUS, OPTIONAL_DTC_SNAPSHOT_RECORDS_NUMBERS_LIST
 from .service import Service
 from .translator import Translator
 from .translator_definitions import BASE_TRANSLATOR
@@ -53,8 +54,11 @@ class ConfigurableTranslator(Translator):
                  rid_mapping: None | Mapping[int, str] = None,
                  did_mapping: None | Mapping[int, str] = None,
                  did_data_mapping: None | Mapping[int, MessageStructureAlias]) -> None:
-        services_mapping: dict[RequestSID, Service] = {}
-        # adapt SubFunctions (all except RoutineControl)
+        # copy services from base Translator
+        services_mapping: dict[RequestSID, Service] = {
+            service.request_sid: deepcopy(service) for service in base.services
+        }
+        # adapt SubFunctions
         for sid, subfunction_mapping in (
                 (RequestSID.DiagnosticSessionControl, diagnostic_session_type_mapping),
                 (RequestSID.ECUReset, reset_type_mapping),
@@ -71,18 +75,14 @@ class ConfigurableTranslator(Translator):
                 (RequestSID.LinkControl, link_control_type_mapping),
         ):
             if subfunction_mapping is not None:
-                services_mapping[sid] = self.__adapt_subfunction(
-                    service=deepcopy(BASE_TRANSLATOR.services_mapping[sid]),
-                    subfunction_mapping=subfunction_mapping)
-        # adapt RoutineControl SubFunction and RID names
-        services_mapping[RequestSID.RoutineControl] = self.__adapt_rid_mapping(
-            routine_control=services_mapping.get(RequestSID.RoutineControl,
-                                                 deepcopy(BASE_TRANSLATOR.services_mapping[RequestSID.RoutineControl])),
-            rid_mapping=rid_mapping)
-        # get remaining services
-        for service in BASE_TRANSLATOR.services:
-            if service.request_sid not in services_mapping:
-                services_mapping[service.request_sid] = service
+                services_mapping[sid] = self.__adapt_subfunction(service=services_mapping[sid],
+                                                                 subfunction_mapping=subfunction_mapping)
+        # adapt RID names
+        if rid_mapping is not None:
+            services_mapping[RequestSID.RoutineControl] = self.__adapt_rid_mapping(
+                routine_control=services_mapping[RequestSID.RoutineControl],
+                rid_mapping=rid_mapping)
+        # create new Translator
         super().__init__(services=services_mapping.values())
         # adapt DIDs
         # TODO: adapt structure of DIDs
@@ -119,7 +119,7 @@ class ConfigurableTranslator(Translator):
             if not name.strip():
                 raise ValueError("All DID names must not consist of whitespace only.")
         self.__did_mapping = MappingProxyType(value)
-        # TODO: trigger value propagation
+        self.__adapt_did_services()
 
     @property
     def did_data_mapping(self) -> Mapping[int, MessageStructureAlias]:
@@ -130,7 +130,7 @@ class ConfigurableTranslator(Translator):
         for did in value.keys():
             validate_raw_2byte_value(did)
         self.__did_data_mapping = value
-        # TODO: trigger value propagation
+        self.__adapt_did_services()
 
     @property
     def __did(self) -> MappingDataRecord:
@@ -166,23 +166,52 @@ class ConfigurableTranslator(Translator):
                                  length=DID_BIT_LENGTH,
                                  values_mapping=self.did_mapping)
 
+    @property
+    def __did_records(self) -> tuple[ConditionalFormulaDataRecord, ...]:
+        return tuple(ConditionalFormulaDataRecord(formula=self.__get_did_records_formula(record_number + 1))
+                     for record_number in range(REPEATED_DATA_RECORDS_NUMBER))
+
+    @property
+    def __dtc_snapshot_records(self) -> tuple[MappingDataRecord | RawDataRecord | ConditionalFormulaDataRecord, ...]:
+        return tuple(item
+                     for snapshot_record in zip(OPTIONAL_DTC_SNAPSHOT_RECORDS_NUMBERS_LIST,
+                                                DID_COUNT_RECORDS,
+                                                self.__did_records)
+                     for item in snapshot_record)
+
+    @property
+    def __conditional_read_dtc_information_response(self) -> Mapping[int, MessageStructureAlias]:
+        read_dtc_information = self.services_mapping[RequestSID.ReadDTCInformation]
+        conditional_response_mapping = dict(read_dtc_information.response_structure[1].mapping)
+        conditional_response_mapping[0x04] = (DTC_AND_STATUS, *self.__dtc_snapshot_records)
+        # TODO:0x05
+        # TODO:0x18
+        return conditional_response_mapping
+
     @staticmethod
-    def __adapt_subfunction(service: Service, subfunction_mapping: dict[int, str]) -> Service:
+    def __adapt_subfunction(service: Service, subfunction_mapping: Mapping[int, str]) -> Service:
         request_subfunction: MappingDataRecord = service.request_structure[0].children[1]
         response_subfunction: MappingDataRecord = service.response_structure[0].children[1]
         request_subfunction.values_mapping = response_subfunction.values_mapping = subfunction_mapping
         return service
 
     @staticmethod
-    def __adapt_rid_mapping(routine_control: Service, rid_mapping: dict[int, str]) -> Service:
+    def __adapt_rid_mapping(routine_control: Service, rid_mapping: Mapping[int, str]) -> Service:
         rid: MappingDataRecord = routine_control.request_structure[1]
         rid.values_mapping = rid_mapping
         return routine_control
 
+    def __adapt_did_services(self) -> None:
+        self.services_mapping[RequestSID.ReadDTCInformation].response_structure[1].mapping \
+            = self.__conditional_read_dtc_information_response
+        ...  # TODO: propagate DID related changes
+
     def __get_did_records_formula(self, record_number: None | int) -> Callable[[int], MessageStructureAlias]:
         return lambda did_count: self.__get_did_record(did_count=did_count, record_number=record_number)
 
-    def __get_did_record(self, did_count: int, record_number: None | int,
+    def __get_did_record(self,
+                         did_count: int,
+                         record_number: None | int,
                          optional: bool = False) -> tuple[MappingDataRecord | ConditionalFormulaDataRecord, ...]:
         data_records: list[MappingDataRecord | ConditionalFormulaDataRecord] = []
         for did_number in range(1, did_count + 1):

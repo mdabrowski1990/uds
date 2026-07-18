@@ -1,5 +1,5 @@
 import pytest
-from mock import MagicMock, Mock, patch, call
+from mock import MagicMock, Mock, call, patch
 
 from uds.message import NRC
 from uds.translator.data_record import (

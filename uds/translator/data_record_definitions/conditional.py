@@ -7,6 +7,7 @@ __all__ = [
     # SID 0x11
     "CONDITIONAL_POWER_DOWN_TIME",
     # SID 0x19
+    "DID_COUNT_RECORDS",
     "CONDITIONAL_READ_DTC_INFORMATION_REQUEST_2020", "CONDITIONAL_READ_DTC_INFORMATION_REQUEST_2013",
     "CONDITIONAL_READ_DTC_INFORMATION_RESPONSE_2020", "CONDITIONAL_READ_DTC_INFORMATION_RESPONSE_2013",
     # SID 0x24
@@ -221,6 +222,14 @@ CONDITIONAL_POWER_DOWN_TIME = ConditionalMappingDataRecord(mapping={0x4: [POWER_
 
 # SID 0x19
 
+DID_COUNT_RECORDS = tuple(RawDataRecord(name=f"DIDCount#{record_number + 1}",
+                                        length=8,
+                                        min_occurrences=1,
+                                        max_occurrences=1,
+                                        unit="DIDs")
+                          for record_number in range(REPEATED_DATA_RECORDS_NUMBER))
+"""Collection of `DIDCount` Data Records."""
+
 _DID_RECORDS_2020 = tuple(ConditionalFormulaDataRecord(formula=get_did_records_formula_2020(record_number + 1))
                           for record_number in range(REPEATED_DATA_RECORDS_NUMBER))
 """Collection of `DID` Data Records (compatible with ISO 14229-1:2020)."""
@@ -228,23 +237,15 @@ _DID_RECORDS_2013 = tuple(ConditionalFormulaDataRecord(formula=get_did_records_f
                           for record_number in range(REPEATED_DATA_RECORDS_NUMBER))
 """Collection of `DID` Data Records (compatible with ISO 14229-1:2013)."""
 
-_DID_COUNT_RECORDS = tuple(RawDataRecord(name=f"DIDCount#{record_number + 1}",
-                                         length=8,
-                                         min_occurrences=1,
-                                         max_occurrences=1,
-                                         unit="DIDs")
-                           for record_number in range(REPEATED_DATA_RECORDS_NUMBER))
-"""Collection of `DIDCount` Data Records."""
-
 _DTC_SNAPSHOT_RECORDS_2020 = tuple(item
                                    for snapshot_record in zip(OPTIONAL_DTC_SNAPSHOT_RECORDS_NUMBERS_LIST,
-                                                              _DID_COUNT_RECORDS,
+                                                              DID_COUNT_RECORDS,
                                                               _DID_RECORDS_2020)
                                    for item in snapshot_record)
 """Collection of DTC Snapshot Data Records (compatible with ISO 14229-1:2020)."""
 _DTC_SNAPSHOT_RECORDS_2013 = tuple(item
                                    for snapshot_record in zip(OPTIONAL_DTC_SNAPSHOT_RECORDS_NUMBERS_LIST,
-                                                              _DID_COUNT_RECORDS,
+                                                              DID_COUNT_RECORDS,
                                                               _DID_RECORDS_2013)
                                    for item in snapshot_record)
 """Collection of DTC Snapshot Data Records (compatible with ISO 14229-1:2013)."""
@@ -258,14 +259,14 @@ _DTC_EXTENDED_DATA_RECORDS = tuple(item
 _DTC_STORED_DATA_RECORDS_2020 = tuple(item
                                       for stored_data_record in zip(DTC_STORED_DATA_RECORD_NUMBERS_LIST,
                                                                     DTCS_AND_STATUSES_LIST,
-                                                                    _DID_COUNT_RECORDS,
+                                                                    DID_COUNT_RECORDS,
                                                                     _DID_RECORDS_2020)
                                       for item in stored_data_record)
 """Collection of DTC Stored Data Records (compatible with ISO 14229-1:2020)."""
 _DTC_STORED_DATA_RECORDS_2013 = tuple(item
                                       for stored_data_record in zip(DTC_STORED_DATA_RECORD_NUMBERS_LIST,
                                                                     DTCS_AND_STATUSES_LIST,
-                                                                    _DID_COUNT_RECORDS,
+                                                                    DID_COUNT_RECORDS,
                                                                     _DID_RECORDS_2013)
                                       for item in stored_data_record)
 """Collection of DTC Stored Data Records (compatible with ISO 14229-1:2013)."""
