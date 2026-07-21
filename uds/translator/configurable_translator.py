@@ -1,4 +1,4 @@
-"""Implmentation of translator configurable through typical diagnostic parameters."""
+"""Implementation of translator configurable through typical diagnostic parameters."""
 
 __all__ = ["ConfigurableTranslator"]
 
@@ -16,7 +16,18 @@ from .data_record import (
     MessageStructureAlias,
     RawDataRecord,
 )
-from .data_record_definitions import DID_COUNT_RECORDS, DTC_AND_STATUS, OPTIONAL_DTC_SNAPSHOT_RECORDS_NUMBERS_LIST
+from .data_record_definitions import (
+    ADDRESS_AND_LENGTH_FORMAT_IDENTIFIER,
+    CONDITIONAL_DATA_FROM_MEMORY,
+    DID_COUNT_RECORDS,
+    DID_MEMORY_SIZE,
+    DTC_AND_STATUS,
+    DTC_STORED_DATA_RECORD_NUMBERS_LIST,
+    DTCS_AND_STATUSES_LIST,
+    MEMORY_SELECTION,
+    OPTIONAL_DTC_SNAPSHOT_RECORDS_NUMBERS_LIST,
+    POSITION_IN_DID,
+)
 from .service import Service
 from .translator import Translator
 from .translator_definitions import BASE_TRANSLATOR
@@ -97,6 +108,7 @@ class ConfigurableTranslator(Translator):
         #    - 0x03 (req, resp)
         #  - ResponseOnEvent
         #    - 0x03 (req, resp)
+        #    - 0x04 (resp)
         #    - 0x07 (req, resp)
         #  - ReadDataByIdentifier
         #    - * (req, resp)
@@ -167,6 +179,18 @@ class ConfigurableTranslator(Translator):
                                  values_mapping=self.did_mapping)
 
     @property
+    def __data_from_did(self) -> RawDataRecord:
+        return RawDataRecord(name="Data from DID",
+                             length=32,
+                             children=(
+                                 self.__source_did,
+                                 POSITION_IN_DID,
+                                 DID_MEMORY_SIZE
+                             ),
+                             min_occurrences=1,
+                             max_occurrences=None)
+
+    @property
     def __did_records(self) -> tuple[ConditionalFormulaDataRecord, ...]:
         return tuple(ConditionalFormulaDataRecord(formula=self.__get_did_records_formula(record_number + 1))
                      for record_number in range(REPEATED_DATA_RECORDS_NUMBER))
@@ -180,12 +204,58 @@ class ConfigurableTranslator(Translator):
                      for item in snapshot_record)
 
     @property
+    def __dtc_stored_data_records(self) -> tuple[MappingDataRecord | RawDataRecord | ConditionalFormulaDataRecord, ...]:
+        return tuple(item
+                     for stored_data_record in zip(DTC_STORED_DATA_RECORD_NUMBERS_LIST,
+                                                   DTCS_AND_STATUSES_LIST,
+                                                   DID_COUNT_RECORDS,
+                                                   self.__did_records)
+                     for item in stored_data_record)
+
+    @property
     def __conditional_read_dtc_information_response(self) -> Mapping[int, MessageStructureAlias]:
         read_dtc_information = self.services_mapping[RequestSID.ReadDTCInformation]
         conditional_response_mapping = dict(read_dtc_information.response_structure[1].mapping)
         conditional_response_mapping[0x04] = (DTC_AND_STATUS, *self.__dtc_snapshot_records)
-        # TODO:0x05
-        # TODO:0x18
+        conditional_response_mapping[0x05] = (DTC_AND_STATUS, *self.__dtc_stored_data_records)
+        conditional_response_mapping[0x04] = (MEMORY_SELECTION, DTC_AND_STATUS, *self.__dtc_snapshot_records)
+        return conditional_response_mapping
+
+    @property
+    def __conditional_dynamically_define_data_identifier_request(self) -> Mapping[int, MessageStructureAlias]:
+        dynamically_define_data_identifier = self.services_mapping[RequestSID.DynamicallyDefineDataIdentifier]
+        conditional_request_mapping = dict(dynamically_define_data_identifier.request_structure[1].mapping)
+        conditional_request_mapping[0x01] = (self.__dynamically_defined_did, self.__data_from_did)
+        conditional_request_mapping[0x02] = (self.__dynamically_defined_did,
+                                             ADDRESS_AND_LENGTH_FORMAT_IDENTIFIER,
+                                             CONDITIONAL_DATA_FROM_MEMORY)
+        conditional_request_mapping[0x03] = (self.__optional_dynamically_defined_did,)
+        return conditional_request_mapping
+
+    @property
+    def __conditional_dynamically_define_data_identifier_response(self) -> Mapping[int, MessageStructureAlias]:
+        dynamically_define_data_identifier = self.services_mapping[RequestSID.DynamicallyDefineDataIdentifier]
+        conditional_response_mapping = dict(dynamically_define_data_identifier.response_structure[1].mapping)
+        conditional_response_mapping[0x01] = (self.__dynamically_defined_did,)
+        conditional_response_mapping[0x02] = (self.__dynamically_defined_did,)
+        conditional_response_mapping[0x03] = (self.__optional_dynamically_defined_did,)
+        return conditional_response_mapping
+
+    @property
+    def __conditional_response_on_event_request(self) -> Mapping[int, MessageStructureAlias]:
+        response_on_event = self.services_mapping[RequestSID.ResponseOnEvent]
+        conditional_request_mapping = dict(response_on_event.request_structure[1].mapping)
+        conditional_request_mapping[0x03] = ... # TODO
+        conditional_request_mapping[0x07] = ... # TODO
+        return conditional_request_mapping
+
+    @property
+    def __conditional_response_on_event_response(self) -> Mapping[int, MessageStructureAlias]:
+        response_on_event = self.services_mapping[RequestSID.ResponseOnEvent]
+        conditional_response_mapping = dict(response_on_event.response_structure[1].mapping)
+        conditional_response_mapping[0x03] = ... # TODO
+        conditional_response_mapping[0x04] = ... # TODO
+        conditional_response_mapping[0x07] = ... # TODO
         return conditional_response_mapping
 
     @staticmethod
@@ -204,7 +274,14 @@ class ConfigurableTranslator(Translator):
     def __adapt_did_services(self) -> None:
         self.services_mapping[RequestSID.ReadDTCInformation].response_structure[1].mapping \
             = self.__conditional_read_dtc_information_response
-        ...  # TODO: propagate DID related changes
+        self.services_mapping[RequestSID.DynamicallyDefineDataIdentifier].request_structure[1].mapping \
+            = self.__conditional_dynamically_define_data_identifier_request
+        self.services_mapping[RequestSID.DynamicallyDefineDataIdentifier].response_structure[1].mapping \
+            = self.__conditional_dynamically_define_data_identifier_response
+        self.services_mapping[RequestSID.ResponseOnEvent].request_structure[1].mapping \
+            = self.__conditional_response_on_event_request
+        self.services_mapping[RequestSID.ResponseOnEvent].response_structure[1].mapping \
+            = self.__conditional_response_on_event_response
 
     def __get_did_records_formula(self, record_number: None | int) -> Callable[[int], MessageStructureAlias]:
         return lambda did_count: self.__get_did_record(did_count=did_count, record_number=record_number)
