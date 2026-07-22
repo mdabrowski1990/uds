@@ -14,13 +14,13 @@ from .data_record import (
     ConditionalFormulaDataRecord,
     MappingDataRecord,
     MessageStructureAlias,
-    RawDataRecord,
+    RawDataRecord,ConditionalMappingDataRecord,
 )
 from .data_record_definitions import (
     ADDRESS_AND_LENGTH_FORMAT_IDENTIFIER,
     CONDITIONAL_DATA_FROM_MEMORY,
     DID_COUNT_RECORDS,
-    DID_MEMORY_SIZE,
+    DID_MEMORY_SIZE, INPUT_OUTPUT_CONTROL_PARAMETER,
     DTC_AND_STATUS,
     DTC_STORED_DATA_RECORD_NUMBERS_LIST,
     DTCS_AND_STATUSES_LIST,
@@ -96,24 +96,6 @@ class ConfigurableTranslator(Translator):
         # create new Translator
         super().__init__(services=services_mapping.values())
         # adapt DIDs
-        # TODO: adapt structure of DIDs
-        # TODO: propagate DIDs data records to multiple services:
-        #  - ReadDTCInformation
-        #    - 0x04 (resp)
-        #    - 0x05 (resp)
-        #    - 0x18 (resp)
-        #  - DefineDataIdentifier
-        #    - 0x01 (req, resp)
-        #    - 0x02 (resp)
-        #    - 0x03 (req, resp)
-        #  - ResponseOnEvent
-        #    - 0x03 (req, resp)
-        #    - 0x04 (resp)
-        #    - 0x07 (req, resp)
-        #  - ReadDataByIdentifier
-        #    - * (req, resp)
-        #  - WriteDataByIdentifier
-        #    - * (req, resp)
         self.did_mapping = did_mapping
         self.did_data_mapping = did_data_mapping
 
@@ -149,6 +131,11 @@ class ConfigurableTranslator(Translator):
         return MappingDataRecord(name="DID",
                                  length=DID_BIT_LENGTH,
                                  values_mapping=self.did_mapping)
+
+    @property
+    def __dids(self) -> tuple[MappingDataRecord | ConditionalFormulaDataRecord, ...]:
+        return (*self.__get_did_record(did_count=1, record_number=None, optional=False),
+                *self.__get_did_record(did_count=REPEATED_DATA_RECORDS_NUMBER, record_number=None, optional=True)[2:])
 
     @property
     def __multiple_did(self) -> MappingDataRecord:
@@ -189,6 +176,14 @@ class ConfigurableTranslator(Translator):
                              ),
                              min_occurrences=1,
                              max_occurrences=None)
+
+    @property
+    def __conditional_control_state(self) -> ConditionalFormulaDataRecord:
+        return self.__get_did_data(name="controlState")
+
+    @property
+    def __conditional_optional_control_enable_mask(self) -> ConditionalFormulaDataRecord:
+        return self.__get_did_data_mask(name="controlEnableMask", optional=True)
 
     @property
     def __did_records(self) -> tuple[ConditionalFormulaDataRecord, ...]:
@@ -282,6 +277,22 @@ class ConfigurableTranslator(Translator):
             = self.__conditional_response_on_event_request
         self.services_mapping[RequestSID.ResponseOnEvent].response_structure[1].mapping \
             = self.__conditional_response_on_event_response
+        self.services_mapping[RequestSID.ReadDataByIdentifier].request_structure[0].values_mapping = self.did_mapping
+        self.services_mapping[RequestSID.ReadDataByIdentifier].response_structure = self.__dids
+        self.services_mapping[RequestSID.WriteDataByIdentifier].request_structure = (self.__did, self.__get_did_data())
+        self.services_mapping[RequestSID.WriteDataByIdentifier].response_structure[0].values_mapping = self.did_mapping
+        self.services_mapping[RequestSID.InputOutputControlByIdentifier].request_structure[0].values_mapping\
+            = self.did_mapping
+        self.services_mapping[RequestSID.InputOutputControlByIdentifier].request_structure[1].formula \
+            = self.__get_input_output_control_by_identifier_request
+        self.services_mapping[RequestSID.InputOutputControlByIdentifier].response_structure[0].values_mapping\
+            = self.did_mapping
+        self.services_mapping[RequestSID.InputOutputControlByIdentifier].request_structure[1].formula \
+            = self.__get_input_output_control_by_identifier_response
+        self.services_mapping[RequestSID.ReadScalingDataByIdentifier].request_structure[0].values_mapping \
+            = self.did_mapping
+        self.services_mapping[RequestSID.ReadScalingDataByIdentifier].response_structure[0].values_mapping \
+            = self.did_mapping
 
     def __get_did_records_formula(self, record_number: None | int) -> Callable[[int], MessageStructureAlias]:
         return lambda did_count: self.__get_did_record(did_count=did_count, record_number=record_number)
@@ -364,3 +375,23 @@ class ConfigurableTranslator(Translator):
 
         return ConditionalFormulaDataRecord(formula=_get_did_data_mask,
                                             default_message_continuation=[default_did_data_mask])
+
+    def __get_input_output_control_by_identifier_request(self, did: int) -> MessageStructureAlias:
+        return (INPUT_OUTPUT_CONTROL_PARAMETER,
+                ConditionalMappingDataRecord(mapping={
+                    0x00: (),
+                    0x01: (),
+                    0x02: (),
+                    0x03: (*self.__conditional_control_state.get_message_continuation(did),
+                           *self.__conditional_optional_control_enable_mask.get_message_continuation(did)),
+                }))
+
+    def __get_input_output_control_by_identifier_response(self, did: int) -> MessageStructureAlias:
+        control_state_data_records = self.__conditional_control_state.get_message_continuation(did)
+        return (INPUT_OUTPUT_CONTROL_PARAMETER,
+                ConditionalMappingDataRecord(mapping={
+                    0x00: control_state_data_records,
+                    0x01: control_state_data_records,
+                    0x02: control_state_data_records,
+                    0x03: control_state_data_records,
+                }))
