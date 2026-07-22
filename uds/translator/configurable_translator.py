@@ -12,18 +12,20 @@ from uds.utilities import DID_BIT_LENGTH, REPEATED_DATA_RECORDS_NUMBER, validate
 from .data_record import (
     AbstractDataRecord,
     ConditionalFormulaDataRecord,
+    ConditionalMappingDataRecord,
     MappingDataRecord,
     MessageStructureAlias,
-    RawDataRecord,ConditionalMappingDataRecord,
+    RawDataRecord,
 )
 from .data_record_definitions import (
     ADDRESS_AND_LENGTH_FORMAT_IDENTIFIER,
     CONDITIONAL_DATA_FROM_MEMORY,
     DID_COUNT_RECORDS,
-    DID_MEMORY_SIZE, INPUT_OUTPUT_CONTROL_PARAMETER,
+    DID_MEMORY_SIZE,
     DTC_AND_STATUS,
     DTC_STORED_DATA_RECORD_NUMBERS_LIST,
     DTCS_AND_STATUSES_LIST,
+    INPUT_OUTPUT_CONTROL_PARAMETER,
     MEMORY_SELECTION,
     OPTIONAL_DTC_SNAPSHOT_RECORDS_NUMBERS_LIST,
     POSITION_IN_DID,
