@@ -29,6 +29,10 @@ from .data_record_definitions import (
     MEMORY_SELECTION,
     OPTIONAL_DTC_SNAPSHOT_RECORDS_NUMBERS_LIST,
     POSITION_IN_DID,
+    COMPARISON_LOGIC,
+    COMPARE_VALUE,
+    HYSTERESIS_VALUE,
+    LOCALIZATION,NUMBER_OF_ACTIVATED_EVENTS
 )
 from .service import Service
 from .translator import Translator
@@ -210,6 +214,10 @@ class ConfigurableTranslator(Translator):
                      for item in stored_data_record)
 
     @property
+    def __conditional_activated_events(self) -> ConditionalFormulaDataRecord:
+        return ConditionalFormulaDataRecord(formula=self.__get_activated_events)
+
+    @property
     def __conditional_read_dtc_information_response(self) -> Mapping[int, MessageStructureAlias]:
         read_dtc_information = self.services_mapping[RequestSID.ReadDTCInformation]
         conditional_response_mapping = dict(read_dtc_information.response_structure[1].mapping)
@@ -242,17 +250,29 @@ class ConfigurableTranslator(Translator):
     def __conditional_response_on_event_request(self) -> Mapping[int, MessageStructureAlias]:
         response_on_event = self.services_mapping[RequestSID.ResponseOnEvent]
         conditional_request_mapping = dict(response_on_event.request_structure[1].mapping)
-        conditional_request_mapping[0x03] = ... # TODO
-        conditional_request_mapping[0x07] = ... # TODO
+        conditional_request_mapping[0x03][1].children = [self.__did_mapping]
+        conditional_request_mapping[0x07][1].children = [
+            self.__did,
+            COMPARISON_LOGIC,
+            COMPARE_VALUE,
+            HYSTERESIS_VALUE,
+            LOCALIZATION
+        ]
         return conditional_request_mapping
 
     @property
     def __conditional_response_on_event_response(self) -> Mapping[int, MessageStructureAlias]:
         response_on_event = self.services_mapping[RequestSID.ResponseOnEvent]
         conditional_response_mapping = dict(response_on_event.response_structure[1].mapping)
-        conditional_response_mapping[0x03] = ... # TODO
-        conditional_response_mapping[0x04] = ... # TODO
-        conditional_response_mapping[0x07] = ... # TODO
+        conditional_response_mapping[0x03][2].children = [self.__did_mapping]
+        conditional_response_mapping[0x04] = (NUMBER_OF_ACTIVATED_EVENTS, self.__conditional_activated_events)
+        conditional_response_mapping[0x07][2].children = [
+            self.__did,
+            COMPARISON_LOGIC,
+            COMPARE_VALUE,
+            HYSTERESIS_VALUE,
+            LOCALIZATION
+        ]
         return conditional_response_mapping
 
     @staticmethod
@@ -397,3 +417,31 @@ class ConfigurableTranslator(Translator):
                     0x02: control_state_data_records,
                     0x03: control_state_data_records,
                 }))
+
+    def __get_activated_events(self, number_of_activated_events: int) -> tuple[RawDataRecord
+                                                                        | MappingDataRecord
+                                                                        | ConditionalMappingDataRecord, ...]:
+        data_records: list[RawDataRecord | MappingDataRecord | ConditionalMappingDataRecord] = []
+        for event_number in range(1, number_of_activated_events + 1):
+            event_window = self.__get_event_window(event_number)  # TODO: define
+            service_to_respond = self.__get_service_to_respond(event_number)  # TODO: define
+            data_records.append(self.__get_event_type_of_active_event(event_number))  # TODO: define
+            data_records.append(ConditionalMappingDataRecord(mapping={
+                # TODO: add based on other Data Records
+            #     0x01: (event_window,
+            #            get_event_type_record_01(event_number),
+            #            service_to_respond),
+            #     0x03: (event_window,
+            #            get_event_type_record_03_2020(event_number),
+            #            service_to_respond),
+            #     0x07: (event_window,
+            #            get_event_type_record_07_2020(event_number),
+            #            service_to_respond),
+            #     0x08: (event_window,
+            #            get_event_type_record_08_2020(event_number)),
+            #     0x09: (event_window,
+            #            get_event_type_record_09_2020(event_number),
+            #            get_event_type_record_09_2020_continuation(event_number)),
+            },
+                value_mask=0x3F))
+        return tuple(data_records)
