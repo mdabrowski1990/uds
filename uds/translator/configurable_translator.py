@@ -71,7 +71,54 @@ class ConfigurableTranslator(Translator):
                  link_control_type_mapping: None | Mapping[int, str] = None,
                  rid_mapping: None | Mapping[int, str] = None,
                  did_mapping: None | Mapping[int, str] = None,
-                 did_data_mapping: None | Mapping[int, MessageStructureAlias]) -> None:
+                 did_data_mapping: None | Mapping[int, MessageStructureAlias] = None) -> None:
+        """
+        Reconfigure a translator.
+
+        :param base: Translator to use as a base.
+        :param diagnostic_session_type_mapping: New value mapping for `diagnosticSessionType` DataRecord of
+            :ref:`DiagnosticSessionControl <knowledge-base-service-diagnostic-session-control>` service.
+            None to keep mapping unchanged.
+        :param reset_type_mapping: New value mapping for `resetType` DataRecord of
+            :ref:`ECUReset <knowledge-base-service-ecu-reset>` service.
+            None to keep mapping unchanged.
+        :param report_type_mapping: New value mapping for `reportType` DataRecord of
+            :ref:`ReadDTCInformation <knowledge-base-service-read-dtc-information>` service.
+            None to keep mapping unchanged.
+        :param security_access_type_mapping: New value mapping for `securityAccessType` DataRecord of
+            :ref:`SecurityAccess <knowledge-base-service-security-access>` service.
+            None to keep mapping unchanged.
+        :param control_type_type_mapping: New value mapping for `controlType` DataRecord of
+            :ref:`CommunicationControl <knowledge-base-service-communication-control>` service.
+            None to keep mapping unchanged.
+        :param authentication_task_mapping: New value mapping for `authenticationTask` DataRecord of
+            :ref:`Authentication <knowledge-base-service-authentication>` service.
+            None to keep mapping unchanged.
+        :param definition_type_mapping: New value mapping for `definitionType` DataRecord of
+            :ref:`DynamicallyDefineDataIdentifier <knowledge-base-service-dynamically-define-data-identifier>` service.
+            None to keep mapping unchanged.
+        :param routine_control_type_mapping: New value mapping for `routineControlType` DataRecord of
+            :ref:`RoutineControl <knowledge-base-service-routine-control>` service.
+            None to keep mapping unchanged.
+        :param zero_subfunction_mapping: New value mapping for `zeroSubFunction` DataRecord of
+            :ref:`TesterPresent <knowledge-base-service-tester-present>` service.
+            None to keep mapping unchanged.
+        :param timing_parameter_access_type_mapping: New value mapping for `timingParameterAccessType` DataRecord of
+            :ref:`AccessTimingParameter <knowledge-base-service-access-timing-parameter>` service.
+            None to keep mapping unchanged.
+        :param dtc_setting_type_mapping: New value mapping for `DTCSettingType` DataRecord of
+            :ref:`ControlDTCSetting <knowledge-base-service-control-dtc-setting>` service.
+            None to keep mapping unchanged.
+        :param event_type_mapping: New value mapping for `eventType` DataRecord of
+            :ref:`ResponseOnEvent <knowledge-base-service-response-on-event>` service.
+            None to keep mapping unchanged.
+        :param link_control_type_mapping: New value mapping for `linkControlType` DataRecord of
+            :ref:`LinkControl <knowledge-base-service-link-control>` service.
+            None to keep mapping unchanged.
+        :param rid_mapping: Value to name mapping for :ref:`RIDs <knowledge-base-rid>`.
+        :param did_mapping: Value to name mapping for :ref:`DIDs <knowledge-base-did>`.
+        :param did_data_mapping: Value to data structure mapping for :ref:`DIDs <knowledge-base-did>`.
+        """
         # copy services from base Translator
         services_mapping: dict[RequestSID, Service] = {
             service.request_sid: deepcopy(service) for service in base.services
@@ -95,16 +142,35 @@ class ConfigurableTranslator(Translator):
             if subfunction_mapping is not None:
                 services_mapping[sid] = self.__adapt_subfunction(service=services_mapping[sid],
                                                                  subfunction_mapping=subfunction_mapping)
-        # adapt RID names
-        if rid_mapping is not None:
-            services_mapping[RequestSID.RoutineControl] = self.__adapt_rid_mapping(
-                routine_control=services_mapping[RequestSID.RoutineControl],
-                rid_mapping=rid_mapping)
         # create new Translator
         super().__init__(services=services_mapping.values())
+        # adapt RIDs
+        if rid_mapping is not None:
+            self.rid_mapping = rid_mapping
         # adapt DIDs
-        self.did_mapping = did_mapping
-        self.did_data_mapping = did_data_mapping
+        if did_mapping is not None:
+            self.did_mapping = did_mapping
+        if did_data_mapping is not None:
+            self.did_data_mapping = did_data_mapping
+
+    @property
+    def rid_mapping(self) -> Mapping[int, str]:
+        routine_control = self.services_mapping[RequestSID.RoutineControl]
+        rid: MappingDataRecord = routine_control.request_structure[1]
+        return rid.values_mapping
+
+    @rid_mapping.setter
+    def rid_mapping(self, value: Mapping[int, str]) -> None:
+        for rid in value.keys():
+            validate_raw_2byte_value(rid)
+        for name in value.values():
+            if not isinstance(name, str):
+                raise TypeError("All RID names must be str type.")
+            if not name.strip():
+                raise ValueError("All RID names must not consist of whitespace only.")
+        routine_control = self.services_mapping[RequestSID.RoutineControl]
+        rid: MappingDataRecord = routine_control.request_structure[1]
+        rid.values_mapping = value
 
     @property
     def did_mapping(self) -> Mapping[int, str]:
@@ -132,6 +198,8 @@ class ConfigurableTranslator(Translator):
             validate_raw_2byte_value(did)
         self.__did_data_mapping = value
         self.__adapt_did_services()
+
+
 
     @property
     def __did(self) -> MappingDataRecord:
@@ -290,14 +358,12 @@ class ConfigurableTranslator(Translator):
     def __adapt_subfunction(service: Service, subfunction_mapping: Mapping[int, str]) -> Service:
         request_subfunction: MappingDataRecord = service.request_structure[0].children[1]
         response_subfunction: MappingDataRecord = service.response_structure[0].children[1]
-        request_subfunction.values_mapping = response_subfunction.values_mapping = subfunction_mapping
+        if service.request_sid == RequestSID.ResponseOnEvent:
+            # `event` DataRecord is updated instead of `eventType`
+            request_subfunction.children[1].values_mapping = response_subfunction.children[1].values_mapping = subfunction_mapping
+        else:
+            request_subfunction.values_mapping = response_subfunction.values_mapping = subfunction_mapping
         return service
-
-    @staticmethod
-    def __adapt_rid_mapping(routine_control: Service, rid_mapping: Mapping[int, str]) -> Service:
-        rid: MappingDataRecord = routine_control.request_structure[1]
-        rid.values_mapping = rid_mapping
-        return routine_control
 
     def __adapt_did_services(self) -> None:
         self.services_mapping[RequestSID.ReadDTCInformation].response_structure[1].mapping \

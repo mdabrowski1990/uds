@@ -46,7 +46,7 @@ class TestTranslator:
         [Mock(), Mock()],
     ])
     def test_init(self, services):
-        Translator.__init__(self.mock_translator, services=services)
+        assert Translator.__init__(self.mock_translator, services=services) is None
         assert self.mock_translator.services == services
 
     # __deepcopy__
