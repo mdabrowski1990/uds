@@ -32,8 +32,9 @@ from .data_record_definitions import (
     COMPARISON_LOGIC,
     COMPARE_VALUE,
     HYSTERESIS_VALUE,
-    LOCALIZATION,NUMBER_OF_ACTIVATED_EVENTS
+    LOCALIZATION, NUMBER_OF_ACTIVATED_EVENTS, RESERVED_BIT
 )
+from .data_record_definitions.formula import get_service_to_respond, get_event_type_record_01
 from .service import Service
 from .translator import Translator
 from .translator_definitions import BASE_TRANSLATOR
@@ -184,6 +185,16 @@ class ConfigurableTranslator(Translator):
                              max_occurrences=None)
 
     @property
+    def __event_type(self) -> RawDataRecord:
+        response_on_event = self.services_mapping[RequestSID.ResponseOnEvent]
+        return response_on_event.request_structure[0].children[1]
+
+    @property
+    def __event_window(self) -> MappingDataRecord:
+        response_on_event = self.services_mapping[RequestSID.ResponseOnEvent]
+        return response_on_event.request_structure[1][0x00][0]
+
+    @property
     def __conditional_control_state(self) -> ConditionalFormulaDataRecord:
         return self.__get_did_data(name="controlState")
 
@@ -303,11 +314,11 @@ class ConfigurableTranslator(Translator):
         self.services_mapping[RequestSID.ReadDataByIdentifier].response_structure = self.__dids
         self.services_mapping[RequestSID.WriteDataByIdentifier].request_structure = (self.__did, self.__get_did_data())
         self.services_mapping[RequestSID.WriteDataByIdentifier].response_structure[0].values_mapping = self.did_mapping
-        self.services_mapping[RequestSID.InputOutputControlByIdentifier].request_structure[0].values_mapping\
+        self.services_mapping[RequestSID.InputOutputControlByIdentifier].request_structure[0].values_mapping \
             = self.did_mapping
         self.services_mapping[RequestSID.InputOutputControlByIdentifier].request_structure[1].formula \
             = self.__get_input_output_control_by_identifier_request
-        self.services_mapping[RequestSID.InputOutputControlByIdentifier].response_structure[0].values_mapping\
+        self.services_mapping[RequestSID.InputOutputControlByIdentifier].response_structure[0].values_mapping \
             = self.did_mapping
         self.services_mapping[RequestSID.InputOutputControlByIdentifier].request_structure[1].formula \
             = self.__get_input_output_control_by_identifier_response
@@ -418,30 +429,67 @@ class ConfigurableTranslator(Translator):
                     0x03: control_state_data_records,
                 }))
 
+    def __get_event_type_of_active_event(self, event_number: int) -> RawDataRecord:
+        return RawDataRecord(name=f"eventTypeOfActiveEvent#{event_number}",
+                             length=8,
+                             children=(RESERVED_BIT,
+                                       self.__event_type))
+
+    def __get_event_window(self, event_number: int) -> MappingDataRecord:
+        event_window = deepcopy(self.__event_window)
+        event_window.name = f"{event_window.name}#{event_number}"
+        return event_window
+
+    def __get_event_type_record(self, event_type: int, event_number: int) -> None | RawDataRecord:
+        response_on_event = self.services_mapping[RequestSID.ResponseOnEvent]
+        conditional_response = response_on_event.response_structure[1].mapping.get(event_type, None)
+        if conditional_response is None:
+            return None
+        event_type_record = deepcopy(conditional_response[2])
+        event_type_record.name = f"{event_type_record.name}#{event_number}"
+        return event_type_record
+
+    def __get_event_type_record_09_continuation(self, event_number: int) -> None | ConditionalMappingDataRecord:
+        response_on_event = self.services_mapping[RequestSID.ResponseOnEvent]
+        conditional_response = response_on_event.response_structure[1].mapping.get(0x09, None)
+        if conditional_response is None:
+            return None
+        event_type_record_continuation = deepcopy(conditional_response[3])
+        for report_type, data_records in event_type_record_continuation.mapping.items():
+            for data_record in data_records:
+                data_record.name = f"{data_record.name}#{event_number}"
+        return event_type_record_continuation
+
     def __get_activated_events(self, number_of_activated_events: int) -> tuple[RawDataRecord
-                                                                        | MappingDataRecord
-                                                                        | ConditionalMappingDataRecord, ...]:
+                                                                               | MappingDataRecord
+                                                                               | ConditionalMappingDataRecord, ...]:
         data_records: list[RawDataRecord | MappingDataRecord | ConditionalMappingDataRecord] = []
         for event_number in range(1, number_of_activated_events + 1):
-            event_window = self.__get_event_window(event_number)  # TODO: define
-            service_to_respond = self.__get_service_to_respond(event_number)  # TODO: define
-            data_records.append(self.__get_event_type_of_active_event(event_number))  # TODO: define
-            data_records.append(ConditionalMappingDataRecord(mapping={
-                # TODO: add based on other Data Records
-            #     0x01: (event_window,
-            #            get_event_type_record_01(event_number),
-            #            service_to_respond),
-            #     0x03: (event_window,
-            #            get_event_type_record_03_2020(event_number),
-            #            service_to_respond),
-            #     0x07: (event_window,
-            #            get_event_type_record_07_2020(event_number),
-            #            service_to_respond),
-            #     0x08: (event_window,
-            #            get_event_type_record_08_2020(event_number)),
-            #     0x09: (event_window,
-            #            get_event_type_record_09_2020(event_number),
-            #            get_event_type_record_09_2020_continuation(event_number)),
-            },
-                value_mask=0x3F))
+            event_window = self.__get_event_window(event_number)
+            service_to_respond = get_service_to_respond(event_number)
+            data_records.append(self.__get_event_type_of_active_event(event_number))
+            mapping = {
+                0x01: (event_window,
+                       get_event_type_record_01(event_number),
+                       service_to_respond),
+            }
+            for event_type in {0x02, 0x03, 0x07}:
+                event_type_record = self.__get_event_type_record(event_type=event_type,
+                                                                 event_number=event_number)
+                if event_type_record is None:
+                    continue
+                mapping[event_type] = (event_window,
+                                       event_type_record,
+                                       service_to_respond)
+
+            event_type_record_08 = self.__get_event_type_record(event_type=0x08,
+                                                                event_number=event_number)
+            if event_type_record_08 is not None:
+                mapping[0x08] = (event_window, event_type_record_08)
+            event_type_record_09 = self.__get_event_type_record(event_type=0x09,
+                                                                event_number=event_number)
+            event_type_record_09_continuation = self.__get_event_type_record_09_continuation(event_number=event_number)
+            if event_type_record_09 is not None and event_type_record_09_continuation is not None:
+                mapping[0x09] = (event_window, event_type_record_09, event_type_record_09_continuation)
+            data_records.append(ConditionalMappingDataRecord(mapping=mapping, value_mask=0x3F))
         return tuple(data_records)
