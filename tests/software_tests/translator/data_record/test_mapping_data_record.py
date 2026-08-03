@@ -7,7 +7,7 @@ from uds.translator.data_record.mapping_data_record import (
     MappingAndLinearFormulaDataRecord,
     MappingDataRecord,
     MappingProxyType,
-    RawDataRecord,
+    RawDataRecord, Mapping
 )
 
 SCRIPT_LOCATION = "uds.translator.data_record.mapping_data_record"
@@ -33,27 +33,36 @@ class TestAbstractMappingDataRecord:
                 == self.mock_data_record._AbstractMappingDataRecord__values_mapping)
 
     @patch(f"{SCRIPT_LOCATION}.isinstance")
-    def test_values_mapping__type_error(self, mock_isinstance):
+    def test_values_mapping__set__type_error(self, mock_isinstance):
         mock_isinstance.return_value = False
         mock_value = Mock()
         with pytest.raises(TypeError):
             AbstractMappingDataRecord.values_mapping.fset(self.mock_data_record, mock_value)
-        mock_isinstance.assert_called_once_with(mock_value, dict)
+        mock_isinstance.assert_called_once_with(mock_value, Mapping)
 
     @pytest.mark.parametrize("max_raw_value, mapping_value", [
         (1, {0: "No", "1": "Yes"}),
         (3, {4: "ECU#4"}),
     ])
-    def test_values_mapping__value_error(self, max_raw_value, mapping_value):
+    def test_values_mapping__set__value_error_1(self, max_raw_value, mapping_value):
         self.mock_data_record.max_raw_value = max_raw_value
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match="out of raw values range"):
+            AbstractMappingDataRecord.values_mapping.fset(self.mock_data_record, mapping_value)
+
+    @pytest.mark.parametrize("max_raw_value, mapping_value", [
+        (1, {0: False, 1: True}),
+        (3, {3: 4.5}),
+    ])
+    def test_values_mapping__set__value_error_2(self, max_raw_value, mapping_value):
+        self.mock_data_record.max_raw_value = max_raw_value
+        with pytest.raises(ValueError, match="not str type"):
             AbstractMappingDataRecord.values_mapping.fset(self.mock_data_record, mapping_value)
 
     @pytest.mark.parametrize("max_raw_value, mapping_value", [
         (1, {0: "No", 1: "Yes"}),
         (3, {i: f"ECU#{i}" for i in range(4)}),
     ])
-    def test_values_mapping__valid(self, max_raw_value, mapping_value):
+    def test_values_mapping__set__valid(self, max_raw_value, mapping_value):
         self.mock_data_record.max_raw_value = max_raw_value
         assert AbstractMappingDataRecord.values_mapping.fset(self.mock_data_record, mapping_value) is None
         assert isinstance(self.mock_data_record._AbstractMappingDataRecord__values_mapping, MappingProxyType)

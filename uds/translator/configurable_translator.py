@@ -3,11 +3,10 @@
 __all__ = ["ConfigurableTranslator"]
 
 from copy import deepcopy
-from types import MappingProxyType
 from typing import Callable, Mapping
 
 from uds.message import RequestSID
-from uds.utilities import DID_BIT_LENGTH, REPEATED_DATA_RECORDS_NUMBER, validate_raw_2byte_value
+from uds.utilities import DID_BIT_LENGTH, REPEATED_DATA_RECORDS_NUMBER
 
 from .data_record import (
     AbstractDataRecord,
@@ -28,11 +27,7 @@ from .data_record_definitions import (
     INPUT_OUTPUT_CONTROL_PARAMETER,
     MEMORY_SELECTION,
     OPTIONAL_DTC_SNAPSHOT_RECORDS_NUMBERS_LIST,
-    POSITION_IN_DID,
-    COMPARISON_LOGIC,
-    COMPARE_VALUE,
-    HYSTERESIS_VALUE,
-    LOCALIZATION, NUMBER_OF_ACTIVATED_EVENTS, RESERVED_BIT
+    POSITION_IN_DID,NUMBER_OF_ACTIVATED_EVENTS, RESERVED_BIT
 )
 from .data_record_definitions.formula import get_service_to_respond, get_event_type_record_01
 from .service import Service
@@ -120,30 +115,9 @@ class ConfigurableTranslator(Translator):
         :param did_data_mapping: Value to data structure mapping for :ref:`DIDs <knowledge-base-did>`.
         """
         # copy services from base Translator
-        services_mapping: dict[RequestSID, Service] = {
-            service.request_sid: deepcopy(service) for service in base.services
-        }
-        # adapt SubFunctions
-        for sid, subfunction_mapping in (
-                (RequestSID.DiagnosticSessionControl, diagnostic_session_type_mapping),
-                (RequestSID.ECUReset, reset_type_mapping),
-                (RequestSID.ReadDTCInformation, report_type_mapping),
-                (RequestSID.SecurityAccess, security_access_type_mapping),
-                (RequestSID.CommunicationControl, control_type_type_mapping),
-                (RequestSID.Authentication, authentication_task_mapping),
-                (RequestSID.RoutineControl, routine_control_type_mapping),
-                (RequestSID.DynamicallyDefineDataIdentifier, definition_type_mapping),
-                (RequestSID.TesterPresent, zero_subfunction_mapping),
-                (RequestSID.AccessTimingParameter, timing_parameter_access_type_mapping),
-                (RequestSID.ControlDTCSetting, dtc_setting_type_mapping),
-                (RequestSID.ResponseOnEvent, event_type_mapping),
-                (RequestSID.LinkControl, link_control_type_mapping),
-        ):
-            if subfunction_mapping is not None:
-                services_mapping[sid] = self.__adapt_subfunction(service=services_mapping[sid],
-                                                                 subfunction_mapping=subfunction_mapping)
+        services_copy = deepcopy(base.services)
         # create new Translator
-        super().__init__(services=services_mapping.values())
+        super().__init__(services=services_copy)
         # adapt RIDs
         if rid_mapping is not None:
             self.rid_mapping = rid_mapping
@@ -152,41 +126,98 @@ class ConfigurableTranslator(Translator):
             self.did_mapping = did_mapping
         if did_data_mapping is not None:
             self.did_data_mapping = did_data_mapping
+        # adapt SubFunctions
+        if diagnostic_session_type_mapping is not None:
+            self.diagnostic_session_type_mapping = diagnostic_session_type_mapping
+        if reset_type_mapping is not None:
+            self.reset_type_mapping = reset_type_mapping
+        if report_type_mapping is not None:
+            self.report_type_mapping = report_type_mapping
+        if security_access_type_mapping is not None:
+            self.security_access_type_mapping = security_access_type_mapping
+        if control_type_type_mapping is not None:
+            self.control_type_type_mapping = control_type_type_mapping
+        if authentication_task_mapping is not None:
+            self.authentication_task_mapping = authentication_task_mapping
+        if routine_control_type_mapping is not None:
+            self.routine_control_type_mapping = routine_control_type_mapping
+        if definition_type_mapping is not None:
+            self.definition_type_mapping = definition_type_mapping
+        if zero_subfunction_mapping is not None:
+            self.zero_subfunction_mapping = zero_subfunction_mapping
+        if timing_parameter_access_type_mapping is not None:
+            self.timing_parameter_access_type_mapping = timing_parameter_access_type_mapping
+        if dtc_setting_type_mapping is not None:
+            self.dtc_setting_type_mapping = dtc_setting_type_mapping
+        if event_type_mapping is not None:
+            self.event_type_mapping = event_type_mapping
+        if link_control_type_mapping is not None:
+            self.link_control_type_mapping = link_control_type_mapping
 
     @property
     def rid_mapping(self) -> Mapping[int, str]:
+        """Get :ref:`Routine Identifier (RID) <knowledge-base-rid>` value to name mapping."""
         routine_control = self.services_mapping[RequestSID.RoutineControl]
         rid: MappingDataRecord = routine_control.request_structure[1]
         return rid.values_mapping
 
     @rid_mapping.setter
     def rid_mapping(self, value: Mapping[int, str]) -> None:
-        for rid in value.keys():
-            validate_raw_2byte_value(rid)
-        for name in value.values():
-            if not isinstance(name, str):
-                raise TypeError("All RID names must be str type.")
-            if not name.strip():
-                raise ValueError("All RID names must not consist of whitespace only.")
+        """
+        Set :ref:`Routine Identifier (RID) <knowledge-base-rid>` value to name mapping.
+
+        :param value: Mapping value to set.
+        """
         routine_control = self.services_mapping[RequestSID.RoutineControl]
         rid: MappingDataRecord = routine_control.request_structure[1]
         rid.values_mapping = value
 
     @property
     def did_mapping(self) -> Mapping[int, str]:
-        return self.__did_mapping
+        """Get :ref:`Data Identifier (DID) <knowledge-base-did>` value to name mapping."""
+        read_data_by_identifier = self.services_mapping[RequestSID.ReadDataByIdentifier]
+        did: MappingDataRecord = read_data_by_identifier.request_structure[0]
+        return did.values_mapping
 
     @did_mapping.setter
     def did_mapping(self, value: Mapping[int, str]) -> None:
-        for did in value.keys():
-            validate_raw_2byte_value(did)
-        for name in value.values():
-            if not isinstance(name, str):
-                raise TypeError("All DID names must be str type.")
-            if not name.strip():
-                raise ValueError("All DID names must not consist of whitespace only.")
-        self.__did_mapping = MappingProxyType(value)
-        self.__adapt_did_services()
+        """
+        Set :ref:`Data Identifier (DID) <knowledge-base-did>` value to name mapping.
+
+        :param value: Mapping value to set.
+        """
+        # ReadDataByIdentifier
+        read_data_by_identifier = self.services_mapping[RequestSID.ReadDataByIdentifier]
+        read_data_by_identifier.request_structure[0].values_mapping = value  # did_mapping value is stored here
+        for did in read_data_by_identifier.response_structure[::2]:
+            did.values_mapping = value
+        # WriteDataByIdentifier
+        write_data_by_identifier = self.services_mapping[RequestSID.WriteDataByIdentifier]
+        write_data_by_identifier.request_structure[0].values_mapping = value
+        write_data_by_identifier.response_structure[0].values_mapping = value
+        # ReadScalingDataByIdentifier
+        read_scaling_data_by_identifier = self.services_mapping[RequestSID.ReadScalingDataByIdentifier]
+        read_scaling_data_by_identifier.request_structure[0].values_mapping = value
+        read_scaling_data_by_identifier.response_structure[0].values_mapping = value
+        # DynamicallyDefineDataIdentifier
+        dynamically_define_data_identifier = self.services_mapping[RequestSID.DynamicallyDefineDataIdentifier]
+        dynamically_define_data_identifier.request_structure[1].mapping \
+            = self.__conditional_dynamically_define_data_identifier_request
+        dynamically_define_data_identifier.response_structure[1].mapping \
+            = self.__conditional_dynamically_define_data_identifier_response
+        # InputOutputControlByIdentifier
+        input_output_control_by_identifier = self.services_mapping[RequestSID.InputOutputControlByIdentifier]
+        input_output_control_by_identifier.request_structure[0].values_mapping = value
+        input_output_control_by_identifier.response_structure[0].values_mapping = value
+        # ReadDTCInformation
+        read_dtc_information = self.services_mapping[RequestSID.ReadDTCInformation]
+        read_dtc_information.response_structure[1].mapping = self.__conditional_read_dtc_information_response
+        # ResponseOnEvent
+        response_on_event = self.services_mapping[RequestSID.ResponseOnEvent]
+        response_on_event.request_structure[1].mapping = self.__conditional_response_on_event_request
+        response_on_event.response_structure[1].mapping = self.__conditional_response_on_event_response
+
+    # TODO
 
     @property
     def did_data_mapping(self) -> Mapping[int, MessageStructureAlias]:
@@ -194,12 +225,33 @@ class ConfigurableTranslator(Translator):
 
     @did_data_mapping.setter
     def did_data_mapping(self, value: Mapping[int, MessageStructureAlias]) -> None:
-        for did in value.keys():
-            validate_raw_2byte_value(did)
         self.__did_data_mapping = value
-        self.__adapt_did_services()
-
-
+        self.services_mapping[RequestSID.ReadDTCInformation].response_structure[1].mapping \
+            = self.__conditional_read_dtc_information_response
+        self.services_mapping[RequestSID.DynamicallyDefineDataIdentifier].request_structure[1].mapping \
+            = self.__conditional_dynamically_define_data_identifier_request
+        self.services_mapping[RequestSID.DynamicallyDefineDataIdentifier].response_structure[1].mapping \
+            = self.__conditional_dynamically_define_data_identifier_response
+        self.services_mapping[RequestSID.ResponseOnEvent].request_structure[1].mapping \
+            = self.__conditional_response_on_event_request
+        self.services_mapping[RequestSID.ResponseOnEvent].response_structure[1].mapping \
+            = self.__conditional_response_on_event_response
+        self.services_mapping[RequestSID.ReadDataByIdentifier].request_structure[0].values_mapping = self.did_mapping
+        self.services_mapping[RequestSID.ReadDataByIdentifier].response_structure = self.__dids
+        self.services_mapping[RequestSID.WriteDataByIdentifier].request_structure = (self.__did, self.__get_did_data())
+        self.services_mapping[RequestSID.WriteDataByIdentifier].response_structure[0].values_mapping = self.did_mapping
+        self.services_mapping[RequestSID.InputOutputControlByIdentifier].request_structure[0].values_mapping \
+            = self.did_mapping
+        self.services_mapping[RequestSID.InputOutputControlByIdentifier].request_structure[1].formula \
+            = self.__get_input_output_control_by_identifier_request
+        self.services_mapping[RequestSID.InputOutputControlByIdentifier].response_structure[0].values_mapping \
+            = self.did_mapping
+        self.services_mapping[RequestSID.InputOutputControlByIdentifier].request_structure[1].formula \
+            = self.__get_input_output_control_by_identifier_response
+        self.services_mapping[RequestSID.ReadScalingDataByIdentifier].request_structure[0].values_mapping \
+            = self.did_mapping
+        self.services_mapping[RequestSID.ReadScalingDataByIdentifier].response_structure[0].values_mapping \
+            = self.did_mapping
 
     @property
     def __did(self) -> MappingDataRecord:
@@ -302,7 +354,7 @@ class ConfigurableTranslator(Translator):
         conditional_response_mapping = dict(read_dtc_information.response_structure[1].mapping)
         conditional_response_mapping[0x04] = (DTC_AND_STATUS, *self.__dtc_snapshot_records)
         conditional_response_mapping[0x05] = (DTC_AND_STATUS, *self.__dtc_stored_data_records)
-        conditional_response_mapping[0x04] = (MEMORY_SELECTION, DTC_AND_STATUS, *self.__dtc_snapshot_records)
+        conditional_response_mapping[0x18] = (MEMORY_SELECTION, DTC_AND_STATUS, *self.__dtc_snapshot_records)
         return conditional_response_mapping
 
     @property
@@ -329,29 +381,17 @@ class ConfigurableTranslator(Translator):
     def __conditional_response_on_event_request(self) -> Mapping[int, MessageStructureAlias]:
         response_on_event = self.services_mapping[RequestSID.ResponseOnEvent]
         conditional_request_mapping = dict(response_on_event.request_structure[1].mapping)
-        conditional_request_mapping[0x03][1].children = [self.__did_mapping]
-        conditional_request_mapping[0x07][1].children = [
-            self.__did,
-            COMPARISON_LOGIC,
-            COMPARE_VALUE,
-            HYSTERESIS_VALUE,
-            LOCALIZATION
-        ]
+        conditional_request_mapping[0x03][1].children[0].values_mapping = self.did_mapping
+        conditional_request_mapping[0x07][1].children[0].values_mapping = self.did_mapping
         return conditional_request_mapping
 
     @property
     def __conditional_response_on_event_response(self) -> Mapping[int, MessageStructureAlias]:
         response_on_event = self.services_mapping[RequestSID.ResponseOnEvent]
         conditional_response_mapping = dict(response_on_event.response_structure[1].mapping)
-        conditional_response_mapping[0x03][2].children = [self.__did_mapping]
+        conditional_response_mapping[0x03][2].children[0].values_mapping = self.did_mapping
         conditional_response_mapping[0x04] = (NUMBER_OF_ACTIVATED_EVENTS, self.__conditional_activated_events)
-        conditional_response_mapping[0x07][2].children = [
-            self.__did,
-            COMPARISON_LOGIC,
-            COMPARE_VALUE,
-            HYSTERESIS_VALUE,
-            LOCALIZATION
-        ]
+        conditional_response_mapping[0x07][2].children[0].values_mapping = self.did_mapping
         return conditional_response_mapping
 
     @staticmethod
@@ -364,34 +404,6 @@ class ConfigurableTranslator(Translator):
         else:
             request_subfunction.values_mapping = response_subfunction.values_mapping = subfunction_mapping
         return service
-
-    def __adapt_did_services(self) -> None:
-        self.services_mapping[RequestSID.ReadDTCInformation].response_structure[1].mapping \
-            = self.__conditional_read_dtc_information_response
-        self.services_mapping[RequestSID.DynamicallyDefineDataIdentifier].request_structure[1].mapping \
-            = self.__conditional_dynamically_define_data_identifier_request
-        self.services_mapping[RequestSID.DynamicallyDefineDataIdentifier].response_structure[1].mapping \
-            = self.__conditional_dynamically_define_data_identifier_response
-        self.services_mapping[RequestSID.ResponseOnEvent].request_structure[1].mapping \
-            = self.__conditional_response_on_event_request
-        self.services_mapping[RequestSID.ResponseOnEvent].response_structure[1].mapping \
-            = self.__conditional_response_on_event_response
-        self.services_mapping[RequestSID.ReadDataByIdentifier].request_structure[0].values_mapping = self.did_mapping
-        self.services_mapping[RequestSID.ReadDataByIdentifier].response_structure = self.__dids
-        self.services_mapping[RequestSID.WriteDataByIdentifier].request_structure = (self.__did, self.__get_did_data())
-        self.services_mapping[RequestSID.WriteDataByIdentifier].response_structure[0].values_mapping = self.did_mapping
-        self.services_mapping[RequestSID.InputOutputControlByIdentifier].request_structure[0].values_mapping \
-            = self.did_mapping
-        self.services_mapping[RequestSID.InputOutputControlByIdentifier].request_structure[1].formula \
-            = self.__get_input_output_control_by_identifier_request
-        self.services_mapping[RequestSID.InputOutputControlByIdentifier].response_structure[0].values_mapping \
-            = self.did_mapping
-        self.services_mapping[RequestSID.InputOutputControlByIdentifier].request_structure[1].formula \
-            = self.__get_input_output_control_by_identifier_response
-        self.services_mapping[RequestSID.ReadScalingDataByIdentifier].request_structure[0].values_mapping \
-            = self.did_mapping
-        self.services_mapping[RequestSID.ReadScalingDataByIdentifier].response_structure[0].values_mapping \
-            = self.did_mapping
 
     def __get_did_records_formula(self, record_number: None | int) -> Callable[[int], MessageStructureAlias]:
         return lambda did_count: self.__get_did_record(did_count=did_count, record_number=record_number)
