@@ -210,7 +210,20 @@ class ConfigurableTranslator(Translator):
         read_dtc_information = self.services_mapping[RequestSID.ReadDTCInformation]
         read_dtc_information.request_structure[0].children[1].values_mapping = value
         read_dtc_information.response_structure[0].children[1].values_mapping = value
-        # TODO: update in other reuses
+        response_on_event = self.services_mapping.get(RequestSID.ResponseOnEvent, None)
+        if response_on_event is not None:
+            subfunction_08_request_continuation = response_on_event.request_structure[1].mapping.get(0x08, None)
+            if subfunction_08_request_continuation is not None:
+                subfunction_08_request_continuation[1].children[1].values_mapping = value
+            subfunction_09_request_continuation = response_on_event.request_structure[1].mapping.get(0x09, None)
+            if subfunction_09_request_continuation is not None:
+                subfunction_09_request_continuation[1].children[2].values_mapping = value
+            subfunction_08_response_continuation = response_on_event.response_structure[1].mapping.get(0x08, None)
+            if subfunction_08_response_continuation is not None:
+                subfunction_08_response_continuation[2].children[1].values_mapping = value
+            subfunction_09_response_continuation = response_on_event.response_structure[1].mapping.get(0x09, None)
+            if subfunction_09_response_continuation is not None:
+                subfunction_09_response_continuation[2].children[2].values_mapping = value
 
     @property
     def security_access_type_mapping(self) -> None | Mapping[int, str]:
@@ -462,28 +475,32 @@ class ConfigurableTranslator(Translator):
         for did in read_data_by_identifier.response_structure[::2]:
             did.values_mapping = value
         # WriteDataByIdentifier
-        write_data_by_identifier = self.services_mapping[RequestSID.WriteDataByIdentifier]
+        write_data_by_identifier = self.services_mapping[RequestSID.WriteDataByIdentifier]  # TODO: handle missing services
         write_data_by_identifier.request_structure[0].values_mapping = value
         write_data_by_identifier.response_structure[0].values_mapping = value
         # ReadScalingDataByIdentifier
-        read_scaling_data_by_identifier = self.services_mapping[RequestSID.ReadScalingDataByIdentifier]
+        read_scaling_data_by_identifier = self.services_mapping[RequestSID.ReadScalingDataByIdentifier]  # TODO: handle missing services
         read_scaling_data_by_identifier.request_structure[0].values_mapping = value
         read_scaling_data_by_identifier.response_structure[0].values_mapping = value
         # DynamicallyDefineDataIdentifier
-        dynamically_define_data_identifier = self.services_mapping[RequestSID.DynamicallyDefineDataIdentifier]
-        dynamically_define_data_identifier.request_structure[1].mapping \
-            = self.__conditional_dynamically_define_data_identifier_request  # TODO: review
-        dynamically_define_data_identifier.response_structure[1].mapping \
-            = self.__conditional_dynamically_define_data_identifier_response  # TODO: review
+        dynamically_define_data_identifier = self.services_mapping.get(RequestSID.DynamicallyDefineDataIdentifier, None)
+        if dynamically_define_data_identifier is not None:
+            dynamically_define_data_identifier.request_structure[1].mapping[0x01][0].values_mapping = value
+            dynamically_define_data_identifier.request_structure[1].mapping[0x01][1].children[0].values_mapping = value
+            dynamically_define_data_identifier.request_structure[1].mapping[0x02][0].values_mapping = value
+            dynamically_define_data_identifier.request_structure[1].mapping[0x03][0].values_mapping = value
+            dynamically_define_data_identifier.response_structure[1].mapping[0x01][0].values_mapping = value
+            dynamically_define_data_identifier.response_structure[1].mapping[0x02][0].values_mapping = value
+            dynamically_define_data_identifier.response_structure[1].mapping[0x03][0].values_mapping = value
         # InputOutputControlByIdentifier
-        input_output_control_by_identifier = self.services_mapping[RequestSID.InputOutputControlByIdentifier]
+        input_output_control_by_identifier = self.services_mapping[RequestSID.InputOutputControlByIdentifier]  # TODO: handle missing services
         input_output_control_by_identifier.request_structure[0].values_mapping = value
         input_output_control_by_identifier.response_structure[0].values_mapping = value
         # ReadDTCInformation
-        read_dtc_information = self.services_mapping[RequestSID.ReadDTCInformation]
+        read_dtc_information = self.services_mapping[RequestSID.ReadDTCInformation]  # TODO: handle missing services
         read_dtc_information.response_structure[1].mapping = self.__conditional_read_dtc_information_response  # TODO: review
         # ResponseOnEvent
-        response_on_event = self.services_mapping[RequestSID.ResponseOnEvent]
+        response_on_event = self.services_mapping[RequestSID.ResponseOnEvent]  # TODO: handle missing services
         response_on_event.request_structure[1].mapping = self.__conditional_response_on_event_request  # TODO: review
         response_on_event.response_structure[1].mapping = self.__conditional_response_on_event_response  # TODO: review
 
@@ -638,25 +655,6 @@ class ConfigurableTranslator(Translator):
     #     conditional_response_mapping[0x18] = (MEMORY_SELECTION, DTC_AND_STATUS, *self.__dtc_snapshot_records)
     #     return conditional_response_mapping
     #
-    # @property
-    # def __conditional_dynamically_define_data_identifier_request(self) -> Mapping[int, MessageStructureAlias]:
-    #     dynamically_define_data_identifier = self.services_mapping[RequestSID.DynamicallyDefineDataIdentifier]
-    #     conditional_request_mapping = dict(dynamically_define_data_identifier.request_structure[1].mapping)
-    #     conditional_request_mapping[0x01] = (self.__dynamically_defined_did, self.__data_from_did)
-    #     conditional_request_mapping[0x02] = (self.__dynamically_defined_did,
-    #                                          ADDRESS_AND_LENGTH_FORMAT_IDENTIFIER,
-    #                                          CONDITIONAL_DATA_FROM_MEMORY)
-    #     conditional_request_mapping[0x03] = (self.__optional_dynamically_defined_did,)
-    #     return conditional_request_mapping
-    #
-    # @property
-    # def __conditional_dynamically_define_data_identifier_response(self) -> Mapping[int, MessageStructureAlias]:
-    #     dynamically_define_data_identifier = self.services_mapping[RequestSID.DynamicallyDefineDataIdentifier]
-    #     conditional_response_mapping = dict(dynamically_define_data_identifier.response_structure[1].mapping)
-    #     conditional_response_mapping[0x01] = (self.__dynamically_defined_did,)
-    #     conditional_response_mapping[0x02] = (self.__dynamically_defined_did,)
-    #     conditional_response_mapping[0x03] = (self.__optional_dynamically_defined_did,)
-    #     return conditional_response_mapping
     #
     # @property
     # def __conditional_response_on_event_request(self) -> Mapping[int, MessageStructureAlias]:

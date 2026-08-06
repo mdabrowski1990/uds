@@ -160,14 +160,53 @@ class TestConfigurableTranslator:
         assert ConfigurableTranslator.report_type_mapping.fget(self.mock_translator) is None
         mock_get.assert_called_once_with(RequestSID.ReadDTCInformation, None)
 
-    def test_report_type_mapping_mapping__set(self):
+    def test_report_type_mapping_mapping__set__read_dtc_information_only(self):
         mock_value = {Mock(): Mock()}
+        self.mock_translator.services_mapping.pop(RequestSID.ResponseOnEvent)
         assert ConfigurableTranslator.report_type_mapping.fset(self.mock_translator, mock_value) is None
         assert (self.mock_translator.services_mapping[RequestSID.ReadDTCInformation].request_structure[0].children[1].values_mapping
                 == mock_value)
         assert (self.mock_translator.services_mapping[RequestSID.ReadDTCInformation].response_structure[0].children[1].values_mapping
                 == mock_value)
-        
+
+    def test_report_type_mapping_mapping__set__response_on_event_not_updated(self):
+        mock_value = {Mock(): Mock()}
+        mock_get_request_continuation = Mock(return_value=None)
+        mock_get_response_continuation = Mock(return_value=None)
+        self.mock_translator.services_mapping[RequestSID.ResponseOnEvent] = Mock(
+            request_structure=(Mock(), Mock(mapping=Mock(get=mock_get_request_continuation))),
+            response_structure=(Mock(), Mock(mapping=Mock(get=mock_get_response_continuation))),
+        )
+        assert ConfigurableTranslator.report_type_mapping.fset(self.mock_translator, mock_value) is None
+        assert (self.mock_translator.services_mapping[RequestSID.ReadDTCInformation].request_structure[0].children[1].values_mapping
+                == mock_value)
+        assert (self.mock_translator.services_mapping[RequestSID.ReadDTCInformation].response_structure[0].children[1].values_mapping
+                == mock_value)
+        mock_get_request_continuation.assert_has_calls([call(0x08, None), call(0x09, None)], any_order=True)
+        mock_get_response_continuation.assert_has_calls([call(0x08, None), call(0x09, None)], any_order=True)
+
+    def test_report_type_mapping_mapping__set__response_on_event_updated(self):
+        mock_value = {Mock(): Mock()}
+        mock_request_08_continuation = MagicMock()
+        mock_request_09_continuation = MagicMock()
+        mock_response_08_continuation = MagicMock()
+        mock_response_09_continuation = MagicMock()
+        self.mock_translator.services_mapping[RequestSID.ResponseOnEvent] = Mock(
+            request_structure=(Mock(), Mock(mapping={0x08: mock_request_08_continuation,
+                                                     0x09: mock_request_09_continuation})),
+            response_structure=(Mock(), Mock(mapping={0x08: mock_response_08_continuation,
+                                                      0x09: mock_response_09_continuation})),
+        )
+        assert ConfigurableTranslator.report_type_mapping.fset(self.mock_translator, mock_value) is None
+        assert (self.mock_translator.services_mapping[RequestSID.ReadDTCInformation].request_structure[0].children[1].values_mapping
+                == mock_value)
+        assert (self.mock_translator.services_mapping[RequestSID.ReadDTCInformation].response_structure[0].children[1].values_mapping
+                == mock_value)
+        assert mock_request_08_continuation[1].children[1].values_mapping == mock_value
+        assert mock_request_09_continuation[1].children[2].values_mapping == mock_value
+        assert mock_response_08_continuation[2].children[1].values_mapping == mock_value
+        assert mock_response_09_continuation[2].children[2].values_mapping == mock_value
+
     # security_access_type_mapping
 
     def test_security_access_type_mapping_mapping__get(self):
