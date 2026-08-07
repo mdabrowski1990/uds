@@ -475,13 +475,15 @@ class ConfigurableTranslator(Translator):
         for did in read_data_by_identifier.response_structure[::2]:
             did.values_mapping = value
         # WriteDataByIdentifier
-        write_data_by_identifier = self.services_mapping[RequestSID.WriteDataByIdentifier]  # TODO: handle missing services
-        write_data_by_identifier.request_structure[0].values_mapping = value
-        write_data_by_identifier.response_structure[0].values_mapping = value
+        write_data_by_identifier = self.services_mapping.get(RequestSID.WriteDataByIdentifier, None)
+        if write_data_by_identifier is not None:
+            write_data_by_identifier.request_structure[0].values_mapping = value
+            write_data_by_identifier.response_structure[0].values_mapping = value
         # ReadScalingDataByIdentifier
-        read_scaling_data_by_identifier = self.services_mapping[RequestSID.ReadScalingDataByIdentifier]  # TODO: handle missing services
-        read_scaling_data_by_identifier.request_structure[0].values_mapping = value
-        read_scaling_data_by_identifier.response_structure[0].values_mapping = value
+        read_scaling_data_by_identifier = self.services_mapping.get(RequestSID.ReadScalingDataByIdentifier, None)
+        if read_scaling_data_by_identifier is not None:
+            read_scaling_data_by_identifier.request_structure[0].values_mapping = value
+            read_scaling_data_by_identifier.response_structure[0].values_mapping = value
         # DynamicallyDefineDataIdentifier
         dynamically_define_data_identifier = self.services_mapping.get(RequestSID.DynamicallyDefineDataIdentifier, None)
         if dynamically_define_data_identifier is not None:
@@ -493,16 +495,20 @@ class ConfigurableTranslator(Translator):
             dynamically_define_data_identifier.response_structure[1].mapping[0x02][0].values_mapping = value
             dynamically_define_data_identifier.response_structure[1].mapping[0x03][0].values_mapping = value
         # InputOutputControlByIdentifier
-        input_output_control_by_identifier = self.services_mapping[RequestSID.InputOutputControlByIdentifier]  # TODO: handle missing services
-        input_output_control_by_identifier.request_structure[0].values_mapping = value
-        input_output_control_by_identifier.response_structure[0].values_mapping = value
+        input_output_control_by_identifier = self.services_mapping.get(RequestSID.InputOutputControlByIdentifier, None)
+        if input_output_control_by_identifier is not None:
+            input_output_control_by_identifier.request_structure[0].values_mapping = value
+            input_output_control_by_identifier.response_structure[0].values_mapping = value
         # ReadDTCInformation
-        read_dtc_information = self.services_mapping[RequestSID.ReadDTCInformation]  # TODO: handle missing services
-        read_dtc_information.response_structure[1].mapping = self.__conditional_read_dtc_information_response  # TODO: review
+        read_dtc_information = self.services_mapping.get(RequestSID.ReadDTCInformation, None)
+        if read_dtc_information is not None:
+            read_dtc_information.response_structure[1].mapping = self.__conditional_read_dtc_information_response
         # ResponseOnEvent
-        response_on_event = self.services_mapping[RequestSID.ResponseOnEvent]  # TODO: handle missing services
-        response_on_event.request_structure[1].mapping = self.__conditional_response_on_event_request  # TODO: review
-        response_on_event.response_structure[1].mapping = self.__conditional_response_on_event_response  # TODO: review
+        response_on_event = self.services_mapping.get(RequestSID.ResponseOnEvent, None)
+        if response_on_event is not None:
+            response_on_event.request_structure[1].mapping[0x03][1].children[0].values_mapping = value
+            response_on_event.request_structure[1].mapping[0x07][1].children[0].values_mapping = value
+            response_on_event.response_structure[1].mapping = self.__conditional_response_on_event_response
 
     @property
     def did_data_mapping(self) -> None | Mapping[int, MessageStructureAlias]:
@@ -548,6 +554,186 @@ class ConfigurableTranslator(Translator):
         # self.services_mapping[RequestSID.ReadScalingDataByIdentifier].response_structure[0].values_mapping \
         #     = self.did_mapping
         self.__did_data_mapping = value
+
+    @property
+    def __did_records(self) -> tuple[ConditionalFormulaDataRecord, ...]:
+        return tuple(ConditionalFormulaDataRecord(formula=self.__get_did_records_formula(record_number + 1))
+                     for record_number in range(REPEATED_DATA_RECORDS_NUMBER))
+
+    @property
+    def __dtc_snapshot_records(self) -> tuple[MappingDataRecord | RawDataRecord | ConditionalFormulaDataRecord, ...]:
+        return tuple(item
+                     for snapshot_record in zip(OPTIONAL_DTC_SNAPSHOT_RECORDS_NUMBERS_LIST,
+                                                DID_COUNT_RECORDS,
+                                                self.__did_records)
+                     for item in snapshot_record)
+
+    @property
+    def __dtc_stored_data_records(self) -> tuple[MappingDataRecord | RawDataRecord | ConditionalFormulaDataRecord, ...]:
+        return tuple(item
+                     for stored_data_record in zip(DTC_STORED_DATA_RECORD_NUMBERS_LIST,
+                                                   DTCS_AND_STATUSES_LIST,
+                                                   DID_COUNT_RECORDS,
+                                                   self.__did_records)
+                     for item in stored_data_record)
+
+    @property
+    def __event_window(self) -> MappingDataRecord:
+        response_on_event = self.services_mapping.get(RequestSID.ResponseOnEvent, None)
+        if response_on_event is None:
+            raise ValueError
+        return response_on_event.request_structure[1][0x00][0]
+
+    @property
+    def __event_type(self) -> RawDataRecord:
+        response_on_event = self.services_mapping.get(RequestSID.ResponseOnEvent, None)
+        if response_on_event is None:
+            raise ValueError
+        return response_on_event.request_structure[0].children[1]
+
+    @property
+    def __conditional_activated_events(self) -> ConditionalFormulaDataRecord:
+        return ConditionalFormulaDataRecord(formula=self.__get_activated_events)
+
+    @property
+    def __conditional_read_dtc_information_response(self) -> Mapping[int, MessageStructureAlias]:
+        read_dtc_information = self.services_mapping.get(RequestSID.ReadDTCInformation, None)
+        if read_dtc_information is None:
+            raise ValueError
+        conditional_response_mapping = dict(read_dtc_information.response_structure[1].mapping)
+        if self.did_mapping is not None:
+            conditional_response_mapping[0x04] = (DTC_AND_STATUS, *self.__dtc_snapshot_records)
+            conditional_response_mapping[0x05] = self.__dtc_stored_data_records
+            conditional_response_mapping[0x18] = (MEMORY_SELECTION, DTC_AND_STATUS, *self.__dtc_snapshot_records)
+        return conditional_response_mapping
+
+    @property
+    def __conditional_response_on_event_response(self) -> Mapping[int, MessageStructureAlias]:
+        response_on_event = self.services_mapping.get(RequestSID.ResponseOnEvent, None)
+        if response_on_event is None:
+            raise ValueError
+        conditional_response_mapping = dict(response_on_event.response_structure[1].mapping)
+        conditional_response_mapping[0x03][2].children[0].values_mapping = self.did_mapping
+        conditional_response_mapping[0x04] = (NUMBER_OF_ACTIVATED_EVENTS, self.__conditional_activated_events)
+        conditional_response_mapping[0x07][2].children[0].values_mapping = self.did_mapping
+        return conditional_response_mapping
+
+    def __get_did(self, name: str, optional: bool = False) -> MappingDataRecord:
+        if self.did_mapping is None:
+            raise ValueError
+        return MappingDataRecord(name=name,
+                                 length=DID_BIT_LENGTH,
+                                 values_mapping=self.did_mapping,
+                                 min_occurrences=0 if optional else 1,
+                                 max_occurrences=1)
+
+    def __get_did_data(self, name: str = "DID data") -> ConditionalFormulaDataRecord:
+        default_did_data = RawDataRecord(name=name,
+                                         length=8,
+                                         min_occurrences=1,
+                                         max_occurrences=None)
+
+        def _get_did_data(did: int) -> tuple[RawDataRecord]:
+            data_records = self.did_data_mapping.get(did, None)
+            if data_records is None:
+                raise ValueError(f"No data structure defined for DID 0x{did:04X}.")
+            total_length = 0
+            for dr in data_records:
+                if not isinstance(dr, AbstractDataRecord) or not dr.fixed_total_length:
+                    raise ValueError(f"Incorrectly defined data structure for DID 0x{did:04X}. "
+                                     f"Only fixed length data records are supported right now.")
+                total_length += dr.min_occurrences * dr.length
+            return (RawDataRecord(name=name,
+                                  children=data_records,
+                                  length=total_length,
+                                  min_occurrences=1,
+                                  max_occurrences=1),)
+
+        return ConditionalFormulaDataRecord(formula=_get_did_data,
+                                            default_message_continuation=[default_did_data])
+
+    def __get_did_records_formula(self, record_number: None | int) -> Callable[[int], MessageStructureAlias]:
+        return lambda did_count: self.__get_did_record(did_count=did_count, record_number=record_number)
+
+    def __get_did_record(self,
+                         did_count: int,
+                         record_number: None | int,
+                         optional: bool = False) -> tuple[MappingDataRecord | ConditionalFormulaDataRecord, ...]:
+        data_records: list[MappingDataRecord | ConditionalFormulaDataRecord] = []
+        for did_number in range(1, did_count + 1):
+            name = f"DID#{did_number}" if record_number is None else f"DID#{record_number}_{did_number}"
+            data_records.append(self.__get_did(name=name, optional=optional))
+            data_records.append(self.__get_did_data(name=f"{name} data"))
+        return tuple(data_records)
+
+    def __get_event_window(self, event_number: int) -> MappingDataRecord:
+        event_window = deepcopy(self.__event_window)
+        event_window.name = f"{event_window.name}#{event_number}"
+        return event_window
+
+    def __get_activated_events(self, number_of_activated_events: int) -> tuple[RawDataRecord
+                                                                               | MappingDataRecord
+                                                                               | ConditionalMappingDataRecord, ...]:
+        data_records: list[RawDataRecord | MappingDataRecord | ConditionalMappingDataRecord] = []
+        for event_number in range(1, number_of_activated_events + 1):
+            event_window = self.__get_event_window(event_number)
+            service_to_respond = get_service_to_respond(event_number)
+            data_records.append(self.__get_event_type_of_active_event(event_number))
+            mapping = {
+                0x01: (event_window,
+                       get_event_type_record_01(event_number),
+                       service_to_respond),
+            }
+            for event_type in {0x02, 0x03, 0x07}:
+                event_type_record = self.__get_event_type_record(event_type=event_type,
+                                                                 event_number=event_number)
+                if event_type_record is None:
+                    continue
+                mapping[event_type] = (event_window,
+                                       event_type_record,
+                                       service_to_respond)
+
+            event_type_record_08 = self.__get_event_type_record(event_type=0x08,
+                                                                event_number=event_number)
+            if event_type_record_08 is not None:
+                mapping[0x08] = (event_window, event_type_record_08)
+            event_type_record_09 = self.__get_event_type_record(event_type=0x09,
+                                                                event_number=event_number)
+            event_type_record_09_continuation = self.__get_event_type_record_09_continuation(event_number=event_number)
+            if event_type_record_09 is not None and event_type_record_09_continuation is not None:
+                mapping[0x09] = (event_window, event_type_record_09, event_type_record_09_continuation)
+            data_records.append(ConditionalMappingDataRecord(mapping=mapping, value_mask=0x3F))
+        return tuple(data_records)
+
+    def __get_event_type_of_active_event(self, event_number: int) -> RawDataRecord:
+        return RawDataRecord(name=f"eventTypeOfActiveEvent#{event_number}",
+                             length=8,
+                             children=(RESERVED_BIT,
+                                       self.__event_type))
+
+    def __get_event_type_record(self, event_type: int, event_number: int) -> None | RawDataRecord:
+        response_on_event = self.services_mapping.get(RequestSID.ResponseOnEvent, None)
+        if response_on_event is None:
+            raise ValueError
+        conditional_response = response_on_event.response_structure[1].mapping.get(event_type, None)
+        if conditional_response is None:
+            return None
+        event_type_record = deepcopy(conditional_response[2])
+        event_type_record.name = f"{event_type_record.name}#{event_number}"
+        return event_type_record
+
+    def __get_event_type_record_09_continuation(self, event_number: int) -> None | ConditionalMappingDataRecord:
+        response_on_event = self.services_mapping.get(RequestSID.ResponseOnEvent, None)
+        if response_on_event is None:
+            raise ValueError
+        conditional_response = response_on_event.response_structure[1].mapping.get(0x09, None)
+        if conditional_response is None:
+            return None
+        event_type_record_continuation = deepcopy(conditional_response[3])
+        for report_type, data_records in event_type_record_continuation.mapping.items():
+            for data_record in data_records:
+                data_record.name = f"{data_record.name}#{event_number}"
+        return event_type_record_continuation
 
     # TODO: remove what is not needed
 
@@ -602,15 +788,6 @@ class ConfigurableTranslator(Translator):
     #                          min_occurrences=1,
     #                          max_occurrences=None)
     #
-    # @property
-    # def __event_type(self) -> RawDataRecord:
-    #     response_on_event = self.services_mapping[RequestSID.ResponseOnEvent]
-    #     return response_on_event.request_structure[0].children[1]
-    #
-    # @property
-    # def __event_window(self) -> MappingDataRecord:
-    #     response_on_event = self.services_mapping[RequestSID.ResponseOnEvent]
-    #     return response_on_event.request_structure[1][0x00][0]
     #
     # @property
     # def __conditional_control_state(self) -> ConditionalFormulaDataRecord:
@@ -620,58 +797,6 @@ class ConfigurableTranslator(Translator):
     # def __conditional_optional_control_enable_mask(self) -> ConditionalFormulaDataRecord:
     #     return self.__get_did_data_mask(name="controlEnableMask", optional=True)
     #
-    # @property
-    # def __did_records(self) -> tuple[ConditionalFormulaDataRecord, ...]:
-    #     return tuple(ConditionalFormulaDataRecord(formula=self.__get_did_records_formula(record_number + 1))
-    #                  for record_number in range(REPEATED_DATA_RECORDS_NUMBER))
-    #
-    # @property
-    # def __dtc_snapshot_records(self) -> tuple[MappingDataRecord | RawDataRecord | ConditionalFormulaDataRecord, ...]:
-    #     return tuple(item
-    #                  for snapshot_record in zip(OPTIONAL_DTC_SNAPSHOT_RECORDS_NUMBERS_LIST,
-    #                                             DID_COUNT_RECORDS,
-    #                                             self.__did_records)
-    #                  for item in snapshot_record)
-    #
-    # @property
-    # def __dtc_stored_data_records(self) -> tuple[MappingDataRecord | RawDataRecord | ConditionalFormulaDataRecord, ...]:
-    #     return tuple(item
-    #                  for stored_data_record in zip(DTC_STORED_DATA_RECORD_NUMBERS_LIST,
-    #                                                DTCS_AND_STATUSES_LIST,
-    #                                                DID_COUNT_RECORDS,
-    #                                                self.__did_records)
-    #                  for item in stored_data_record)
-    #
-    # @property
-    # def __conditional_activated_events(self) -> ConditionalFormulaDataRecord:
-    #     return ConditionalFormulaDataRecord(formula=self.__get_activated_events)
-    #
-    # @property
-    # def __conditional_read_dtc_information_response(self) -> Mapping[int, MessageStructureAlias]:
-    #     read_dtc_information = self.services_mapping[RequestSID.ReadDTCInformation]
-    #     conditional_response_mapping = dict(read_dtc_information.response_structure[1].mapping)
-    #     conditional_response_mapping[0x04] = (DTC_AND_STATUS, *self.__dtc_snapshot_records)
-    #     conditional_response_mapping[0x05] = (DTC_AND_STATUS, *self.__dtc_stored_data_records)
-    #     conditional_response_mapping[0x18] = (MEMORY_SELECTION, DTC_AND_STATUS, *self.__dtc_snapshot_records)
-    #     return conditional_response_mapping
-    #
-    #
-    # @property
-    # def __conditional_response_on_event_request(self) -> Mapping[int, MessageStructureAlias]:
-    #     response_on_event = self.services_mapping[RequestSID.ResponseOnEvent]
-    #     conditional_request_mapping = dict(response_on_event.request_structure[1].mapping)
-    #     conditional_request_mapping[0x03][1].children[0].values_mapping = self.did_mapping
-    #     conditional_request_mapping[0x07][1].children[0].values_mapping = self.did_mapping
-    #     return conditional_request_mapping
-    #
-    # @property
-    # def __conditional_response_on_event_response(self) -> Mapping[int, MessageStructureAlias]:
-    #     response_on_event = self.services_mapping[RequestSID.ResponseOnEvent]
-    #     conditional_response_mapping = dict(response_on_event.response_structure[1].mapping)
-    #     conditional_response_mapping[0x03][2].children[0].values_mapping = self.did_mapping
-    #     conditional_response_mapping[0x04] = (NUMBER_OF_ACTIVATED_EVENTS, self.__conditional_activated_events)
-    #     conditional_response_mapping[0x07][2].children[0].values_mapping = self.did_mapping
-    #     return conditional_response_mapping
     #
     # @staticmethod
     # def __adapt_subfunction(service: Service, subfunction_mapping: Mapping[int, str]) -> Service:
@@ -684,51 +809,7 @@ class ConfigurableTranslator(Translator):
     #         request_subfunction.values_mapping = response_subfunction.values_mapping = subfunction_mapping
     #     return service
     #
-    # def __get_did_records_formula(self, record_number: None | int) -> Callable[[int], MessageStructureAlias]:
-    #     return lambda did_count: self.__get_did_record(did_count=did_count, record_number=record_number)
     #
-    # def __get_did_record(self,
-    #                      did_count: int,
-    #                      record_number: None | int,
-    #                      optional: bool = False) -> tuple[MappingDataRecord | ConditionalFormulaDataRecord, ...]:
-    #     data_records: list[MappingDataRecord | ConditionalFormulaDataRecord] = []
-    #     for did_number in range(1, did_count + 1):
-    #         name = f"DID#{did_number}" if record_number is None else f"DID#{record_number}_{did_number}"
-    #         data_records.append(self.__get_did(name=name, optional=optional))
-    #         data_records.append(self.__get_did_data(name=f"{name} data"))
-    #     return tuple(data_records)
-    #
-    # def __get_did(self, name: str, optional: bool = False) -> MappingDataRecord:
-    #     return MappingDataRecord(name=name,
-    #                              length=DID_BIT_LENGTH,
-    #                              values_mapping=self.did_mapping,
-    #                              min_occurrences=0 if optional else 1,
-    #                              max_occurrences=1)
-    #
-    # def __get_did_data(self, name: str = "DID data") -> ConditionalFormulaDataRecord:
-    #     default_did_data = RawDataRecord(name=name,
-    #                                      length=8,
-    #                                      min_occurrences=1,
-    #                                      max_occurrences=None)
-    #
-    #     def _get_did_data(did: int) -> tuple[RawDataRecord]:
-    #         data_records = self.did_data_mapping.get(did, None)
-    #         if data_records is None:
-    #             raise ValueError(f"No data structure defined for DID 0x{did:04X}.")
-    #         total_length = 0
-    #         for dr in data_records:
-    #             if not isinstance(dr, AbstractDataRecord) or not dr.fixed_total_length:
-    #                 raise ValueError(f"Incorrectly defined data structure for DID 0x{did:04X}. "
-    #                                  f"Only fixed length data records are supported right now.")
-    #             total_length += dr.min_occurrences * dr.length
-    #         return (RawDataRecord(name=name,
-    #                               children=data_records,
-    #                               length=total_length,
-    #                               min_occurrences=1,
-    #                               max_occurrences=1),)
-    #
-    #     return ConditionalFormulaDataRecord(formula=_get_did_data,
-    #                                         default_message_continuation=[default_did_data])
     #
     # def __get_did_data_mask(self, name: str, optional: bool) -> ConditionalFormulaDataRecord:
     #     default_did_data_mask = RawDataRecord(name=name,
@@ -786,67 +867,3 @@ class ConfigurableTranslator(Translator):
     #                 0x03: control_state_data_records,
     #             }))
     #
-    # def __get_event_type_of_active_event(self, event_number: int) -> RawDataRecord:
-    #     return RawDataRecord(name=f"eventTypeOfActiveEvent#{event_number}",
-    #                          length=8,
-    #                          children=(RESERVED_BIT,
-    #                                    self.__event_type))
-    #
-    # def __get_event_window(self, event_number: int) -> MappingDataRecord:
-    #     event_window = deepcopy(self.__event_window)
-    #     event_window.name = f"{event_window.name}#{event_number}"
-    #     return event_window
-    #
-    # def __get_event_type_record(self, event_type: int, event_number: int) -> None | RawDataRecord:
-    #     response_on_event = self.services_mapping[RequestSID.ResponseOnEvent]
-    #     conditional_response = response_on_event.response_structure[1].mapping.get(event_type, None)
-    #     if conditional_response is None:
-    #         return None
-    #     event_type_record = deepcopy(conditional_response[2])
-    #     event_type_record.name = f"{event_type_record.name}#{event_number}"
-    #     return event_type_record
-    #
-    # def __get_event_type_record_09_continuation(self, event_number: int) -> None | ConditionalMappingDataRecord:
-    #     response_on_event = self.services_mapping[RequestSID.ResponseOnEvent]
-    #     conditional_response = response_on_event.response_structure[1].mapping.get(0x09, None)
-    #     if conditional_response is None:
-    #         return None
-    #     event_type_record_continuation = deepcopy(conditional_response[3])
-    #     for report_type, data_records in event_type_record_continuation.mapping.items():
-    #         for data_record in data_records:
-    #             data_record.name = f"{data_record.name}#{event_number}"
-    #     return event_type_record_continuation
-    #
-    # def __get_activated_events(self, number_of_activated_events: int) -> tuple[RawDataRecord
-    #                                                                            | MappingDataRecord
-    #                                                                            | ConditionalMappingDataRecord, ...]:
-    #     data_records: list[RawDataRecord | MappingDataRecord | ConditionalMappingDataRecord] = []
-    #     for event_number in range(1, number_of_activated_events + 1):
-    #         event_window = self.__get_event_window(event_number)
-    #         service_to_respond = get_service_to_respond(event_number)
-    #         data_records.append(self.__get_event_type_of_active_event(event_number))
-    #         mapping = {
-    #             0x01: (event_window,
-    #                    get_event_type_record_01(event_number),
-    #                    service_to_respond),
-    #         }
-    #         for event_type in {0x02, 0x03, 0x07}:
-    #             event_type_record = self.__get_event_type_record(event_type=event_type,
-    #                                                              event_number=event_number)
-    #             if event_type_record is None:
-    #                 continue
-    #             mapping[event_type] = (event_window,
-    #                                    event_type_record,
-    #                                    service_to_respond)
-    #
-    #         event_type_record_08 = self.__get_event_type_record(event_type=0x08,
-    #                                                             event_number=event_number)
-    #         if event_type_record_08 is not None:
-    #             mapping[0x08] = (event_window, event_type_record_08)
-    #         event_type_record_09 = self.__get_event_type_record(event_type=0x09,
-    #                                                             event_number=event_number)
-    #         event_type_record_09_continuation = self.__get_event_type_record_09_continuation(event_number=event_number)
-    #         if event_type_record_09 is not None and event_type_record_09_continuation is not None:
-    #             mapping[0x09] = (event_window, event_type_record_09, event_type_record_09_continuation)
-    #         data_records.append(ConditionalMappingDataRecord(mapping=mapping, value_mask=0x3F))
-    #     return tuple(data_records)
