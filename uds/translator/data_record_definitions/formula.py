@@ -33,7 +33,7 @@ __all__ = [
     "get_secured_data_transmission_request",
     "get_secured_data_transmission_response",
     # SID 0x86
-    "get_event_window_2020", "get_event_window_2013",
+    "get_event_window_time_2020", "get_event_window_time_2013",
     "get_event_type_of_active_event_2020", "get_event_type_of_active_event_2013",
     "get_event_type_record_01",
     "get_event_type_record_02_2013",
@@ -820,7 +820,7 @@ def get_secured_data_transmission_response(signature_length: int) -> (
 # SID 0x86
 
 
-def get_event_window_2020(event_number: None | int = None) -> MappingDataRecord:
+def get_event_window_time_2020(event_number: None | int = None) -> MappingDataRecord:
     """
     Get `eventWindowTime` Data Record (compatible with ISO 14229-1:2020).
 
@@ -834,7 +834,7 @@ def get_event_window_2020(event_number: None | int = None) -> MappingDataRecord:
                              values_mapping=EVENT_WINDOW_TIME_MAPPING_2020)
 
 
-def get_event_window_2013(event_number: None | int = None) -> MappingDataRecord:
+def get_event_window_time_2013(event_number: None | int = None) -> MappingDataRecord:
     """
     Get `eventWindowTime` Data Record (compatible with ISO 14229-1:2013).
 
@@ -1069,7 +1069,7 @@ def get_activated_events_2020(number_of_activated_events: int) -> tuple[RawDataR
     """
     data_records: list[RawDataRecord | MappingDataRecord | ConditionalMappingDataRecord] = []
     for event_number in range(1, number_of_activated_events + 1):
-        event_window = get_event_window_2020(event_number)
+        event_window = get_event_window_time_2020(event_number)
         service_to_respond = get_service_to_respond(event_number)
         data_records.append(get_event_type_of_active_event_2020(event_number))
         data_records.append(ConditionalMappingDataRecord(mapping={
@@ -1104,7 +1104,7 @@ def get_activated_events_2013(number_of_activated_events: int) -> tuple[RawDataR
     """
     data_records: list[RawDataRecord | MappingDataRecord | ConditionalMappingDataRecord] = []
     for event_number in range(1, number_of_activated_events + 1):
-        event_window = get_event_window_2013(event_number)
+        event_window = get_event_window_time_2013(event_number)
         service_to_respond = get_service_to_respond(event_number)
         data_records.append(get_event_type_of_active_event_2013(event_number))
         data_records.append(ConditionalMappingDataRecord(mapping={

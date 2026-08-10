@@ -149,8 +149,8 @@ from .formula import (
     get_event_type_record_08_2020,
     get_event_type_record_09_2020,
     get_event_type_record_09_2020_continuation,
-    get_event_window_2013,
-    get_event_window_2020,
+    get_event_window_time_2013,
+    get_event_window_time_2020,
     get_file_path_and_name,
     get_file_sizes,
     get_file_sizes_or_dir_info,
@@ -875,9 +875,9 @@ CONDITIONAL_SECURED_DATA_TRANSMISSION_RESPONSE = ConditionalFormulaDataRecord(
 
 # SID 0x86
 
-EVENT_WINDOW_TIME_2020 = get_event_window_2020()
+EVENT_WINDOW_TIME_2020 = get_event_window_time_2020()
 """Definition of `eventWindowTime` Data Record (compatible with ISO 14229-1:2020)."""
-EVENT_WINDOW_TIME_2013 = get_event_window_2013()
+EVENT_WINDOW_TIME_2013 = get_event_window_time_2013()
 """Definition of `eventWindowTime` Data Record (compatible with ISO 14229-1:2013)."""
 
 CONDITIONAL_ACTIVATED_EVENTS_2020 = ConditionalFormulaDataRecord(formula=get_activated_events_2020)

@@ -26,10 +26,12 @@ from .data_record_definitions import (
     DTCS_AND_STATUSES_LIST,
     INPUT_OUTPUT_CONTROL_PARAMETER,
     MEMORY_SELECTION,
+    NUMBER_OF_ACTIVATED_EVENTS,
     OPTIONAL_DTC_SNAPSHOT_RECORDS_NUMBERS_LIST,
-    POSITION_IN_DID,NUMBER_OF_ACTIVATED_EVENTS, RESERVED_BIT
+    POSITION_IN_DID,
+    RESERVED_BIT,
 )
-from .data_record_definitions.formula import get_service_to_respond, get_event_type_record_01
+from .data_record_definitions.formula import get_event_type_record_01, get_service_to_respond
 from .service import Service
 from .translator import Translator
 from .translator_definitions import BASE_TRANSLATOR
@@ -562,11 +564,25 @@ class ConfigurableTranslator(Translator):
 
     @property
     def __did_records(self) -> tuple[ConditionalFormulaDataRecord, ...]:
+        """
+        Get collection of `DID` Data Records.
+
+        .. note:: This attribute mimics
+            :obj:`~uds.translator.data_record_definitions.conditional._DID_RECORDS_2020` and
+            :obj:`~uds.translator.data_record_definitions.conditional._DID_RECORDS_2013`.
+        """
         return tuple(ConditionalFormulaDataRecord(formula=self.__get_did_records_formula(record_number + 1))
                      for record_number in range(REPEATED_DATA_RECORDS_NUMBER))
 
     @property
     def __dtc_snapshot_records(self) -> tuple[MappingDataRecord | RawDataRecord | ConditionalFormulaDataRecord, ...]:
+        """
+        Get collection of DTC Snapshot Data Records.
+
+        .. note:: This attribute mimics
+            :obj:`~uds.translator.data_record_definitions.conditional._DTC_SNAPSHOT_RECORDS_2020` and
+            :obj:`~uds.translator.data_record_definitions.conditional._DTC_SNAPSHOT_RECORDS_2013`.
+        """
         return tuple(item
                      for snapshot_record in zip(OPTIONAL_DTC_SNAPSHOT_RECORDS_NUMBERS_LIST,
                                                 DID_COUNT_RECORDS,
@@ -575,6 +591,13 @@ class ConfigurableTranslator(Translator):
 
     @property
     def __dtc_stored_data_records(self) -> tuple[MappingDataRecord | RawDataRecord | ConditionalFormulaDataRecord, ...]:
+        """
+        Get collection of DTC Stored Data Records.
+
+        .. note:: This attribute mimics
+            :obj:`~uds.translator.data_record_definitions.conditional._DTC_STORED_DATA_RECORDS_2020` and
+            :obj:`~uds.translator.data_record_definitions.conditional._DTC_STORED_DATA_RECORDS_2013`.
+        """
         return tuple(item
                      for stored_data_record in zip(DTC_STORED_DATA_RECORD_NUMBERS_LIST,
                                                    DTCS_AND_STATUSES_LIST,
@@ -583,17 +606,35 @@ class ConfigurableTranslator(Translator):
                      for item in stored_data_record)
 
     @property
-    def __event_window(self) -> MappingDataRecord:
+    def __event_window_time(self) -> MappingDataRecord:
+        """
+        Get definition of `eventWindowTime` Data Record.
+
+        .. note:: This attribute mimics
+            :obj:`~uds.translator.data_record_definitions.conditional.EVENT_WINDOW_TIME_2020` and
+            :obj:`~uds.translator.data_record_definitions.conditional.EVENT_WINDOW_TIME_2013`.
+
+        :raise ValueError: ResponseOnEvent service is not defined in this Translator.
+        """
         response_on_event = self.services_mapping.get(RequestSID.ResponseOnEvent, None)
         if response_on_event is None:
-            raise ValueError
+            raise ValueError("ResponseOnEvent service is not defined in this Translator.")
         return response_on_event.request_structure[1][0x00][0]
 
     @property
     def __event_type(self) -> RawDataRecord:
+        """
+        Get Definition of `eventType` Data Record that is part of ResponseOnEvent SubFunction.
+
+        .. note:: This attribute mimics
+            :obj:`~uds.translator.data_record_definitions.subfunctions.EVENT_TYPE_2020` and
+            :obj:`~uds.translator.data_record_definitions.subfunctions.EVENT_TYPE_2013`.
+
+        :raise ValueError: ResponseOnEvent service is not defined in this Translator.
+        """
         response_on_event = self.services_mapping.get(RequestSID.ResponseOnEvent, None)
         if response_on_event is None:
-            raise ValueError
+            raise ValueError("ResponseOnEvent service is not defined in this Translator.")
         return response_on_event.request_structure[0].children[1]
 
     @property
@@ -723,8 +764,8 @@ class ConfigurableTranslator(Translator):
                     0x03: control_state_data_records,
                 }))
 
-    def __get_event_window(self, event_number: int) -> MappingDataRecord:
-        event_window = deepcopy(self.__event_window)
+    def __get_event_window_time(self, event_number: int) -> MappingDataRecord:
+        event_window = deepcopy(self.__event_window_time)
         event_window.name = f"{event_window.name}#{event_number}"
         return event_window
 
@@ -733,7 +774,7 @@ class ConfigurableTranslator(Translator):
                                                                                | ConditionalMappingDataRecord, ...]:
         data_records: list[RawDataRecord | MappingDataRecord | ConditionalMappingDataRecord] = []
         for event_number in range(1, number_of_activated_events + 1):
-            event_window = self.__get_event_window(event_number)
+            event_window = self.__get_event_window_time(event_number)
             service_to_respond = get_service_to_respond(event_number)
             data_records.append(self.__get_event_type_of_active_event(event_number))
             mapping = {

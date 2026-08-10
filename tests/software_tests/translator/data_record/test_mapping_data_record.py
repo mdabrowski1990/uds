@@ -4,10 +4,11 @@ from mock import Mock, patch
 from uds.translator.data_record.mapping_data_record import (
     AbstractMappingDataRecord,
     LinearFormulaDataRecord,
+    Mapping,
     MappingAndLinearFormulaDataRecord,
     MappingDataRecord,
     MappingProxyType,
-    RawDataRecord, Mapping
+    RawDataRecord,
 )
 
 SCRIPT_LOCATION = "uds.translator.data_record.mapping_data_record"

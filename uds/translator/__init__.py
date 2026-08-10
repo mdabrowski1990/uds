@@ -4,6 +4,7 @@ Implementation for diagnostic messages databases.
 Tools for decoding and encoding information from/to diagnostic messages.
 """
 
+from .configurable_translator import ConfigurableTranslator
 from .data_record import (
     AbstractDataRecord,
     ConditionalFormulaDataRecord,
@@ -25,5 +26,4 @@ from .service_definitions import (
     TESTER_PRESENT,
 )
 from .translator import Translator
-from .configurable_translator import ConfigurableTranslator
 from .translator_definitions import BASE_TRANSLATOR, BASE_TRANSLATOR_2013, BASE_TRANSLATOR_2020

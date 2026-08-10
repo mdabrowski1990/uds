@@ -1,7 +1,18 @@
 import pytest
-from mock import call, Mock, MagicMock, patch
+from mock import MagicMock, Mock, call, patch
 
-from uds.translator.configurable_translator import ConfigurableTranslator, Translator, RequestSID, REPEATED_DATA_RECORDS_NUMBER, DTC_AND_STATUS, MEMORY_SELECTION
+from uds.translator.configurable_translator import (
+    DID_COUNT_RECORDS,
+    DTC_AND_STATUS,
+    DTC_STORED_DATA_RECORD_NUMBERS_LIST,
+    DTCS_AND_STATUSES_LIST,
+    MEMORY_SELECTION,
+    OPTIONAL_DTC_SNAPSHOT_RECORDS_NUMBERS_LIST,
+    REPEATED_DATA_RECORDS_NUMBER,
+    ConfigurableTranslator,
+    RequestSID,
+    Translator,
+)
 
 SCRIPT_LOCATION = "uds.translator.configurable_translator"
 
@@ -16,9 +27,12 @@ class TestConfigurableTranslator:
         # patching
         self._patcher_deepcopy = patch(f"{SCRIPT_LOCATION}.deepcopy")
         self.mock_deepcopy = self._patcher_deepcopy.start()
+        self._patcher_conditional_formula_data_record = patch(f"{SCRIPT_LOCATION}.ConditionalFormulaDataRecord")
+        self.mock_conditional_formula_data_record = self._patcher_conditional_formula_data_record.start()
 
     def teardown_method(self):
         self._patcher_deepcopy.stop()
+        self._patcher_conditional_formula_data_record.stop()
 
     # __init__
 
@@ -580,3 +594,82 @@ class TestConfigurableTranslator:
                 == self.mock_translator._ConfigurableTranslator__dtc_stored_data_records)
         assert (self.mock_translator.services_mapping[RequestSID.ReadDTCInformation].response_structure[1].mapping[0x18]
                 == (MEMORY_SELECTION, DTC_AND_STATUS, *self.mock_translator._ConfigurableTranslator__dtc_snapshot_records))
+
+    # __did_records
+
+    def test_did_records__get(self):
+        assert (ConfigurableTranslator._ConfigurableTranslator__did_records.fget(self.mock_translator)
+                == REPEATED_DATA_RECORDS_NUMBER * (self.mock_conditional_formula_data_record.return_value, ))
+        self.mock_conditional_formula_data_record.assert_called_with(
+            formula=self.mock_translator._ConfigurableTranslator__get_did_records_formula.return_value)
+        self.mock_translator._ConfigurableTranslator__get_did_records_formula.assert_has_calls(
+            [call(record_number+1) for record_number in range(REPEATED_DATA_RECORDS_NUMBER)],
+            any_order=False)
+
+    # __dtc_snapshot_records
+
+    @pytest.mark.parametrize("did_records", [
+        (Mock(), Mock()),
+        20 * [Mock()],
+    ])
+    def test_dtc_snapshot_records__get(self, did_records):
+        self.mock_translator._ConfigurableTranslator__did_records = did_records
+        dtc_snapshot_records = ConfigurableTranslator._ConfigurableTranslator__dtc_snapshot_records.fget(self.mock_translator)
+        assert isinstance(dtc_snapshot_records, tuple)
+        assert all(item == OPTIONAL_DTC_SNAPSHOT_RECORDS_NUMBERS_LIST[i]
+                   for i, item in enumerate(dtc_snapshot_records[::3]))
+        assert all(item == DID_COUNT_RECORDS[i]
+                   for i, item in enumerate(dtc_snapshot_records[1::3]))
+        assert all(item == did_records[i]
+                   for i, item in enumerate(dtc_snapshot_records[2::3]))
+        
+    # __dtc_stored_data_records
+
+    @pytest.mark.parametrize("did_records", [
+        (Mock(), Mock()),
+        20 * [Mock()],
+    ])
+    def test_dtc_stored_data_records__get(self, did_records):
+        self.mock_translator._ConfigurableTranslator__did_records = did_records
+        dtc_stored_data_records = ConfigurableTranslator._ConfigurableTranslator__dtc_stored_data_records.fget(self.mock_translator)
+        assert isinstance(dtc_stored_data_records, tuple)
+        assert all(item == DTC_STORED_DATA_RECORD_NUMBERS_LIST[i]
+                   for i, item in enumerate(dtc_stored_data_records[::4]))
+        assert all(item == DTCS_AND_STATUSES_LIST[i]
+                   for i, item in enumerate(dtc_stored_data_records[1::4]))
+        assert all(item == DID_COUNT_RECORDS[i]
+                   for i, item in enumerate(dtc_stored_data_records[2::4]))
+        assert all(item == did_records[i]
+                   for i, item in enumerate(dtc_stored_data_records[3::4]))
+
+    # __event_window_time
+
+    def test_event_window_time__get__value_error(self):
+        mock_get = Mock(return_value=None)
+        self.mock_translator.services_mapping = Mock(get=mock_get)
+        with pytest.raises(ValueError):
+            ConfigurableTranslator._ConfigurableTranslator__event_window_time.fget(self.mock_translator)
+        mock_get.assert_called_once_with(RequestSID.ResponseOnEvent, None)
+
+    def test_event_window_time__get(self):
+        mock_service = MagicMock()
+        mock_get = Mock(return_value=mock_service)
+        self.mock_translator.services_mapping = Mock(get=mock_get)
+        assert (ConfigurableTranslator._ConfigurableTranslator__event_window_time.fget(self.mock_translator)
+                == mock_service.request_structure[1][0x00][0])
+
+    # __event_type
+
+    def test_event_type__get__value_error(self):
+        mock_get = Mock(return_value=None)
+        self.mock_translator.services_mapping = Mock(get=mock_get)
+        with pytest.raises(ValueError):
+            ConfigurableTranslator._ConfigurableTranslator__event_type.fget(self.mock_translator)
+        mock_get.assert_called_once_with(RequestSID.ResponseOnEvent, None)
+
+    def test_event_type__get(self):
+        mock_service = MagicMock()
+        mock_get = Mock(return_value=mock_service)
+        self.mock_translator.services_mapping = Mock(get=mock_get)
+        assert (ConfigurableTranslator._ConfigurableTranslator__event_type.fget(self.mock_translator)
+                == mock_service.request_structure[0].children[1])
