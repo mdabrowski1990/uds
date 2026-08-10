@@ -17,10 +17,7 @@ from .data_record import (
     RawDataRecord,
 )
 from .data_record_definitions import (
-    ADDRESS_AND_LENGTH_FORMAT_IDENTIFIER,
-    CONDITIONAL_DATA_FROM_MEMORY,
     DID_COUNT_RECORDS,
-    DID_MEMORY_SIZE,
     DTC_AND_STATUS,
     DTC_STORED_DATA_RECORD_NUMBERS_LIST,
     DTCS_AND_STATUSES_LIST,
@@ -28,11 +25,9 @@ from .data_record_definitions import (
     MEMORY_SELECTION,
     NUMBER_OF_ACTIVATED_EVENTS,
     OPTIONAL_DTC_SNAPSHOT_RECORDS_NUMBERS_LIST,
-    POSITION_IN_DID,
     RESERVED_BIT,
 )
 from .data_record_definitions.formula import get_event_type_record_01, get_service_to_respond
-from .service import Service
 from .translator import Translator
 from .translator_definitions import BASE_TRANSLATOR
 
@@ -50,7 +45,7 @@ class ConfigurableTranslator(Translator):
         :class:`~uds.translator.translator.Translator` shall be directly used instead.
     """
 
-    def __init__(self,
+    def __init__(self,  # pylint: disable=too-many-branches
                  base: Translator = BASE_TRANSLATOR,
                  *,
                  diagnostic_session_type_mapping: None | Mapping[int, str] = None,
@@ -697,6 +692,17 @@ class ConfigurableTranslator(Translator):
                                  max_occurrences=1)
 
     def __get_did_data(self, name: str = "DID data") -> ConditionalFormulaDataRecord:
+        """
+        Get Conditional Data Record with DID data.
+
+        .. note:: This method mimics
+            :func:`~uds.translator.data_record_definitions.formula.get_did_data_2020` and
+            :func:`~uds.translator.data_record_definitions.formula.get_did_data_2013`.
+
+        :param name: Name for the Data Record that contains whole DID data.
+
+        :return: Conditional Data Record for DID data.
+        """
         default_did_data = RawDataRecord(name=name,
                                          length=8,
                                          min_occurrences=1,
@@ -722,6 +728,18 @@ class ConfigurableTranslator(Translator):
                                             default_message_continuation=[default_did_data])
 
     def __get_did_data_mask(self, name: str, optional: bool) -> ConditionalFormulaDataRecord:
+        """
+         Get Conditional Data Record for DID data mask.
+
+        .. note:: This method mimics
+            :func:`~uds.translator.data_record_definitions.formula.get_did_data_mask_2020` and
+            :func:`~uds.translator.data_record_definitions.formula.get_did_data_mask_2013`.
+
+        :param name: Name for the Data Record that contains whole DID data mask.
+        :param optional: False if the Data Record presence is mandatory, True otherwise.
+
+        :return: Conditional Data Record for DID data mask.
+        """
         default_did_data_mask = RawDataRecord(name=name,
                                               length=8,
                                               min_occurrences=0 if optional else 1,
@@ -758,12 +776,38 @@ class ConfigurableTranslator(Translator):
                                             default_message_continuation=[default_did_data_mask])
 
     def __get_did_records_formula(self, record_number: None | int) -> Callable[[int], MessageStructureAlias]:
+        """
+        Get formula that can be used by Conditional Data Record for getting DID related Data Records.
+
+        .. note:: This method mimics
+            :func:`~uds.translator.data_record_definitions.formula.get_did_records_formula_2020` and
+            :func:`~uds.translator.data_record_definitions.formula.get_did_records_formula_2013`.
+
+        :param record_number: Order number of the record that contains DIDs.
+            None if this is the only DIDs group (e.g. part of ReadDataByIdentifier).
+
+        :return: Formula for given record (e.g. Snapshot or Stored Data).
+        """
         return lambda did_count: self.__get_did_record(did_count=did_count, record_number=record_number)
 
     def __get_did_record(self,
                          did_count: int,
                          record_number: None | int,
                          optional: bool = False) -> tuple[MappingDataRecord | ConditionalFormulaDataRecord, ...]:
+        """
+        Get DID record (e.g. for DTC Snapshot or DTC Stored Data) with DID numbers and data.
+
+        .. note:: This method mimics
+            :func:`~uds.translator.data_record_definitions.formula.get_did_record_2020` and
+            :func:`~uds.translator.data_record_definitions.formula.get_did_record_2013`.
+
+        :param did_count: Number of DIDs that are part of the record.
+        :param record_number: Order number of the record.
+            None if this is the only DIDs group (e.g. part of ReadDataByIdentifier).
+        :param optional: False if the Data Record presence is mandatory, True otherwise.
+
+        :return: Data Records that are part of the DID record.
+        """
         data_records: list[MappingDataRecord | ConditionalFormulaDataRecord] = []
         for did_number in range(1, did_count + 1):
             name = f"DID#{did_number}" if record_number is None else f"DID#{record_number}_{did_number}"
@@ -772,6 +816,19 @@ class ConfigurableTranslator(Translator):
         return tuple(data_records)
 
     def __get_input_output_control_by_identifier_request(self, did: int) -> MessageStructureAlias:
+        # pylint: disable=line-too-long
+        """
+        Get message continuation (after DID Data Record) for InputOutputControlByIdentifier request.
+
+        .. note:: This method mimics
+            :func:`~uds.translator.data_record_definitions.conditional.get_input_output_control_by_identifier_request_2020`
+            and
+            :func:`~uds.translator.data_record_definitions.conditional.get_input_output_control_by_identifier_request_2013`.
+
+        :param did: Value of proceeding DID.
+
+        :return: Following Data Records.
+        """
         return (INPUT_OUTPUT_CONTROL_PARAMETER,
                 ConditionalMappingDataRecord(mapping={
                     0x00: (),
@@ -782,6 +839,19 @@ class ConfigurableTranslator(Translator):
                 }))
 
     def __get_input_output_control_by_identifier_response(self, did: int) -> MessageStructureAlias:
+        # pylint: disable=line-too-long
+        """
+        Get message continuation (after DID Data Record) for InputOutputControlByIdentifier positive response.
+
+        .. note:: This method mimics
+            :func:`~uds.translator.data_record_definitions.conditional.get_input_output_control_by_identifier_response_2020`
+            and
+            :func:`~uds.translator.data_record_definitions.conditional.get_input_output_control_by_identifier_response_2013`.
+
+        :param did: Value of proceeding DID.
+
+        :return: Following Data Records.
+        """
         control_state_data_records = self.__conditional_control_state.get_message_continuation(did)
         return (INPUT_OUTPUT_CONTROL_PARAMETER,
                 ConditionalMappingDataRecord(mapping={
@@ -792,6 +862,18 @@ class ConfigurableTranslator(Translator):
                 }))
 
     def __get_event_window_time(self, event_number: int) -> MappingDataRecord:
+        """
+        Get `eventWindowTime` Data Record.
+
+        .. note:: This method mimics
+            :func:`~uds.translator.data_record_definitions.formula.get_event_window_time_2020` and
+            :func:`~uds.translator.data_record_definitions.formula.get_event_window_time_2013`.
+
+        :param event_number: Order number of the event record.
+            None if there are no records.
+
+        :return: Created `eventWindowTime` Data Record.
+        """
         event_window = deepcopy(self.__event_window_time)
         event_window.name = f"{event_window.name}#{event_number}"
         return event_window
@@ -799,49 +881,77 @@ class ConfigurableTranslator(Translator):
     def __get_activated_events(self, number_of_activated_events: int) -> tuple[RawDataRecord
                                                                                | MappingDataRecord
                                                                                | ConditionalMappingDataRecord, ...]:
+        """
+        Get activated events.
+
+        .. note:: This method mimics
+            :func:`~uds.translator.data_record_definitions.formula.get_activated_events_2020` and
+            :func:`~uds.translator.data_record_definitions.formula.get_activated_events_2013`.
+
+        :param number_of_activated_events: Number of activated events.
+
+        :return: Data Records for activated events.
+        """
         data_records: list[RawDataRecord | MappingDataRecord | ConditionalMappingDataRecord] = []
         for event_number in range(1, number_of_activated_events + 1):
-            event_window = self.__get_event_window_time(event_number)
+            event_window_time = self.__get_event_window_time(event_number)
             service_to_respond = get_service_to_respond(event_number)
             data_records.append(self.__get_event_type_of_active_event(event_number))
             mapping = {
-                0x01: (event_window,
+                0x01: (event_window_time,
                        get_event_type_record_01(event_number),
                        service_to_respond),
             }
-            for event_type in {0x02, 0x03, 0x07}:
-                event_type_record = self.__get_event_type_record(event_type=event_type,
+            for event_type in (0x02, 0x03, 0x07):
+                event_type_record = self.__get_event_type_record(event=event_type,
                                                                  event_number=event_number)
                 if event_type_record is None:
                     continue
-                mapping[event_type] = (event_window,
+                mapping[event_type] = (event_window_time,
                                        event_type_record,
                                        service_to_respond)
 
-            event_type_record_08 = self.__get_event_type_record(event_type=0x08,
+            event_type_record_08 = self.__get_event_type_record(event=0x08,
                                                                 event_number=event_number)
             if event_type_record_08 is not None:
-                mapping[0x08] = (event_window, event_type_record_08)
-            event_type_record_09 = self.__get_event_type_record(event_type=0x09,
+                mapping[0x08] = (event_window_time, event_type_record_08)
+            event_type_record_09 = self.__get_event_type_record(event=0x09,
                                                                 event_number=event_number)
             event_type_record_09_continuation = self.__get_event_type_record_09_continuation(event_number=event_number)
             if event_type_record_09 is not None and event_type_record_09_continuation is not None:
-                mapping[0x09] = (event_window, event_type_record_09, event_type_record_09_continuation)
+                mapping[0x09] = (event_window_time, event_type_record_09, event_type_record_09_continuation)
             data_records.append(ConditionalMappingDataRecord(mapping=mapping, value_mask=0x3F))
         return tuple(data_records)
 
     def __get_event_type_of_active_event(self, event_number: int) -> RawDataRecord:
+        """
+        Get `eventWindowTime` Data Record.
+
+        :param event_number: Order number of the event record.
+
+        :return: Created `eventWindowTime` Data Record.
+        """
         return RawDataRecord(name=f"eventTypeOfActiveEvent#{event_number}",
                              length=8,
                              children=(RESERVED_BIT,
                                        self.__event_type))
 
-    def __get_event_type_record(self, event_type: int, event_number: int) -> None | RawDataRecord:
+    def __get_event_type_record(self, event: int, event_number: int) -> None | RawDataRecord:
+        """
+        Get `eventTypeRecord` Data Record.
+
+        :param event: Value of `event` SubFunction parameter.
+        :param event_number: Order number of the event record.
+
+        :raise ValueError: ResponseOnEvent service is not defined in this Translator.
+
+        :return: Created `eventTypeRecord` Data Record.
+        """
         response_on_event = self.services_mapping.get(RequestSID.ResponseOnEvent, None)
         if response_on_event is None:
-            raise ValueError
-        conditional_response = response_on_event.response_structure[1].mapping.get(event_type, None)
-        if conditional_response is None:
+            raise ValueError("ResponseOnEvent service is not defined in this Translator.")
+        conditional_response = response_on_event.response_structure[1].mapping.get(event, None)
+        if conditional_response is None or len(conditional_response) < 3:
             return None
         event_type_record = deepcopy(conditional_response[2])
         event_type_record.name = f"{event_type_record.name}#{event_number}"
@@ -850,82 +960,12 @@ class ConfigurableTranslator(Translator):
     def __get_event_type_record_09_continuation(self, event_number: int) -> None | ConditionalMappingDataRecord:
         response_on_event = self.services_mapping.get(RequestSID.ResponseOnEvent, None)
         if response_on_event is None:
-            raise ValueError
+            raise ValueError("ResponseOnEvent service is not defined in this Translator.")
         conditional_response = response_on_event.response_structure[1].mapping.get(0x09, None)
         if conditional_response is None:
             return None
         event_type_record_continuation = deepcopy(conditional_response[3])
-        for report_type, data_records in event_type_record_continuation.mapping.items():
+        for data_records in event_type_record_continuation.mapping.values():
             for data_record in data_records:
                 data_record.name = f"{data_record.name}#{event_number}"
         return event_type_record_continuation
-
-    # TODO: remove what is not needed
-
-    # @property
-    # def __did(self) -> MappingDataRecord:
-    #     return MappingDataRecord(name="DID",
-    #                              length=DID_BIT_LENGTH,
-    #                              values_mapping=self.did_mapping)
-    #
-    # @property
-    # def __dids(self) -> tuple[MappingDataRecord | ConditionalFormulaDataRecord, ...]:
-    #     return (*self.__get_did_record(did_count=1, record_number=None, optional=False),
-    #             *self.__get_did_record(did_count=REPEATED_DATA_RECORDS_NUMBER, record_number=None, optional=True)[2:])
-    #
-    # @property
-    # def __multiple_did(self) -> MappingDataRecord:
-    #     return MappingDataRecord(name="DID",
-    #                              length=DID_BIT_LENGTH,
-    #                              values_mapping=self.did_mapping,
-    #                              min_occurrences=1,
-    #                              max_occurrences=None)
-    #
-    # @property
-    # def __dynamically_defined_did(self) -> MappingDataRecord:
-    #     return MappingDataRecord(name="dynamicallyDefinedDataIdentifier",
-    #                              length=DID_BIT_LENGTH,
-    #                              values_mapping=self.did_mapping)
-    #
-    # @property
-    # def __optional_dynamically_defined_did(self) -> MappingDataRecord:
-    #     return MappingDataRecord(name="dynamicallyDefinedDataIdentifier",
-    #                              length=DID_BIT_LENGTH,
-    #                              values_mapping=self.did_mapping,
-    #                              min_occurrences=0,
-    #                              max_occurrences=1)
-    #
-    # @property
-    # def __source_did(self) -> MappingDataRecord:
-    #     return MappingDataRecord(name="sourceDataIdentifier",
-    #                              length=DID_BIT_LENGTH,
-    #                              values_mapping=self.did_mapping)
-    #
-    # @property
-    # def __data_from_did(self) -> RawDataRecord:
-    #     return RawDataRecord(name="Data from DID",
-    #                          length=32,
-    #                          children=(
-    #                              self.__source_did,
-    #                              POSITION_IN_DID,
-    #                              DID_MEMORY_SIZE
-    #                          ),
-    #                          min_occurrences=1,
-    #                          max_occurrences=None)
-    #
-    #
-    #
-    #
-    # @staticmethod
-    # def __adapt_subfunction(service: Service, subfunction_mapping: Mapping[int, str]) -> Service:
-    #     request_subfunction: MappingDataRecord = service.request_structure[0].children[1]
-    #     response_subfunction: MappingDataRecord = service.response_structure[0].children[1]
-    #     if service.request_sid == RequestSID.ResponseOnEvent:
-    #         # `event` DataRecord is updated instead of `eventType`
-    #         request_subfunction.children[1].values_mapping = response_subfunction.children[1].values_mapping = subfunction_mapping
-    #     else:
-    #         request_subfunction.values_mapping = response_subfunction.values_mapping = subfunction_mapping
-    #     return service
-    #
-    #
-    #

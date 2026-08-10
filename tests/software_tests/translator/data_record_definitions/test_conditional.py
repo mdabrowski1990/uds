@@ -34,16 +34,6 @@ class TestFunctions:
         self._patcher_conditional_control_enable_mask_2013.stop()
         self._patcher_conditional_control_enable_mask_2020.stop()
 
-    # get_input_output_control_by_identifier_request_2013
-
-    def test_get_input_output_control_by_identifier_request_2013(self):
-        mock_did = Mock()
-        assert (get_input_output_control_by_identifier_request_2013(mock_did)
-                == (INPUT_OUTPUT_CONTROL_PARAMETER, self.mock_conditional_mapping_data_record.return_value))
-        self.mock_conditional_control_state_2013.get_message_continuation.assert_called_once_with(mock_did)
-        self.mock_conditional_control_enable_mask_2013.get_message_continuation.assert_called_once_with(mock_did)
-
-
     # get_input_output_control_by_identifier_request_2020
 
     def test_get_input_output_control_by_identifier_request_2020(self):
@@ -54,14 +44,14 @@ class TestFunctions:
         self.mock_conditional_control_enable_mask_2020.get_message_continuation.assert_called_once_with(mock_did)
 
 
-    # get_input_output_control_by_identifier_response_2013
+    # get_input_output_control_by_identifier_request_2013
 
-    def test_get_input_output_control_by_identifier_response_2013(self):
+    def test_get_input_output_control_by_identifier_request_2013(self):
         mock_did = Mock()
-        assert (get_input_output_control_by_identifier_response_2013(mock_did)
+        assert (get_input_output_control_by_identifier_request_2013(mock_did)
                 == (INPUT_OUTPUT_CONTROL_PARAMETER, self.mock_conditional_mapping_data_record.return_value))
         self.mock_conditional_control_state_2013.get_message_continuation.assert_called_once_with(mock_did)
-
+        self.mock_conditional_control_enable_mask_2013.get_message_continuation.assert_called_once_with(mock_did)
 
     # get_input_output_control_by_identifier_response_2020
 
@@ -70,3 +60,11 @@ class TestFunctions:
         assert (get_input_output_control_by_identifier_response_2020(mock_did)
                 == (INPUT_OUTPUT_CONTROL_PARAMETER, self.mock_conditional_mapping_data_record.return_value))
         self.mock_conditional_control_state_2020.get_message_continuation.assert_called_once_with(mock_did)
+
+    # get_input_output_control_by_identifier_response_2013
+
+    def test_get_input_output_control_by_identifier_response_2013(self):
+        mock_did = Mock()
+        assert (get_input_output_control_by_identifier_response_2013(mock_did)
+                == (INPUT_OUTPUT_CONTROL_PARAMETER, self.mock_conditional_mapping_data_record.return_value))
+        self.mock_conditional_control_state_2013.get_message_continuation.assert_called_once_with(mock_did)

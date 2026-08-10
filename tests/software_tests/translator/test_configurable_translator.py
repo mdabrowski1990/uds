@@ -1,16 +1,21 @@
 import pytest
+from dill.pointers import children
 from mock import MagicMock, Mock, call, patch
 
+from uds.translator import RawDataRecord
 from uds.translator.configurable_translator import (
     DID_BIT_LENGTH,
     DID_COUNT_RECORDS,
     DTC_AND_STATUS,
     DTC_STORED_DATA_RECORD_NUMBERS_LIST,
     DTCS_AND_STATUSES_LIST,
+    INPUT_OUTPUT_CONTROL_PARAMETER,
     MEMORY_SELECTION,
     NUMBER_OF_ACTIVATED_EVENTS,
     OPTIONAL_DTC_SNAPSHOT_RECORDS_NUMBERS_LIST,
     REPEATED_DATA_RECORDS_NUMBER,
+    RESERVED_BIT,
+    AbstractDataRecord,
     ConfigurableTranslator,
     RequestSID,
     Translator,
@@ -29,15 +34,21 @@ class TestConfigurableTranslator:
         # patching
         self._patcher_deepcopy = patch(f"{SCRIPT_LOCATION}.deepcopy")
         self.mock_deepcopy = self._patcher_deepcopy.start()
-        self._patcher_conditional_formula_data_record = patch(f"{SCRIPT_LOCATION}.ConditionalFormulaDataRecord")
-        self.mock_conditional_formula_data_record = self._patcher_conditional_formula_data_record.start()
+        self._patcher_raw_data_record = patch(f"{SCRIPT_LOCATION}.RawDataRecord")
+        self.mock_raw_data_record = self._patcher_raw_data_record.start()
         self._patcher_mapping_data_record = patch(f"{SCRIPT_LOCATION}.MappingDataRecord")
         self.mock_mapping_data_record = self._patcher_mapping_data_record.start()
+        self._patcher_conditional_formula_data_record = patch(f"{SCRIPT_LOCATION}.ConditionalFormulaDataRecord")
+        self.mock_conditional_formula_data_record = self._patcher_conditional_formula_data_record.start()
+        self._patcher_conditional_mapping_data_record = patch(f"{SCRIPT_LOCATION}.ConditionalMappingDataRecord")
+        self.mock_conditional_mapping_data_record = self._patcher_conditional_mapping_data_record.start()
 
     def teardown_method(self):
         self._patcher_deepcopy.stop()
-        self._patcher_conditional_formula_data_record.stop()
+        self._patcher_raw_data_record.stop()
         self._patcher_mapping_data_record.stop()
+        self._patcher_conditional_formula_data_record.stop()
+        self._patcher_conditional_mapping_data_record.stop()
 
     # __init__
 
@@ -728,3 +739,274 @@ class TestConfigurableTranslator:
                                                               values_mapping=self.mock_translator.did_mapping,
                                                               min_occurrences=0 if optional else 1,
                                                               max_occurrences=1)
+
+    # __get_did_data
+
+    def test_get_did_data(self):
+        assert (ConfigurableTranslator._ConfigurableTranslator__get_did_data(self.mock_translator)
+                == self.mock_conditional_formula_data_record.return_value)
+
+    def test_get_did_data__formula(self):
+        undefined_did = -1
+        some_defined_did = 0x1234
+        incorrect_did = 0x10000
+        self.mock_translator.did_data_mapping = {some_defined_did: [Mock(spec=AbstractDataRecord,
+                                                                         fixed_total_length=True,
+                                                                         min_occurrences=1,
+                                                                         max_occurrences=1,
+                                                                         length=16)],
+                                                 incorrect_did: [Mock(fixed_total_length=False)]}
+        input_kwargs = {}
+        self.mock_conditional_formula_data_record.side_effect = lambda **kwargs: input_kwargs.update(kwargs)
+        ConfigurableTranslator._ConfigurableTranslator__get_did_data(self.mock_translator)
+        with pytest.raises(ValueError):
+            input_kwargs["formula"](undefined_did)
+        with pytest.raises(ValueError):
+            input_kwargs["formula"](incorrect_did)
+        assert input_kwargs["formula"](some_defined_did) == (self.mock_raw_data_record.return_value,)
+
+    # __get_did_data_mask
+
+    @pytest.mark.parametrize("name, optional", [
+        (Mock(), False),
+        ("SomeName", True),
+    ])
+    def test_get_did_data_mask(self, name, optional):
+        assert (ConfigurableTranslator._ConfigurableTranslator__get_did_data_mask(self.mock_translator,
+                                                                                  name=name,
+                                                                                  optional=optional)
+                == self.mock_conditional_formula_data_record.return_value)
+
+    @pytest.mark.parametrize("name, optional", [
+        (Mock(), False),
+        ("SomeName", True),
+    ])
+    def test_get_did_data_mask__formula(self, name, optional):
+        undefined_did = -1
+        some_defined_did = 0x1234
+        incorrect_did = 0x10000
+        self.mock_translator.did_data_mapping = {some_defined_did: [Mock(spec=AbstractDataRecord,
+                                                                         fixed_total_length=True,
+                                                                         min_occurrences=1,
+                                                                         max_occurrences=1,
+                                                                         length=16,
+                                                                         children=[])],
+                                                 incorrect_did: [Mock(fixed_total_length=False)]}
+        input_kwargs = {}
+        self.mock_conditional_formula_data_record.side_effect = lambda **kwargs: input_kwargs.update(kwargs)
+        ConfigurableTranslator._ConfigurableTranslator__get_did_data_mask(self.mock_translator,
+                                                                          name=name,
+                                                                          optional=optional)
+        with pytest.raises(ValueError):
+            input_kwargs["formula"](undefined_did)
+        with pytest.raises(ValueError):
+            input_kwargs["formula"](incorrect_did)
+        assert input_kwargs["formula"](some_defined_did) == (self.mock_raw_data_record.return_value,)
+
+    # __get_did_records_formula
+
+    def test_get_did_records_formula(self):
+        mock_record_number = Mock()
+        mock_did_count = Mock()
+        formula = ConfigurableTranslator._ConfigurableTranslator__get_did_records_formula(self.mock_translator,
+                                                                                          mock_record_number)
+        assert callable(formula)
+        assert formula(mock_did_count) == self.mock_translator._ConfigurableTranslator__get_did_record.return_value
+        self.mock_translator._ConfigurableTranslator__get_did_record.assert_called_once_with(
+            did_count=mock_did_count, record_number=mock_record_number)
+
+    # __get_did_record
+
+    @pytest.mark.parametrize("did_count, record_number", [
+        (1, None),
+        (7, 5),
+    ])
+    def test_get_did_record(self, did_count, record_number):
+        assert (ConfigurableTranslator._ConfigurableTranslator__get_did_record(self.mock_translator,
+                                                                               did_count=did_count,
+                                                                               record_number=record_number)
+                == (self.mock_translator._ConfigurableTranslator__get_did.return_value,
+                    self.mock_translator._ConfigurableTranslator__get_did_data.return_value, ) * did_count)
+
+    # __get_input_output_control_by_identifier_request
+
+    def test_get_input_output_control_by_identifier_request(self):
+        mock_did = Mock()
+        assert (ConfigurableTranslator._ConfigurableTranslator__get_input_output_control_by_identifier_request(
+            self.mock_translator, mock_did) == (INPUT_OUTPUT_CONTROL_PARAMETER,
+                                                self.mock_conditional_mapping_data_record.return_value))
+        self.mock_translator._ConfigurableTranslator__conditional_control_state.get_message_continuation.assert_called_once_with(mock_did)
+        self.mock_translator._ConfigurableTranslator__conditional_optional_control_enable_mask.get_message_continuation.assert_called_once_with(mock_did)
+
+    # __get_input_output_control_by_identifier_response
+
+    def test_get_input_output_control_by_identifier_response(self):
+        mock_did = Mock()
+        assert (ConfigurableTranslator._ConfigurableTranslator__get_input_output_control_by_identifier_response(
+            self.mock_translator, mock_did) == (INPUT_OUTPUT_CONTROL_PARAMETER,
+                                                self.mock_conditional_mapping_data_record.return_value))
+        self.mock_translator._ConfigurableTranslator__conditional_control_state.get_message_continuation.assert_called_once_with(mock_did)
+
+    # __get_event_window_time
+
+    @pytest.mark.parametrize("event_number", [1, 32])
+    def test_get_event_window_time(self, event_number):
+        assert (ConfigurableTranslator._ConfigurableTranslator__get_event_window_time(
+            self.mock_translator, event_number) == self.mock_deepcopy.return_value)
+        assert self.mock_deepcopy.return_value.name.endswith(f"#{event_number}")
+        self.mock_deepcopy.assert_called_once_with(self.mock_translator._ConfigurableTranslator__event_window_time)
+
+    # __get_activated_events
+
+    @patch(f"{SCRIPT_LOCATION}.get_service_to_respond")
+    @patch(f"{SCRIPT_LOCATION}.get_event_type_record_01")
+    @pytest.mark.parametrize("number_of_activated_events", [0, 1, 5])
+    def test_get_activated_events__only_mandatory(self, mock_get_event_type_record_01,
+                                                  mock_get_service_to_respond,
+                                                  number_of_activated_events):
+        self.mock_translator._ConfigurableTranslator__get_event_type_record.return_value = None
+        self.mock_translator._ConfigurableTranslator__get_event_type_record_09_continuation.return_value = None
+        assert (ConfigurableTranslator._ConfigurableTranslator__get_activated_events(self.mock_translator,
+                                                                                     number_of_activated_events) == (
+                    self.mock_translator._ConfigurableTranslator__get_event_type_of_active_event.return_value,
+                    self.mock_conditional_mapping_data_record.return_value
+                ) * number_of_activated_events)
+        calls = [call(i + 1) for i in range(number_of_activated_events)]
+        self.mock_translator._ConfigurableTranslator__get_event_window_time.assert_has_calls(calls, any_order=False)
+        mock_get_event_type_record_01.assert_has_calls(calls, any_order=False)
+        mock_get_service_to_respond.assert_has_calls(calls, any_order=False)
+        assert self.mock_conditional_mapping_data_record.call_count == number_of_activated_events
+        self.mock_conditional_mapping_data_record.assert_has_calls(number_of_activated_events * [
+            call(mapping={
+                0x01: (self.mock_translator._ConfigurableTranslator__get_event_window_time.return_value,
+                       mock_get_event_type_record_01.return_value,
+                       mock_get_service_to_respond.return_value)},
+                value_mask=0x3F)])
+
+    @patch(f"{SCRIPT_LOCATION}.get_service_to_respond")
+    @patch(f"{SCRIPT_LOCATION}.get_event_type_record_01")
+    @pytest.mark.parametrize("number_of_activated_events", [0, 1, 5])
+    def test_get_activated_events__all(self, mock_get_event_type_record_01,
+                                       mock_get_service_to_respond,
+                                       number_of_activated_events):
+        self.mock_translator._ConfigurableTranslator__get_event_type_record.return_value = Mock()
+        self.mock_translator._ConfigurableTranslator__get_event_type_record_09_continuation.return_value = Mock()
+        assert (ConfigurableTranslator._ConfigurableTranslator__get_activated_events(self.mock_translator,
+                                                                                     number_of_activated_events) == (
+                    self.mock_translator._ConfigurableTranslator__get_event_type_of_active_event.return_value,
+                    self.mock_conditional_mapping_data_record.return_value
+                ) * number_of_activated_events)
+        calls = [call(i + 1) for i in range(number_of_activated_events)]
+        self.mock_translator._ConfigurableTranslator__get_event_window_time.assert_has_calls(calls, any_order=False)
+        mock_get_event_type_record_01.assert_has_calls(calls, any_order=False)
+        mock_get_service_to_respond.assert_has_calls(calls, any_order=False)
+        assert self.mock_conditional_mapping_data_record.call_count == number_of_activated_events
+        self.mock_conditional_mapping_data_record.assert_has_calls(number_of_activated_events * [
+            call(mapping={
+                0x01: (self.mock_translator._ConfigurableTranslator__get_event_window_time.return_value,
+                       mock_get_event_type_record_01.return_value,
+                       mock_get_service_to_respond.return_value),
+                0x02: (self.mock_translator._ConfigurableTranslator__get_event_window_time.return_value,
+                       self.mock_translator._ConfigurableTranslator__get_event_type_record.return_value,
+                       mock_get_service_to_respond.return_value),
+                0x03: (self.mock_translator._ConfigurableTranslator__get_event_window_time.return_value,
+                       self.mock_translator._ConfigurableTranslator__get_event_type_record.return_value,
+                       mock_get_service_to_respond.return_value),
+                0x07: (self.mock_translator._ConfigurableTranslator__get_event_window_time.return_value,
+                       self.mock_translator._ConfigurableTranslator__get_event_type_record.return_value,
+                       mock_get_service_to_respond.return_value),
+                0x08: (self.mock_translator._ConfigurableTranslator__get_event_window_time.return_value,
+                       self.mock_translator._ConfigurableTranslator__get_event_type_record.return_value),
+                0x09: (self.mock_translator._ConfigurableTranslator__get_event_window_time.return_value,
+                       self.mock_translator._ConfigurableTranslator__get_event_type_record.return_value,
+                       self.mock_translator._ConfigurableTranslator__get_event_type_record_09_continuation.return_value,),
+            },
+                value_mask=0x3F)])
+
+    # __get_event_type_of_active_event
+
+    @pytest.mark.parametrize("event_number", [1, 32])
+    def test_get_event_type_of_active_event(self, event_number):
+        assert (ConfigurableTranslator._ConfigurableTranslator__get_event_type_of_active_event(
+            self.mock_translator, event_number) == self.mock_raw_data_record.return_value)
+        self.mock_raw_data_record.assert_called_once_with(
+            name=f"eventTypeOfActiveEvent#{event_number}",
+            length=8,
+            children=(RESERVED_BIT,
+                      self.mock_translator._ConfigurableTranslator__event_type))
+
+    # __get_event_type_record
+
+    def test_get_event_type_record__value_error(self):
+        mock_get = Mock(return_value=None)
+        self.mock_translator.services_mapping = MagicMock(get=mock_get)
+        with pytest.raises(ValueError):
+            ConfigurableTranslator._ConfigurableTranslator__get_event_type_record(
+                self.mock_translator, Mock(), Mock())
+        mock_get.assert_called_once_with(RequestSID.ResponseOnEvent, None)
+
+    @pytest.mark.parametrize("event_number", [1, 32])
+    @pytest.mark.parametrize("event", [2, 9])
+    def test_get_event_type_record__none(self, event, event_number):
+        self.mock_translator.services_mapping = {
+            RequestSID.ResponseOnEvent: MagicMock(
+                response_structure=[MagicMock(), MagicMock(mapping={i: 2*[MagicMock()] for i in range(5)})]),
+        }
+        assert ConfigurableTranslator._ConfigurableTranslator__get_event_type_record(
+            self.mock_translator, event_number=event_number, event=event) is None
+        self.mock_deepcopy.assert_not_called()
+
+    @pytest.mark.parametrize("event_number", [1, 32])
+    @pytest.mark.parametrize("event", [2, 9])
+    def test_get_event_type_record__valid(self, event, event_number):
+        self.mock_translator.services_mapping = {
+            RequestSID.ResponseOnEvent: MagicMock(
+                response_structure=[MagicMock(), MagicMock(mapping={i: 10*[MagicMock()] for i in range(10)})]),
+        }
+        assert ConfigurableTranslator._ConfigurableTranslator__get_event_type_record(
+            self.mock_translator, event_number=event_number, event=event) == self.mock_deepcopy.return_value
+        self.mock_deepcopy.return_value.name.endswith(f"#{event_number}")
+        self.mock_deepcopy.assert_called_once_with(
+            self.mock_translator.services_mapping[RequestSID.ResponseOnEvent].response_structure[1].mapping[event][2])
+
+    # __get_event_type_record_09_continuation
+
+    def test_get_event_type_record_09_continuation__value_error(self):
+        mock_get = Mock(return_value=None)
+        self.mock_translator.services_mapping = MagicMock(get=mock_get)
+        with pytest.raises(ValueError):
+            ConfigurableTranslator._ConfigurableTranslator__get_event_type_record_09_continuation(
+                self.mock_translator, Mock())
+        mock_get.assert_called_once_with(RequestSID.ResponseOnEvent, None)
+
+    @pytest.mark.parametrize("event_number", [1, 32])
+    def test_get_event_type_record_09_continuation__none(self, event_number):
+        self.mock_translator.services_mapping = {
+            RequestSID.ResponseOnEvent: MagicMock(
+                response_structure=[MagicMock(), MagicMock(mapping={})]),
+        }
+        assert ConfigurableTranslator._ConfigurableTranslator__get_event_type_record_09_continuation(
+            self.mock_translator, event_number=event_number) is None
+        self.mock_deepcopy.assert_not_called()
+
+    @pytest.mark.parametrize("event_number", [1, 32])
+    def test_get_event_type_record_09_continuation__valid(self, event_number):
+        self.mock_translator.services_mapping = {
+            RequestSID.ResponseOnEvent: MagicMock(
+                response_structure=[MagicMock(), MagicMock(mapping={
+                    0x09: [MagicMock(), MagicMock(), MagicMock(), MagicMock()]
+                })]),
+        }
+        self.mock_deepcopy.return_value = Mock(mapping={
+            0x04: [Mock(), Mock()],
+            0x09: [Mock()],
+            0x12: [Mock(), Mock(), Mock()],
+        })
+        assert ConfigurableTranslator._ConfigurableTranslator__get_event_type_record_09_continuation(
+            self.mock_translator, event_number=event_number) == self.mock_deepcopy.return_value
+        self.mock_deepcopy.return_value.name.endswith(f"#{event_number}")
+        self.mock_deepcopy.assert_called_once_with(
+            self.mock_translator.services_mapping[RequestSID.ResponseOnEvent].response_structure[1].mapping[0x09][3])
+        for data_records in self.mock_deepcopy.return_value.mapping.values():
+            for data_record in data_records:
+                assert data_record.name.endswith(f"#{event_number}")
