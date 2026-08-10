@@ -2,16 +2,18 @@ import pytest
 from mock import MagicMock, Mock, call, patch
 
 from uds.translator.configurable_translator import (
+    DID_BIT_LENGTH,
     DID_COUNT_RECORDS,
     DTC_AND_STATUS,
     DTC_STORED_DATA_RECORD_NUMBERS_LIST,
     DTCS_AND_STATUSES_LIST,
     MEMORY_SELECTION,
+    NUMBER_OF_ACTIVATED_EVENTS,
     OPTIONAL_DTC_SNAPSHOT_RECORDS_NUMBERS_LIST,
     REPEATED_DATA_RECORDS_NUMBER,
     ConfigurableTranslator,
     RequestSID,
-    Translator,NUMBER_OF_ACTIVATED_EVENTS,
+    Translator,
 )
 
 SCRIPT_LOCATION = "uds.translator.configurable_translator"
@@ -29,10 +31,13 @@ class TestConfigurableTranslator:
         self.mock_deepcopy = self._patcher_deepcopy.start()
         self._patcher_conditional_formula_data_record = patch(f"{SCRIPT_LOCATION}.ConditionalFormulaDataRecord")
         self.mock_conditional_formula_data_record = self._patcher_conditional_formula_data_record.start()
+        self._patcher_mapping_data_record = patch(f"{SCRIPT_LOCATION}.MappingDataRecord")
+        self.mock_mapping_data_record = self._patcher_mapping_data_record.start()
 
     def teardown_method(self):
         self._patcher_deepcopy.stop()
         self._patcher_conditional_formula_data_record.stop()
+        self._patcher_mapping_data_record.stop()
 
     # __init__
 
@@ -703,3 +708,23 @@ class TestConfigurableTranslator:
                 == self.mock_conditional_formula_data_record.return_value)
         self.mock_conditional_formula_data_record.assert_called_once_with(
             formula=self.mock_translator._ConfigurableTranslator__get_activated_events)
+
+    # __get_did
+
+    def test_get_did__value_error(self):
+        self.mock_translator.did_mapping = None
+        with pytest.raises(ValueError):
+            ConfigurableTranslator._ConfigurableTranslator__get_did(self.mock_translator, Mock(), Mock())
+
+    @pytest.mark.parametrize("name, optional", [
+        ("SomeName", False),
+        ("DID", True),
+    ])
+    def test_get_did__valid(self, name, optional):
+        assert ConfigurableTranslator._ConfigurableTranslator__get_did(
+            self.mock_translator, name=name,  optional=optional) == self.mock_mapping_data_record.return_value
+        self.mock_mapping_data_record.assert_called_once_with(name=name,
+                                                              length=DID_BIT_LENGTH,
+                                                              values_mapping=self.mock_translator.did_mapping,
+                                                              min_occurrences=0 if optional else 1,
+                                                              max_occurrences=1)

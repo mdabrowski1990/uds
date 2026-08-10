@@ -674,8 +674,22 @@ class ConfigurableTranslator(Translator):
         return ConditionalFormulaDataRecord(formula=self.__get_activated_events)
 
     def __get_did(self, name: str, optional: bool = False) -> MappingDataRecord:
+        """
+        Get `DID` Data Record.
+
+        .. note:: This method mimics
+            :func:`~uds.translator.data_record_definitions.formula.get_did_2020` and
+            :func:`~uds.translator.data_record_definitions.formula.get_did_2013`.
+
+        :param name: Name for the DID Data Record.
+        :param optional: False if the Data Record presence is mandatory, True otherwise.
+
+        :raise ValueError: ReadDataByIdentifier service is not defined in this Translator.
+
+        :return: Created DID Data Record.
+        """
         if self.did_mapping is None:
-            raise ValueError
+            raise ValueError("ReadDataByIdentifier service is not defined in this Translator.")
         return MappingDataRecord(name=name,
                                  length=DID_BIT_LENGTH,
                                  values_mapping=self.did_mapping,
