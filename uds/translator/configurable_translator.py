@@ -114,6 +114,7 @@ class ConfigurableTranslator(Translator):
         :param did_mapping: Value to name mapping for :ref:`DIDs <knowledge-base-did>`.
         :param did_data_mapping: Value to data structure mapping for :ref:`DIDs <knowledge-base-did>`.
         """
+        self.__did_data_mapping = None
         # create copy of base Translator
         super().__init__(services=deepcopy(base.services))
         # adapt SubFunctions
@@ -149,7 +150,8 @@ class ConfigurableTranslator(Translator):
         # adapt DIDs
         if did_mapping is not None:
             self.did_mapping = did_mapping
-        self.did_data_mapping = did_data_mapping
+        if did_data_mapping is not None:
+            self.did_data_mapping = did_data_mapping
 
     @property
     def diagnostic_session_type_mapping(self) -> None | Mapping[int, str]:
@@ -502,7 +504,11 @@ class ConfigurableTranslator(Translator):
         # ReadDTCInformation
         read_dtc_information = self.services_mapping.get(RequestSID.ReadDTCInformation, None)
         if read_dtc_information is not None:
-            read_dtc_information.response_structure[1].mapping = self.__conditional_read_dtc_information_response
+            read_dtc_information.response_structure[1].mapping[0x04] = (DTC_AND_STATUS, *self.__dtc_snapshot_records)
+            read_dtc_information.response_structure[1].mapping[0x05] = self.__dtc_stored_data_records
+            read_dtc_information.response_structure[1].mapping[0x18] = (MEMORY_SELECTION,
+                                                                        DTC_AND_STATUS,
+                                                                        *self.__dtc_snapshot_records)
         # ResponseOnEvent
         response_on_event = self.services_mapping.get(RequestSID.ResponseOnEvent, None)
         if response_on_event is not None:
@@ -526,34 +532,33 @@ class ConfigurableTranslator(Translator):
 
         :param value: Mapping value to set.
         """
-        # TODO: update
-        # self.services_mapping[RequestSID.ReadDTCInformation].response_structure[1].mapping \
-        #     = self.__conditional_read_dtc_information_response
-        # self.services_mapping[RequestSID.DynamicallyDefineDataIdentifier].request_structure[1].mapping \
-        #     = self.__conditional_dynamically_define_data_identifier_request
-        # self.services_mapping[RequestSID.DynamicallyDefineDataIdentifier].response_structure[1].mapping \
-        #     = self.__conditional_dynamically_define_data_identifier_response
-        # self.services_mapping[RequestSID.ResponseOnEvent].request_structure[1].mapping \
-        #     = self.__conditional_response_on_event_request
-        # self.services_mapping[RequestSID.ResponseOnEvent].response_structure[1].mapping \
-        #     = self.__conditional_response_on_event_response
-        # self.services_mapping[RequestSID.ReadDataByIdentifier].request_structure[0].values_mapping = self.did_mapping
-        # self.services_mapping[RequestSID.ReadDataByIdentifier].response_structure = self.__dids
-        # self.services_mapping[RequestSID.WriteDataByIdentifier].request_structure = (self.__did, self.__get_did_data())
-        # self.services_mapping[RequestSID.WriteDataByIdentifier].response_structure[0].values_mapping = self.did_mapping
-        # self.services_mapping[RequestSID.InputOutputControlByIdentifier].request_structure[0].values_mapping \
-        #     = self.did_mapping
-        # self.services_mapping[RequestSID.InputOutputControlByIdentifier].request_structure[1].formula \
-        #     = self.__get_input_output_control_by_identifier_request
-        # self.services_mapping[RequestSID.InputOutputControlByIdentifier].response_structure[0].values_mapping \
-        #     = self.did_mapping
-        # self.services_mapping[RequestSID.InputOutputControlByIdentifier].request_structure[1].formula \
-        #     = self.__get_input_output_control_by_identifier_response
-        # self.services_mapping[RequestSID.ReadScalingDataByIdentifier].request_structure[0].values_mapping \
-        #     = self.did_mapping
-        # self.services_mapping[RequestSID.ReadScalingDataByIdentifier].response_structure[0].values_mapping \
-        #     = self.did_mapping
         self.__did_data_mapping = value
+        # ReadDataByIdentifier
+        read_data_by_identifier = self.services_mapping[RequestSID.ReadDataByIdentifier]
+        read_data_by_identifier.response_structure = (
+            *self.__get_did_record(did_count=1, record_number=None, optional=False),
+            *self.__get_did_record(did_count=REPEATED_DATA_RECORDS_NUMBER, record_number=None, optional=True)[2:]
+        )
+        # WriteDataByIdentifier
+        write_data_by_identifier = self.services_mapping.get(RequestSID.WriteDataByIdentifier, None)
+        if write_data_by_identifier is not None:
+            write_data_by_identifier.request_structure = (write_data_by_identifier.request_structure[0],
+                                                          self.__get_did_data())
+        # InputOutputControlByIdentifier
+        input_output_control_by_identifier = self.services_mapping.get(RequestSID.InputOutputControlByIdentifier, None)
+        if input_output_control_by_identifier is not None:
+            input_output_control_by_identifier.request_structure[1].formula \
+                = self.__get_input_output_control_by_identifier_request
+            input_output_control_by_identifier.response_structure[1].formula \
+                = self.__get_input_output_control_by_identifier_response
+        # ReadDTCInformation
+        read_dtc_information = self.services_mapping.get(RequestSID.ReadDTCInformation, None)
+        if read_dtc_information is not None:
+            read_dtc_information.response_structure[1].mapping[0x04] = (DTC_AND_STATUS, *self.__dtc_snapshot_records)
+            read_dtc_information.response_structure[1].mapping[0x05] = self.__dtc_stored_data_records
+            read_dtc_information.response_structure[1].mapping[0x18] = (MEMORY_SELECTION,
+                                                                        DTC_AND_STATUS,
+                                                                        *self.__dtc_snapshot_records)
 
     @property
     def __did_records(self) -> tuple[ConditionalFormulaDataRecord, ...]:
@@ -592,20 +597,16 @@ class ConfigurableTranslator(Translator):
         return response_on_event.request_structure[0].children[1]
 
     @property
-    def __conditional_activated_events(self) -> ConditionalFormulaDataRecord:
-        return ConditionalFormulaDataRecord(formula=self.__get_activated_events)
+    def __conditional_control_state(self) -> ConditionalFormulaDataRecord:
+        return self.__get_did_data(name="controlState")
 
     @property
-    def __conditional_read_dtc_information_response(self) -> Mapping[int, MessageStructureAlias]:
-        read_dtc_information = self.services_mapping.get(RequestSID.ReadDTCInformation, None)
-        if read_dtc_information is None:
-            raise ValueError
-        conditional_response_mapping = dict(read_dtc_information.response_structure[1].mapping)
-        if self.did_mapping is not None:
-            conditional_response_mapping[0x04] = (DTC_AND_STATUS, *self.__dtc_snapshot_records)
-            conditional_response_mapping[0x05] = self.__dtc_stored_data_records
-            conditional_response_mapping[0x18] = (MEMORY_SELECTION, DTC_AND_STATUS, *self.__dtc_snapshot_records)
-        return conditional_response_mapping
+    def __conditional_optional_control_enable_mask(self) -> ConditionalFormulaDataRecord:
+        return self.__get_did_data_mask(name="controlEnableMask", optional=True)
+
+    @property
+    def __conditional_activated_events(self) -> ConditionalFormulaDataRecord:
+        return ConditionalFormulaDataRecord(formula=self.__get_activated_events)
 
     @property
     def __conditional_response_on_event_response(self) -> Mapping[int, MessageStructureAlias]:
@@ -652,6 +653,42 @@ class ConfigurableTranslator(Translator):
         return ConditionalFormulaDataRecord(formula=_get_did_data,
                                             default_message_continuation=[default_did_data])
 
+    def __get_did_data_mask(self, name: str, optional: bool) -> ConditionalFormulaDataRecord:
+        default_did_data_mask = RawDataRecord(name=name,
+                                              length=8,
+                                              min_occurrences=0 if optional else 1,
+                                              max_occurrences=None)
+
+        def _get_mask_data_record(data_record: AbstractDataRecord) -> RawDataRecord:
+            return MappingDataRecord(name=f"{data_record.name} (mask)",
+                                     length=data_record.length,
+                                     values_mapping={0: "no",
+                                                     data_record.max_raw_value: "yes"},
+                                     children=[_get_mask_data_record(child) for child in data_record.children],
+                                     min_occurrences=data_record.min_occurrences,
+                                     max_occurrences=data_record.max_occurrences)
+
+        def _get_did_data_mask(did: int) -> tuple[RawDataRecord]:
+            data_records = self.did_data_mapping.get(did, None)
+            if data_records is None:
+                raise ValueError(f"No data structure defined for DID 0x{did:04X}.")
+            total_length = 0
+            mask_data_records = []
+            for dr in data_records:
+                if not isinstance(dr, AbstractDataRecord) or not dr.fixed_total_length:
+                    raise ValueError(f"Incorrectly defined data structure for DID 0x{did:04X}. "
+                                     f"Only fixed length data records are supported right now.")
+                total_length += dr.min_occurrences * dr.length
+                mask_data_records.append(_get_mask_data_record(dr))
+            return (RawDataRecord(name=name,
+                                  children=mask_data_records,
+                                  length=total_length,
+                                  min_occurrences=0 if optional else 1,
+                                  max_occurrences=1),)
+
+        return ConditionalFormulaDataRecord(formula=_get_did_data_mask,
+                                            default_message_continuation=[default_did_data_mask])
+
     def __get_did_records_formula(self, record_number: None | int) -> Callable[[int], MessageStructureAlias]:
         return lambda did_count: self.__get_did_record(did_count=did_count, record_number=record_number)
 
@@ -665,6 +702,26 @@ class ConfigurableTranslator(Translator):
             data_records.append(self.__get_did(name=name, optional=optional))
             data_records.append(self.__get_did_data(name=f"{name} data"))
         return tuple(data_records)
+
+    def __get_input_output_control_by_identifier_request(self, did: int) -> MessageStructureAlias:
+        return (INPUT_OUTPUT_CONTROL_PARAMETER,
+                ConditionalMappingDataRecord(mapping={
+                    0x00: (),
+                    0x01: (),
+                    0x02: (),
+                    0x03: (*self.__conditional_control_state.get_message_continuation(did),
+                           *self.__conditional_optional_control_enable_mask.get_message_continuation(did)),
+                }))
+
+    def __get_input_output_control_by_identifier_response(self, did: int) -> MessageStructureAlias:
+        control_state_data_records = self.__conditional_control_state.get_message_continuation(did)
+        return (INPUT_OUTPUT_CONTROL_PARAMETER,
+                ConditionalMappingDataRecord(mapping={
+                    0x00: control_state_data_records,
+                    0x01: control_state_data_records,
+                    0x02: control_state_data_records,
+                    0x03: control_state_data_records,
+                }))
 
     def __get_event_window(self, event_number: int) -> MappingDataRecord:
         event_window = deepcopy(self.__event_window)
@@ -789,13 +846,6 @@ class ConfigurableTranslator(Translator):
     #                          max_occurrences=None)
     #
     #
-    # @property
-    # def __conditional_control_state(self) -> ConditionalFormulaDataRecord:
-    #     return self.__get_did_data(name="controlState")
-    #
-    # @property
-    # def __conditional_optional_control_enable_mask(self) -> ConditionalFormulaDataRecord:
-    #     return self.__get_did_data_mask(name="controlEnableMask", optional=True)
     #
     #
     # @staticmethod
@@ -810,60 +860,4 @@ class ConfigurableTranslator(Translator):
     #     return service
     #
     #
-    #
-    # def __get_did_data_mask(self, name: str, optional: bool) -> ConditionalFormulaDataRecord:
-    #     default_did_data_mask = RawDataRecord(name=name,
-    #                                           length=8,
-    #                                           min_occurrences=0 if optional else 1,
-    #                                           max_occurrences=None)
-    #
-    #     def _get_mask_data_record(data_record: AbstractDataRecord) -> RawDataRecord:
-    #         return MappingDataRecord(name=f"{data_record.name} (mask)",
-    #                                  length=data_record.length,
-    #                                  values_mapping={0: "no",
-    #                                                  data_record.max_raw_value: "yes"},
-    #                                  children=[_get_mask_data_record(child) for child in data_record.children],
-    #                                  min_occurrences=data_record.min_occurrences,
-    #                                  max_occurrences=data_record.max_occurrences)
-    #
-    #     def _get_did_data_mask(did: int) -> tuple[RawDataRecord]:
-    #         data_records = self.did_data_mapping.get(did, None)
-    #         if data_records is None:
-    #             raise ValueError(f"No data structure defined for DID 0x{did:04X}.")
-    #         total_length = 0
-    #         mask_data_records = []
-    #         for dr in data_records:
-    #             if not isinstance(dr, AbstractDataRecord) or not dr.fixed_total_length:
-    #                 raise ValueError(f"Incorrectly defined data structure for DID 0x{did:04X}. "
-    #                                  f"Only fixed length data records are supported right now.")
-    #             total_length += dr.min_occurrences * dr.length
-    #             mask_data_records.append(_get_mask_data_record(dr))
-    #         return (RawDataRecord(name=name,
-    #                               children=mask_data_records,
-    #                               length=total_length,
-    #                               min_occurrences=0 if optional else 1,
-    #                               max_occurrences=1),)
-    #
-    #     return ConditionalFormulaDataRecord(formula=_get_did_data_mask,
-    #                                         default_message_continuation=[default_did_data_mask])
-    #
-    # def __get_input_output_control_by_identifier_request(self, did: int) -> MessageStructureAlias:
-    #     return (INPUT_OUTPUT_CONTROL_PARAMETER,
-    #             ConditionalMappingDataRecord(mapping={
-    #                 0x00: (),
-    #                 0x01: (),
-    #                 0x02: (),
-    #                 0x03: (*self.__conditional_control_state.get_message_continuation(did),
-    #                        *self.__conditional_optional_control_enable_mask.get_message_continuation(did)),
-    #             }))
-    #
-    # def __get_input_output_control_by_identifier_response(self, did: int) -> MessageStructureAlias:
-    #     control_state_data_records = self.__conditional_control_state.get_message_continuation(did)
-    #     return (INPUT_OUTPUT_CONTROL_PARAMETER,
-    #             ConditionalMappingDataRecord(mapping={
-    #                 0x00: control_state_data_records,
-    #                 0x01: control_state_data_records,
-    #                 0x02: control_state_data_records,
-    #                 0x03: control_state_data_records,
-    #             }))
     #

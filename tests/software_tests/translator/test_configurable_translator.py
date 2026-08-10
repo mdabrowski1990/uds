@@ -1,7 +1,7 @@
 import pytest
 from mock import call, Mock, MagicMock, patch
 
-from uds.translator.configurable_translator import ConfigurableTranslator, Translator, RequestSID
+from uds.translator.configurable_translator import ConfigurableTranslator, Translator, RequestSID, REPEATED_DATA_RECORDS_NUMBER, DTC_AND_STATUS, MEMORY_SELECTION
 
 SCRIPT_LOCATION = "uds.translator.configurable_translator"
 
@@ -30,6 +30,7 @@ class TestConfigurableTranslator:
     def test_init__mandatory_args(self, mock_translator_init, services):
         mock_base = Mock(spec=Translator, services=services)
         assert ConfigurableTranslator.__init__(self.mock_translator, mock_base) is None
+        assert self.mock_translator._ConfigurableTranslator__did_data_mapping is None
         self.mock_deepcopy.assert_called_once_with(mock_base.services)
         mock_translator_init.assert_called_once_with(services=self.mock_deepcopy.return_value)
 
@@ -88,7 +89,7 @@ class TestConfigurableTranslator:
                                                rid_mapping=rid_mapping,
                                                did_mapping=did_mapping,
                                                did_data_mapping=did_data_mapping) is None
-
+        assert self.mock_translator._ConfigurableTranslator__did_data_mapping is None
         assert self.mock_translator.rid_mapping == rid_mapping
         assert self.mock_translator.did_mapping == did_mapping
         assert self.mock_translator.did_data_mapping == did_data_mapping
@@ -440,8 +441,29 @@ class TestConfigurableTranslator:
         assert ConfigurableTranslator.did_mapping.fget(self.mock_translator) is None
         mock_get.assert_called_once_with(RequestSID.ReadDataByIdentifier, None)
 
-    def test_did_mapping__set(self):
-        self.mock_translator.services_mapping[RequestSID.ReadDataByIdentifier].response_structure = 10 * [Mock()]
+    def test_did_mapping__set__rdbi_only(self):
+        self.mock_translator.services_mapping = {
+            RequestSID.ReadDataByIdentifier: MagicMock(response_structure = 10 * [Mock()]),
+        }
+        mock_value = {Mock(): Mock()}
+        assert ConfigurableTranslator.did_mapping.fset(self.mock_translator, mock_value) is None
+        assert (self.mock_translator.services_mapping[RequestSID.ReadDataByIdentifier].request_structure[0].values_mapping
+                == mock_value)
+        assert all(did.values_mapping == mock_value
+                   for did in self.mock_translator.services_mapping[RequestSID.ReadDataByIdentifier].response_structure[::2])
+
+    def test_did_mapping__set__all(self):
+        self.mock_translator.services_mapping = {
+            RequestSID.ReadDataByIdentifier: MagicMock(response_structure=100 * [Mock()]),
+            RequestSID.WriteDataByIdentifier: MagicMock(),
+            RequestSID.ReadScalingDataByIdentifier: MagicMock(),
+            RequestSID.DynamicallyDefineDataIdentifier: MagicMock(),
+            RequestSID.InputOutputControlByIdentifier: MagicMock(),
+            RequestSID.ReadDTCInformation: MagicMock(response_structure=[Mock(), Mock(mapping={})]),
+            RequestSID.ResponseOnEvent: MagicMock(),
+        }
+        self.mock_translator._ConfigurableTranslator__conditional_read_dtc_information_response = Mock()
+        self.mock_translator._ConfigurableTranslator__conditional_response_on_event_response = Mock()
         mock_value = {Mock(): Mock()}
         assert ConfigurableTranslator.did_mapping.fset(self.mock_translator, mock_value) is None
         # ReadDataByIdentifier
@@ -460,21 +482,37 @@ class TestConfigurableTranslator:
         assert (self.mock_translator.services_mapping[RequestSID.ReadScalingDataByIdentifier].response_structure[0].values_mapping
                 == mock_value)
         # DynamicallyDefineDataIdentifier
-        assert (self.mock_translator.services_mapping[RequestSID.DynamicallyDefineDataIdentifier].request_structure[1].mapping
-                == self.mock_translator._ConfigurableTranslator__conditional_dynamically_define_data_identifier_request)
-        assert (self.mock_translator.services_mapping[RequestSID.DynamicallyDefineDataIdentifier].response_structure[1].mapping
-                == self.mock_translator._ConfigurableTranslator__conditional_dynamically_define_data_identifier_response)
+        assert (self.mock_translator.services_mapping[RequestSID.DynamicallyDefineDataIdentifier].request_structure[1].mapping[0x01][0].values_mapping
+                == mock_value)
+        assert (self.mock_translator.services_mapping[RequestSID.DynamicallyDefineDataIdentifier].request_structure[1].mapping[0x01][1].children[0].values_mapping
+                == mock_value)
+        assert (self.mock_translator.services_mapping[RequestSID.DynamicallyDefineDataIdentifier].request_structure[1].mapping[0x02][0].values_mapping
+                == mock_value)
+        assert (self.mock_translator.services_mapping[RequestSID.DynamicallyDefineDataIdentifier].request_structure[1].mapping[0x03][0].values_mapping
+                == mock_value)
+        assert (self.mock_translator.services_mapping[RequestSID.DynamicallyDefineDataIdentifier].response_structure[1].mapping[0x01][0].values_mapping
+                == mock_value)
+        assert (self.mock_translator.services_mapping[RequestSID.DynamicallyDefineDataIdentifier].response_structure[1].mapping[0x02][0].values_mapping
+                == mock_value)
+        assert (self.mock_translator.services_mapping[RequestSID.DynamicallyDefineDataIdentifier].response_structure[1].mapping[0x03][0].values_mapping
+                == mock_value)
         # InputOutputControlByIdentifier
         assert (self.mock_translator.services_mapping[RequestSID.InputOutputControlByIdentifier].request_structure[0].values_mapping
                 == mock_value)
         assert (self.mock_translator.services_mapping[RequestSID.InputOutputControlByIdentifier].response_structure[0].values_mapping
                 == mock_value)
         # ReadDTCInformation
-        assert (self.mock_translator.services_mapping[RequestSID.ReadDTCInformation].response_structure[1].mapping
-                == self.mock_translator._ConfigurableTranslator__conditional_read_dtc_information_response)
+        assert (self.mock_translator.services_mapping[RequestSID.ReadDTCInformation].response_structure[1].mapping[0x04]
+                == (DTC_AND_STATUS, *self.mock_translator._ConfigurableTranslator__dtc_snapshot_records))
+        assert (self.mock_translator.services_mapping[RequestSID.ReadDTCInformation].response_structure[1].mapping[0x05]
+                == self.mock_translator._ConfigurableTranslator__dtc_stored_data_records)
+        assert (self.mock_translator.services_mapping[RequestSID.ReadDTCInformation].response_structure[1].mapping[0x18]
+                == (MEMORY_SELECTION, DTC_AND_STATUS, *self.mock_translator._ConfigurableTranslator__dtc_snapshot_records))
         # ResponseOnEvent
-        assert (self.mock_translator.services_mapping[RequestSID.ResponseOnEvent].request_structure[1].mapping
-                == self.mock_translator._ConfigurableTranslator__conditional_response_on_event_request)
+        assert (self.mock_translator.services_mapping[RequestSID.ResponseOnEvent].request_structure[1].mapping[0x03][1].children[0].values_mapping
+                == mock_value)
+        assert (self.mock_translator.services_mapping[RequestSID.ResponseOnEvent].request_structure[1].mapping[0x07][1].children[0].values_mapping
+                == mock_value)
         assert (self.mock_translator.services_mapping[RequestSID.ResponseOnEvent].response_structure[1].mapping
                 == self.mock_translator._ConfigurableTranslator__conditional_response_on_event_response)
 
@@ -485,9 +523,60 @@ class TestConfigurableTranslator:
         assert (ConfigurableTranslator.did_data_mapping.fget(self.mock_translator)
                 == self.mock_translator._ConfigurableTranslator__did_data_mapping)
 
-    def test_did_data_mapping__set(self):
-        mock_value = Mock()
+    def test_did_data_mapping__set__rdbi_only(self):
+        self.mock_translator.services_mapping = {
+            RequestSID.ReadDataByIdentifier: MagicMock(response_structure = 10 * [Mock()]),
+        }
+        mock_rdbi_response_structure = 52 * (Mock(),)
+        self.mock_translator._ConfigurableTranslator__get_did_record.side_effect = [
+            mock_rdbi_response_structure[:2],
+            mock_rdbi_response_structure
+        ]
+        mock_value = {Mock(): Mock()}
         assert ConfigurableTranslator.did_data_mapping.fset(self.mock_translator, mock_value) is None
         assert self.mock_translator._ConfigurableTranslator__did_data_mapping == mock_value
-        # TODO: more asserts
-        
+        assert (self.mock_translator.services_mapping[RequestSID.ReadDataByIdentifier].response_structure
+                == mock_rdbi_response_structure)
+        self.mock_translator._ConfigurableTranslator__get_did_record.assert_has_calls(
+            [call(did_count=1, record_number=None, optional=False),
+             call(did_count=REPEATED_DATA_RECORDS_NUMBER, record_number=None, optional=True)])
+
+    def test_did_data_mapping__set__all(self):
+        self.mock_translator.services_mapping = {
+            RequestSID.ReadDataByIdentifier: MagicMock(),
+            RequestSID.WriteDataByIdentifier: MagicMock(),
+            RequestSID.InputOutputControlByIdentifier: MagicMock(),
+            RequestSID.ReadDTCInformation: MagicMock(response_structure=[Mock(), Mock(mapping={})]),
+        }
+        mock_rdbi_response_structure = 52 * (Mock(),)
+        self.mock_translator._ConfigurableTranslator__get_did_record.side_effect = [
+            mock_rdbi_response_structure[:2],
+            mock_rdbi_response_structure
+        ]
+        mock_value = {Mock(): Mock()}
+        assert ConfigurableTranslator.did_data_mapping.fset(self.mock_translator, mock_value) is None
+        assert self.mock_translator._ConfigurableTranslator__did_data_mapping == mock_value
+        # ReadDataByIdentifier
+        assert (self.mock_translator.services_mapping[RequestSID.ReadDataByIdentifier].response_structure
+                == mock_rdbi_response_structure)
+        self.mock_translator._ConfigurableTranslator__get_did_record.assert_has_calls(
+            [call(did_count=1, record_number=None, optional=False),
+             call(did_count=REPEATED_DATA_RECORDS_NUMBER, record_number=None, optional=True)])
+        # WriteDataByIdentifier
+        assert self.mock_translator.services_mapping[RequestSID.WriteDataByIdentifier].request_structure == (
+            self.mock_translator.services_mapping[RequestSID.WriteDataByIdentifier].request_structure[0],
+            self.mock_translator._ConfigurableTranslator__get_did_data.return_value
+        )
+        self.mock_translator._ConfigurableTranslator__get_did_data.assert_called_once_with()
+        # InputOutputControlByIdentifier
+        assert (self.mock_translator.services_mapping[RequestSID.InputOutputControlByIdentifier].request_structure[1].formula
+                == self.mock_translator._ConfigurableTranslator__get_input_output_control_by_identifier_request)
+        assert (self.mock_translator.services_mapping[RequestSID.InputOutputControlByIdentifier].response_structure[1].formula
+                == self.mock_translator._ConfigurableTranslator__get_input_output_control_by_identifier_response)
+        # ReadDTCInformation
+        assert (self.mock_translator.services_mapping[RequestSID.ReadDTCInformation].response_structure[1].mapping[0x04]
+                == (DTC_AND_STATUS, *self.mock_translator._ConfigurableTranslator__dtc_snapshot_records))
+        assert (self.mock_translator.services_mapping[RequestSID.ReadDTCInformation].response_structure[1].mapping[0x05]
+                == self.mock_translator._ConfigurableTranslator__dtc_stored_data_records)
+        assert (self.mock_translator.services_mapping[RequestSID.ReadDTCInformation].response_structure[1].mapping[0x18]
+                == (MEMORY_SELECTION, DTC_AND_STATUS, *self.mock_translator._ConfigurableTranslator__dtc_snapshot_records))
