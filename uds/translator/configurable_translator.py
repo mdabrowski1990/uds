@@ -516,7 +516,10 @@ class ConfigurableTranslator(Translator):
         if response_on_event is not None:
             response_on_event.request_structure[1].mapping[0x03][1].children[0].values_mapping = value
             response_on_event.request_structure[1].mapping[0x07][1].children[0].values_mapping = value
-            response_on_event.response_structure[1].mapping = self.__conditional_response_on_event_response
+            response_on_event.response_structure[1].mapping[0x03][2].children[0].values_mapping = value
+            response_on_event.response_structure[1].mapping[0x04] = (NUMBER_OF_ACTIVATED_EVENTS,
+                                                                     self.__conditional_activated_events)
+            response_on_event.response_structure[1].mapping[0x07][2].children[0].values_mapping = value
 
     @property
     def did_data_mapping(self) -> None | Mapping[int, MessageStructureAlias]:
@@ -624,7 +627,7 @@ class ConfigurableTranslator(Translator):
     @property
     def __event_type(self) -> RawDataRecord:
         """
-        Get Definition of `eventType` Data Record that is part of ResponseOnEvent SubFunction.
+        Get definition of `eventType` Data Record that is part of ResponseOnEvent SubFunction.
 
         .. note:: This attribute mimics
             :obj:`~uds.translator.data_record_definitions.subfunctions.EVENT_TYPE_2020` and
@@ -639,26 +642,36 @@ class ConfigurableTranslator(Translator):
 
     @property
     def __conditional_control_state(self) -> ConditionalFormulaDataRecord:
+        """
+        Get definition of conditional `controlState` Data Record.
+
+        .. note:: This attribute mimics
+            :obj:`~uds.translator.data_record_definitions.conditional.CONDITIONAL_CONTROL_STATE_2020` and
+            :obj:`~uds.translator.data_record_definitions.conditional.CONDITIONAL_CONTROL_STATE_2013`.
+        """
         return self.__get_did_data(name="controlState")
 
     @property
     def __conditional_optional_control_enable_mask(self) -> ConditionalFormulaDataRecord:
+        """
+        Get definition of optional conditional `controlEnableMask` Data Record.
+
+        .. note:: This attribute mimics
+            :obj:`~uds.translator.data_record_definitions.conditional.CONDITIONAL_OPTIONAL_CONTROL_ENABLE_MASK_2020` and
+            :obj:`~uds.translator.data_record_definitions.conditional.CONDITIONAL_OPTIONAL_CONTROL_ENABLE_MASK_2013`.
+        """
         return self.__get_did_data_mask(name="controlEnableMask", optional=True)
 
     @property
     def __conditional_activated_events(self) -> ConditionalFormulaDataRecord:
-        return ConditionalFormulaDataRecord(formula=self.__get_activated_events)
+        """
+        Get definition conditional Data Record with Activated Events.
 
-    @property
-    def __conditional_response_on_event_response(self) -> Mapping[int, MessageStructureAlias]:
-        response_on_event = self.services_mapping.get(RequestSID.ResponseOnEvent, None)
-        if response_on_event is None:
-            raise ValueError
-        conditional_response_mapping = dict(response_on_event.response_structure[1].mapping)
-        conditional_response_mapping[0x03][2].children[0].values_mapping = self.did_mapping
-        conditional_response_mapping[0x04] = (NUMBER_OF_ACTIVATED_EVENTS, self.__conditional_activated_events)
-        conditional_response_mapping[0x07][2].children[0].values_mapping = self.did_mapping
-        return conditional_response_mapping
+        .. note:: This attribute mimics
+            :obj:`~uds.translator.data_record_definitions.conditional.CONDITIONAL_ACTIVATED_EVENTS_2020` and
+            :obj:`~uds.translator.data_record_definitions.conditional.CONDITIONAL_ACTIVATED_EVENTS_2013`.
+        """
+        return ConditionalFormulaDataRecord(formula=self.__get_activated_events)
 
     def __get_did(self, name: str, optional: bool = False) -> MappingDataRecord:
         if self.did_mapping is None:

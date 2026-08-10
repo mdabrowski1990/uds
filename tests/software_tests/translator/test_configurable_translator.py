@@ -11,7 +11,7 @@ from uds.translator.configurable_translator import (
     REPEATED_DATA_RECORDS_NUMBER,
     ConfigurableTranslator,
     RequestSID,
-    Translator,
+    Translator,NUMBER_OF_ACTIVATED_EVENTS,
 )
 
 SCRIPT_LOCATION = "uds.translator.configurable_translator"
@@ -474,7 +474,9 @@ class TestConfigurableTranslator:
             RequestSID.DynamicallyDefineDataIdentifier: MagicMock(),
             RequestSID.InputOutputControlByIdentifier: MagicMock(),
             RequestSID.ReadDTCInformation: MagicMock(response_structure=[Mock(), Mock(mapping={})]),
-            RequestSID.ResponseOnEvent: MagicMock(),
+            RequestSID.ResponseOnEvent: MagicMock(
+                request_structure=[MagicMock(), MagicMock(mapping={i: 10*[MagicMock()] for i in range(10)})],
+                response_structure=[MagicMock(), MagicMock(mapping={i: 10*[MagicMock()] for i in range(10)})]),
         }
         self.mock_translator._ConfigurableTranslator__conditional_read_dtc_information_response = Mock()
         self.mock_translator._ConfigurableTranslator__conditional_response_on_event_response = Mock()
@@ -527,8 +529,13 @@ class TestConfigurableTranslator:
                 == mock_value)
         assert (self.mock_translator.services_mapping[RequestSID.ResponseOnEvent].request_structure[1].mapping[0x07][1].children[0].values_mapping
                 == mock_value)
-        assert (self.mock_translator.services_mapping[RequestSID.ResponseOnEvent].response_structure[1].mapping
-                == self.mock_translator._ConfigurableTranslator__conditional_response_on_event_response)
+        assert (self.mock_translator.services_mapping[RequestSID.ResponseOnEvent].response_structure[1].mapping[0x03][2].children[0].values_mapping
+                == mock_value)
+        assert (self.mock_translator.services_mapping[RequestSID.ResponseOnEvent].response_structure[1].mapping[0x04]
+                == (NUMBER_OF_ACTIVATED_EVENTS,
+                    self.mock_translator._ConfigurableTranslator__conditional_activated_events))
+        assert (self.mock_translator.services_mapping[RequestSID.ResponseOnEvent].response_structure[1].mapping[0x07][2].children[0].values_mapping
+                == mock_value)
 
     # did_data_mapping
 
@@ -673,3 +680,26 @@ class TestConfigurableTranslator:
         self.mock_translator.services_mapping = Mock(get=mock_get)
         assert (ConfigurableTranslator._ConfigurableTranslator__event_type.fget(self.mock_translator)
                 == mock_service.request_structure[0].children[1])
+
+    # __conditional_control_state
+
+    def test_conditional_control_state__get(self):
+        assert (ConfigurableTranslator._ConfigurableTranslator__conditional_control_state.fget(self.mock_translator)
+                == self.mock_translator._ConfigurableTranslator__get_did_data.return_value)
+        self.mock_translator._ConfigurableTranslator__get_did_data.assert_called_once_with(name="controlState")
+
+    # __conditional_optional_control_enable_mask
+
+    def test_conditional_optional_control_enable_mask__get(self):
+        assert (ConfigurableTranslator._ConfigurableTranslator__conditional_optional_control_enable_mask.fget(
+            self.mock_translator) == self.mock_translator._ConfigurableTranslator__get_did_data_mask.return_value)
+        self.mock_translator._ConfigurableTranslator__get_did_data_mask.assert_called_once_with(
+            name="controlEnableMask", optional=True)
+
+    # __conditional_activated_events
+
+    def test_conditional_activated_events__get(self):
+        assert (ConfigurableTranslator._ConfigurableTranslator__conditional_activated_events.fget(self.mock_translator)
+                == self.mock_conditional_formula_data_record.return_value)
+        self.mock_conditional_formula_data_record.assert_called_once_with(
+            formula=self.mock_translator._ConfigurableTranslator__get_activated_events)
