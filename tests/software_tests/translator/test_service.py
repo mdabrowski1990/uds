@@ -25,6 +25,8 @@ class TestService:
         self.mock_service = Mock(spec=Service,
                                  NEGATIVE_RESPONSE_LENGTH=3)
         # patching
+        self._patcher_deepcopy = patch(f"{SCRIPT_LOCATION}.deepcopy")
+        self.mock_deepcopy = self._patcher_deepcopy.start()
         self._patcher_validate_message_continuation \
             = patch(f"{SCRIPT_LOCATION}.AbstractConditionalDataRecord.validate_message_continuation")
         self.mock_validate_message_continuation = self._patcher_validate_message_continuation.start()
@@ -42,6 +44,7 @@ class TestService:
         self.mock_warn = self._patcher_warn.start()
 
     def teardown_method(self):
+        self._patcher_deepcopy.stop()
         self._patcher_validate_message_continuation.stop()
         self._patcher_request_sid_validate_member.stop()
         self._patcher_response_sid_validate_member.stop()
@@ -88,6 +91,18 @@ class TestService:
         assert self.mock_service.request_structure == request_structure
         assert self.mock_service.response_structure == response_structure
         assert self.mock_service.supported_nrc == supported_nrc
+
+    # __deepcopy__
+
+    @patch(f"{SCRIPT_LOCATION}.Service.__init__")
+    @patch(f"{SCRIPT_LOCATION}.Service.__new__")
+    def test_deepcopy(self, mock_new, mock_init):
+        assert Service.__deepcopy__(self.mock_service, {}) == mock_new.return_value
+        mock_init.assert_called_once_with(mock_new.return_value,
+                                          request_sid=self.mock_service.request_sid,
+                                          request_structure=self.mock_deepcopy.return_value,
+                                          response_structure=self.mock_deepcopy.return_value,
+                                          supported_nrc=self.mock_deepcopy.return_value)
 
     # request_sid
 

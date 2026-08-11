@@ -4,6 +4,7 @@ __all__ = ["DEFAULT_DIAGNOSTIC_MESSAGE_CONTINUATION", "MessageStructureAlias",
            "AbstractConditionalDataRecord", "ConditionalMappingDataRecord", "ConditionalFormulaDataRecord"]
 
 from abc import ABC, abstractmethod
+from copy import deepcopy
 from inspect import signature
 from operator import getitem
 from types import MappingProxyType
@@ -187,7 +188,7 @@ class ConditionalMappingDataRecord(AbstractConditionalDataRecord):
         memo[id(self)] = self_copy
         ConditionalMappingDataRecord.__init__(self_copy,
                                               mapping=self.mapping,
-                                              default_message_continuation=self.default_message_continuation,
+                                              default_message_continuation=deepcopy(self.default_message_continuation, memo=memo),
                                               value_mask=self.value_mask)
         return self_copy
 
@@ -274,6 +275,22 @@ class ConditionalFormulaDataRecord(AbstractConditionalDataRecord):
         if raw_value < 0:
             raise ValueError(f"Provided value is not a raw value as it is lower than 0. Actual value: {raw_value}")
         return self.formula(raw_value)
+
+    def __deepcopy__(self, memo: dict[int, Any]) -> ConditionalFormulaDataRecord:
+        """Get deep copy of the  Mapping Data Record."""
+        cls = self.__class__
+        self_copy = cls.__new__(cls)
+        memo[id(self)] = self_copy
+        ConditionalFormulaDataRecord.__init__(self_copy,
+                                   formula=self.formula,
+                                   length=self.length,
+                                   values_mapping=self.values_mapping,
+                                   children=[deepcopy(child, memo=memo) for child in self.children],
+                                   min_occurrences=self.min_occurrences,
+                                   max_occurrences=self.max_occurrences,
+                                   unit=self.unit,
+                                   enforce_reoccurring=self.enforce_reoccurring)
+        return self_copy
 
     @property
     def formula(self) -> Callable[[int], MessageStructureAlias]:

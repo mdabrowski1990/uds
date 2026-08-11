@@ -6,6 +6,7 @@ __all__ = ["Service", "DecodedMessageAlias", "DataRecordsValuesAlias",
 from collections.abc import Collection, Mapping, Sequence
 from copy import deepcopy
 from warnings import warn
+from typing import Any
 
 from uds.message import NEGATIVE_RESPONSE_MESSAGE_LENGTH, NRC, RESPONSE_REQUEST_SID_DIFF, RequestSID, ResponseSID
 from uds.utilities import Endianness, InconsistencyError, RawBytesAlias, bytes_to_int, int_to_bytes, validate_raw_bytes
@@ -74,6 +75,18 @@ class Service:
         self.response_structure = response_structure
         self.supported_nrc = supported_nrc
 
+    def __deepcopy__(self, memo: dict[int, Any]) -> Service:
+        """Get deep copy of the service translator."""
+        cls = self.__class__
+        self_copy = cls.__new__(cls)
+        memo[id(self)] = self_copy
+        Service.__init__(self_copy,
+                         request_sid=self.request_sid,
+                         request_structure=deepcopy(self.request_structure, memo=memo),
+                         response_structure=deepcopy(self.response_structure, memo=memo),
+                         supported_nrc=deepcopy(self.supported_nrc, memo=memo))
+        return self_copy
+
     @property
     def request_sid(self) -> RequestSID:
         """Get Service Identifier (SID) value for this diagnostic service."""
@@ -129,7 +142,7 @@ class Service:
         self.__response_structure = tuple(response_structure)
 
     @property
-    def supported_nrc(self) -> set[NRC]:
+    def supported_nrc(self) -> frozenset[NRC]:
         """Get NRC codes that are supported by this diagnostic service."""
         return self.__supported_nrc
 
@@ -142,7 +155,7 @@ class Service:
         """
         for nrc in nrc_container:
             NRC.validate_member(nrc)
-        self.__supported_nrc = set(nrc_container)
+        self.__supported_nrc = frozenset(nrc_container)
 
     @property
     def name(self) -> str:

@@ -4,6 +4,7 @@ __all__ = ["ConfigurableTranslator"]
 
 from copy import deepcopy
 from typing import Callable, Mapping
+from types import MappingProxyType
 
 from uds.message import RequestSID
 from uds.utilities import DID_BIT_LENGTH, REPEATED_DATA_RECORDS_NUMBER
@@ -395,7 +396,7 @@ class ConfigurableTranslator(Translator):
         response_on_event = self.services_mapping.get(RequestSID.ResponseOnEvent, None)
         if response_on_event is None:
             return None
-        sub_function: MappingDataRecord = response_on_event.request_structure[0].children[1]
+        sub_function: MappingDataRecord = response_on_event.request_structure[0].children[1].children[1]
         return sub_function.values_mapping
 
     @event_type_mapping.setter
@@ -501,20 +502,23 @@ class ConfigurableTranslator(Translator):
         # ReadDTCInformation
         read_dtc_information = self.services_mapping.get(RequestSID.ReadDTCInformation, None)
         if read_dtc_information is not None:
-            read_dtc_information.response_structure[1].mapping[0x04] = (DTC_AND_STATUS, *self.__dtc_snapshot_records)
-            read_dtc_information.response_structure[1].mapping[0x05] = self.__dtc_stored_data_records
-            read_dtc_information.response_structure[1].mapping[0x18] = (MEMORY_SELECTION,
-                                                                        DTC_AND_STATUS,
-                                                                        *self.__dtc_snapshot_records)
+            mapping = dict(read_dtc_information.response_structure[1].mapping)
+            mapping[0x04] = (DTC_AND_STATUS, *self.__dtc_snapshot_records)
+            mapping[0x05] = self.__dtc_stored_data_records
+            mapping[0x18] = (MEMORY_SELECTION,
+                             DTC_AND_STATUS,
+                             *self.__dtc_snapshot_records)
+            read_dtc_information.response_structure[1].mapping = mapping
         # ResponseOnEvent
         response_on_event = self.services_mapping.get(RequestSID.ResponseOnEvent, None)
         if response_on_event is not None:
             response_on_event.request_structure[1].mapping[0x03][1].children[0].values_mapping = value
             response_on_event.request_structure[1].mapping[0x07][1].children[0].values_mapping = value
             response_on_event.response_structure[1].mapping[0x03][2].children[0].values_mapping = value
-            response_on_event.response_structure[1].mapping[0x04] = (NUMBER_OF_ACTIVATED_EVENTS,
-                                                                     self.__conditional_activated_events)
             response_on_event.response_structure[1].mapping[0x07][2].children[0].values_mapping = value
+            mapping = dict(response_on_event.response_structure[1].mapping)
+            mapping[0x04] = (NUMBER_OF_ACTIVATED_EVENTS, self.__conditional_activated_events)
+            response_on_event.response_structure[1].mapping = mapping
 
     @property
     def did_data_mapping(self) -> None | Mapping[int, MessageStructureAlias]:
@@ -532,7 +536,7 @@ class ConfigurableTranslator(Translator):
 
         :param value: Mapping value to set.
         """
-        self.__did_data_mapping = value
+        self.__did_data_mapping = MappingProxyType(value)
         # ReadDataByIdentifier
         read_data_by_identifier = self.services_mapping[RequestSID.ReadDataByIdentifier]
         read_data_by_identifier.response_structure = (
@@ -554,11 +558,13 @@ class ConfigurableTranslator(Translator):
         # ReadDTCInformation
         read_dtc_information = self.services_mapping.get(RequestSID.ReadDTCInformation, None)
         if read_dtc_information is not None:
-            read_dtc_information.response_structure[1].mapping[0x04] = (DTC_AND_STATUS, *self.__dtc_snapshot_records)
-            read_dtc_information.response_structure[1].mapping[0x05] = self.__dtc_stored_data_records
-            read_dtc_information.response_structure[1].mapping[0x18] = (MEMORY_SELECTION,
-                                                                        DTC_AND_STATUS,
-                                                                        *self.__dtc_snapshot_records)
+            mapping = dict(read_dtc_information.response_structure[1].mapping)
+            mapping[0x04] = (DTC_AND_STATUS, *self.__dtc_snapshot_records)
+            mapping[0x05] = self.__dtc_stored_data_records
+            mapping[0x18] = (MEMORY_SELECTION,
+                             DTC_AND_STATUS,
+                             *self.__dtc_snapshot_records)
+            read_dtc_information.response_structure[1].mapping = mapping
 
     @property
     def __did_records(self) -> tuple[ConditionalFormulaDataRecord, ...]:

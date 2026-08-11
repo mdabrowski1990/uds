@@ -1,8 +1,6 @@
 import pytest
-from dill.pointers import children
 from mock import MagicMock, Mock, call, patch
 
-from uds.translator import RawDataRecord
 from uds.translator.configurable_translator import (
     DID_BIT_LENGTH,
     DID_COUNT_RECORDS,
@@ -20,6 +18,11 @@ from uds.translator.configurable_translator import (
     RequestSID,
     Translator,
 )
+from uds.translator import DIAGNOSTIC_SESSION_CONTROL, TESTER_PRESENT, READ_DATA_BY_IDENTIFIER, BASE_TRANSLATOR, \
+    RawDataRecord, ECU_RESET, RESPONSE_ON_EVENT, AUTHENTICATION, CONTROL_DTC_SETTING, READ_DTC_INFORMATION, READ_SCALING_DATA_BY_IDENTIFIER, READ_DATA_BY_PERIODIC_IDENTIFIER, READ_MEMORY_BY_ADDRESS, WRITE_DATA_BY_IDENTIFIER, WRITE_MEMORY_BY_ADDRESS, TRANSFER_DATA, REQUEST_DOWNLOAD, REQUEST_UPLOAD, REQUEST_FILE_TRANSFER, REQUEST_TRANSFER_EXIT, CLEAR_DIAGNOSTIC_INFORMATION, COMMUNICATION_CONTROL, ROUTINE_CONTROL, SECURED_DATA_TRANSMISSION, SECURITY_ACCESS, LINK_CONTROL, INPUT_OUTPUT_CONTROL_BY_IDENTIFIER, DYNAMICALLY_DEFINE_DATA_IDENTIFIER
+from uds.translator.service_definitions import ACCESS_TIMING_PARAMETER_2013
+from uds.translator.data_record_definitions import ACTIVE_DIAGNOSTIC_SESSION
+from uds.utilities.constants import DIAGNOSTIC_SESSION_TYPE_MAPPING, RESET_TYPE_MAPPING, REPORT_TYPE_MAPPING_2020, SECURITY_ACCESS_TYPE_MAPPING, CONTROL_TYPE_MAPPING, AUTHENTICATION_TASK_MAPPING, DEFINITION_TYPE_MAPPING,  ROUTINE_CONTROL_TYPE_MAPPING, ZERO_SUBFUNCTION_MAPPING, DTC_SETTING_TYPE_MAPPING, EVENT_MAPPING_2020,   LINK_CONTROL_TYPE_MAPPING, DID_MAPPING_2020
 
 SCRIPT_LOCATION = "uds.translator.configurable_translator"
 
@@ -34,6 +37,8 @@ class TestConfigurableTranslator:
         # patching
         self._patcher_deepcopy = patch(f"{SCRIPT_LOCATION}.deepcopy")
         self.mock_deepcopy = self._patcher_deepcopy.start()
+        self._patcher_mapping_proxy_type = patch(f"{SCRIPT_LOCATION}.MappingProxyType")
+        self.mock_mapping_proxy_type = self._patcher_mapping_proxy_type.start()
         self._patcher_raw_data_record = patch(f"{SCRIPT_LOCATION}.RawDataRecord")
         self.mock_raw_data_record = self._patcher_raw_data_record.start()
         self._patcher_mapping_data_record = patch(f"{SCRIPT_LOCATION}.MappingDataRecord")
@@ -45,6 +50,7 @@ class TestConfigurableTranslator:
 
     def teardown_method(self):
         self._patcher_deepcopy.stop()
+        self._patcher_mapping_proxy_type.stop()
         self._patcher_raw_data_record.stop()
         self._patcher_mapping_data_record.stop()
         self._patcher_conditional_formula_data_record.stop()
@@ -403,7 +409,7 @@ class TestConfigurableTranslator:
 
     def test_event_type_mapping_mapping__get(self):
         assert (ConfigurableTranslator.event_type_mapping.fget(self.mock_translator)
-                == self.mock_translator.services_mapping[RequestSID.ResponseOnEvent].request_structure[0].children[1].values_mapping)
+                == self.mock_translator.services_mapping[RequestSID.ResponseOnEvent].request_structure[0].children[1].children[1].values_mapping)
 
     def test_event_type_mapping_mapping__get__none(self):
         mock_get = Mock(return_value=None)
@@ -571,12 +577,13 @@ class TestConfigurableTranslator:
         ]
         mock_value = {Mock(): Mock()}
         assert ConfigurableTranslator.did_data_mapping.fset(self.mock_translator, mock_value) is None
-        assert self.mock_translator._ConfigurableTranslator__did_data_mapping == mock_value
+        assert self.mock_translator._ConfigurableTranslator__did_data_mapping == self.mock_mapping_proxy_type.return_value
         assert (self.mock_translator.services_mapping[RequestSID.ReadDataByIdentifier].response_structure
                 == mock_rdbi_response_structure)
         self.mock_translator._ConfigurableTranslator__get_did_record.assert_has_calls(
             [call(did_count=1, record_number=None, optional=False),
              call(did_count=REPEATED_DATA_RECORDS_NUMBER, record_number=None, optional=True)])
+        self.mock_mapping_proxy_type.assert_called_once_with(mock_value)
 
     def test_did_data_mapping__set__all(self):
         self.mock_translator.services_mapping = {
@@ -592,7 +599,8 @@ class TestConfigurableTranslator:
         ]
         mock_value = {Mock(): Mock()}
         assert ConfigurableTranslator.did_data_mapping.fset(self.mock_translator, mock_value) is None
-        assert self.mock_translator._ConfigurableTranslator__did_data_mapping == mock_value
+        assert self.mock_translator._ConfigurableTranslator__did_data_mapping == self.mock_mapping_proxy_type.return_value
+        self.mock_mapping_proxy_type.assert_called_once_with(mock_value)
         # ReadDataByIdentifier
         assert (self.mock_translator.services_mapping[RequestSID.ReadDataByIdentifier].response_structure
                 == mock_rdbi_response_structure)
@@ -1010,3 +1018,228 @@ class TestConfigurableTranslator:
         for data_records in self.mock_deepcopy.return_value.mapping.values():
             for data_record in data_records:
                 assert data_record.name.endswith(f"#{event_number}")
+
+
+@pytest.mark.integration
+class TestConfigurableTranslatorIntegration:
+    """Integration tests for `ConfigurableTranslator` class."""
+
+    diagnostic_session_type_mapping = {
+        0x01: "Default",
+        0x03: "Extended",
+        0x40: "Custom"
+    }
+    reset_type_mapping = {
+        0x03: "Hard",
+        0x40: "Custom"
+    }
+    report_type_mapping = {
+        0x01: "reportDTCNumberByStatusMask",
+        0x02: "reportDTCByStatusMask",
+        0x40: "reportInternalDTCMapping"
+    }
+    security_access_type_mapping = {
+        0x03: "requestSeedForProgramming",
+        0x04: "sendKeyForProgramming",
+        0x07: "requestSeedForScrapping",
+        0x08: "sendKeyForScrapping"
+    }
+    control_type_type_mapping = {
+        0x00: "enableRxAndTx",
+        0x03: "disableRxAndTx",
+        0x40: "Custom"
+    }
+    authentication_task_mapping = {
+        0x00: "deAuthenticate",
+        0x40: "CustomAuthentication"
+    }
+    definition_type_mapping = {
+        0x01: "defineByIdentifier",
+        0x03: "clearDynamicallyDefinedDataIdentifier",
+        0x40: "CustomDefinition"
+    }
+    routine_control_type_mapping = {
+        0x01: "startRoutine",
+        0x02: "stopRoutine",
+        0x03: "requestRoutineResults",
+        0x40: "block"
+    }
+    zero_subfunction_mapping = {
+        0x00: "default",
+        0x40: "till reset"
+    }
+    timing_parameter_access_type_mapping = {
+        0x01: "readExtendedTimingParameterSet",
+        0x40: "Custom"
+    }
+    dtc_setting_type_mapping = {
+        0x01: "ON",
+        0x02: "OFF",
+        0x40: "Custom"
+    }
+    event_type_mapping = {
+        0x00: "stopResponseOnEvent",
+        0x01: "onDTCStatusChange",
+        0x02: "onTimerInterrupt",
+        0x03: "onChangeOfDataIdentifier",
+        0x04: "reportActivatedEvents",
+        0x05: "startResponseOnEvent",
+        0x06: "clearResponseOnEvent",
+        0x07: "onComparisonOfValues",
+        0x08: "reportMostRecentDtcOnStatusChange",
+        0x09: "reportDTCRecordInformationOnDtcStatusChange",
+        0x10: "custom",
+    }
+    link_control_type_mapping = {
+        0x01: "verifyModeTransitionWithFixedParameter",
+        0x02: "verifyModeTransitionWithSpecificParameter",
+        0x03: "transitionMode",
+        0x40: "custom",
+    }
+    rid_mapping = {
+        0x1234: "ABC",
+        0x5678: "XYZ",
+    }
+    did_mapping = {
+        0x0100: "Custom DID#1",
+        0x0101: "Custom DID#2",
+        0xF186: "ActiveDiagnosticSessionDataIdentifier",
+    }
+    did_data_mapping = {
+        0x0100: (RawDataRecord(name="Param1", length=8, min_occurrences=2, max_occurrences=2)),
+        0x0101: (RawDataRecord(name="a#1", length=4), RawDataRecord(name="a#2", length=4)),
+        0xF186: (RESERVED_BIT, ACTIVE_DIAGNOSTIC_SESSION),
+    }
+
+    def setup_class(self):
+        self.minimalistic_translator = Translator(services=(DIAGNOSTIC_SESSION_CONTROL,
+                                                            TESTER_PRESENT,
+                                                            ACCESS_TIMING_PARAMETER_2013,
+                                                            READ_DATA_BY_IDENTIFIER))
+
+    @pytest.fixture(scope="class")
+    def configurable_translator_1(self):
+        return ConfigurableTranslator(
+            base=self.minimalistic_translator,
+            diagnostic_session_type_mapping=self.diagnostic_session_type_mapping,
+            zero_subfunction_mapping=self.zero_subfunction_mapping,
+            timing_parameter_access_type_mapping=self.timing_parameter_access_type_mapping,
+            did_mapping=self.did_mapping,
+            did_data_mapping=self.did_data_mapping)
+
+    @pytest.fixture(scope="class")
+    def configurable_translator_2(self):
+        return ConfigurableTranslator(
+            base=BASE_TRANSLATOR,
+            diagnostic_session_type_mapping=self.diagnostic_session_type_mapping,
+            reset_type_mapping=self.reset_type_mapping,
+            report_type_mapping=self.report_type_mapping,
+            security_access_type_mapping=self.security_access_type_mapping,
+            control_type_type_mapping=self.control_type_type_mapping,
+            authentication_task_mapping=self.authentication_task_mapping,
+            definition_type_mapping=self.definition_type_mapping,
+            routine_control_type_mapping=self.routine_control_type_mapping,
+            zero_subfunction_mapping=self.zero_subfunction_mapping,
+            dtc_setting_type_mapping=self.dtc_setting_type_mapping,
+            event_type_mapping=self.event_type_mapping,
+            link_control_type_mapping=self.link_control_type_mapping,
+            rid_mapping=self.rid_mapping,
+            did_mapping=self.did_mapping,
+            did_data_mapping=self.did_data_mapping)
+
+    def test_configuration_1(self, configurable_translator_1):
+        # defined
+        assert configurable_translator_1.diagnostic_session_type_mapping == self.diagnostic_session_type_mapping
+        assert configurable_translator_1.zero_subfunction_mapping == self.zero_subfunction_mapping
+        assert configurable_translator_1.timing_parameter_access_type_mapping == self.timing_parameter_access_type_mapping
+        assert configurable_translator_1.did_mapping == self.did_mapping
+        assert configurable_translator_1.did_data_mapping == self.did_data_mapping
+        # undefined
+        assert configurable_translator_1.reset_type_mapping is None
+        assert configurable_translator_1.report_type_mapping is None
+        assert configurable_translator_1.security_access_type_mapping is None
+        assert configurable_translator_1.control_type_type_mapping is None
+        assert configurable_translator_1.authentication_task_mapping is None
+        assert configurable_translator_1.definition_type_mapping is None
+        assert configurable_translator_1.routine_control_type_mapping is None
+        assert configurable_translator_1.dtc_setting_type_mapping is None
+        assert configurable_translator_1.event_type_mapping is None
+        assert configurable_translator_1.link_control_type_mapping is None
+        assert configurable_translator_1.rid_mapping is None
+        # unchanged base
+        assert self.minimalistic_translator.services_mapping[RequestSID.DiagnosticSessionControl] == DIAGNOSTIC_SESSION_CONTROL
+        assert DIAGNOSTIC_SESSION_CONTROL.request_structure[0].children[1].values_mapping != configurable_translator_1.diagnostic_session_type_mapping
+        assert DIAGNOSTIC_SESSION_CONTROL.response_structure[0].children[1].values_mapping != configurable_translator_1.diagnostic_session_type_mapping
+        assert self.minimalistic_translator.services_mapping[RequestSID.TesterPresent] == TESTER_PRESENT
+        assert TESTER_PRESENT.request_structure[0].children[1].values_mapping != configurable_translator_1.zero_subfunction_mapping
+        assert TESTER_PRESENT.response_structure[0].children[1].values_mapping != configurable_translator_1.zero_subfunction_mapping
+        assert self.minimalistic_translator.services_mapping[RequestSID.AccessTimingParameter] == ACCESS_TIMING_PARAMETER_2013
+        assert ACCESS_TIMING_PARAMETER_2013.request_structure[0].children[1].values_mapping != configurable_translator_1.timing_parameter_access_type_mapping
+        assert ACCESS_TIMING_PARAMETER_2013.response_structure[0].children[1].values_mapping != configurable_translator_1.timing_parameter_access_type_mapping
+        assert self.minimalistic_translator.services_mapping[RequestSID.ReadDataByIdentifier] == READ_DATA_BY_IDENTIFIER
+        assert READ_DATA_BY_IDENTIFIER.request_structure[0].values_mapping != configurable_translator_1.did_mapping
+        assert READ_DATA_BY_IDENTIFIER.response_structure[0].values_mapping != configurable_translator_1.did_mapping
+
+    def test_configuration_2(self, configurable_translator_2):
+        # TODO: uncomment when issue fixed
+        #  Fix requires fixing __deepcopy__ implementation for Translator -> Service -> DataRecords (especially mapping attribute)
+        # # defined
+        # assert configurable_translator_2.diagnostic_session_type_mapping == self.diagnostic_session_type_mapping
+        # assert configurable_translator_2.reset_type_mapping == self.reset_type_mapping
+        # assert configurable_translator_2.report_type_mapping == self.report_type_mapping
+        # assert configurable_translator_2.security_access_type_mapping == self.security_access_type_mapping
+        # assert configurable_translator_2.control_type_type_mapping == self.control_type_type_mapping
+        # assert configurable_translator_2.authentication_task_mapping == self.authentication_task_mapping
+        # assert configurable_translator_2.definition_type_mapping == self.definition_type_mapping
+        # assert configurable_translator_2.routine_control_type_mapping == self.routine_control_type_mapping
+        # assert configurable_translator_2.zero_subfunction_mapping == self.zero_subfunction_mapping
+        # assert configurable_translator_2.dtc_setting_type_mapping == self.dtc_setting_type_mapping
+        # assert configurable_translator_2.event_type_mapping == self.event_type_mapping
+        # assert configurable_translator_2.link_control_type_mapping == self.link_control_type_mapping
+        # assert configurable_translator_2.rid_mapping == self.rid_mapping
+        # assert configurable_translator_2.did_mapping == self.did_mapping
+        # assert configurable_translator_2.did_data_mapping == self.did_data_mapping
+        # # undefined
+        # assert configurable_translator_2.timing_parameter_access_type_mapping is None
+        # unchanged base
+        assert BASE_TRANSLATOR.services_mapping[RequestSID.DiagnosticSessionControl] == DIAGNOSTIC_SESSION_CONTROL
+        assert DIAGNOSTIC_SESSION_CONTROL.request_structure[0].children[1].values_mapping == DIAGNOSTIC_SESSION_TYPE_MAPPING
+        assert DIAGNOSTIC_SESSION_CONTROL.response_structure[0].children[1].values_mapping == DIAGNOSTIC_SESSION_TYPE_MAPPING
+        assert BASE_TRANSLATOR.services_mapping[RequestSID.ECUReset] == ECU_RESET
+        assert ECU_RESET.request_structure[0].children[1].values_mapping == RESET_TYPE_MAPPING
+        assert ECU_RESET.response_structure[0].children[1].values_mapping == RESET_TYPE_MAPPING
+        assert BASE_TRANSLATOR.services_mapping[RequestSID.ReadDTCInformation] == READ_DTC_INFORMATION
+        assert READ_DTC_INFORMATION.request_structure[0].children[1].values_mapping == REPORT_TYPE_MAPPING_2020
+        assert READ_DTC_INFORMATION.response_structure[0].children[1].values_mapping == REPORT_TYPE_MAPPING_2020
+        assert BASE_TRANSLATOR.services_mapping[RequestSID.SecurityAccess] == SECURITY_ACCESS
+        assert SECURITY_ACCESS.request_structure[0].children[1].values_mapping == SECURITY_ACCESS_TYPE_MAPPING
+        assert SECURITY_ACCESS.response_structure[0].children[1].values_mapping == SECURITY_ACCESS_TYPE_MAPPING
+        assert BASE_TRANSLATOR.services_mapping[RequestSID.CommunicationControl] == COMMUNICATION_CONTROL
+        assert COMMUNICATION_CONTROL.request_structure[0].children[1].values_mapping == CONTROL_TYPE_MAPPING
+        assert COMMUNICATION_CONTROL.response_structure[0].children[1].values_mapping == CONTROL_TYPE_MAPPING
+        assert BASE_TRANSLATOR.services_mapping[RequestSID.Authentication] == AUTHENTICATION
+        assert AUTHENTICATION.request_structure[0].children[1].values_mapping == AUTHENTICATION_TASK_MAPPING
+        assert AUTHENTICATION.response_structure[0].children[1].values_mapping == AUTHENTICATION_TASK_MAPPING
+        assert BASE_TRANSLATOR.services_mapping[RequestSID.DynamicallyDefineDataIdentifier] == DYNAMICALLY_DEFINE_DATA_IDENTIFIER
+        assert DYNAMICALLY_DEFINE_DATA_IDENTIFIER.request_structure[0].children[1].values_mapping == DEFINITION_TYPE_MAPPING
+        assert DYNAMICALLY_DEFINE_DATA_IDENTIFIER.response_structure[0].children[1].values_mapping == DEFINITION_TYPE_MAPPING
+        assert BASE_TRANSLATOR.services_mapping[RequestSID.RoutineControl] == ROUTINE_CONTROL
+        assert ROUTINE_CONTROL.request_structure[0].children[1].values_mapping == ROUTINE_CONTROL_TYPE_MAPPING
+        assert ROUTINE_CONTROL.response_structure[0].children[1].values_mapping == ROUTINE_CONTROL_TYPE_MAPPING
+        assert BASE_TRANSLATOR.services_mapping[RequestSID.TesterPresent] == TESTER_PRESENT
+        assert TESTER_PRESENT.request_structure[0].children[1].values_mapping == ZERO_SUBFUNCTION_MAPPING
+        assert TESTER_PRESENT.response_structure[0].children[1].values_mapping == ZERO_SUBFUNCTION_MAPPING
+        assert BASE_TRANSLATOR.services_mapping[RequestSID.ControlDTCSetting] == CONTROL_DTC_SETTING
+        assert CONTROL_DTC_SETTING.request_structure[0].children[1].values_mapping == DTC_SETTING_TYPE_MAPPING
+        assert CONTROL_DTC_SETTING.response_structure[0].children[1].values_mapping == DTC_SETTING_TYPE_MAPPING
+        assert BASE_TRANSLATOR.services_mapping[RequestSID.ResponseOnEvent] == RESPONSE_ON_EVENT
+        assert RESPONSE_ON_EVENT.request_structure[0].children[1].children[1].values_mapping == EVENT_MAPPING_2020
+        assert RESPONSE_ON_EVENT.response_structure[0].children[1].children[1].values_mapping == EVENT_MAPPING_2020
+        assert BASE_TRANSLATOR.services_mapping[RequestSID.LinkControl] == LINK_CONTROL
+        assert LINK_CONTROL.request_structure[0].children[1].values_mapping == LINK_CONTROL_TYPE_MAPPING
+        assert LINK_CONTROL.response_structure[0].children[1].values_mapping == LINK_CONTROL_TYPE_MAPPING
+        assert BASE_TRANSLATOR.services_mapping[RequestSID.ReadDataByIdentifier] == READ_DATA_BY_IDENTIFIER
+        assert READ_DATA_BY_IDENTIFIER.request_structure[0].values_mapping == DID_MAPPING_2020
+        assert READ_DATA_BY_IDENTIFIER.response_structure[0].values_mapping == DID_MAPPING_2020
+
+    # TODO: add more tests
