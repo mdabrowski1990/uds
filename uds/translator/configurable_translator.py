@@ -3,7 +3,7 @@
 __all__ = ["ConfigurableTranslator"]
 
 from copy import deepcopy
-from typing import Callable, Mapping
+from typing import Callable, Mapping, Any
 from types import MappingProxyType
 
 from uds.message import RequestSID
@@ -150,6 +150,31 @@ class ConfigurableTranslator(Translator):
             self.did_mapping = did_mapping
         if did_data_mapping is not None:
             self.did_data_mapping = did_data_mapping
+
+    def __deepcopy__(self, memo: dict[int, Any]) -> ConfigurableTranslator:
+        """Get deep copy of the translator."""
+        cls = self.__class__
+        self_copy = cls.__new__(cls)
+        memo[id(self)] = self_copy
+        ConfigurableTranslator.__init__(self_copy,
+                                        base=self,
+                                        diagnostic_session_type_mapping=self.diagnostic_session_type_mapping,
+                                        reset_type_mapping=self.reset_type_mapping,
+                                        report_type_mapping=self.report_type_mapping,
+                                        security_access_type_mapping=self.security_access_type_mapping,
+                                        control_type_type_mapping=self.control_type_type_mapping,
+                                        authentication_task_mapping=self.authentication_task_mapping,
+                                        definition_type_mapping=self.definition_type_mapping,
+                                        routine_control_type_mapping=self.routine_control_type_mapping,
+                                        zero_subfunction_mapping=self.zero_subfunction_mapping,
+                                        timing_parameter_access_type_mapping=self.timing_parameter_access_type_mapping,
+                                        dtc_setting_type_mapping=self.dtc_setting_type_mapping,
+                                        event_type_mapping=self.event_type_mapping,
+                                        link_control_type_mapping=self.link_control_type_mapping,
+                                        rid_mapping=self.rid_mapping,
+                                        did_mapping=self.did_mapping,
+                                        did_data_mapping=deepcopy(self.did_data_mapping, memo=memo))
+        return self_copy
 
     @property
     def diagnostic_session_type_mapping(self) -> None | Mapping[int, str]:

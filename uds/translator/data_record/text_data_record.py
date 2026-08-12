@@ -3,7 +3,7 @@
 __all__ = ["TextDataRecord", "TextEncoding"]
 
 from collections.abc import Callable
-from typing import TypedDict
+from typing import TypedDict, Any
 
 from uds.utilities import MAX_DTC_VALUE, ValidatedEnum, int_to_obd_dtc, obd_dtc_to_int
 
@@ -127,6 +127,20 @@ class TextDataRecord(AbstractDataRecord):
                          min_occurrences=min_occurrences,
                          max_occurrences=max_occurrences,
                          enforce_reoccurring=enforce_reoccurring)
+
+    def __deepcopy__(self, memo: dict[int, Any]) -> TextDataRecord:
+        """Get deep copy of this Data Record."""
+        cls = self.__class__
+        self_copy = cls.__new__(cls)
+        memo[id(self)] = self_copy
+        TextDataRecord.__init__(self_copy,
+                               name=self.name,
+                               encoding=self.encoding,
+                               min_occurrences=self.min_occurrences,
+                               max_occurrences=self.max_occurrences,
+                               enforce_reoccurring=self.enforce_reoccurring)
+        memo[id(self)] = self_copy
+        return self_copy
 
     @property
     def encoding(self) -> TextEncoding:

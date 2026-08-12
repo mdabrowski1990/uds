@@ -3,6 +3,8 @@
 __all__ = ["CustomFormulaDataRecord", "LinearFormulaDataRecord"]
 
 from collections.abc import Callable, Sequence
+from copy import deepcopy
+from typing import Any
 
 from .abstract_data_record import AbstractDataRecord
 
@@ -68,6 +70,22 @@ class LinearFormulaDataRecord(AbstractDataRecord):
                          min_occurrences=min_occurrences,
                          max_occurrences=max_occurrences,
                          enforce_reoccurring=enforce_reoccurring)
+
+    def __deepcopy__(self, memo: dict[int, Any]) -> LinearFormulaDataRecord:
+        """Get deep copy of this Data Record."""
+        cls = self.__class__
+        self_copy = cls.__new__(cls)
+        memo[id(self)] = self_copy
+        LinearFormulaDataRecord.__init__(self_copy,
+                                         name=self.name,
+                                         length=self.length,
+                                         factor=self.factor,
+                                         offset=self.offset,
+                                         min_occurrences=self.min_occurrences,
+                                         max_occurrences=self.max_occurrences,
+                                         unit=self.unit,
+                                         enforce_reoccurring=self.enforce_reoccurring)
+        return self_copy
 
     @property
     def factor(self) -> float | int:
@@ -212,6 +230,23 @@ class CustomFormulaDataRecord(AbstractDataRecord):
                          enforce_reoccurring=enforce_reoccurring)
         self.encoding_formula = encoding_formula
         self.decoding_formula = decoding_formula
+
+    def __deepcopy__(self, memo: dict[int, Any]) -> CustomFormulaDataRecord:
+        """Get deep copy of this Data Record."""
+        cls = self.__class__
+        self_copy = cls.__new__(cls)
+        memo[id(self)] = self_copy
+        CustomFormulaDataRecord.__init__(self_copy,
+                                         name=self.name,
+                                         length=self.length,
+                                         encoding_formula=deepcopy(self.encoding_formula, memo=memo),
+                                         decoding_formula=deepcopy(self.decoding_formula, memo=memo),
+                                         children=deepcopy(self.children, memo=memo),
+                                         min_occurrences=self.min_occurrences,
+                                         max_occurrences=self.max_occurrences,
+                                         unit=self.unit,
+                                         enforce_reoccurring=self.enforce_reoccurring)
+        return self_copy
 
     @property
     def encoding_formula(self) -> AliasPhysicalValueEncodingFormula:

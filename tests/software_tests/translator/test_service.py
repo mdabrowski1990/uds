@@ -97,12 +97,17 @@ class TestService:
     @patch(f"{SCRIPT_LOCATION}.Service.__init__")
     @patch(f"{SCRIPT_LOCATION}.Service.__new__")
     def test_deepcopy(self, mock_new, mock_init):
-        assert Service.__deepcopy__(self.mock_service, {}) == mock_new.return_value
+        memo = {}
+        assert Service.__deepcopy__(self.mock_service, memo) == mock_new.return_value
         mock_init.assert_called_once_with(mock_new.return_value,
                                           request_sid=self.mock_service.request_sid,
                                           request_structure=self.mock_deepcopy.return_value,
                                           response_structure=self.mock_deepcopy.return_value,
                                           supported_nrc=self.mock_deepcopy.return_value)
+        self.mock_deepcopy.assert_has_calls([call(self.mock_service.request_structure, memo=memo),
+                                             call(self.mock_service.response_structure, memo=memo),
+                                             call(self.mock_service.supported_nrc, memo=memo)],
+                                            any_order=True)
 
     # request_sid
 

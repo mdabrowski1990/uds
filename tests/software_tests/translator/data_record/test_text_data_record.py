@@ -177,6 +177,21 @@ class TestTextDataRecord:
         mock_encodings.__getitem__.assert_called_once_with(encoding)
         mock_encoding.__getitem__.assert_called_once_with("length")
 
+    # __deepcopy__
+
+    @patch(f"{SCRIPT_LOCATION}.TextDataRecord.__init__")
+    @patch(f"{SCRIPT_LOCATION}.TextDataRecord.__new__")
+    def test_deepcopy(self, mock_new, mock_init):
+        memo = {}
+        assert TextDataRecord.__deepcopy__(self.mock_data_record, memo) == mock_new.return_value
+        mock_init.assert_called_once_with(
+            mock_new.return_value,
+            name=self.mock_data_record.name,
+            encoding=self.mock_data_record.encoding,
+            min_occurrences=self.mock_data_record.min_occurrences,
+            max_occurrences=self.mock_data_record.max_occurrences,
+            enforce_reoccurring=self.mock_data_record.enforce_reoccurring)
+
     # encoding
 
     def test_encoding__get(self):

@@ -59,9 +59,12 @@ class TestTranslator:
     @patch(f"{SCRIPT_LOCATION}.Translator.__new__")
     def test_deepcopy(self, mock_new, mock_init, services):
         self.mock_translator.services = services
-        assert Translator.__deepcopy__(self.mock_translator, {}) == mock_new.return_value
+        memo = {}
+        assert Translator.__deepcopy__(self.mock_translator, memo) == mock_new.return_value
         mock_init.assert_called_once_with(mock_new.return_value,
                                           [self.mock_deepcopy.return_value] * len(services))
+        self.mock_deepcopy.assert_has_calls([call(service, memo=memo) for service in services],
+                                            any_order=True)
 
     # services
 

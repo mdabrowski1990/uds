@@ -154,25 +154,22 @@ class TestMappingDataRecord:
 
     # __deepcopy__
 
-    @pytest.mark.parametrize("children", [
-        [Mock()],
-        [Mock(), Mock()],
-    ])
     @patch(f"{SCRIPT_LOCATION}.MappingDataRecord.__init__")
     @patch(f"{SCRIPT_LOCATION}.MappingDataRecord.__new__")
-    def test_deepcopy(self, mock_new, mock_init, children):
-        self.mock_data_record.children = children
-        assert MappingDataRecord.__deepcopy__(self.mock_data_record, {}) == mock_new.return_value
+    def test_deepcopy(self, mock_new, mock_init):
+        memo = {}
+        assert MappingDataRecord.__deepcopy__(self.mock_data_record, memo) == mock_new.return_value
         mock_init.assert_called_once_with(
             mock_new.return_value,
             name=self.mock_data_record.name,
             length=self.mock_data_record.length,
             values_mapping=self.mock_data_record.values_mapping,
-            children=[self.mock_deepcopy.return_value] * len(self.mock_data_record.children),
+            children=self.mock_deepcopy.return_value,
             min_occurrences=self.mock_data_record.min_occurrences,
             max_occurrences=self.mock_data_record.max_occurrences,
             unit=self.mock_data_record.unit,
             enforce_reoccurring=self.mock_data_record.enforce_reoccurring)
+        self.mock_deepcopy.assert_called_once_with(self.mock_data_record.children, memo=memo)
 
     # get_physical_value
 
@@ -222,10 +219,14 @@ class TestMappingAndLinearFormulaDataRecord:
 
     def setup_method(self):
         self.mock_data_record = Mock(spec=MappingAndLinearFormulaDataRecord)
+        # patching
+        self._patcher_deepcopy = patch(f"{SCRIPT_LOCATION}.deepcopy")
+        self.mock_deepcopy = self._patcher_deepcopy.start()
         self._patcher_warn = patch(f"{SCRIPT_LOCATION}.warn")
         self.mock_warn = self._patcher_warn.start()
 
     def teardown_method(self):
+        self._patcher_deepcopy.stop()
         self._patcher_warn.stop()
 
     # inheritance
@@ -294,10 +295,13 @@ class TestMappingAndLinearFormulaDataRecord:
         mock_abstract_mapping_data_record_init.assert_called_once_with(self.mock_data_record,
                                                                        values_mapping=values_mapping)
 
+    # __deepcopy__
+
     @patch(f"{SCRIPT_LOCATION}.MappingAndLinearFormulaDataRecord.__init__")
     @patch(f"{SCRIPT_LOCATION}.MappingAndLinearFormulaDataRecord.__new__")
     def test_deepcopy(self, mock_new, mock_init):
-        assert MappingAndLinearFormulaDataRecord.__deepcopy__(self.mock_data_record, {}) == mock_new.return_value
+        memo = {}
+        assert MappingAndLinearFormulaDataRecord.__deepcopy__(self.mock_data_record, memo) == mock_new.return_value
         mock_init.assert_called_once_with(
             mock_new.return_value,
             name=self.mock_data_record.name,

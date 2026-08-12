@@ -145,6 +145,34 @@ class TestConfigurableTranslator:
         self.mock_deepcopy.assert_called_once_with(mock_base.services)
         mock_translator_init.assert_called_once_with(services=self.mock_deepcopy.return_value)
 
+    # __deepcopy__
+
+    @patch(f"{SCRIPT_LOCATION}.ConfigurableTranslator.__init__")
+    @patch(f"{SCRIPT_LOCATION}.ConfigurableTranslator.__new__")
+    def test_deepcopy(self, mock_new, mock_init):
+        memo = {}
+        assert ConfigurableTranslator.__deepcopy__(self.mock_translator, memo) == mock_new.return_value
+        mock_init.assert_called_once_with(
+            mock_new.return_value,
+            base=self.mock_translator,
+            diagnostic_session_type_mapping=self.mock_translator.diagnostic_session_type_mapping,
+            reset_type_mapping=self.mock_translator.reset_type_mapping,
+            report_type_mapping=self.mock_translator.report_type_mapping,
+            security_access_type_mapping=self.mock_translator.security_access_type_mapping,
+            control_type_type_mapping=self.mock_translator.control_type_type_mapping,
+            authentication_task_mapping=self.mock_translator.authentication_task_mapping,
+            definition_type_mapping=self.mock_translator.definition_type_mapping,
+            routine_control_type_mapping=self.mock_translator.routine_control_type_mapping,
+            zero_subfunction_mapping=self.mock_translator.zero_subfunction_mapping,
+            timing_parameter_access_type_mapping=self.mock_translator.timing_parameter_access_type_mapping,
+            dtc_setting_type_mapping=self.mock_translator.dtc_setting_type_mapping,
+            event_type_mapping=self.mock_translator.event_type_mapping,
+            link_control_type_mapping=self.mock_translator.link_control_type_mapping,
+            rid_mapping=self.mock_translator.rid_mapping,
+            did_mapping=self.mock_translator.did_mapping,
+            did_data_mapping=self.mock_deepcopy.return_value)
+        self.mock_deepcopy.assert_called_once_with(self.mock_translator.did_data_mapping, memo=memo)
+
     # diagnostic_session_type_mapping
 
     def test_diagnostic_session_type_mapping_mapping__get(self):
@@ -1147,6 +1175,7 @@ class TestConfigurableTranslatorIntegration:
             did_mapping=self.did_mapping,
             did_data_mapping=self.did_data_mapping)
 
+
     def test_configuration_1(self, configurable_translator_1):
         # defined
         assert configurable_translator_1.diagnostic_session_type_mapping == self.diagnostic_session_type_mapping
@@ -1181,26 +1210,24 @@ class TestConfigurableTranslatorIntegration:
         assert READ_DATA_BY_IDENTIFIER.response_structure[0].values_mapping != configurable_translator_1.did_mapping
 
     def test_configuration_2(self, configurable_translator_2):
-        # TODO: uncomment when issue fixed
-        #  Fix requires fixing __deepcopy__ implementation for Translator -> Service -> DataRecords (especially mapping attribute)
         # # defined
-        # assert configurable_translator_2.diagnostic_session_type_mapping == self.diagnostic_session_type_mapping
-        # assert configurable_translator_2.reset_type_mapping == self.reset_type_mapping
-        # assert configurable_translator_2.report_type_mapping == self.report_type_mapping
-        # assert configurable_translator_2.security_access_type_mapping == self.security_access_type_mapping
-        # assert configurable_translator_2.control_type_type_mapping == self.control_type_type_mapping
-        # assert configurable_translator_2.authentication_task_mapping == self.authentication_task_mapping
-        # assert configurable_translator_2.definition_type_mapping == self.definition_type_mapping
-        # assert configurable_translator_2.routine_control_type_mapping == self.routine_control_type_mapping
-        # assert configurable_translator_2.zero_subfunction_mapping == self.zero_subfunction_mapping
-        # assert configurable_translator_2.dtc_setting_type_mapping == self.dtc_setting_type_mapping
-        # assert configurable_translator_2.event_type_mapping == self.event_type_mapping
-        # assert configurable_translator_2.link_control_type_mapping == self.link_control_type_mapping
-        # assert configurable_translator_2.rid_mapping == self.rid_mapping
-        # assert configurable_translator_2.did_mapping == self.did_mapping
-        # assert configurable_translator_2.did_data_mapping == self.did_data_mapping
+        assert configurable_translator_2.diagnostic_session_type_mapping == self.diagnostic_session_type_mapping
+        assert configurable_translator_2.reset_type_mapping == self.reset_type_mapping
+        assert configurable_translator_2.report_type_mapping == self.report_type_mapping
+        assert configurable_translator_2.security_access_type_mapping == self.security_access_type_mapping
+        assert configurable_translator_2.control_type_type_mapping == self.control_type_type_mapping
+        assert configurable_translator_2.authentication_task_mapping == self.authentication_task_mapping
+        assert configurable_translator_2.definition_type_mapping == self.definition_type_mapping
+        assert configurable_translator_2.routine_control_type_mapping == self.routine_control_type_mapping
+        assert configurable_translator_2.zero_subfunction_mapping == self.zero_subfunction_mapping
+        assert configurable_translator_2.dtc_setting_type_mapping == self.dtc_setting_type_mapping
+        assert configurable_translator_2.event_type_mapping == self.event_type_mapping
+        assert configurable_translator_2.link_control_type_mapping == self.link_control_type_mapping
+        assert configurable_translator_2.rid_mapping == self.rid_mapping
+        assert configurable_translator_2.did_mapping == self.did_mapping
+        assert configurable_translator_2.did_data_mapping == self.did_data_mapping
         # # undefined
-        # assert configurable_translator_2.timing_parameter_access_type_mapping is None
+        assert configurable_translator_2.timing_parameter_access_type_mapping is None
         # unchanged base
         assert BASE_TRANSLATOR.services_mapping[RequestSID.DiagnosticSessionControl] == DIAGNOSTIC_SESSION_CONTROL
         assert DIAGNOSTIC_SESSION_CONTROL.request_structure[0].children[1].values_mapping == DIAGNOSTIC_SESSION_TYPE_MAPPING

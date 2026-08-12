@@ -10,6 +10,12 @@ class TestRawDataRecord:
 
     def setup_method(self):
         self.mock_data_record = Mock(spec=RawDataRecord)
+        # patching
+        self._patcher_deepcopy = patch(f"{SCRIPT_LOCATION}.deepcopy")
+        self.mock_deepcopy = self._patcher_deepcopy.start()
+
+    def teardown_method(self):
+        self._patcher_deepcopy.stop()
 
     # __init__
 
@@ -50,6 +56,22 @@ class TestRawDataRecord:
                                                                 min_occurrences=min_occurrences,
                                                                 max_occurrences=max_occurrences,
                                                                 enforce_reoccurring=enforce_reoccurring)
+
+    @patch(f"{SCRIPT_LOCATION}.RawDataRecord.__init__")
+    @patch(f"{SCRIPT_LOCATION}.RawDataRecord.__new__")
+    def test_deepcopy(self, mock_new, mock_init):
+        memo = {}
+        assert RawDataRecord.__deepcopy__(self.mock_data_record, memo) == mock_new.return_value
+        mock_init.assert_called_once_with(
+            mock_new.return_value,
+            name=self.mock_data_record.name,
+            length=self.mock_data_record.length,
+            children=self.mock_deepcopy.return_value,
+            min_occurrences=self.mock_data_record.min_occurrences,
+            max_occurrences=self.mock_data_record.max_occurrences,
+            unit=self.mock_data_record.unit,
+            enforce_reoccurring=self.mock_data_record.enforce_reoccurring)
+        self.mock_deepcopy.assert_called_once_with(self.mock_data_record.children, memo=memo)
 
     # get_physical_value
 

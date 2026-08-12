@@ -182,14 +182,15 @@ class ConditionalMappingDataRecord(AbstractConditionalDataRecord):
         return self.mapping[raw_value if self.value_mask is None else raw_value & self.value_mask]
 
     def __deepcopy__(self, memo: dict[int, Any]) -> ConditionalMappingDataRecord:
-        """Get deep copy of the Conditional Mapping Data Record."""
+        """Get deep copy of this Data Record."""
         cls = self.__class__
         self_copy = cls.__new__(cls)
         memo[id(self)] = self_copy
-        ConditionalMappingDataRecord.__init__(self_copy,
-                                              mapping=self.mapping,
-                                              default_message_continuation=deepcopy(self.default_message_continuation, memo=memo),
-                                              value_mask=self.value_mask)
+        ConditionalMappingDataRecord.__init__(
+            self_copy,
+            mapping={key: deepcopy(value, memo=memo) for key, value in self.mapping.items()},
+            default_message_continuation=deepcopy(self.default_message_continuation, memo=memo),
+            value_mask=self.value_mask)
         return self_copy
 
     @property
@@ -277,19 +278,14 @@ class ConditionalFormulaDataRecord(AbstractConditionalDataRecord):
         return self.formula(raw_value)
 
     def __deepcopy__(self, memo: dict[int, Any]) -> ConditionalFormulaDataRecord:
-        """Get deep copy of the  Mapping Data Record."""
+        """Get deep copy of this Data Record."""
         cls = self.__class__
         self_copy = cls.__new__(cls)
         memo[id(self)] = self_copy
-        ConditionalFormulaDataRecord.__init__(self_copy,
-                                   formula=self.formula,
-                                   length=self.length,
-                                   values_mapping=self.values_mapping,
-                                   children=[deepcopy(child, memo=memo) for child in self.children],
-                                   min_occurrences=self.min_occurrences,
-                                   max_occurrences=self.max_occurrences,
-                                   unit=self.unit,
-                                   enforce_reoccurring=self.enforce_reoccurring)
+        ConditionalFormulaDataRecord.__init__(
+            self_copy,
+            formula=self.formula,
+            default_message_continuation=deepcopy(self.default_message_continuation, memo=memo))
         return self_copy
 
     @property
