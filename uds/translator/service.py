@@ -5,8 +5,8 @@ __all__ = ["Service", "DecodedMessageAlias", "DataRecordsValuesAlias",
 
 from collections.abc import Collection, Mapping, Sequence
 from copy import deepcopy
-from warnings import warn
 from typing import Any
+from warnings import warn
 
 from uds.message import NEGATIVE_RESPONSE_MESSAGE_LENGTH, NRC, RESPONSE_REQUEST_SID_DIFF, RequestSID, ResponseSID
 from uds.utilities import Endianness, InconsistencyError, RawBytesAlias, bytes_to_int, int_to_bytes, validate_raw_bytes

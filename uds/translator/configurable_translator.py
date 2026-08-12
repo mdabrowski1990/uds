@@ -3,8 +3,8 @@
 __all__ = ["ConfigurableTranslator"]
 
 from copy import deepcopy
-from typing import Callable, Mapping, Any
 from types import MappingProxyType
+from typing import Any, Callable, Mapping
 
 from uds.message import RequestSID
 from uds.utilities import DID_BIT_LENGTH, REPEATED_DATA_RECORDS_NUMBER

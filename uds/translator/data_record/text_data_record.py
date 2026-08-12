@@ -3,7 +3,7 @@
 __all__ = ["TextDataRecord", "TextEncoding"]
 
 from collections.abc import Callable
-from typing import TypedDict, Any
+from typing import Any, TypedDict
 
 from uds.utilities import MAX_DTC_VALUE, ValidatedEnum, int_to_obd_dtc, obd_dtc_to_int
 

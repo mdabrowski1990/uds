@@ -1,6 +1,36 @@
 import pytest
 from mock import MagicMock, Mock, call, patch
 
+from uds.translator import (
+    AUTHENTICATION,
+    BASE_TRANSLATOR,
+    CLEAR_DIAGNOSTIC_INFORMATION,
+    COMMUNICATION_CONTROL,
+    CONTROL_DTC_SETTING,
+    DIAGNOSTIC_SESSION_CONTROL,
+    DYNAMICALLY_DEFINE_DATA_IDENTIFIER,
+    ECU_RESET,
+    INPUT_OUTPUT_CONTROL_BY_IDENTIFIER,
+    LINK_CONTROL,
+    READ_DATA_BY_IDENTIFIER,
+    READ_DATA_BY_PERIODIC_IDENTIFIER,
+    READ_DTC_INFORMATION,
+    READ_MEMORY_BY_ADDRESS,
+    READ_SCALING_DATA_BY_IDENTIFIER,
+    REQUEST_DOWNLOAD,
+    REQUEST_FILE_TRANSFER,
+    REQUEST_TRANSFER_EXIT,
+    REQUEST_UPLOAD,
+    RESPONSE_ON_EVENT,
+    ROUTINE_CONTROL,
+    SECURED_DATA_TRANSMISSION,
+    SECURITY_ACCESS,
+    TESTER_PRESENT,
+    TRANSFER_DATA,
+    WRITE_DATA_BY_IDENTIFIER,
+    WRITE_MEMORY_BY_ADDRESS,
+    RawDataRecord,
+)
 from uds.translator.configurable_translator import (
     DID_BIT_LENGTH,
     DID_COUNT_RECORDS,
@@ -18,11 +48,23 @@ from uds.translator.configurable_translator import (
     RequestSID,
     Translator,
 )
-from uds.translator import DIAGNOSTIC_SESSION_CONTROL, TESTER_PRESENT, READ_DATA_BY_IDENTIFIER, BASE_TRANSLATOR, \
-    RawDataRecord, ECU_RESET, RESPONSE_ON_EVENT, AUTHENTICATION, CONTROL_DTC_SETTING, READ_DTC_INFORMATION, READ_SCALING_DATA_BY_IDENTIFIER, READ_DATA_BY_PERIODIC_IDENTIFIER, READ_MEMORY_BY_ADDRESS, WRITE_DATA_BY_IDENTIFIER, WRITE_MEMORY_BY_ADDRESS, TRANSFER_DATA, REQUEST_DOWNLOAD, REQUEST_UPLOAD, REQUEST_FILE_TRANSFER, REQUEST_TRANSFER_EXIT, CLEAR_DIAGNOSTIC_INFORMATION, COMMUNICATION_CONTROL, ROUTINE_CONTROL, SECURED_DATA_TRANSMISSION, SECURITY_ACCESS, LINK_CONTROL, INPUT_OUTPUT_CONTROL_BY_IDENTIFIER, DYNAMICALLY_DEFINE_DATA_IDENTIFIER
-from uds.translator.service_definitions import ACCESS_TIMING_PARAMETER_2013
 from uds.translator.data_record_definitions import ACTIVE_DIAGNOSTIC_SESSION
-from uds.utilities.constants import DIAGNOSTIC_SESSION_TYPE_MAPPING, RESET_TYPE_MAPPING, REPORT_TYPE_MAPPING_2020, SECURITY_ACCESS_TYPE_MAPPING, CONTROL_TYPE_MAPPING, AUTHENTICATION_TASK_MAPPING, DEFINITION_TYPE_MAPPING,  ROUTINE_CONTROL_TYPE_MAPPING, ZERO_SUBFUNCTION_MAPPING, DTC_SETTING_TYPE_MAPPING, EVENT_MAPPING_2020,   LINK_CONTROL_TYPE_MAPPING, DID_MAPPING_2020
+from uds.translator.service_definitions import ACCESS_TIMING_PARAMETER_2013
+from uds.utilities.constants import (
+    AUTHENTICATION_TASK_MAPPING,
+    CONTROL_TYPE_MAPPING,
+    DEFINITION_TYPE_MAPPING,
+    DIAGNOSTIC_SESSION_TYPE_MAPPING,
+    DID_MAPPING_2020,
+    DTC_SETTING_TYPE_MAPPING,
+    EVENT_MAPPING_2020,
+    LINK_CONTROL_TYPE_MAPPING,
+    REPORT_TYPE_MAPPING_2020,
+    RESET_TYPE_MAPPING,
+    ROUTINE_CONTROL_TYPE_MAPPING,
+    SECURITY_ACCESS_TYPE_MAPPING,
+    ZERO_SUBFUNCTION_MAPPING,
+)
 
 SCRIPT_LOCATION = "uds.translator.configurable_translator"
 
@@ -1094,11 +1136,11 @@ class TestConfigurableTranslatorIntegration:
     }
     zero_subfunction_mapping = {
         0x00: "default",
-        0x40: "till reset"
+        0x41: "till reset"
     }
     timing_parameter_access_type_mapping = {
         0x01: "readExtendedTimingParameterSet",
-        0x40: "Custom"
+        0x02: "Custom"
     }
     dtc_setting_type_mapping = {
         0x01: "ON",
@@ -1134,7 +1176,7 @@ class TestConfigurableTranslatorIntegration:
         0xF186: "ActiveDiagnosticSessionDataIdentifier",
     }
     did_data_mapping = {
-        0x0100: (RawDataRecord(name="Param1", length=8, min_occurrences=2, max_occurrences=2)),
+        0x0100: (RawDataRecord(name="Param1", length=8, min_occurrences=2, max_occurrences=2), ),
         0x0101: (RawDataRecord(name="a#1", length=4), RawDataRecord(name="a#2", length=4)),
         0xF186: (RESERVED_BIT, ACTIVE_DIAGNOSTIC_SESSION),
     }
@@ -1210,7 +1252,7 @@ class TestConfigurableTranslatorIntegration:
         assert READ_DATA_BY_IDENTIFIER.response_structure[0].values_mapping != configurable_translator_1.did_mapping
 
     def test_configuration_2(self, configurable_translator_2):
-        # # defined
+        # defined
         assert configurable_translator_2.diagnostic_session_type_mapping == self.diagnostic_session_type_mapping
         assert configurable_translator_2.reset_type_mapping == self.reset_type_mapping
         assert configurable_translator_2.report_type_mapping == self.report_type_mapping
@@ -1226,7 +1268,7 @@ class TestConfigurableTranslatorIntegration:
         assert configurable_translator_2.rid_mapping == self.rid_mapping
         assert configurable_translator_2.did_mapping == self.did_mapping
         assert configurable_translator_2.did_data_mapping == self.did_data_mapping
-        # # undefined
+        # undefined
         assert configurable_translator_2.timing_parameter_access_type_mapping is None
         # unchanged base
         assert BASE_TRANSLATOR.services_mapping[RequestSID.DiagnosticSessionControl] == DIAGNOSTIC_SESSION_CONTROL
@@ -1268,5 +1310,352 @@ class TestConfigurableTranslatorIntegration:
         assert BASE_TRANSLATOR.services_mapping[RequestSID.ReadDataByIdentifier] == READ_DATA_BY_IDENTIFIER
         assert READ_DATA_BY_IDENTIFIER.request_structure[0].values_mapping == DID_MAPPING_2020
         assert READ_DATA_BY_IDENTIFIER.response_structure[0].values_mapping == DID_MAPPING_2020
+        assert BASE_TRANSLATOR.services_mapping[RequestSID.WriteDataByIdentifier] == WRITE_DATA_BY_IDENTIFIER
+        assert WRITE_DATA_BY_IDENTIFIER.request_structure[0].values_mapping == DID_MAPPING_2020
+        assert WRITE_DATA_BY_IDENTIFIER.response_structure[0].values_mapping == DID_MAPPING_2020
+        assert BASE_TRANSLATOR.services_mapping[RequestSID.ReadScalingDataByIdentifier] == READ_SCALING_DATA_BY_IDENTIFIER
+        assert READ_SCALING_DATA_BY_IDENTIFIER.request_structure[0].values_mapping == DID_MAPPING_2020
+        assert READ_SCALING_DATA_BY_IDENTIFIER.response_structure[0].values_mapping == DID_MAPPING_2020
+        assert BASE_TRANSLATOR.services_mapping[RequestSID.InputOutputControlByIdentifier] == INPUT_OUTPUT_CONTROL_BY_IDENTIFIER
+        assert INPUT_OUTPUT_CONTROL_BY_IDENTIFIER.request_structure[0].values_mapping == DID_MAPPING_2020
+        assert INPUT_OUTPUT_CONTROL_BY_IDENTIFIER.response_structure[0].values_mapping == DID_MAPPING_2020
+        assert BASE_TRANSLATOR.services_mapping[RequestSID.ReadDataByPeriodicIdentifier] == READ_DATA_BY_PERIODIC_IDENTIFIER
+        assert BASE_TRANSLATOR.services_mapping[RequestSID.ReadMemoryByAddress] == READ_MEMORY_BY_ADDRESS
+        assert BASE_TRANSLATOR.services_mapping[RequestSID.WriteMemoryByAddress] == WRITE_MEMORY_BY_ADDRESS
+        assert BASE_TRANSLATOR.services_mapping[RequestSID.SecuredDataTransmission] == SECURED_DATA_TRANSMISSION
+        assert BASE_TRANSLATOR.services_mapping[RequestSID.ClearDiagnosticInformation] == CLEAR_DIAGNOSTIC_INFORMATION
+        assert BASE_TRANSLATOR.services_mapping[RequestSID.RequestTransferExit] == REQUEST_TRANSFER_EXIT
+        assert BASE_TRANSLATOR.services_mapping[RequestSID.RequestFileTransfer] == REQUEST_FILE_TRANSFER
+        assert BASE_TRANSLATOR.services_mapping[RequestSID.TransferData] == TRANSFER_DATA
+        assert BASE_TRANSLATOR.services_mapping[RequestSID.RequestDownload] == REQUEST_DOWNLOAD
+        assert BASE_TRANSLATOR.services_mapping[RequestSID.RequestUpload] == REQUEST_UPLOAD
 
-    # TODO: add more tests
+    @pytest.mark.parametrize("payload, decoded_message", [
+        # DiagnosticSessionControl
+        (
+            [0x10, 0x40],
+            (
+                {
+                    "name": "SID",
+                    "length": 8,
+                    "raw_value": 0x10,
+                    "physical_value": "DiagnosticSessionControl",
+                    "children": (),
+                    "unit": None,
+                },
+                {
+                    "name": "SubFunction",
+                    "length": 8,
+                    "raw_value": 0x40,
+                    "physical_value": 0x40,
+                    "children": (
+                        {
+                            "name": "suppressPosRspMsgIndicationBit",
+                            "length": 1,
+                            "raw_value": 0,
+                            "physical_value": "no",
+                            "children": (),
+                            "unit": None,
+                        },
+                        {
+                            "name": "diagnosticSessionType",
+                            "length": 7,
+                            "raw_value": 0x40,
+                            "physical_value": "Custom",
+                            "children": (),
+                            "unit": None,
+                        },
+                    ),
+                    "unit": None,
+                },
+            )
+        ),
+        (
+            [0x50, 0x82, 0x12, 0x34, 0x56, 0x78],
+            (
+                {
+                    "name": "RSID",
+                    "length": 8,
+                    "raw_value": 0x50,
+                    "physical_value": "DiagnosticSessionControl",
+                    "children": (),
+                    "unit": None,
+                },
+                {
+                    "name": "SubFunction",
+                    "length": 8,
+                    "raw_value": 0x82,
+                    "physical_value": 0x82,
+                    "children": (
+                        {
+                            "name": "suppressPosRspMsgIndicationBit",
+                            "length": 1,
+                            "raw_value": 1,
+                            "physical_value": "yes",
+                            "children": (),
+                            "unit": None,
+                        },
+                        {
+                            "name": "diagnosticSessionType",
+                            "length": 7,
+                            "raw_value": 0x02,
+                            "physical_value": 0x02,
+                            "children": (),
+                            "unit": None,
+                        },
+                    ),
+                    "unit": None,
+                },
+                {
+                    'children': (
+                        {
+                            'children': (),
+                            'length': 16,
+                            'name': 'P2Server_max',
+                            'physical_value': 0x1234,
+                            'raw_value': 0x1234,
+                            'unit': 'ms'
+                        },
+                        {
+                            'children': (),
+                            'length': 16,
+                            'name': 'P2*Server_max',
+                            'physical_value': 221360,
+                            'raw_value': 0x5678,
+                            'unit': 'ms'
+                        }
+                    ),
+                    'length': 32,
+                    'name': 'sessionParameterRecord',
+                    'physical_value': 0x12345678,
+                    'raw_value': 0x12345678,
+                    'unit': None
+                }
+            )
+        ),
+        # TesterPresent
+        (
+            [0x3E, 0x41],
+            (
+                {
+                    "name": "SID",
+                    "length": 8,
+                    "raw_value": 0x3E,
+                    "physical_value": "TesterPresent",
+                    "children": (),
+                    "unit": None,
+                },
+                {
+                    "name": "SubFunction",
+                    "length": 8,
+                    "raw_value": 0x41,
+                    "physical_value": 0x41,
+                    "children": (
+                        {
+                            "name": "suppressPosRspMsgIndicationBit",
+                            "length": 1,
+                            "raw_value": 0,
+                            "physical_value": "no",
+                            "children": (),
+                            "unit": None,
+                        },
+                        {
+                            "name": "zeroSubFunction",
+                            "length": 7,
+                            "raw_value": 0x41,
+                            "physical_value": "till reset",
+                            "children": (),
+                            "unit": None,
+                        },
+                    ),
+                    "unit": None,
+                },
+            )
+        ),
+        (
+            [0x7E, 0x80],
+            (
+                {
+                    "name": "RSID",
+                    "length": 8,
+                    "raw_value": 0x7E,
+                    "physical_value": "TesterPresent",
+                    "children": (),
+                    "unit": None,
+                },
+                {
+                    "name": "SubFunction",
+                    "length": 8,
+                    "raw_value": 0x80,
+                    "physical_value": 0x80,
+                    "children": (
+                        {
+                            "name": "suppressPosRspMsgIndicationBit",
+                            "length": 1,
+                            "raw_value": 1,
+                            "physical_value": "yes",
+                            "children": (),
+                            "unit": None,
+                        },
+                        {
+                            "name": "zeroSubFunction",
+                            "length": 7,
+                            "raw_value": 0x00,
+                            "physical_value": "default",
+                            "children": (),
+                            "unit": None,
+                        },
+                    ),
+                    "unit": None,
+                },
+            )
+        ),
+        # AccessTimingParameter
+        (
+            [0x83, 0x82],
+            (
+                {
+                    "name": "SID",
+                    "length": 8,
+                    "raw_value": 0x83,
+                    "physical_value": "AccessTimingParameter",
+                    "children": (),
+                    "unit": None,
+                },
+                {
+                    "name": "SubFunction",
+                    "length": 8,
+                    "raw_value": 0x82,
+                    "physical_value": 0x82,
+                    "children": (
+                        {
+                            "name": "suppressPosRspMsgIndicationBit",
+                            "length": 1,
+                            "raw_value": 1,
+                            "physical_value": "yes",
+                            "children": (),
+                            "unit": None,
+                        },
+                        {
+                            "name": "timingParameterAccessType",
+                            "length": 7,
+                            "raw_value": 0x02,
+                            "physical_value": "Custom",
+                            "children": (),
+                            "unit": None,
+                        },
+                    ),
+                    "unit": None,
+                },
+            )
+        ),
+        (
+            [0xC3, 0x04],
+            (
+                {
+                    "name": "RSID",
+                    "length": 8,
+                    "raw_value": 0xC3,
+                    "physical_value": "AccessTimingParameter",
+                    "children": (),
+                    "unit": None,
+                },
+                {
+                    "name": "SubFunction",
+                    "length": 8,
+                    "raw_value": 0x04,
+                    "physical_value": 0x04,
+                    "children": (
+                        {
+                            "name": "suppressPosRspMsgIndicationBit",
+                            "length": 1,
+                            "raw_value": 0,
+                            "physical_value": "no",
+                            "children": (),
+                            "unit": None,
+                        },
+                        {
+                            "name": "timingParameterAccessType",
+                            "length": 7,
+                            "raw_value": 0x04,
+                            "physical_value": 0x04,
+                            "children": (),
+                            "unit": None,
+                        },
+                    ),
+                    "unit": None,
+                },
+            )
+        ),
+        # ReadDataByIdentifier
+        (
+            [0x22, 0x01, 0x00, 0x01, 0x01, 0xF1, 0x85],
+            (
+                {
+                    "name": "SID",
+                    "length": 8,
+                    "raw_value": 0x22,
+                    "physical_value": "ReadDataByIdentifier",
+                    "children": (),
+                    "unit": None,
+                },
+                {
+                    "name": "DID",
+                    "length": 16,
+                    "raw_value": (0x0100, 0x0101, 0xF185),
+                    "physical_value":  ('Custom DID#1', 'Custom DID#2', 0xF185),
+                    "children": ((), (), ()),
+                    "unit": None,
+                },
+            )
+        ),
+        (
+            [0x62, 0x01, 0x00, 0xB4, 0xC5, 0x01, 0x01, 0xFE],
+            (
+                {
+                    "name": "RSID",
+                    "length": 8,
+                    "raw_value": 0x62,
+                    "physical_value": "ReadDataByIdentifier",
+                    "children": (),
+                    "unit": None,
+                },
+                {
+                    "name": "DID#1",
+                    "length": 16,
+                    "raw_value": 0x0100,
+                    "physical_value":  "Custom DID#1",
+                    "children": (),
+                    "unit": None,
+                },
+                {
+                    'children': ((), (), (), (), ()),
+                    'length': 16,
+                    'name': 'DID#1 data',
+                    'physical_value': 0xB4C5,
+                    'raw_value': 0xB4C5,
+                    'unit': None
+                },
+                {
+                    "name": "DID#2",
+                    "length": 16,
+                    "raw_value": 0x0101,
+                    "physical_value":  "Custom DID#2",
+                    "children": (),
+                    "unit": None,
+                },
+                {
+                    'children': (),
+                    'length': 8,
+                    'name': 'DID#2 data',
+                    'physical_value': 0xFE,
+                    'raw_value': 0xFE,
+                    'unit': None
+                },
+            )
+        ),
+    ])
+    def test_decode_1(self, configurable_translator_1, payload, decoded_message):
+        assert configurable_translator_1.decode(payload=payload) == decoded_message
+
+    # TODO: add more tests - basic translations
