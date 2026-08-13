@@ -211,9 +211,9 @@ class AbstractDataRecord(ABC):
         for child in value:
             if not isinstance(child, AbstractDataRecord):
                 raise ValueError("At least one of the values in the sequence is not a Data Record.")
-            if child.is_reoccurring:
-                raise ValueError("Child Data Record cannot be reoccurring.")
-            children_length += child.length
+            if not child.fixed_total_length:
+                raise ValueError("Child Data Record have to have fixed total length.")
+            children_length += child.length * child.min_occurrences
             children_names.add(child.name)
         if children_length not in {self.length, 0}:
             raise InconsistencyError("Total children length does not match the length of this Data Record.")
@@ -352,7 +352,7 @@ class AbstractDataRecord(ABC):
         """Maximum raw (bit) value for this Data Record."""
         return (1 << self.length) - 1
 
-    def get_children_values(self, raw_value: int) -> OrderedDict[str, int]:
+    def get_children_values(self, raw_value: int) -> OrderedDict[str, tuple[int]]:
         """
         Get raw values of children.
 
@@ -364,13 +364,16 @@ class AbstractDataRecord(ABC):
         children_values = OrderedDict()
         offset = self.length
         for child in self.children:
-            offset -= child.length
-            mask = (1 << child.length) - 1
-            child_value = (raw_value >> offset) & mask
-            children_values[child.name] = child_value
+            child_values = []
+            for _ in range(child.min_occurrences):
+                offset -= child.length
+                mask = (1 << child.length) - 1
+                child_value = (raw_value >> offset) & mask
+                child_values.append(child_value)
+            children_values[child.name] = tuple(child_values)
         return children_values
 
-    def get_children_occurrence_info(self, raw_value: int) -> tuple[SingleOccurrenceInfo, ...]:
+    def get_children_occurrence_info(self, raw_value: int) -> tuple[DataRecordInfoAlias, ...]:
         """
         Get occurrence information for all children.
 
@@ -379,8 +382,8 @@ class AbstractDataRecord(ABC):
         :return: Children occurrence information.
         """
         children_values = self.get_children_values(raw_value)
-        children_occurrence_info: list[SingleOccurrenceInfo] \
-            = [child.get_occurrence_info(children_values[child.name]) for child in self.children]  # type: ignore
+        children_occurrence_info = [child.get_occurrence_info(*children_values[child.name])
+                                    for child in self.children]
         return tuple(children_occurrence_info)
 
     def get_occurrence_info(self, *raw_values: int) -> DataRecordInfoAlias:

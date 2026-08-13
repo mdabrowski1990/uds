@@ -173,22 +173,22 @@ class TestAbstractDataRecord:
         mock_isinstance.assert_called_once_with(mock_value, Sequence)
 
     @pytest.mark.parametrize("children", [
-        [Mock(is_reoccurring=False, length=4), Mock(spec=AbstractDataRecord, is_reoccurring=False, length=4)],
-        [Mock(spec=AbstractDataRecord, is_reoccurring=True, length=1) for _ in range(16)],
+        [Mock(fixed_total_length=True, length=4), Mock(spec=AbstractDataRecord, fixed_total_length=True, length=4)],
+        [Mock(spec=AbstractDataRecord, fixed_total_length=False, length=1) for _ in range(16)],
     ])
     def test_children__set__value_error(self, children):
         with pytest.raises(ValueError):
             AbstractDataRecord.children.fset(self.mock_data_record, children)
 
     @pytest.mark.parametrize("length, children", [
-        (8, [Mock(spec=AbstractDataRecord, is_reoccurring=False, length=4),
-             Mock(spec=AbstractDataRecord, is_reoccurring=False, length=5)]),
-        (8, [Mock(spec=AbstractDataRecord, is_reoccurring=False, length=4),
-             Mock(spec=AbstractDataRecord, is_reoccurring=False, length=3)]),
-        (16, [Mock(spec=AbstractDataRecord, is_reoccurring=False, length=8),
-              Mock(spec=AbstractDataRecord, is_reoccurring=False, length=4),
-              Mock(spec=AbstractDataRecord, is_reoccurring=False, length=2),
-              Mock(spec=AbstractDataRecord, is_reoccurring=False, length=1)]),
+        (8, [Mock(spec=AbstractDataRecord, fixed_total_length=True, length=4, min_occurrences=1),
+             Mock(spec=AbstractDataRecord, fixed_total_length=True, length=5, min_occurrences=2)]),
+        (8, [Mock(spec=AbstractDataRecord, fixed_total_length=True, length=4, min_occurrences=2),
+             Mock(spec=AbstractDataRecord, fixed_total_length=True, length=3, min_occurrences=2)]),
+        (16, [Mock(spec=AbstractDataRecord, fixed_total_length=True, length=8, min_occurrences=1),
+              Mock(spec=AbstractDataRecord, fixed_total_length=True, length=4, min_occurrences=1),
+              Mock(spec=AbstractDataRecord, fixed_total_length=True, length=2, min_occurrences=1),
+              Mock(spec=AbstractDataRecord, fixed_total_length=True, length=1, min_occurrences=1)]),
     ])
     def test_children__set__inconsistent(self, length, children):
         self.mock_data_record.length = length
@@ -196,12 +196,12 @@ class TestAbstractDataRecord:
             AbstractDataRecord.children.fset(self.mock_data_record, children)
 
     @pytest.mark.parametrize("length, children", [
-        (8, [Mock(spec=AbstractDataRecord, is_reoccurring=False, length=4),
-             Mock(spec=AbstractDataRecord, is_reoccurring=False, length=4)]),
-        (16, [Mock(spec=AbstractDataRecord, is_reoccurring=False, length=8),
-              Mock(spec=AbstractDataRecord, is_reoccurring=False, length=4),
-              Mock(spec=AbstractDataRecord, is_reoccurring=False, length=2),
-              Mock(spec=AbstractDataRecord, is_reoccurring=False, length=2)]),
+        (8, [Mock(spec=AbstractDataRecord, fixed_total_length=True, length=4, min_occurrences=1),
+             Mock(spec=AbstractDataRecord, fixed_total_length=True, length=4, min_occurrences=1)]),
+        (16, [Mock(spec=AbstractDataRecord, fixed_total_length=True, length=8, min_occurrences=1),
+              Mock(spec=AbstractDataRecord, fixed_total_length=True, length=4, min_occurrences=1),
+              Mock(spec=AbstractDataRecord, fixed_total_length=True, length=2, min_occurrences=1),
+              Mock(spec=AbstractDataRecord, fixed_total_length=True, length=2, min_occurrences=1)]),
     ])
     def test_children__set__inconsistent__names(self, length, children):
         self.mock_data_record.length = length
@@ -211,14 +211,14 @@ class TestAbstractDataRecord:
 
     @pytest.mark.parametrize("length, children", [
         (8, []),
-        (9, [Mock(spec=AbstractDataRecord, is_reoccurring=False, length=4),
-             Mock(spec=AbstractDataRecord, is_reoccurring=False, length=5)]),
-        (7, [Mock(spec=AbstractDataRecord, is_reoccurring=False, length=4),
-             Mock(spec=AbstractDataRecord, is_reoccurring=False, length=3)]),
-        (16, [Mock(spec=AbstractDataRecord, is_reoccurring=False, length=8),
-              Mock(spec=AbstractDataRecord, is_reoccurring=False, length=4),
-              Mock(spec=AbstractDataRecord, is_reoccurring=False, length=2),
-              Mock(spec=AbstractDataRecord, is_reoccurring=False, length=2)]),
+        (13, [Mock(spec=AbstractDataRecord, fixed_total_length=True, length=4, min_occurrences=2),
+             Mock(spec=AbstractDataRecord, fixed_total_length=True, length=5, min_occurrences=1)]),
+        (7, [Mock(spec=AbstractDataRecord, fixed_total_length=True, length=4, min_occurrences=1),
+             Mock(spec=AbstractDataRecord, fixed_total_length=True, length=3, min_occurrences=1)]),
+        (16, [Mock(spec=AbstractDataRecord, fixed_total_length=True, length=8, min_occurrences=1),
+              Mock(spec=AbstractDataRecord, fixed_total_length=True, length=4, min_occurrences=1),
+              Mock(spec=AbstractDataRecord, fixed_total_length=True, length=2, min_occurrences=1),
+              Mock(spec=AbstractDataRecord, fixed_total_length=True, length=2, min_occurrences=1)]),
     ])
     def test_children__set__valid(self, length, children):
         self.mock_data_record.length = length
@@ -395,13 +395,24 @@ class TestAbstractDataRecord:
     # get_children_values
 
     @pytest.mark.parametrize("children, raw_value, expected_children_values", [
-        ([Mock(length=4), Mock(length=4)], 0x5A, [0x5, 0xA]),
-        ([Mock(length=2), Mock(length=4), Mock(length=10)], 0x55FE, [0b01, 0b0101, 0x1FE]),
-        ([Mock(length=1) for _ in range(8)], 0xAA, [1, 0]*4),
+        (
+            [Mock(length=4, min_occurrences=1), Mock(length=4, min_occurrences=1)],
+            0x5A,
+            [(0x5,), (0xA,)]),
+        (
+            [Mock(length=2, min_occurrences=5), Mock(length=4, min_occurrences=1), Mock(length=10, min_occurrences=1)],
+            0xA555FE,
+            [(0b10, 0b10, 0b01, 0b01, 0b01), (0b0101,), (0x1FE,)]
+        ),
+        (
+            [Mock(length=1, min_occurrences=8)],
+            0xAA,
+            [(1, 0) * 4]
+         ),
     ])
     def test_get_children_values(self, children, raw_value, expected_children_values):
         self.mock_data_record.children = children
-        self.mock_data_record.length = sum(child.length for child in children)
+        self.mock_data_record.length = sum(child.length * child.min_occurrences for child in children)
         output = AbstractDataRecord.get_children_values(self.mock_data_record, raw_value)
         assert isinstance(output, OrderedDict)
         for i, (name, value) in enumerate(output.items()):
@@ -417,7 +428,7 @@ class TestAbstractDataRecord:
     ])
     def test_get_children_occurrence_info(self, raw_value, children):
         self.mock_data_record.children = children
-        children_values = {child.name: Mock() for child in children}
+        children_values = {child.name: [Mock()] * i for i, child in enumerate(children)}
         self.mock_data_record.get_children_values = Mock(return_value=children_values)
         output = AbstractDataRecord.get_children_occurrence_info(self.mock_data_record, raw_value=raw_value)
         self.mock_data_record.get_children_values.assert_called_once_with(raw_value)
@@ -425,7 +436,7 @@ class TestAbstractDataRecord:
         assert len(output) == len(children)
         for i, child in enumerate(children):
             assert output[i] == child.get_occurrence_info.return_value
-            child.get_occurrence_info.assert_called_with(children_values[child.name])
+            child.get_occurrence_info.assert_called_with(*children_values[child.name])
 
     # get_occurrence_info
 

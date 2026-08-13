@@ -1629,7 +1629,16 @@ class TestConfigurableTranslatorIntegration:
                     "unit": None,
                 },
                 {
-                    'children': ((), (), (), (), ()),
+                    'children': (
+                        {
+                            'children': ((), ()),
+                            'length': 8,
+                            'name': 'Param1',
+                            'physical_value': (0xB4, 0xC5),
+                            'raw_value': (0xB4, 0xC5),
+                            'unit': None
+                        },
+                    ),
                     'length': 16,
                     'name': 'DID#1 data',
                     'physical_value': 0xB4C5,
@@ -1645,7 +1654,24 @@ class TestConfigurableTranslatorIntegration:
                     "unit": None,
                 },
                 {
-                    'children': (),
+                    'children': (
+                        {
+                            'children': (),
+                            'length': 4,
+                            'name': 'a#1',
+                            'physical_value': 0xF,
+                            'raw_value': 0xF,
+                            'unit': None
+                        },
+                        {
+                            'children': (),
+                            'length': 4,
+                            'name': 'a#2',
+                            'physical_value': 0xE,
+                            'raw_value': 0xE,
+                            'unit': None
+                        }
+                    ),
                     'length': 8,
                     'name': 'DID#2 data',
                     'physical_value': 0xFE,
