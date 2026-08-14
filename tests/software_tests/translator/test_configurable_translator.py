@@ -1684,4 +1684,307 @@ class TestConfigurableTranslatorIntegration:
     def test_decode_1(self, configurable_translator_1, payload, decoded_message):
         assert configurable_translator_1.decode(payload=payload) == decoded_message
 
-    # TODO: add more tests - basic translations
+    @pytest.mark.parametrize("payload, decoded_message", [
+        # DiagnosticSessionControl
+        (
+            [0x10, 0x40],
+            (
+                {
+                    "name": "SID",
+                    "length": 8,
+                    "raw_value": 0x10,
+                    "physical_value": "DiagnosticSessionControl",
+                    "children": (),
+                    "unit": None,
+                },
+                {
+                    "name": "SubFunction",
+                    "length": 8,
+                    "raw_value": 0x40,
+                    "physical_value": 0x40,
+                    "children": (
+                        {
+                            "name": "suppressPosRspMsgIndicationBit",
+                            "length": 1,
+                            "raw_value": 0,
+                            "physical_value": "no",
+                            "children": (),
+                            "unit": None,
+                        },
+                        {
+                            "name": "diagnosticSessionType",
+                            "length": 7,
+                            "raw_value": 0x40,
+                            "physical_value": "Custom",
+                            "children": (),
+                            "unit": None,
+                        },
+                    ),
+                    "unit": None,
+                },
+            )
+        ),
+        (
+            [0x50, 0x82, 0x12, 0x34, 0x56, 0x78],
+            (
+                {
+                    "name": "RSID",
+                    "length": 8,
+                    "raw_value": 0x50,
+                    "physical_value": "DiagnosticSessionControl",
+                    "children": (),
+                    "unit": None,
+                },
+                {
+                    "name": "SubFunction",
+                    "length": 8,
+                    "raw_value": 0x82,
+                    "physical_value": 0x82,
+                    "children": (
+                        {
+                            "name": "suppressPosRspMsgIndicationBit",
+                            "length": 1,
+                            "raw_value": 1,
+                            "physical_value": "yes",
+                            "children": (),
+                            "unit": None,
+                        },
+                        {
+                            "name": "diagnosticSessionType",
+                            "length": 7,
+                            "raw_value": 0x02,
+                            "physical_value": 0x02,
+                            "children": (),
+                            "unit": None,
+                        },
+                    ),
+                    "unit": None,
+                },
+                {
+                    'children': (
+                        {
+                            'children': (),
+                            'length': 16,
+                            'name': 'P2Server_max',
+                            'physical_value': 0x1234,
+                            'raw_value': 0x1234,
+                            'unit': 'ms'
+                        },
+                        {
+                            'children': (),
+                            'length': 16,
+                            'name': 'P2*Server_max',
+                            'physical_value': 221360,
+                            'raw_value': 0x5678,
+                            'unit': 'ms'
+                        }
+                    ),
+                    'length': 32,
+                    'name': 'sessionParameterRecord',
+                    'physical_value': 0x12345678,
+                    'raw_value': 0x12345678,
+                    'unit': None
+                }
+            )
+        ),
+        # ECUReset
+        # TODO
+        # SecurityAccess
+        # TODO
+        # CommunicationControl
+        # TOD
+        # Authentication
+        # TODO
+        # TesterPresent
+        (
+            [0x3E, 0x41],
+            (
+                {
+                    "name": "SID",
+                    "length": 8,
+                    "raw_value": 0x3E,
+                    "physical_value": "TesterPresent",
+                    "children": (),
+                    "unit": None,
+                },
+                {
+                    "name": "SubFunction",
+                    "length": 8,
+                    "raw_value": 0x41,
+                    "physical_value": 0x41,
+                    "children": (
+                        {
+                            "name": "suppressPosRspMsgIndicationBit",
+                            "length": 1,
+                            "raw_value": 0,
+                            "physical_value": "no",
+                            "children": (),
+                            "unit": None,
+                        },
+                        {
+                            "name": "zeroSubFunction",
+                            "length": 7,
+                            "raw_value": 0x41,
+                            "physical_value": "till reset",
+                            "children": (),
+                            "unit": None,
+                        },
+                    ),
+                    "unit": None,
+                },
+            )
+        ),
+        (
+            [0x7E, 0x80],
+            (
+                {
+                    "name": "RSID",
+                    "length": 8,
+                    "raw_value": 0x7E,
+                    "physical_value": "TesterPresent",
+                    "children": (),
+                    "unit": None,
+                },
+                {
+                    "name": "SubFunction",
+                    "length": 8,
+                    "raw_value": 0x80,
+                    "physical_value": 0x80,
+                    "children": (
+                        {
+                            "name": "suppressPosRspMsgIndicationBit",
+                            "length": 1,
+                            "raw_value": 1,
+                            "physical_value": "yes",
+                            "children": (),
+                            "unit": None,
+                        },
+                        {
+                            "name": "zeroSubFunction",
+                            "length": 7,
+                            "raw_value": 0x00,
+                            "physical_value": "default",
+                            "children": (),
+                            "unit": None,
+                        },
+                    ),
+                    "unit": None,
+                },
+            )
+        ),
+        # ControlDTCSetting
+        # TODO
+        # ResponseOnEvent
+        # TODO
+        # LinkControl
+        # TODO
+        # ReadDataByIdentifier
+        (
+            [0x22, 0x01, 0x00, 0x01, 0x01, 0xF1, 0x85],
+            (
+                {
+                    "name": "SID",
+                    "length": 8,
+                    "raw_value": 0x22,
+                    "physical_value": "ReadDataByIdentifier",
+                    "children": (),
+                    "unit": None,
+                },
+                {
+                    "name": "DID",
+                    "length": 16,
+                    "raw_value": (0x0100, 0x0101, 0xF185),
+                    "physical_value":  ('Custom DID#1', 'Custom DID#2', 0xF185),
+                    "children": ((), (), ()),
+                    "unit": None,
+                },
+            )
+        ),
+        (
+            [0x62, 0x01, 0x00, 0xB4, 0xC5, 0x01, 0x01, 0xFE],
+            (
+                {
+                    "name": "RSID",
+                    "length": 8,
+                    "raw_value": 0x62,
+                    "physical_value": "ReadDataByIdentifier",
+                    "children": (),
+                    "unit": None,
+                },
+                {
+                    "name": "DID#1",
+                    "length": 16,
+                    "raw_value": 0x0100,
+                    "physical_value":  "Custom DID#1",
+                    "children": (),
+                    "unit": None,
+                },
+                {
+                    'children': (
+                        {
+                            'children': ((), ()),
+                            'length': 8,
+                            'name': 'Param1',
+                            'physical_value': (0xB4, 0xC5),
+                            'raw_value': (0xB4, 0xC5),
+                            'unit': None
+                        },
+                    ),
+                    'length': 16,
+                    'name': 'DID#1 data',
+                    'physical_value': 0xB4C5,
+                    'raw_value': 0xB4C5,
+                    'unit': None
+                },
+                {
+                    "name": "DID#2",
+                    "length": 16,
+                    "raw_value": 0x0101,
+                    "physical_value":  "Custom DID#2",
+                    "children": (),
+                    "unit": None,
+                },
+                {
+                    'children': (
+                        {
+                            'children': (),
+                            'length': 4,
+                            'name': 'a#1',
+                            'physical_value': 0xF,
+                            'raw_value': 0xF,
+                            'unit': None
+                        },
+                        {
+                            'children': (),
+                            'length': 4,
+                            'name': 'a#2',
+                            'physical_value': 0xE,
+                            'raw_value': 0xE,
+                            'unit': None
+                        }
+                    ),
+                    'length': 8,
+                    'name': 'DID#2 data',
+                    'physical_value': 0xFE,
+                    'raw_value': 0xFE,
+                    'unit': None
+                },
+            )
+        ),
+        # ReadScalingDataByIdentifier
+        # TODO
+        # DynamicallyDefineDataIdentifier
+        # TODO
+        # WriteDataByIdentifier
+        # TODO
+        # ReadDTCInformation
+        # TODO
+        # InputOutputControlByIdentifier
+        # TODO
+        # RoutineControl
+        # TODO
+    ])
+    def test_decode_2(self, configurable_translator_2, payload, decoded_message):
+        assert configurable_translator_2.decode(payload=payload) == decoded_message
+
+    # TODO: add encode tests
