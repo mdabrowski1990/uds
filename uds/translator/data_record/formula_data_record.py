@@ -71,7 +71,7 @@ class LinearFormulaDataRecord(AbstractDataRecord):
                          max_occurrences=max_occurrences,
                          enforce_reoccurring=enforce_reoccurring)
 
-    def __deepcopy__(self, memo: dict[int, Any]) -> LinearFormulaDataRecord:
+    def __deepcopy__(self, memo: dict[int, Any]) -> "LinearFormulaDataRecord":
         """Get deep copy of this Data Record."""
         cls = self.__class__
         self_copy = cls.__new__(cls)
@@ -231,7 +231,7 @@ class CustomFormulaDataRecord(AbstractDataRecord):
         self.encoding_formula = encoding_formula
         self.decoding_formula = decoding_formula
 
-    def __deepcopy__(self, memo: dict[int, Any]) -> CustomFormulaDataRecord:
+    def __deepcopy__(self, memo: dict[int, Any]) -> "CustomFormulaDataRecord":
         """Get deep copy of this Data Record."""
         cls = self.__class__
         self_copy = cls.__new__(cls)

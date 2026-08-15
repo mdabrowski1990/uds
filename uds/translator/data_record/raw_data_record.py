@@ -49,7 +49,7 @@ class RawDataRecord(AbstractDataRecord):
                          max_occurrences=max_occurrences,
                          enforce_reoccurring=enforce_reoccurring)
 
-    def __deepcopy__(self, memo: dict[int, Any]) -> RawDataRecord:
+    def __deepcopy__(self, memo: dict[int, Any]) -> "RawDataRecord":
         """Get deep copy of this Data Record."""
         cls = self.__class__
         self_copy = cls.__new__(cls)

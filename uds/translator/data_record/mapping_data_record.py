@@ -126,7 +126,7 @@ class MappingDataRecord(RawDataRecord, AbstractMappingDataRecord):
         AbstractMappingDataRecord.__init__(self,
                                            values_mapping=values_mapping)
 
-    def __deepcopy__(self, memo: dict[int, Any]) -> MappingDataRecord:
+    def __deepcopy__(self, memo: dict[int, Any]) -> "MappingDataRecord":
         """Get deep copy of this Data Record."""
         cls = self.__class__
         self_copy = cls.__new__(cls)
@@ -231,7 +231,7 @@ class MappingAndLinearFormulaDataRecord(LinearFormulaDataRecord, AbstractMapping
         AbstractMappingDataRecord.__init__(self,
                                            values_mapping=values_mapping)
 
-    def __deepcopy__(self, memo: dict[int, Any]) -> MappingAndLinearFormulaDataRecord:
+    def __deepcopy__(self, memo: dict[int, Any]) -> "MappingAndLinearFormulaDataRecord":
         """Get deep copy of this Data Record."""
         cls = self.__class__
         self_copy = cls.__new__(cls)

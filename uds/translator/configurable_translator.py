@@ -151,7 +151,7 @@ class ConfigurableTranslator(Translator):
         if did_data_mapping is not None:
             self.did_data_mapping = did_data_mapping
 
-    def __deepcopy__(self, memo: dict[int, Any]) -> ConfigurableTranslator:
+    def __deepcopy__(self, memo: dict[int, Any]) -> "ConfigurableTranslator":
         """Get deep copy of the translator."""
         cls = self.__class__
         self_copy = cls.__new__(cls)

@@ -75,7 +75,7 @@ class Service:
         self.response_structure = response_structure
         self.supported_nrc = supported_nrc
 
-    def __deepcopy__(self, memo: dict[int, Any]) -> Service:
+    def __deepcopy__(self, memo: dict[int, Any]) -> "Service":
         """Get deep copy of the service translator."""
         cls = self.__class__
         self_copy = cls.__new__(cls)

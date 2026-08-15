@@ -181,7 +181,7 @@ class ConditionalMappingDataRecord(AbstractConditionalDataRecord):
             raise ValueError(f"Provided value is not a raw value as it is less than 0. Actual value: {raw_value}")
         return self.mapping[raw_value if self.value_mask is None else raw_value & self.value_mask]
 
-    def __deepcopy__(self, memo: dict[int, Any]) -> ConditionalMappingDataRecord:
+    def __deepcopy__(self, memo: dict[int, Any]) -> "ConditionalMappingDataRecord":
         """Get deep copy of this Data Record."""
         cls = self.__class__
         self_copy = cls.__new__(cls)
@@ -277,7 +277,7 @@ class ConditionalFormulaDataRecord(AbstractConditionalDataRecord):
             raise ValueError(f"Provided value is not a raw value as it is lower than 0. Actual value: {raw_value}")
         return self.formula(raw_value)
 
-    def __deepcopy__(self, memo: dict[int, Any]) -> ConditionalFormulaDataRecord:
+    def __deepcopy__(self, memo: dict[int, Any]) -> "ConditionalFormulaDataRecord":
         """Get deep copy of this Data Record."""
         cls = self.__class__
         self_copy = cls.__new__(cls)
