@@ -191,12 +191,11 @@ class TestConfigurableTranslator:
 
     @patch(f"{SCRIPT_LOCATION}.ConfigurableTranslator.__init__")
     def test_deepcopy(self, mock_init):
-        mock_new = Mock()
         memo = {}
-        self.mock_translator.__class__ = MagicMock(__new__=mock_new)  # TODO: fix patching
-        assert ConfigurableTranslator.__deepcopy__(self.mock_translator, memo) == mock_new.return_value
+        translator_copy = ConfigurableTranslator.__deepcopy__(self.mock_translator, memo)
+        assert memo[id(self.mock_translator)] is translator_copy
         mock_init.assert_called_once_with(
-            mock_new.return_value,
+            translator_copy,
             base=self.mock_translator,
             diagnostic_session_type_mapping=self.mock_translator.diagnostic_session_type_mapping,
             reset_type_mapping=self.mock_translator.reset_type_mapping,
@@ -1718,7 +1717,7 @@ class TestConfigurableTranslatorIntegration:
                             "name": "diagnosticSessionType",
                             "length": 7,
                             "raw_value": 0x40,
-                            "physical_value": "Custom",
+                            "physical_value": diagnostic_session_type_mapping.get(0x40, 0x40),
                             "children": (),
                             "unit": None,
                         },
@@ -1756,7 +1755,7 @@ class TestConfigurableTranslatorIntegration:
                             "name": "diagnosticSessionType",
                             "length": 7,
                             "raw_value": 0x02,
-                            "physical_value": 0x02,
+                            "physical_value": diagnostic_session_type_mapping.get(0x02, 0x02),
                             "children": (),
                             "unit": None,
                         },
@@ -1828,7 +1827,7 @@ class TestConfigurableTranslatorIntegration:
                             "name": "zeroSubFunction",
                             "length": 7,
                             "raw_value": 0x41,
-                            "physical_value": "till reset",
+                            "physical_value": zero_subfunction_mapping.get(0x41, 0x41),
                             "children": (),
                             "unit": None,
                         },
@@ -1866,7 +1865,7 @@ class TestConfigurableTranslatorIntegration:
                             "name": "zeroSubFunction",
                             "length": 7,
                             "raw_value": 0x00,
-                            "physical_value": "default",
+                            "physical_value": zero_subfunction_mapping.get(0x00, 0x00),
                             "children": (),
                             "unit": None,
                         },
@@ -1897,7 +1896,9 @@ class TestConfigurableTranslatorIntegration:
                     "name": "DID",
                     "length": 16,
                     "raw_value": (0x0100, 0x0101, 0xF185),
-                    "physical_value":  ('Custom DID#1', 'Custom DID#2', 0xF185),
+                    "physical_value": (did_mapping.get(0x0100, 0x0100),
+                                       did_mapping.get(0x0101, 0x0101),
+                                       did_mapping.get(0xF185, 0xF185)),
                     "children": ((), (), ()),
                     "unit": None,
                 },
@@ -1918,7 +1919,7 @@ class TestConfigurableTranslatorIntegration:
                     "name": "DID#1",
                     "length": 16,
                     "raw_value": 0x0100,
-                    "physical_value":  "Custom DID#1",
+                    "physical_value": did_mapping.get(0x0100, 0x0100),
                     "children": (),
                     "unit": None,
                 },
@@ -1943,7 +1944,7 @@ class TestConfigurableTranslatorIntegration:
                     "name": "DID#2",
                     "length": 16,
                     "raw_value": 0x0101,
-                    "physical_value":  "Custom DID#2",
+                    "physical_value": did_mapping.get(0x0101, 0x0101),
                     "children": (),
                     "unit": None,
                 },
