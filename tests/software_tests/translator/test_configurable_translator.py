@@ -2301,7 +2301,143 @@ class TestConfigurableTranslatorIntegration:
             )
         ),
         # ResponseOnEvent
-        # TODO
+        (
+            [0x86, 0xC0, 0x02],
+            (
+                {
+                    "name": "SID",
+                    "length": 8,
+                    "raw_value": 0x86,
+                    "physical_value": "ResponseOnEvent",
+                    "children": (),
+                    "unit": None,
+                },
+                {
+                    "name": "SubFunction",
+                    "length": 8,
+                    "raw_value": 0xC0,
+                    "physical_value": 0xC0,
+                    "children": (
+                        {
+                            "name": "suppressPosRspMsgIndicationBit",
+                            "length": 1,
+                            "raw_value": 1,
+                            "physical_value": "yes",
+                            "children": (),
+                            "unit": None,
+                        },
+                        {
+                            "name": "eventType",
+                            "length": 7,
+                            "raw_value": 0x40,
+                            "physical_value": 0x40,
+                            "children": (
+                                {
+                                    "name": "storageState",
+                                    "length": 1,
+                                    "raw_value": 1,
+                                    "physical_value": "storeEvent",
+                                    "children": (),
+                                    "unit": None,
+                                },
+                                {
+                                    "name": "event",
+                                    "length": 6,
+                                    "raw_value": 0x00,
+                                    "physical_value": event_type_mapping.get(0x00, 0x00),
+                                    "children": (
+
+                                    ),
+                                    "unit": None,
+                                },
+                            ),
+                            "unit": None,
+                        },
+                    ),
+                    "unit": None,
+                },
+                {
+                    "name": "eventWindowTime",
+                    "length": 8,
+                    "raw_value": 0x02,
+                    "physical_value": "infiniteTimeToResponse",
+                    "children": (),
+                    "unit": None,
+                },
+            )
+        ),
+        (
+            [0xC6, 0x05, 0x00, 0x08],
+            (
+                {
+                    "name": "RSID",
+                    "length": 8,
+                    "raw_value": 0xC6,
+                    "physical_value": "ResponseOnEvent",
+                    "children": (),
+                    "unit": None,
+                },
+                {
+                    "name": "SubFunction",
+                    "length": 8,
+                    "raw_value": 0x05,
+                    "physical_value": 0x05,
+                    "children": (
+                        {
+                            "name": "suppressPosRspMsgIndicationBit",
+                            "length": 1,
+                            "raw_value": 0,
+                            "physical_value": "no",
+                            "children": (),
+                            "unit": None,
+                        },
+                        {
+                            "name": "eventType",
+                            "length": 7,
+                            "raw_value": 0x05,
+                            "physical_value": 0x05,
+                            "children": (
+                                {
+                                    "name": "storageState",
+                                    "length": 1,
+                                    "raw_value": 0,
+                                    "physical_value": "doNotStoreEvent",
+                                    "children": (),
+                                    "unit": None,
+                                },
+                                {
+                                    "name": "event",
+                                    "length": 6,
+                                    "raw_value": 0x05,
+                                    "physical_value": event_type_mapping.get(0x05, 0x05),
+                                    "children": (
+
+                                    ),
+                                    "unit": None,
+                                },
+                            ),
+                            "unit": None,
+                        },
+                    ),
+                    "unit": None,
+                },
+                {
+                    "name": "numberOfIdentifiedEvents",
+                    "length": 8,
+                    "raw_value": 0x00,
+                    "physical_value": 0,
+                    "children": (),
+                    "unit": None,
+                },                {
+                    "name": "eventWindowTime",
+                    "length": 8,
+                    "raw_value": 0x08,
+                    "physical_value": "manufacturerTriggerEventWindowTime",
+                    "children": (),
+                    "unit": None,
+                },
+            )
+        ),
         # LinkControl
         # TODO
         # ReadDataByIdentifier
