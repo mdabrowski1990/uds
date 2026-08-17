@@ -2224,7 +2224,82 @@ class TestConfigurableTranslatorIntegration:
             )
         ),
         # ControlDTCSetting
-        # TODO
+        (
+            [0x85, 0x01],
+            (
+                {
+                    "name": "SID",
+                    "length": 8,
+                    "raw_value": 0x85,
+                    "physical_value": "ControlDTCSetting",
+                    "children": (),
+                    "unit": None,
+                },
+                {
+                    "name": "SubFunction",
+                    "length": 8,
+                    "raw_value": 0x01,
+                    "physical_value": 0x01,
+                    "children": (
+                        {
+                            "name": "suppressPosRspMsgIndicationBit",
+                            "length": 1,
+                            "raw_value": 0,
+                            "physical_value": "no",
+                            "children": (),
+                            "unit": None,
+                        },
+                        {
+                            "name": "DTCSettingType",
+                            "length": 7,
+                            "raw_value": 0x01,
+                            "physical_value": dtc_setting_type_mapping.get(0x01, 0x01),
+                            "children": (),
+                            "unit": None,
+                        },
+                    ),
+                    "unit": None,
+                },
+            )
+        ),
+        (
+            [0xC5, 0xC0],
+            (
+                {
+                    "name": "RSID",
+                    "length": 8,
+                    "raw_value": 0xC5,
+                    "physical_value": "ControlDTCSetting",
+                    "children": (),
+                    "unit": None,
+                },
+                {
+                    "name": "SubFunction",
+                    "length": 8,
+                    "raw_value": 0xC0,
+                    "physical_value": 0xC0,
+                    "children": (
+                        {
+                            "name": "suppressPosRspMsgIndicationBit",
+                            "length": 1,
+                            "raw_value": 1,
+                            "physical_value": "yes",
+                            "children": (),
+                            "unit": None,
+                        },
+                        {
+                            "name": "DTCSettingType",
+                            "length": 7,
+                            "raw_value": 0x40,
+                            "physical_value": dtc_setting_type_mapping.get(0x40, 0x40),
+                            "children": (),
+                            "unit": None,
+                        },
+                    ),
+                    "unit": None,
+                },
+            )
+        ),
         # ResponseOnEvent
         # TODO
         # LinkControl
