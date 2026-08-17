@@ -67,11 +67,12 @@ class TestLinearFormulaDataRecord:
     # __deepcopy__
 
     @patch(f"{SCRIPT_LOCATION}.LinearFormulaDataRecord.__init__")
-    @patch(f"{SCRIPT_LOCATION}.LinearFormulaDataRecord.__new__")
-    def test_deepcopy(self, mock_new, mock_init):
-        assert LinearFormulaDataRecord.__deepcopy__(self.mock_formula_data_record, {}) == mock_new.return_value
+    def test_deepcopy(self, mock_init):
+        memo = {}
+        output = LinearFormulaDataRecord.__deepcopy__(self.mock_formula_data_record, memo=memo)
+        assert output == memo[id(self.mock_formula_data_record)]
         mock_init.assert_called_once_with(
-            mock_new.return_value,
+            output,
             name=self.mock_formula_data_record.name,
             length=self.mock_formula_data_record.length,
             factor=self.mock_formula_data_record.factor,
@@ -278,12 +279,12 @@ class TestCustomFormulaDataRecord:
     # __deepcopy__
 
     @patch(f"{SCRIPT_LOCATION}.CustomFormulaDataRecord.__init__")
-    @patch(f"{SCRIPT_LOCATION}.CustomFormulaDataRecord.__new__")
-    def test_deepcopy(self, mock_new, mock_init):
+    def test_deepcopy(self, mock_init):
         memo = {}
-        assert CustomFormulaDataRecord.__deepcopy__(self.mock_formula_data_record, memo) == mock_new.return_value
+        output = CustomFormulaDataRecord.__deepcopy__(self.mock_formula_data_record, memo)
+        assert output == memo[id(self.mock_formula_data_record)]
         mock_init.assert_called_once_with(
-            mock_new.return_value,
+            output,
             name=self.mock_formula_data_record.name,
             length=self.mock_formula_data_record.length,
             encoding_formula=self.mock_deepcopy.return_value,

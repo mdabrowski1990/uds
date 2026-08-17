@@ -58,12 +58,12 @@ class TestRawDataRecord:
                                                                 enforce_reoccurring=enforce_reoccurring)
 
     @patch(f"{SCRIPT_LOCATION}.RawDataRecord.__init__")
-    @patch(f"{SCRIPT_LOCATION}.RawDataRecord.__new__")
-    def test_deepcopy(self, mock_new, mock_init):
+    def test_deepcopy(self, mock_init):
         memo = {}
-        assert RawDataRecord.__deepcopy__(self.mock_data_record, memo) == mock_new.return_value
+        output = RawDataRecord.__deepcopy__(self.mock_data_record, memo)
+        assert output == memo[id(self.mock_data_record)]
         mock_init.assert_called_once_with(
-            mock_new.return_value,
+            output,
             name=self.mock_data_record.name,
             length=self.mock_data_record.length,
             children=self.mock_deepcopy.return_value,

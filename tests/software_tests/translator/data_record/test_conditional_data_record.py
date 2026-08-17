@@ -272,14 +272,13 @@ class TestConditionalMappingDataRecord:
          0: [Mock(), Mock()]}
     ])
     @patch(f"{SCRIPT_LOCATION}.ConditionalMappingDataRecord.__init__")
-    @patch(f"{SCRIPT_LOCATION}.ConditionalMappingDataRecord.__new__")
-    def test_deepcopy(self, mock_new, mock_init, mapping):
+    def test_deepcopy(self, mock_init, mapping):
         memo = {}
         self.mock_conditional_data_record.mapping = mapping
-        assert (ConditionalMappingDataRecord.__deepcopy__(self.mock_conditional_data_record, memo)
-                == mock_new.return_value)
+        output = ConditionalMappingDataRecord.__deepcopy__(self.mock_conditional_data_record, memo)
+        assert output == memo[id(self.mock_conditional_data_record)]
         mock_init.assert_called_once_with(
-            mock_new.return_value,
+            output,
             mapping={key: self.mock_deepcopy.return_value for key in mapping.keys()},
             default_message_continuation=self.mock_deepcopy.return_value,
             value_mask=self.mock_conditional_data_record.value_mask)
@@ -423,12 +422,12 @@ class TestConditionalFormulaDataRecord:
     # __deepcopy__
 
     @patch(f"{SCRIPT_LOCATION}.ConditionalFormulaDataRecord.__init__")
-    @patch(f"{SCRIPT_LOCATION}.ConditionalFormulaDataRecord.__new__")
-    def test_deepcopy(self, mock_new, mock_init):
+    def test_deepcopy(self, mock_init):
         memo = {}
-        assert ConditionalFormulaDataRecord.__deepcopy__(self.mock_conditional_data_record, memo) == mock_new.return_value
+        output = ConditionalFormulaDataRecord.__deepcopy__(self.mock_conditional_data_record, memo)
+        assert output == memo[id(self.mock_conditional_data_record)]
         mock_init.assert_called_once_with(
-            mock_new.return_value,
+            output,
             formula=self.mock_conditional_data_record.formula,
             default_message_continuation=self.mock_deepcopy.return_value)
         self.mock_deepcopy.assert_called_once_with(self.mock_conditional_data_record.default_message_continuation,

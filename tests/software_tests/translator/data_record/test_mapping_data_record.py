@@ -155,12 +155,12 @@ class TestMappingDataRecord:
     # __deepcopy__
 
     @patch(f"{SCRIPT_LOCATION}.MappingDataRecord.__init__")
-    @patch(f"{SCRIPT_LOCATION}.MappingDataRecord.__new__")
-    def test_deepcopy(self, mock_new, mock_init):
+    def test_deepcopy(self,  mock_init):
         memo = {}
-        assert MappingDataRecord.__deepcopy__(self.mock_data_record, memo) == mock_new.return_value
+        output = MappingDataRecord.__deepcopy__(self.mock_data_record, memo)
+        assert output == memo[id(self.mock_data_record)]
         mock_init.assert_called_once_with(
-            mock_new.return_value,
+            output,
             name=self.mock_data_record.name,
             length=self.mock_data_record.length,
             values_mapping=self.mock_data_record.values_mapping,
@@ -298,12 +298,12 @@ class TestMappingAndLinearFormulaDataRecord:
     # __deepcopy__
 
     @patch(f"{SCRIPT_LOCATION}.MappingAndLinearFormulaDataRecord.__init__")
-    @patch(f"{SCRIPT_LOCATION}.MappingAndLinearFormulaDataRecord.__new__")
-    def test_deepcopy(self, mock_new, mock_init):
+    def test_deepcopy(self, mock_init):
         memo = {}
-        assert MappingAndLinearFormulaDataRecord.__deepcopy__(self.mock_data_record, memo) == mock_new.return_value
+        output = MappingAndLinearFormulaDataRecord.__deepcopy__(self.mock_data_record, memo)
+        assert output == memo[id(self.mock_data_record)]
         mock_init.assert_called_once_with(
-            mock_new.return_value,
+            output,
             name=self.mock_data_record.name,
             length=self.mock_data_record.length,
             values_mapping=self.mock_data_record.values_mapping,
@@ -428,48 +428,48 @@ class TestMappingDataRecordIntegration:
     @pytest.mark.parametrize("dtc_status_value, expected_output", [
         (0x00, {
             "DTC Status": "Inactive",
-            "Test Failed": 0,
-            "Test Failed This Operation Cycle": 0,
-            "Pending DTC": 0,
-            "Confirmed DTC": 0,
-            "Test Not Completed Since Last Clear": 0,
-            "Test Failed Since Last Clear": 0,
-            "Test Not Completed This Operation Cycle": 0,
-            "Warning Indicator Requested/MIL on": 0,
+            "Test Failed": (0,),
+            "Test Failed This Operation Cycle": (0,),
+            "Pending DTC": (0,),
+            "Confirmed DTC": (0,),
+            "Test Not Completed Since Last Clear": (0,),
+            "Test Failed Since Last Clear": (0,),
+            "Test Not Completed This Operation Cycle": (0,),
+            "Warning Indicator Requested/MIL on": (0,),
         }),
         (0x2F, {
             "DTC Status": "Active with Lamp OFF",
-            "Test Failed": 1,
-            "Test Failed This Operation Cycle": 1,
-            "Pending DTC": 1,
-            "Confirmed DTC": 1,
-            "Test Not Completed Since Last Clear": 0,
-            "Test Failed Since Last Clear": 1,
-            "Test Not Completed This Operation Cycle": 0,
-            "Warning Indicator Requested/MIL on": 0,
+            "Test Failed": (1,),
+            "Test Failed This Operation Cycle": (1,),
+            "Pending DTC": (1,),
+            "Confirmed DTC": (1,),
+            "Test Not Completed Since Last Clear": (0,),
+            "Test Failed Since Last Clear": (1,),
+            "Test Not Completed This Operation Cycle": (0,),
+            "Warning Indicator Requested/MIL on": (0,),
         }),
         (0xAF, {
             "DTC Status": "Active with Lamp ON",
-            "Test Failed": 1,
-            "Test Failed This Operation Cycle": 1,
-            "Pending DTC": 1,
-            "Confirmed DTC": 1,
-            "Test Not Completed Since Last Clear": 0,
-            "Test Failed Since Last Clear": 1,
-            "Test Not Completed This Operation Cycle": 0,
-            "Warning Indicator Requested/MIL on": 1,
+            "Test Failed": (1,),
+            "Test Failed This Operation Cycle":(1,),
+            "Pending DTC": (1,),
+            "Confirmed DTC": (1,),
+            "Test Not Completed Since Last Clear":(0,),
+            "Test Failed Since Last Clear": (1,),
+            "Test Not Completed This Operation Cycle": (0,),
+            "Warning Indicator Requested/MIL on": (1,),
         }),
         (0xFF, {
             "DTC Status": 0xFF,
-            "Test Failed": 1,
-            "Test Failed This Operation Cycle": 1,
-            "Pending DTC": 1,
-            "Confirmed DTC": 1,
-            "Test Not Completed Since Last Clear": 1,
-            "Test Failed Since Last Clear": 1,
-            "Test Not Completed This Operation Cycle": 1,
-            "Warning Indicator Requested/MIL on": 1,
-        }),
+            "Test Failed": (1,),
+            "Test Failed This Operation Cycle": (1,),
+            "Pending DTC": (1,),
+            "Confirmed DTC": (1,),
+            "Test Not Completed Since Last Clear": (1,),
+            "Test Failed Since Last Clear": (1,),
+            "Test Not Completed This Operation Cycle": (1,),
+            "Warning Indicator Requested/MIL on": (1,),
+        })
     ])
     def test_get_physical_value__valid(self, dtc_status_value, expected_output):
         assert self.dtc_status.get_physical_value(dtc_status_value) == expected_output["DTC Status"]
