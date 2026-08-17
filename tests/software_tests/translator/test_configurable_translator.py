@@ -1790,13 +1790,362 @@ class TestConfigurableTranslatorIntegration:
             )
         ),
         # ECUReset
-        # TODO
+        (
+            [0x11, 0x81],
+            (
+                {
+                    "name": "SID",
+                    "length": 8,
+                    "raw_value": 0x11,
+                    "physical_value": "ECUReset",
+                    "children": (),
+                    "unit": None,
+                },
+                {
+                    "name": "SubFunction",
+                    "length": 8,
+                    "raw_value": 0x81,
+                    "physical_value": 0x81,
+                    "children": (
+                        {
+                            "name": "suppressPosRspMsgIndicationBit",
+                            "length": 1,
+                            "raw_value": 1,
+                            "physical_value": "yes",
+                            "children": (),
+                            "unit": None,
+                        },
+                        {
+                            "name": "resetType",
+                            "length": 7,
+                            "raw_value": 0x01,
+                            "physical_value": reset_type_mapping.get(0x01, 0x01),
+                            "children": (),
+                            "unit": None,
+                        },
+                    ),
+                    "unit": None,
+                },
+            )
+        ),
+        (
+            [0x51, 0x03],
+            (
+                {
+                    "name": "RSID",
+                    "length": 8,
+                    "raw_value": 0x51,
+                    "physical_value": "ECUReset",
+                    "children": (),
+                    "unit": None,
+                },
+                {
+                    "name": "SubFunction",
+                    "length": 8,
+                    "raw_value": 0x03,
+                    "physical_value": 0x03,
+                    "children": (
+                        {
+                            "name": "suppressPosRspMsgIndicationBit",
+                            "length": 1,
+                            "raw_value": 0,
+                            "physical_value": "no",
+                            "children": (),
+                            "unit": None,
+                        },
+                        {
+                            "name": "resetType",
+                            "length": 7,
+                            "raw_value": 0x03,
+                            "physical_value": reset_type_mapping.get(0x03, 0x03),
+                            "children": (),
+                            "unit": None,
+                        },
+                    ),
+                    "unit": None,
+                },
+            )
+        ),
         # SecurityAccess
-        # TODO
+        (
+            [0x27, 0x03],
+            (
+                {
+                    "name": "SID",
+                    "length": 8,
+                    "raw_value": 0x27,
+                    "physical_value": "SecurityAccess",
+                    "children": (),
+                    "unit": None,
+                },
+                {
+                    "name": "SubFunction",
+                    "length": 8,
+                    "raw_value": 0x03,
+                    "physical_value": 0x03,
+                    "children": (
+                        {
+                            "name": "suppressPosRspMsgIndicationBit",
+                            "length": 1,
+                            "raw_value": 0,
+                            "physical_value": "no",
+                            "children": (),
+                            "unit": None,
+                        },
+                        {
+                            "name": "securityAccessType",
+                            "length": 7,
+                            "raw_value": 0x03,
+                            "physical_value": security_access_type_mapping.get(0x03, 0x03),
+                            "children": (),
+                            "unit": None,
+                        },
+                    ),
+                    "unit": None,
+                },
+            )
+        ),
+        (
+            [0x67, 0x07, 0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC, 0xDE, 0xF0],
+            (
+                {
+                    "name": "RSID",
+                    "length": 8,
+                    "raw_value": 0x67,
+                    "physical_value": "SecurityAccess",
+                    "children": (),
+                    "unit": None,
+                },
+                {
+                    "name": "SubFunction",
+                    "length": 8,
+                    "raw_value": 0x07,
+                    "physical_value": 0x07,
+                    "children": (
+                        {
+                            "name": "suppressPosRspMsgIndicationBit",
+                            "length": 1,
+                            "raw_value": 0,
+                            "physical_value": "no",
+                            "children": (),
+                            "unit": None,
+                        },
+                        {
+                            "name": "securityAccessType",
+                            "length": 7,
+                            "raw_value": 0x07,
+                            "physical_value": security_access_type_mapping.get(0x07, 0x07),
+                            "children": (),
+                            "unit": None,
+                        },
+                    ),
+                    "unit": None,
+                },
+                {
+                    'children': ((), (), (), (), (), (), (), ()),
+                    'length': 8,
+                    'name': 'securitySeed',
+                    'physical_value': (0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC, 0xDE, 0xF0),
+                    'raw_value': (0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC, 0xDE, 0xF0),
+                    'unit': None
+                }
+            )
+        ),
         # CommunicationControl
-        # TOD
+        (
+            [0x28, 0x81, 0xFF],
+            (
+                {
+                    "name": "SID",
+                    "length": 8,
+                    "raw_value": 0x28,
+                    "physical_value": "CommunicationControl",
+                    "children": (),
+                    "unit": None,
+                },
+                {
+                    "name": "SubFunction",
+                    "length": 8,
+                    "raw_value": 0x81,
+                    "physical_value": 0x81,
+                    "children": (
+                        {
+                            "name": "suppressPosRspMsgIndicationBit",
+                            "length": 1,
+                            "raw_value": 1,
+                            "physical_value": "yes",
+                            "children": (),
+                            "unit": None,
+                        },
+                        {
+                            "name": "controlType",
+                            "length": 7,
+                            "raw_value": 0x01,
+                            "physical_value": control_type_type_mapping.get(0x01, 0x01),
+                            "children": (),
+                            "unit": None,
+                        },
+                    ),
+                    "unit": None,
+                },
+                {
+                    'children': (
+                        {
+                            'children': (),
+                            'length': 2,
+                            'name': 'messagesType',
+                            'physical_value': 'networkManagementCommunicationMessages and normalCommunicationMessages',
+                            'raw_value': 0x3,
+                            'unit': None
+                        },
+                        {
+                            'children': (),
+                            'length': 2,
+                            'name': 'reserved',
+                            'physical_value': 3,
+                            'raw_value': 0x3,
+                            'unit': None
+                        },
+                        {
+                            'children': (),
+                            'length': 4,
+                            'name': 'networks',
+                            'physical_value': 'network on which this request is received',
+                            'raw_value': 0xF,
+                            'unit': None
+                        }
+                    ),
+                    'length': 8,
+                    'name': 'communicationType',
+                    'physical_value': 0xFF,
+                    'raw_value': 0xFF,
+                    'unit': None
+                },
+            )
+        ),
+        (
+            [0x68, 0x40],
+            (
+                {
+                    "name": "RSID",
+                    "length": 8,
+                    "raw_value": 0x68,
+                    "physical_value": "CommunicationControl",
+                    "children": (),
+                    "unit": None,
+                },
+                {
+                    "name": "SubFunction",
+                    "length": 8,
+                    "raw_value": 0x40,
+                    "physical_value": 0x40,
+                    "children": (
+                        {
+                            "name": "suppressPosRspMsgIndicationBit",
+                            "length": 1,
+                            "raw_value": 0,
+                            "physical_value": "no",
+                            "children": (),
+                            "unit": None,
+                        },
+                        {
+                            "name": "controlType",
+                            "length": 7,
+                            "raw_value": 0x40,
+                            "physical_value": control_type_type_mapping.get(0x40, 0x40),
+                            "children": (),
+                            "unit": None,
+                        },
+                    ),
+                    "unit": None,
+                },
+            )
+        ),
         # Authentication
-        # TODO
+        (
+            [0x29, 0x00],
+            (
+                {
+                    "name": "SID",
+                    "length": 8,
+                    "raw_value": 0x29,
+                    "physical_value": "Authentication",
+                    "children": (),
+                    "unit": None,
+                },
+                {
+                    "name": "SubFunction",
+                    "length": 8,
+                    "raw_value": 0x00,
+                    "physical_value": 0x00,
+                    "children": (
+                        {
+                            "name": "suppressPosRspMsgIndicationBit",
+                            "length": 1,
+                            "raw_value": 0,
+                            "physical_value": "no",
+                            "children": (),
+                            "unit": None,
+                        },
+                        {
+                            "name": "authenticationTask",
+                            "length": 7,
+                            "raw_value": 0x00,
+                            "physical_value": authentication_task_mapping.get(0x00, 0x00),
+                            "children": (),
+                            "unit": None,
+                        },
+                    ),
+                    "unit": None,
+                },
+            )
+        ),
+        (
+            [0x69, 0x08, 0x03],
+            (
+                {
+                    "name": "RSID",
+                    "length": 8,
+                    "raw_value": 0x69,
+                    "physical_value": "Authentication",
+                    "children": (),
+                    "unit": None,
+                },
+                {
+                    "name": "SubFunction",
+                    "length": 8,
+                    "raw_value": 0x08,
+                    "physical_value": 0x08,
+                    "children": (
+                        {
+                            "name": "suppressPosRspMsgIndicationBit",
+                            "length": 1,
+                            "raw_value": 0,
+                            "physical_value": "no",
+                            "children": (),
+                            "unit": None,
+                        },
+                        {
+                            "name": "authenticationTask",
+                            "length": 7,
+                            "raw_value": 0x08,
+                            "physical_value": authentication_task_mapping.get(0x08, 0x08),
+                            "children": (),
+                            "unit": None,
+                        },
+                    ),
+                    "unit": None,
+                },
+                {
+                    'children': (),
+                    'length': 8,
+                    'name': 'authenticationReturnParameter',
+                    'physical_value': 'AuthenticationConfiguration ACR with asymmetric cryptography',
+                    'raw_value': 0x03,
+                    'unit': None
+                }
+            )
+        ),
         # TesterPresent
         (
             [0x3E, 0x41],
