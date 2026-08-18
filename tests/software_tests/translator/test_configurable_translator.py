@@ -3162,5 +3162,3 @@ class TestConfigurableTranslatorIntegration:
     ])
     def test_decode_2(self, configurable_translator_2, payload, decoded_message):
         assert configurable_translator_2.decode(payload=payload) == decoded_message
-
-    # TODO: add encode tests
