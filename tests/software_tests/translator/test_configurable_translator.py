@@ -1106,7 +1106,7 @@ class TestConfigurableTranslatorIntegration:
     report_type_mapping = {
         0x01: "reportDTCNumberByStatusMask",
         0x02: "reportDTCByStatusMask",
-        0x40: "reportInternalDTCMapping"
+        0x03: "reportInternalDTCMapping"
     }
     security_access_type_mapping = {
         0x03: "requestSeedForProgramming",
@@ -2687,15 +2687,477 @@ class TestConfigurableTranslatorIntegration:
             )
         ),
         # DynamicallyDefineDataIdentifier
-        # TODO
+        (
+            [0x2C, 0x03],
+            (
+                {
+                    "name": "SID",
+                    "length": 8,
+                    "raw_value": 0x2C,
+                    "physical_value": "DynamicallyDefineDataIdentifier",
+                    "children": (),
+                    "unit": None,
+                },
+                {
+                    "name": "SubFunction",
+                    "length": 8,
+                    "raw_value": 0x03,
+                    "physical_value": 0x03,
+                    "children": (
+                        {
+                            "name": "suppressPosRspMsgIndicationBit",
+                            "length": 1,
+                            "raw_value": 0,
+                            "physical_value": "no",
+                            "children": (),
+                            "unit": None,
+                        },
+                        {
+                            "name": "definitionType",
+                            "length": 7,
+                            "raw_value": 0x03,
+                            "physical_value": definition_type_mapping.get(0x03, 0x03),
+                            "children": (),
+                            "unit": None,
+                        },
+                    ),
+                    "unit": None,
+                },
+            )
+        ),
+        (
+            [0x6C, 0x81, 0xF1, 0x86],
+            (
+                {
+                    "name": "RSID",
+                    "length": 8,
+                    "raw_value": 0x6C,
+                    "physical_value": "DynamicallyDefineDataIdentifier",
+                    "children": (),
+                    "unit": None,
+                },
+                {
+                    "name": "SubFunction",
+                    "length": 8,
+                    "raw_value": 0x81,
+                    "physical_value": 0x81,
+                    "children": (
+                        {
+                            "name": "suppressPosRspMsgIndicationBit",
+                            "length": 1,
+                            "raw_value": 1,
+                            "physical_value": "yes",
+                            "children": (),
+                            "unit": None,
+                        },
+                        {
+                            "name": "definitionType",
+                            "length": 7,
+                            "raw_value": 0x01,
+                            "physical_value": definition_type_mapping.get(0x01, 0x01),
+                            "children": (),
+                            "unit": None,
+                        },
+                    ),
+                    "unit": None,
+                },
+                {
+                    "name": "dynamicallyDefinedDataIdentifier",
+                    "length": 16,
+                    "raw_value": 0xF186,
+                    "physical_value": did_mapping.get(0xF186, 0xF186),
+                    "children": (),
+                    "unit": None,
+                },
+            )
+        ),
         # WriteDataByIdentifier
-        # TODO
+        (
+            [0x2E, 0x01, 0x00, 0xF0, 0xE1],
+            (
+                {
+                    "name": "SID",
+                    "length": 8,
+                    "raw_value": 0x2E,
+                    "physical_value": "WriteDataByIdentifier",
+                    "children": (),
+                    "unit": None,
+                },
+                {
+                    "name": "DID",
+                    "length": 16,
+                    "raw_value": 0x0100,
+                    "physical_value": did_mapping.get(0x0100, 0x0100),
+                    "children": (),
+                    "unit": None,
+                },
+                {
+                    'children': (
+                        {
+                            'children': ((), ()),
+                            'length': 8,
+                            'name': 'Param1',
+                            'physical_value': (0xF0, 0xE1),
+                            'raw_value': (0xF0, 0xE1),
+                            'unit': None
+                        },
+                    ),
+                    'length': 16,
+                    'name': 'DID data',
+                    'physical_value': 0xF0E1,
+                    'raw_value': 0xF0E1,
+                    'unit': None
+                },
+            )
+        ),
+        (
+            [0x6E, 0xE0, 0x00],
+            (
+                {
+                    "name": "RSID",
+                    "length": 8,
+                    "raw_value": 0x6E,
+                    "physical_value": "WriteDataByIdentifier",
+                    "children": (),
+                    "unit": None,
+                },
+                {
+                    "name": "DID",
+                    "length": 16,
+                    "raw_value": 0xE000,
+                    "physical_value": did_mapping.get(0xE000, 0xE000),
+                    "children": (),
+                    "unit": None,
+                },
+            )
+        ),
         # ReadDTCInformation
-        # TODO
+        (
+            [0x19, 0x03],
+            (
+                {
+                    "name": "SID",
+                    "length": 8,
+                    "raw_value": 0x19,
+                    "physical_value": "ReadDTCInformation",
+                    "children": (),
+                    "unit": None,
+                },
+                {
+                    "name": "SubFunction",
+                    "length": 8,
+                    "raw_value": 0x03,
+                    "physical_value": 0x03,
+                    "children": (
+                        {
+                            "name": "suppressPosRspMsgIndicationBit",
+                            "length": 1,
+                            "raw_value": 0,
+                            "physical_value": "no",
+                            "children": (),
+                            "unit": None,
+                        },
+                        {
+                            "name": "reportType",
+                            "length": 7,
+                            "raw_value": 0x03,
+                            "physical_value": report_type_mapping.get(0x03, 0x03),
+                            "children": (),
+                            "unit": None,
+                        },
+                    ),
+                    "unit": None,
+                },
+            )
+        ),
+        (
+            [0x59, 0x02, 0xFF],
+            (
+                {
+                    "name": "RSID",
+                    "length": 8,
+                    "raw_value": 0x59,
+                    "physical_value": "ReadDTCInformation",
+                    "children": (),
+                    "unit": None,
+                },
+                {
+                    "name": "SubFunction",
+                    "length": 8,
+                    "raw_value": 0x02,
+                    "physical_value": 0x02,
+                    "children": (
+                        {
+                            "name": "suppressPosRspMsgIndicationBit",
+                            "length": 1,
+                            "raw_value": 0,
+                            "physical_value": "no",
+                            "children": (),
+                            "unit": None,
+                        },
+                        {
+                            "name": "reportType",
+                            "length": 7,
+                            "raw_value": 0x02,
+                            "physical_value": report_type_mapping.get(0x02, 0x02),
+                            "children": (),
+                            "unit": None,
+                        },
+                    ),
+                    "unit": None,
+                },
+                {
+                    "name": "DTCStatusAvailabilityMask",
+                    "length": 8,
+                    "raw_value": 0xFF,
+                    "physical_value": 0xFF,
+                    "children": (
+                        {
+                            'children': (),
+                            'length': 1,
+                            'name': 'warningIndicatorRequested',
+                            'physical_value': 'yes',
+                            'raw_value': 1,
+                            'unit': None
+                        },
+                        {
+                            'children': (),
+                            'length': 1,
+                            'name': 'testNotCompletedThisOperationCycle',
+                            'physical_value': 'yes',
+                            'raw_value': 1,
+                            'unit': None
+                        },
+                        {
+                            'children': (),
+                            'length': 1,
+                            'name': 'testFailedSinceLastClear',
+                            'physical_value': 'yes',
+                            'raw_value': 1,
+                            'unit': None
+                        },
+                        {
+                            'children': (),
+                            'length': 1,
+                            'name': 'testNotCompletedSinceLastClear',
+                            'physical_value': 'yes',
+                            'raw_value': 1,
+                            'unit': None
+                        },
+                        {
+                            'children': (),
+                            'length': 1,
+                            'name': 'confirmedDTC',
+                            'physical_value': 'yes',
+                            'raw_value': 1,
+                            'unit': None
+                        },
+                        {
+                            'children': (),
+                            'length': 1,
+                            'name': 'pendingDTC',
+                            'physical_value': 'yes',
+                            'raw_value': 1,
+                            'unit': None
+                        },
+                        {
+                            'children': (),
+                            'length': 1,
+                            'name': 'testFailedThisOperationCycle',
+                            'physical_value': 'yes',
+                            'raw_value': 1,
+                            'unit': None
+                        },
+                        {
+                            'children': (),
+                            'length': 1,
+                            'name': 'testFailed',
+                            'physical_value': 'yes',
+                            'raw_value': 1,
+                            'unit': None
+                        }
+                    ),
+                    "unit": None,
+                },
+            )
+        ),
         # InputOutputControlByIdentifier
-        # TODO
+        (
+            [0x2F, 0x01, 0x01, 0x00],
+            (
+                {
+                    "name": "SID",
+                    "length": 8,
+                    "raw_value": 0x2F,
+                    "physical_value": "InputOutputControlByIdentifier",
+                    "children": (),
+                    "unit": None,
+                },
+                {
+                    "name": "DID",
+                    "length": 16,
+                    "raw_value": 0x0101,
+                    "physical_value": did_mapping.get(0x0101, 0x0101),
+                    "children": (),
+                    "unit": None,
+                },
+                {
+                    'children': (),
+                    'length': 8,
+                    'name': 'inputOutputControlParameter',
+                    'physical_value': "returnControlToECU",
+                    'raw_value': 0x00,
+                    'unit': None
+                },
+            )
+        ),
+        (
+            [0x6F, 0x01, 0x01, 0x03, 0xA5],
+            (
+                {
+                    "name": "RSID",
+                    "length": 8,
+                    "raw_value": 0x6F,
+                    "physical_value": "InputOutputControlByIdentifier",
+                    "children": (),
+                    "unit": None,
+                },
+                {
+                    "name": "DID",
+                    "length": 16,
+                    "raw_value": 0x0101,
+                    "physical_value": did_mapping.get(0x0101, 0x0101),
+                    "children": (),
+                    "unit": None,
+                },
+                {
+                    'children': (),
+                    'length': 8,
+                    'name': 'inputOutputControlParameter',
+                    'physical_value': "shortTermAdjustment",
+                    'raw_value': 0x03,
+                    'unit': None
+                },
+                {
+                    'children': (
+                        {
+                            'children': (),
+                            'length': 4,
+                            'name': 'a#1',
+                            'physical_value': 0xA,
+                            'raw_value': 0xA,
+                            'unit': None
+                        },
+                        {
+                            'children': (),
+                            'length': 4,
+                            'name': 'a#2',
+                            'physical_value': 0x5,
+                            'raw_value': 0x5,
+                            'unit': None
+                        }
+                    ),
+                    'length': 8,
+                    'name': 'controlState',
+                    'physical_value': 0xA5,
+                    'raw_value': 0xA5,
+                    'unit': None
+                }
+            )
+        ),
         # RoutineControl
-        # TODO
+        (
+            [0x31, 0x40, 0x12, 0x34],
+            (
+                {
+                    "name": "SID",
+                    "length": 8,
+                    "raw_value": 0x31,
+                    "physical_value": "RoutineControl",
+                    "children": (),
+                    "unit": None,
+                },
+                {
+                    "name": "SubFunction",
+                    "length": 8,
+                    "raw_value": 0x40,
+                    "physical_value": 0x40,
+                    "children": (
+                        {
+                            "name": "suppressPosRspMsgIndicationBit",
+                            "length": 1,
+                            "raw_value": 0,
+                            "physical_value": "no",
+                            "children": (),
+                            "unit": None,
+                        },
+                        {
+                            "name": "routineControlType",
+                            "length": 7,
+                            "raw_value": 0x40,
+                            "physical_value": routine_control_type_mapping.get(0x40, 0x40),
+                            "children": (),
+                            "unit": None,
+                        },
+                    ),
+                    "unit": None,
+                },
+                {
+                    "name": "RID",
+                    "length": 16,
+                    "raw_value": 0x1234,
+                    "physical_value": rid_mapping.get(0x1234, 0x1234),
+                    "children": (),
+                    "unit": None,
+                },
+            )
+        ),
+        (
+            [0x71, 0x81, 0xFF, 0x00],
+            (
+                {
+                    "name": "RSID",
+                    "length": 8,
+                    "raw_value": 0x71,
+                    "physical_value": "RoutineControl",
+                    "children": (),
+                    "unit": None,
+                },
+                {
+                    "name": "SubFunction",
+                    "length": 8,
+                    "raw_value": 0x81,
+                    "physical_value": 0x81,
+                    "children": (
+                        {
+                            "name": "suppressPosRspMsgIndicationBit",
+                            "length": 1,
+                            "raw_value": 1,
+                            "physical_value": "yes",
+                            "children": (),
+                            "unit": None,
+                        },
+                        {
+                            "name": "routineControlType",
+                            "length": 7,
+                            "raw_value": 0x01,
+                            "physical_value": routine_control_type_mapping.get(0x01, 0x01),
+                            "children": (),
+                            "unit": None,
+                        },
+                    ),
+                    "unit": None,
+                },
+                {
+                    "name": "RID",
+                    "length": 16,
+                    "raw_value": 0xFF00,
+                    "physical_value": rid_mapping.get(0xFF00, 0xFF00),
+                    "children": (),
+                    "unit": None,
+                },
+            )
+        ),
     ])
     def test_decode_2(self, configurable_translator_2, payload, decoded_message):
         assert configurable_translator_2.decode(payload=payload) == decoded_message
