@@ -40,7 +40,7 @@ class AbstractMappingDataRecord(ABC):
 
         :param value: Mapping to set.
 
-        :raise TypeError: Provided value is not dict type.
+        :raise TypeError: Provided value is not Mapping.
         :raise ValueError: If any mapping key is outside the range of valid raw values,
             or any mapping value is not str type.
         """
@@ -50,7 +50,7 @@ class AbstractMappingDataRecord(ABC):
             raise ValueError("Provided values mapping contains values that are out of raw values range. "
                              f"Expected: {self.min_raw_value} <= key <= {self.max_raw_value}. "
                              f"Actual keys: {list(value.keys())}.")
-        if not all(isinstance(value, str) for value in value.values()):
+        if not all(isinstance(_value, str) for _value in value.values()):
             raise ValueError("Provided values mapping contains labels that are not str type. "
                              f"Actual values: {list(value.values())}.")
         self.__values_mapping = MappingProxyType(value)

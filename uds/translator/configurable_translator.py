@@ -129,7 +129,7 @@ class ConfigurableTranslator(Translator):
             self.report_type_mapping = report_type_mapping
         if security_access_type_mapping is not None:
             self.security_access_type_mapping = security_access_type_mapping
-        if control_type_type_mapping is not None:get_event_type_record_07_2013()
+        if control_type_type_mapping is not None:
             self.control_type_type_mapping = control_type_type_mapping
         if authentication_task_mapping is not None:
             self.authentication_task_mapping = authentication_task_mapping
