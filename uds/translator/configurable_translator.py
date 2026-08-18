@@ -29,10 +29,7 @@ from .data_record_definitions import (
     OPTIONAL_DTC_SNAPSHOT_RECORDS_NUMBERS_LIST,
     RESERVED_BIT,
 )
-from .data_record_definitions.formula import (
-    get_event_type_record_01,
-    get_service_to_respond,
-)
+from .data_record_definitions.formula import get_event_type_record_01, get_service_to_respond
 from .translator import Translator
 from .translator_definitions import BASE_TRANSLATOR
 
