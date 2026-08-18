@@ -49,22 +49,22 @@ class ConfigurableTranslator(Translator):
     def __init__(self,  # pylint: disable=too-many-branches
                  base: Translator = BASE_TRANSLATOR,
                  *,
-                 diagnostic_session_type_mapping: None | Mapping[int, str] = None,
-                 reset_type_mapping: None | Mapping[int, str] = None,
-                 report_type_mapping: None | Mapping[int, str] = None,
-                 security_access_type_mapping: None | Mapping[int, str] = None,
-                 control_type_type_mapping: None | Mapping[int, str] = None,
-                 authentication_task_mapping: None | Mapping[int, str] = None,
-                 definition_type_mapping: None | Mapping[int, str] = None,
-                 routine_control_type_mapping: None | Mapping[int, str] = None,
-                 zero_subfunction_mapping: None | Mapping[int, str] = None,
-                 timing_parameter_access_type_mapping: None | Mapping[int, str] = None,
-                 dtc_setting_type_mapping: None | Mapping[int, str] = None,
-                 event_type_mapping: None | Mapping[int, str] = None,
-                 link_control_type_mapping: None | Mapping[int, str] = None,
-                 rid_mapping: None | Mapping[int, str] = None,
-                 did_mapping: None | Mapping[int, str] = None,
-                 did_data_mapping: None | Mapping[int, MessageStructureAlias] = None) -> None:
+                 diagnostic_session_type_mapping: Mapping[int, str] | None = None,
+                 reset_type_mapping: Mapping[int, str] | None = None,
+                 report_type_mapping: Mapping[int, str] | None = None,
+                 security_access_type_mapping: Mapping[int, str] | None = None,
+                 control_type_type_mapping: Mapping[int, str] | None = None,
+                 authentication_task_mapping: Mapping[int, str] | None = None,
+                 definition_type_mapping: Mapping[int, str] | None = None,
+                 routine_control_type_mapping: Mapping[int, str] | None = None,
+                 zero_subfunction_mapping: Mapping[int, str] | None = None,
+                 timing_parameter_access_type_mapping: Mapping[int, str] | None = None,
+                 dtc_setting_type_mapping: Mapping[int, str] | None = None,
+                 event_type_mapping: Mapping[int, str] | None = None,
+                 link_control_type_mapping: Mapping[int, str] | None = None,
+                 rid_mapping: Mapping[int, str] | None = None,
+                 did_mapping: Mapping[int, str] | None = None,
+                 did_data_mapping: Mapping[int, MessageStructureAlias] | None = None) -> None:
         """
         Reconfigure a translator.
 
@@ -177,7 +177,7 @@ class ConfigurableTranslator(Translator):
         return self_copy
 
     @property
-    def diagnostic_session_type_mapping(self) -> None | Mapping[int, str]:
+    def diagnostic_session_type_mapping(self) -> Mapping[int, str] | None:
         """Get diagnosticSessionType (SubFunction of DiagnosticSessionControl) value to name mapping."""
         diagnostic_session_control = self.services_mapping.get(RequestSID.DiagnosticSessionControl, None)
         if diagnostic_session_control is None:
@@ -197,7 +197,7 @@ class ConfigurableTranslator(Translator):
         diagnostic_session_control.response_structure[0].children[1].values_mapping = value
 
     @property
-    def reset_type_mapping(self) -> None | Mapping[int, str]:
+    def reset_type_mapping(self) -> Mapping[int, str] | None:
         """Get resetType (SubFunction of ECUReset) value to name mapping."""
         ecu_reset = self.services_mapping.get(RequestSID.ECUReset, None)
         if ecu_reset is None:
@@ -217,7 +217,7 @@ class ConfigurableTranslator(Translator):
         ecu_reset.response_structure[0].children[1].values_mapping = value
 
     @property
-    def report_type_mapping(self) -> None | Mapping[int, str]:
+    def report_type_mapping(self) -> Mapping[int, str] | None:
         """Get reportType (SubFunction of ReadDTCInformation) value to name mapping."""
         read_dtc_information = self.services_mapping.get(RequestSID.ReadDTCInformation, None)
         if read_dtc_information is None:
@@ -251,7 +251,7 @@ class ConfigurableTranslator(Translator):
                 subfunction_09_response_continuation[2].children[2].values_mapping = value
 
     @property
-    def security_access_type_mapping(self) -> None | Mapping[int, str]:
+    def security_access_type_mapping(self) -> Mapping[int, str] | None:
         """Get securityAccessType (SubFunction of SecurityAccess) value to name mapping."""
         security_access = self.services_mapping.get(RequestSID.SecurityAccess, None)
         if security_access is None:
@@ -271,7 +271,7 @@ class ConfigurableTranslator(Translator):
         security_access.response_structure[0].children[1].values_mapping = value
 
     @property
-    def control_type_type_mapping(self) -> None | Mapping[int, str]:
+    def control_type_type_mapping(self) -> Mapping[int, str] | None:
         """Get controlType (SubFunction of CommunicationControl) value to name mapping."""
         communication_control = self.services_mapping.get(RequestSID.CommunicationControl, None)
         if communication_control is None:
@@ -291,7 +291,7 @@ class ConfigurableTranslator(Translator):
         communication_control.response_structure[0].children[1].values_mapping = value
 
     @property
-    def authentication_task_mapping(self) -> None | Mapping[int, str]:
+    def authentication_task_mapping(self) -> Mapping[int, str] | None:
         """Get authenticationTask (SubFunction of Authentication) value to name mapping."""
         authentication = self.services_mapping.get(RequestSID.Authentication, None)
         if authentication is None:
@@ -311,7 +311,7 @@ class ConfigurableTranslator(Translator):
         authentication.response_structure[0].children[1].values_mapping = value
 
     @property
-    def definition_type_mapping(self) -> None | Mapping[int, str]:
+    def definition_type_mapping(self) -> Mapping[int, str] | None:
         """Get definitionType (SubFunction of DynamicallyDefineDataIdentifier) value to name mapping."""
         dynamically_define_data_identifier = self.services_mapping.get(RequestSID.DynamicallyDefineDataIdentifier, None)
         if dynamically_define_data_identifier is None:
@@ -331,7 +331,7 @@ class ConfigurableTranslator(Translator):
         dynamically_define_data_identifier.response_structure[0].children[1].values_mapping = value
 
     @property
-    def routine_control_type_mapping(self) -> None | Mapping[int, str]:
+    def routine_control_type_mapping(self) -> Mapping[int, str] | None:
         """Get routineControlType (SubFunction of RoutineControl) value to name mapping."""
         routine_control = self.services_mapping.get(RequestSID.RoutineControl, None)
         if routine_control is None:
@@ -351,7 +351,7 @@ class ConfigurableTranslator(Translator):
         routine_control.response_structure[0].children[1].values_mapping = value
 
     @property
-    def zero_subfunction_mapping(self) -> None | Mapping[int, str]:
+    def zero_subfunction_mapping(self) -> Mapping[int, str] | None:
         """Get zeroSubFunction (SubFunction of TesterPresent) value to name mapping."""
         tester_present = self.services_mapping.get(RequestSID.TesterPresent, None)
         if tester_present is None:
@@ -371,7 +371,7 @@ class ConfigurableTranslator(Translator):
         tester_present.response_structure[0].children[1].values_mapping = value
 
     @property
-    def timing_parameter_access_type_mapping(self) -> None | Mapping[int, str]:
+    def timing_parameter_access_type_mapping(self) -> Mapping[int, str] | None:
         """Get timingParameterAccessType (SubFunction of AccessTimingParameter) value to name mapping."""
         access_timing_parameter = self.services_mapping.get(RequestSID.AccessTimingParameter, None)
         if access_timing_parameter is None:
@@ -391,7 +391,7 @@ class ConfigurableTranslator(Translator):
         access_timing_parameter.response_structure[0].children[1].values_mapping = value
 
     @property
-    def dtc_setting_type_mapping(self) -> None | Mapping[int, str]:
+    def dtc_setting_type_mapping(self) -> Mapping[int, str] | None:
         """Get DTCSettingType (SubFunction of ControlDTCSetting) value to name mapping."""
         control_dtc_setting = self.services_mapping.get(RequestSID.ControlDTCSetting, None)
         if control_dtc_setting is None:
@@ -411,7 +411,7 @@ class ConfigurableTranslator(Translator):
         control_dtc_setting.response_structure[0].children[1].values_mapping = value
 
     @property
-    def event_type_mapping(self) -> None | Mapping[int, str]:
+    def event_type_mapping(self) -> Mapping[int, str] | None:
         """
         Get eventType (SubFunction of ResponseOnEvent) value to name mapping.
 
@@ -439,7 +439,7 @@ class ConfigurableTranslator(Translator):
         response_on_event.response_structure[0].children[1].children[1].values_mapping = value
 
     @property
-    def link_control_type_mapping(self) -> None | Mapping[int, str]:
+    def link_control_type_mapping(self) -> Mapping[int, str] | None:
         """Get linkControlType (SubFunction of LinkControl) value to name mapping."""
         link_control = self.services_mapping.get(RequestSID.LinkControl, None)
         if link_control is None:
@@ -459,7 +459,7 @@ class ConfigurableTranslator(Translator):
         link_control.response_structure[0].children[1].values_mapping = value
 
     @property
-    def rid_mapping(self) -> None | Mapping[int, str]:
+    def rid_mapping(self) -> Mapping[int, str] | None:
         """Get :ref:`Routine Identifier (RID) <knowledge-base-rid>` value to name mapping."""
         routine_control = self.services_mapping.get(RequestSID.RoutineControl, None)
         if routine_control is None:
@@ -479,7 +479,7 @@ class ConfigurableTranslator(Translator):
         rid.values_mapping = value
 
     @property
-    def did_mapping(self) -> None | Mapping[int, str]:
+    def did_mapping(self) -> Mapping[int, str] | None:
         """Get :ref:`Data Identifier (DID) <knowledge-base-did>` value to name mapping."""
         read_data_by_identifier = self.services_mapping.get(RequestSID.ReadDataByIdentifier, None)
         if read_data_by_identifier is None:
@@ -546,7 +546,7 @@ class ConfigurableTranslator(Translator):
             response_on_event.response_structure[1].mapping = mapping
 
     @property
-    def did_data_mapping(self) -> None | Mapping[int, MessageStructureAlias]:
+    def did_data_mapping(self) -> Mapping[int, MessageStructureAlias] | None:
         """
         Get :ref:`Data Identifier (DID) <knowledge-base-did>` value to data structure mapping.
 
@@ -806,7 +806,7 @@ class ConfigurableTranslator(Translator):
         return ConditionalFormulaDataRecord(formula=_get_did_data_mask,
                                             default_message_continuation=[default_did_data_mask])
 
-    def __get_did_records_formula(self, record_number: None | int) -> Callable[[int], MessageStructureAlias]:
+    def __get_did_records_formula(self, record_number: int | None) -> Callable[[int], MessageStructureAlias]:
         """
         Get formula that can be used by Conditional Data Record for getting DID related Data Records.
 
@@ -823,7 +823,7 @@ class ConfigurableTranslator(Translator):
 
     def __get_did_record(self,
                          did_count: int,
-                         record_number: None | int,
+                         record_number: int | None,
                          optional: bool = False) -> tuple[MappingDataRecord | ConditionalFormulaDataRecord, ...]:
         """
         Get DID record (e.g. for DTC Snapshot or DTC Stored Data) with DID numbers and data.
@@ -967,7 +967,7 @@ class ConfigurableTranslator(Translator):
                              children=(RESERVED_BIT,
                                        self.__event_type))
 
-    def __get_event_type_record(self, event: int, event_number: int) -> None | RawDataRecord:
+    def __get_event_type_record(self, event: int, event_number: int) -> RawDataRecord | None:
         """
         Get `eventTypeRecord` Data Record.
 
@@ -988,7 +988,7 @@ class ConfigurableTranslator(Translator):
         event_type_record.name = f"{event_type_record.name}#{event_number}"
         return event_type_record
 
-    def __get_event_type_record_09_continuation(self, event_number: int) -> None | ConditionalMappingDataRecord:
+    def __get_event_type_record_09_continuation(self, event_number: int) -> ConditionalMappingDataRecord | None:
         response_on_event = self.services_mapping.get(RequestSID.ResponseOnEvent, None)
         if response_on_event is None:
             raise ValueError("ResponseOnEvent service is not defined in this Translator.")

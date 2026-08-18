@@ -76,8 +76,8 @@ class Translator:
 
     def encode(self,
                data_records_values: DataRecordsValuesAlias,
-               sid: None | RequestSID = None,
-               rsid: None | ResponseSID = None) -> bytearray:
+               sid: RequestSID | None = None,
+               rsid: ResponseSID | None = None) -> bytearray:
         """
         Encode diagnostic message payload from data records values.
 

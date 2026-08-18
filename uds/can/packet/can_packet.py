@@ -32,11 +32,11 @@ class CanPacket(AbstractCanPacketContainer, AbstractPacket):
                  addressing_format: CanAddressingFormat,
                  packet_type: CanPacketType,
                  addressing_type: AddressingType,
-                 can_id: None | int = None,
-                 target_address: None | int = None,
-                 source_address: None | int = None,
-                 address_extension: None | int = None,
-                 dlc: None | int = None,
+                 can_id: int | None = None,
+                 target_address: int | None = None,
+                 source_address: int | None = None,
+                 address_extension: int | None = None,
+                 dlc: int | None = None,
                  **packet_type_specific_kwargs: Any) -> None:
         """
         Create a storage for a single CAN packet.
@@ -135,10 +135,10 @@ class CanPacket(AbstractCanPacketContainer, AbstractPacket):
 
     def set_addressing_information(self, *,
                                    addressing_type: AddressingType,
-                                   can_id: None | int = None,
-                                   target_address: None | int = None,
-                                   source_address: None | int = None,
-                                   address_extension: None | int = None) -> None:
+                                   can_id: int | None = None,
+                                   target_address: int | None = None,
+                                   source_address: int | None = None,
+                                   address_extension: int | None = None) -> None:
         """
         Change addressing information for this CAN packet.
 
@@ -171,7 +171,7 @@ class CanPacket(AbstractCanPacketContainer, AbstractPacket):
 
     def set_packet_data(self, *,
                         packet_type: CanPacketType,
-                        dlc: None | int = None,
+                        dlc: int | None = None,
                         **packet_type_specific_kwargs: Any) -> None:
         """
         Change packet type and data field of this CAN packet.

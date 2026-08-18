@@ -98,8 +98,8 @@ class MappingDataRecord(RawDataRecord, AbstractMappingDataRecord):
                  values_mapping: Mapping[int, str],
                  children: Sequence[AbstractDataRecord] = tuple(),
                  min_occurrences: int = 1,
-                 max_occurrences: None | int = 1,
-                 unit: None | str = None,
+                 max_occurrences: int | None = 1,
+                 unit: str | None = None,
                  enforce_reoccurring: bool = False) -> None:
         """
         Create Mapping Data Record.
@@ -201,8 +201,8 @@ class MappingAndLinearFormulaDataRecord(LinearFormulaDataRecord, AbstractMapping
                  factor: float | int,
                  offset: float | int,
                  min_occurrences: int = 1,
-                 max_occurrences: None | int = 1,
-                 unit: None | str = None,
+                 max_occurrences: int | None = 1,
+                 unit: str | None = None,
                  enforce_reoccurring: bool = False) -> None:
         """
         Create Mapping and Linear Formula Data Record.

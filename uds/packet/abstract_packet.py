@@ -40,7 +40,7 @@ class AbstractPacketContainer(ABC):
 
     @property
     @abstractmethod
-    def data_length(self) -> None | int:
+    def data_length(self) -> int | None:
         """Payload bytes number of a diagnostic message."""
 
     @property
@@ -50,7 +50,7 @@ class AbstractPacketContainer(ABC):
 
     @property
     @abstractmethod
-    def payload(self) -> None | bytes:
+    def payload(self) -> bytes | None:
         """Diagnostic message payload carried by this packet."""
 
 

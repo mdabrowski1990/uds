@@ -112,7 +112,7 @@ class TextDataRecord(AbstractDataRecord):
                  name: str,
                  encoding: TextEncoding,
                  min_occurrences: int = 1,
-                 max_occurrences: None | int = None,
+                 max_occurrences: int | None = None,
                  enforce_reoccurring: bool = True) -> None:
         """
         Configure Text Data Record.

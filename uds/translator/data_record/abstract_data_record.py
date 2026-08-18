@@ -55,7 +55,7 @@ class SingleOccurrenceInfo(TypedDict, total=True):
     raw_value: int
     physical_value: SinglePhysicalValueAlias
     children: tuple["SingleOccurrenceInfo", ...]
-    unit: None | str
+    unit: str | None
 
 
 class MultipleOccurrencesInfo(TypedDict, total=True):
@@ -76,7 +76,7 @@ class MultipleOccurrencesInfo(TypedDict, total=True):
     raw_value: tuple[int, ...]
     physical_value: MultiplePhysicalValuesAlias
     children: tuple[tuple["SingleOccurrenceInfo", ...], ...]
-    unit: None | str
+    unit: str | None
 
 
 DataRecordInfoAlias = SingleOccurrenceInfo | MultipleOccurrencesInfo
@@ -104,8 +104,8 @@ class AbstractDataRecord(ABC):
                  length: int,
                  children: Sequence["AbstractDataRecord"],
                  min_occurrences: int,
-                 max_occurrences: None | int,
-                 unit: None | str = None,
+                 max_occurrences: int | None,
+                 unit: str | None = None,
                  enforce_reoccurring: bool = False) -> None:
         """
         Initialize common part for all Data Records.
@@ -246,7 +246,7 @@ class AbstractDataRecord(ABC):
         self.__min_occurrences = value
 
     @property
-    def max_occurrences(self) -> None | int:
+    def max_occurrences(self) -> int | None:
         """
         Maximal number of occurrences for this Data Record.
 
@@ -255,7 +255,7 @@ class AbstractDataRecord(ABC):
         return self.__max_occurrences
 
     @max_occurrences.setter
-    def max_occurrences(self, value: None | int) -> None:
+    def max_occurrences(self, value: int | None) -> None:
         """
         Set maximal number of occurrences.
 
@@ -276,12 +276,12 @@ class AbstractDataRecord(ABC):
         self.__max_occurrences = value
 
     @property
-    def unit(self) -> None | str:
+    def unit(self) -> str | None:
         """Get unit in which Physical Value is presented. None if unused."""
         return self.__unit
 
     @unit.setter
-    def unit(self, value: None | str) -> None:
+    def unit(self, value: str | None) -> None:
         """
         Set unit in which Physical Value is presented.
 

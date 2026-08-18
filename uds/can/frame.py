@@ -105,7 +105,7 @@ class CanIdHandler:
         return isinstance(can_id, int) and cls.MIN_EXTENDED_VALUE <= can_id <= cls.MAX_EXTENDED_VALUE
 
     @classmethod
-    def validate_can_id(cls, value: int, extended_can_id: None | bool = None) -> None:
+    def validate_can_id(cls, value: int, extended_can_id: bool | None = None) -> None:
         """
         Validate whether provided value is either Standard or Extended CAN ID.
 

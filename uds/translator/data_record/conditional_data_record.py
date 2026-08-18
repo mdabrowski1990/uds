@@ -38,7 +38,7 @@ class AbstractConditionalDataRecord(ABC):
      - Contains logic of diagnostic message continuation building.
     """
 
-    def __init__(self, default_message_continuation: None | MessageStructureAlias) -> None:
+    def __init__(self, default_message_continuation: MessageStructureAlias | None) -> None:
         """
         Initialize the common part for all Conditional Data Records.
 
@@ -60,7 +60,7 @@ class AbstractConditionalDataRecord(ABC):
         """
 
     @property
-    def default_message_continuation(self) -> None | MessageStructureAlias:
+    def default_message_continuation(self) -> MessageStructureAlias | None:
         """
         Get default diagnostic message continuation.
 
@@ -72,7 +72,7 @@ class AbstractConditionalDataRecord(ABC):
         return self.__default_message_continuation
 
     @default_message_continuation.setter
-    def default_message_continuation(self, value: None | MessageStructureAlias) -> None:
+    def default_message_continuation(self, value: MessageStructureAlias | None) -> None:
         """
         Set default diagnostic message continuation.
 
@@ -149,8 +149,8 @@ class ConditionalMappingDataRecord(AbstractConditionalDataRecord):
 
     def __init__(self,
                  mapping: Mapping[int, MessageStructureAlias],
-                 default_message_continuation: None | MessageStructureAlias = None,
-                 value_mask: None | int = None) -> None:
+                 default_message_continuation: MessageStructureAlias | None = None,
+                 value_mask: int | None = None) -> None:
         """
         Define logic for this Conditional Data Record.
 
@@ -219,12 +219,12 @@ class ConditionalMappingDataRecord(AbstractConditionalDataRecord):
         self.__mapping = MappingProxyType(mapping)
 
     @property
-    def value_mask(self) -> None | int:
+    def value_mask(self) -> int | None:
         """Get the mask to apply on a raw value of the proceeding Data Record."""
         return self.__value_mask
 
     @value_mask.setter
-    def value_mask(self, value: None | int) -> None:
+    def value_mask(self, value: int | None) -> None:
         """
         Set the mask to apply on a raw value of the proceeding Data Record.
 
@@ -249,7 +249,7 @@ class ConditionalFormulaDataRecord(AbstractConditionalDataRecord):
 
     def __init__(self,
                  formula: Callable[[int], MessageStructureAlias],
-                 default_message_continuation: None | MessageStructureAlias = None) -> None:
+                 default_message_continuation: MessageStructureAlias | None = None) -> None:
         """
         Define logic for this Conditional Data Record.
 

@@ -108,7 +108,7 @@ class AbstractTransportInterface(ABC):
     @abstractmethod
     async def async_send_packet(self,
                                 packet: AbstractPacket,
-                                loop: None | AbstractEventLoop = None) -> AbstractPacketRecord:
+                                loop: AbstractEventLoop | None = None) -> AbstractPacketRecord:
         """
         Transmit packet asynchronously.
 
@@ -119,7 +119,7 @@ class AbstractTransportInterface(ABC):
         """
 
     @abstractmethod
-    def receive_packet(self, timeout: None | TimeMillisecondsAlias = None) -> AbstractPacketRecord:
+    def receive_packet(self, timeout: TimeMillisecondsAlias | None = None) -> AbstractPacketRecord:
         """
         Receive packet.
 
@@ -133,8 +133,8 @@ class AbstractTransportInterface(ABC):
 
     @abstractmethod
     async def async_receive_packet(self,
-                                   timeout: None | TimeMillisecondsAlias = None,
-                                   loop: None | AbstractEventLoop = None) -> AbstractPacketRecord:
+                                   timeout: TimeMillisecondsAlias | None = None,
+                                   loop: AbstractEventLoop | None = None) -> AbstractPacketRecord:
         """
         Receive packet asynchronously.
 
@@ -161,7 +161,7 @@ class AbstractTransportInterface(ABC):
     @abstractmethod
     async def async_send_message(self,
                                  message: UdsMessage,
-                                 loop: None | AbstractEventLoop = None) -> UdsMessageRecord:
+                                 loop: AbstractEventLoop | None = None) -> UdsMessageRecord:
         """
         Transmit asynchronously UDS message.
 
@@ -173,8 +173,8 @@ class AbstractTransportInterface(ABC):
 
     @abstractmethod
     def receive_message(self,
-                        start_timeout: None | TimeMillisecondsAlias = None,
-                        end_timeout: None | TimeMillisecondsAlias = None) -> UdsMessageRecord:
+                        start_timeout: TimeMillisecondsAlias | None = None,
+                        end_timeout: TimeMillisecondsAlias | None = None) -> UdsMessageRecord:
         """
         Receive UDS message.
 
@@ -193,9 +193,9 @@ class AbstractTransportInterface(ABC):
 
     @abstractmethod
     async def async_receive_message(self,
-                                    start_timeout: None | TimeMillisecondsAlias = None,
-                                    end_timeout: None | TimeMillisecondsAlias = None,
-                                    loop: None | AbstractEventLoop = None) -> UdsMessageRecord:
+                                    start_timeout: TimeMillisecondsAlias | None = None,
+                                    end_timeout: TimeMillisecondsAlias | None = None,
+                                    loop: AbstractEventLoop | None = None) -> UdsMessageRecord:
         """
         Receive asynchronously UDS message.
 

@@ -26,8 +26,8 @@ class RawDataRecord(AbstractDataRecord):
                  length: int,
                  children: Sequence[AbstractDataRecord] = tuple(),
                  min_occurrences: int = 1,
-                 max_occurrences: None | int = 1,
-                 unit: None | str = None,
+                 max_occurrences: int | None = 1,
+                 unit: str | None = None,
                  enforce_reoccurring: bool = False) -> None:
         """
         Create Raw Data Record.

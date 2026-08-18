@@ -20,7 +20,7 @@ from .data_record import (
     SingleOccurrenceInfo,
 )
 
-SingleDataRecordValueAlias = None | int | ChildrenValuesAlias
+SingleDataRecordValueAlias = int | ChildrenValuesAlias | None
 """Alias for a single occurrence Data Record. Either:
  - int type - a single raw value
  - mapping type - children values
@@ -586,8 +586,8 @@ class Service:
 
     def encode(self,
                data_records_values: DataRecordsValuesAlias,
-               sid: None | RequestSID = None,
-               rsid: None | ResponseSID = None) -> bytearray:
+               sid: RequestSID | None = None,
+               rsid: ResponseSID | None = None) -> bytearray:
         """
         Encode diagnostic message payload for this service.
 

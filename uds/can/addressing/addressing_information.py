@@ -91,10 +91,10 @@ class CanAddressingInformation:
     def validate_addressing_params(cls,
                                    addressing_format: CanAddressingFormat,
                                    addressing_type: AddressingType,
-                                   can_id: None | int = None,
-                                   target_address: None | int = None,
-                                   source_address: None | int = None,
-                                   address_extension: None | int = None) -> CANAddressingParams:
+                                   can_id: int | None = None,
+                                   target_address: int | None = None,
+                                   source_address: int | None = None,
+                                   address_extension: int | None = None) -> CANAddressingParams:
         """
         Validate Addressing Information parameters of a CAN packet.
 
@@ -120,7 +120,7 @@ class CanAddressingInformation:
     def is_compatible_can_id(cls,
                              addressing_format: CanAddressingFormat,
                              can_id: int,
-                             addressing_type: None | AddressingType = None) -> bool:
+                             addressing_type: AddressingType | None = None) -> bool:
         """
         Check whether provided CAN ID is consistent the provided CAN Addressing Format.
 
@@ -221,8 +221,8 @@ class CanAddressingInformation:
     @classmethod
     def encode_ai_data_bytes(cls,
                              addressing_format: CanAddressingFormat,
-                             target_address: None | int = None,
-                             address_extension: None | int = None) -> bytearray:
+                             target_address: int | None = None,
+                             address_extension: int | None = None) -> bytearray:
         """
         Generate data bytes that carry Addressing Information.
 

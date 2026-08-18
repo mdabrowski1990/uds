@@ -145,7 +145,7 @@ class AbstractAddressingInformation(ABC):
         """Check whether the provided parameters are complete and correct."""
 
     @abstractmethod
-    def is_input_packet(self, **frame_attributes: Any) -> None | AddressingType:  # noqa: vulture
+    def is_input_packet(self, **frame_attributes: Any) -> AddressingType| None:  # noqa: vulture
         """
         Check if a frame with provided attributes is an input packet for this UDS Entity.
 

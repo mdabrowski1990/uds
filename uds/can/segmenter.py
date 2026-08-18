@@ -33,7 +33,7 @@ class CanSegmenter(AbstractSegmenter):
     def __init__(self, *,
                  addressing_information: AbstractCanAddressingInformation,
                  dlc: int = CanDlcHandler.MIN_BASE_UDS_DLC,
-                 min_dlc: None | int = None,
+                 min_dlc: int | None = None,
                  use_data_optimization: bool = False,
                  filler_byte: int = DEFAULT_FILLER_BYTE) -> None:
         """
@@ -107,7 +107,7 @@ class CanSegmenter(AbstractSegmenter):
             self.min_dlc = value
 
     @property
-    def min_dlc(self) -> None | int:
+    def min_dlc(self) -> int | None:
         """
         Value of minimal CAN DLC to use for CAN Packets during Data Optimization.
 
@@ -118,7 +118,7 @@ class CanSegmenter(AbstractSegmenter):
         return self.__min_dlc
 
     @min_dlc.setter
-    def min_dlc(self, value: None | int) -> None:
+    def min_dlc(self, value: int | None) -> None:
         """
         Set value of minimal CAN DLC to use for CAN Packets during Data Optimization.
 
@@ -131,7 +131,7 @@ class CanSegmenter(AbstractSegmenter):
             if value > self.dlc:
                 raise ValueError(f"Min DLC must be less or equal than base DLC. DLC = {self.dlc}. "
                                  f"Actual value: {value}")
-        self.__min_dlc: None | int = value
+        self.__min_dlc: int | None = value
 
     @property
     def use_data_optimization(self) -> bool:
@@ -295,8 +295,8 @@ class CanSegmenter(AbstractSegmenter):
 
     def get_flow_control_packet(self,
                                 flow_status: CanFlowStatus,
-                                block_size: None | int = None,
-                                st_min: None | int = None) -> CanPacket:
+                                block_size: int | None = None,
+                                st_min: int | None = None) -> CanPacket:
         """
         Create Flow Control CAN packet.
 
