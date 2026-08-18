@@ -2,9 +2,10 @@
 
 __all__ = ["ConfigurableTranslator"]
 
+from collections.abc import Callable, Mapping
 from copy import deepcopy
 from types import MappingProxyType
-from typing import Any, Callable, Mapping
+from typing import Any
 
 from uds.message import RequestSID
 from uds.utilities import DID_BIT_LENGTH, REPEATED_DATA_RECORDS_NUMBER
@@ -28,7 +29,11 @@ from .data_record_definitions import (
     OPTIONAL_DTC_SNAPSHOT_RECORDS_NUMBERS_LIST,
     RESERVED_BIT,
 )
-from .data_record_definitions.formula import get_event_type_record_01, get_service_to_respond
+from .data_record_definitions.formula import (
+    get_event_type_record_01,
+    get_event_type_record_07_2013,
+    get_service_to_respond,
+)
 from .translator import Translator
 from .translator_definitions import BASE_TRANSLATOR
 
@@ -124,7 +129,7 @@ class ConfigurableTranslator(Translator):
             self.report_type_mapping = report_type_mapping
         if security_access_type_mapping is not None:
             self.security_access_type_mapping = security_access_type_mapping
-        if control_type_type_mapping is not None:
+        if control_type_type_mapping is not None:get_event_type_record_07_2013()
             self.control_type_type_mapping = control_type_type_mapping
         if authentication_task_mapping is not None:
             self.authentication_task_mapping = authentication_task_mapping
