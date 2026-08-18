@@ -168,8 +168,8 @@ class CanDlcHandler:
 
     __DLC_VALUES: tuple[int, ...] = tuple(range(0x10))
     __DATA_BYTES_NUMBERS: tuple[int, ...] = (0, 1, 2, 3, 4, 5, 6, 7, 8, 12, 16, 20, 24, 32, 48, 64)
-    __DLC_MAPPING: dict[int, int] = dict(zip(__DLC_VALUES, __DATA_BYTES_NUMBERS))
-    __DATA_BYTES_NUMBER_MAPPING: dict[int, int] = dict(zip(__DATA_BYTES_NUMBERS, __DLC_VALUES))
+    __DLC_MAPPING: dict[int, int] = dict(zip(__DLC_VALUES, __DATA_BYTES_NUMBERS, strict=True))
+    __DATA_BYTES_NUMBER_MAPPING: dict[int, int] = dict(zip(__DATA_BYTES_NUMBERS, __DLC_VALUES, strict=True))
     __DLC_SPECIFIC_FOR_CAN_FD: set[int] = set(dlc for dlc in __DLC_VALUES if dlc > 8)
 
     MIN_DATA_BYTES_NUMBER: int = min(__DATA_BYTES_NUMBERS)

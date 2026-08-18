@@ -709,29 +709,21 @@ class TestConfigurableTranslator:
 
     # __dtc_snapshot_records
 
-    @pytest.mark.parametrize("did_records", [
-        (Mock(), Mock()),
-        20 * [Mock()],
-    ])
-    def test_dtc_snapshot_records__get(self, did_records):
-        self.mock_translator._ConfigurableTranslator__did_records = did_records
+    def test_dtc_snapshot_records__get(self):
+        self.mock_translator._ConfigurableTranslator__did_records = [Mock()] * REPEATED_DATA_RECORDS_NUMBER
         dtc_snapshot_records = ConfigurableTranslator._ConfigurableTranslator__dtc_snapshot_records.fget(self.mock_translator)
         assert isinstance(dtc_snapshot_records, tuple)
         assert all(item == OPTIONAL_DTC_SNAPSHOT_RECORDS_NUMBERS_LIST[i]
                    for i, item in enumerate(dtc_snapshot_records[::3]))
         assert all(item == DID_COUNT_RECORDS[i]
                    for i, item in enumerate(dtc_snapshot_records[1::3]))
-        assert all(item == did_records[i]
+        assert all(item == self.mock_translator._ConfigurableTranslator__did_records[i]
                    for i, item in enumerate(dtc_snapshot_records[2::3]))
         
     # __dtc_stored_data_records
 
-    @pytest.mark.parametrize("did_records", [
-        (Mock(), Mock()),
-        20 * [Mock()],
-    ])
-    def test_dtc_stored_data_records__get(self, did_records):
-        self.mock_translator._ConfigurableTranslator__did_records = did_records
+    def test_dtc_stored_data_records__get(self):
+        self.mock_translator._ConfigurableTranslator__did_records = [Mock()] * REPEATED_DATA_RECORDS_NUMBER
         dtc_stored_data_records = ConfigurableTranslator._ConfigurableTranslator__dtc_stored_data_records.fget(self.mock_translator)
         assert isinstance(dtc_stored_data_records, tuple)
         assert all(item == DTC_STORED_DATA_RECORD_NUMBERS_LIST[i]
@@ -740,7 +732,7 @@ class TestConfigurableTranslator:
                    for i, item in enumerate(dtc_stored_data_records[1::4]))
         assert all(item == DID_COUNT_RECORDS[i]
                    for i, item in enumerate(dtc_stored_data_records[2::4]))
-        assert all(item == did_records[i]
+        assert all(item == self.mock_translator._ConfigurableTranslator__did_records[i]
                    for i, item in enumerate(dtc_stored_data_records[3::4]))
 
     # __event_window_time

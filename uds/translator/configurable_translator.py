@@ -620,7 +620,8 @@ class ConfigurableTranslator(Translator):
         return tuple(item
                      for snapshot_record in zip(OPTIONAL_DTC_SNAPSHOT_RECORDS_NUMBERS_LIST,
                                                 DID_COUNT_RECORDS,
-                                                self.__did_records)
+                                                self.__did_records,
+                                                strict=True)
                      for item in snapshot_record)
 
     @property
@@ -636,7 +637,8 @@ class ConfigurableTranslator(Translator):
                      for stored_data_record in zip(DTC_STORED_DATA_RECORD_NUMBERS_LIST,
                                                    DTCS_AND_STATUSES_LIST,
                                                    DID_COUNT_RECORDS,
-                                                   self.__did_records)
+                                                   self.__did_records,
+                                                   strict=True)
                      for item in stored_data_record)
 
     @property

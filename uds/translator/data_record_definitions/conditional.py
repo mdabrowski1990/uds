@@ -240,19 +240,22 @@ _DID_RECORDS_2013 = tuple(ConditionalFormulaDataRecord(formula=get_did_records_f
 _DTC_SNAPSHOT_RECORDS_2020 = tuple(item
                                    for snapshot_record in zip(OPTIONAL_DTC_SNAPSHOT_RECORDS_NUMBERS_LIST,
                                                               DID_COUNT_RECORDS,
-                                                              _DID_RECORDS_2020)
+                                                              _DID_RECORDS_2020,
+                                                              strict=True)
                                    for item in snapshot_record)
 """Collection of DTC Snapshot Data Records (compatible with ISO 14229-1:2020)."""
 _DTC_SNAPSHOT_RECORDS_2013 = tuple(item
                                    for snapshot_record in zip(OPTIONAL_DTC_SNAPSHOT_RECORDS_NUMBERS_LIST,
                                                               DID_COUNT_RECORDS,
-                                                              _DID_RECORDS_2013)
+                                                              _DID_RECORDS_2013,
+                                                              strict=True)
                                    for item in snapshot_record)
 """Collection of DTC Snapshot Data Records (compatible with ISO 14229-1:2013)."""
 
 _DTC_EXTENDED_DATA_RECORDS = tuple(item
                                    for data_records in zip(OPTIONAL_DTCS_AND_STATUSES_LIST,
-                                                           DTC_EXTENDED_DATA_RECORDS_DATA_LIST)
+                                                           DTC_EXTENDED_DATA_RECORDS_DATA_LIST,
+                                                           strict=True)
                                    for item in data_records)
 """Collection of DTC Extended Data Records."""
 
@@ -260,14 +263,16 @@ _DTC_STORED_DATA_RECORDS_2020 = tuple(item
                                       for stored_data_record in zip(DTC_STORED_DATA_RECORD_NUMBERS_LIST,
                                                                     DTCS_AND_STATUSES_LIST,
                                                                     DID_COUNT_RECORDS,
-                                                                    _DID_RECORDS_2020)
+                                                                    _DID_RECORDS_2020,
+                                                                    strict=True)
                                       for item in stored_data_record)
 """Collection of DTC Stored Data Records (compatible with ISO 14229-1:2020)."""
 _DTC_STORED_DATA_RECORDS_2013 = tuple(item
                                       for stored_data_record in zip(DTC_STORED_DATA_RECORD_NUMBERS_LIST,
                                                                     DTCS_AND_STATUSES_LIST,
                                                                     DID_COUNT_RECORDS,
-                                                                    _DID_RECORDS_2013)
+                                                                    _DID_RECORDS_2013,
+                                                                    strict=True)
                                       for item in stored_data_record)
 """Collection of DTC Stored Data Records (compatible with ISO 14229-1:2013)."""
 
@@ -420,7 +425,8 @@ _SCALING_BYTES_EXTENSIONS_RECORDS = tuple(
 """Collection of `scalingByteExtension` Data Records."""
 
 SCALING_DATA_RECORDS = tuple(item
-                             for scaling_data_records in zip(_SCALING_BYTES_RECORDS, _SCALING_BYTES_EXTENSIONS_RECORDS)
+                             for scaling_data_records in
+                             zip(_SCALING_BYTES_RECORDS, _SCALING_BYTES_EXTENSIONS_RECORDS, strict=True)
                              for item in scaling_data_records)
 """Collection of `scalingByte` and `scalingByteExtension` Data Records."""
 
