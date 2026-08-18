@@ -134,11 +134,11 @@ class TextDataRecord(AbstractDataRecord):
         self_copy = cls.__new__(cls)
         memo[id(self)] = self_copy
         TextDataRecord.__init__(self_copy,
-                               name=self.name,
-                               encoding=self.encoding,
-                               min_occurrences=self.min_occurrences,
-                               max_occurrences=self.max_occurrences,
-                               enforce_reoccurring=self.enforce_reoccurring)
+                                name=self.name,
+                                encoding=self.encoding,
+                                min_occurrences=self.min_occurrences,
+                                max_occurrences=self.max_occurrences,
+                                enforce_reoccurring=self.enforce_reoccurring)
         memo[id(self)] = self_copy
         return self_copy
 
