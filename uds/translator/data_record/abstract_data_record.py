@@ -352,7 +352,7 @@ class AbstractDataRecord(ABC):
         """Maximum raw (bit) value for this Data Record."""
         return (1 << self.length) - 1
 
-    def get_children_values(self, raw_value: int) -> OrderedDict[str, tuple[int]]:
+    def get_children_values(self, raw_value: int) -> OrderedDict[str, tuple[int, ...]]:
         """
         Get raw values of children.
 
