@@ -1188,35 +1188,36 @@ class TestConfigurableTranslatorIntegration:
                                                             READ_DATA_BY_IDENTIFIER))
 
     @pytest.fixture(scope="class")
-    def configurable_translator_1(self):
+    @classmethod
+    def configurable_translator_1(cls):
         return ConfigurableTranslator(
-            base=self.minimalistic_translator,
-            diagnostic_session_type_mapping=self.diagnostic_session_type_mapping,
-            zero_subfunction_mapping=self.zero_subfunction_mapping,
-            timing_parameter_access_type_mapping=self.timing_parameter_access_type_mapping,
-            did_mapping=self.did_mapping,
-            did_data_mapping=self.did_data_mapping)
+            base=cls.minimalistic_translator,
+            diagnostic_session_type_mapping=cls.diagnostic_session_type_mapping,
+            zero_subfunction_mapping=cls.zero_subfunction_mapping,
+            timing_parameter_access_type_mapping=cls.timing_parameter_access_type_mapping,
+            did_mapping=cls.did_mapping,
+            did_data_mapping=cls.did_data_mapping)
 
     @pytest.fixture(scope="class")
-    def configurable_translator_2(self):
+    @classmethod
+    def configurable_translator_2(cls):
         return ConfigurableTranslator(
             base=BASE_TRANSLATOR,
-            diagnostic_session_type_mapping=self.diagnostic_session_type_mapping,
-            reset_type_mapping=self.reset_type_mapping,
-            report_type_mapping=self.report_type_mapping,
-            security_access_type_mapping=self.security_access_type_mapping,
-            control_type_type_mapping=self.control_type_type_mapping,
-            authentication_task_mapping=self.authentication_task_mapping,
-            definition_type_mapping=self.definition_type_mapping,
-            routine_control_type_mapping=self.routine_control_type_mapping,
-            zero_subfunction_mapping=self.zero_subfunction_mapping,
-            dtc_setting_type_mapping=self.dtc_setting_type_mapping,
-            event_type_mapping=self.event_type_mapping,
-            link_control_type_mapping=self.link_control_type_mapping,
-            rid_mapping=self.rid_mapping,
-            did_mapping=self.did_mapping,
-            did_data_mapping=self.did_data_mapping)
-
+            diagnostic_session_type_mapping=cls.diagnostic_session_type_mapping,
+            reset_type_mapping=cls.reset_type_mapping,
+            report_type_mapping=cls.report_type_mapping,
+            security_access_type_mapping=cls.security_access_type_mapping,
+            control_type_type_mapping=cls.control_type_type_mapping,
+            authentication_task_mapping=cls.authentication_task_mapping,
+            definition_type_mapping=cls.definition_type_mapping,
+            routine_control_type_mapping=cls.routine_control_type_mapping,
+            zero_subfunction_mapping=cls.zero_subfunction_mapping,
+            dtc_setting_type_mapping=cls.dtc_setting_type_mapping,
+            event_type_mapping=cls.event_type_mapping,
+            link_control_type_mapping=cls.link_control_type_mapping,
+            rid_mapping=cls.rid_mapping,
+            did_mapping=cls.did_mapping,
+            did_data_mapping=cls.did_data_mapping)
 
     def test_configuration_1(self, configurable_translator_1):
         # defined
