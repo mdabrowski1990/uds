@@ -207,22 +207,14 @@ class TestTextDataRecord:
 
     # max_raw_value
 
-    def test_max_raw_value__ascii(self):
-        self.mock_data_record.encoding = TextEncoding.ASCII
-        assert TextDataRecord.max_raw_value.fget(self.mock_data_record) == 0x7F
-
-    def test_max_raw_value__bcd(self):
-        self.mock_data_record.encoding = TextEncoding.BCD
-        assert TextDataRecord.max_raw_value.fget(self.mock_data_record) == 9
-
-    def test_max_raw_value__dtc(self):
-        self.mock_data_record.encoding = TextEncoding.DTC_OBD_FORMAT
-        assert TextDataRecord.max_raw_value.fget(self.mock_data_record) == MAX_DTC_VALUE
-
-    def test_max_raw_value__not_implemented(self):
-        self.mock_data_record.encoding = Mock()
-        with pytest.raises(NotImplementedError):
-            TextDataRecord.max_raw_value.fget(self.mock_data_record)
+    def test_max_raw_value(self):
+        mock_max_raw_value = Mock()
+        mock_get_max_raw_value = Mock(return_value=mock_max_raw_value)
+        mock_get_encoding = MagicMock(return_value=MagicMock(__getitem__=mock_get_max_raw_value))
+        self.mock_data_record._TextDataRecord__ENCODINGS = MagicMock(__getitem__=mock_get_encoding)
+        assert TextDataRecord.max_raw_value.fget(self.mock_data_record) == mock_max_raw_value
+        mock_get_encoding.assert_called_once_with(self.mock_data_record.encoding)
+        mock_get_max_raw_value.assert_called_once_with("max_raw_value")
 
     # get_physical_values
 
