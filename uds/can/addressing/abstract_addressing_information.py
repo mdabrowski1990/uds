@@ -177,7 +177,7 @@ class AbstractCanAddressingInformation(AbstractAddressingInformation, ABC):
     def is_input_packet(self,  # type: ignore  # pylint: disable=arguments-differ
                         can_id: int,
                         raw_frame_data: RawBytesAlias,
-                        **_: Any) -> AddressingType| None:
+                        **_: Any) -> AddressingType | None:
         """
         Check if a frame with provided attributes is an input packet for this UDS Entity.
 

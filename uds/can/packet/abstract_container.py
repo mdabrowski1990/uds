@@ -41,7 +41,7 @@ class AbstractCanPacketContainer(AbstractPacketContainer, ABC):
         """CAN addressing format used by this CAN packet."""
 
     @property
-    def target_address(self) -> int| None:
+    def target_address(self) -> int | None:
         """
         Target Address (TA) value of this CAN Packet.
 

@@ -54,7 +54,7 @@ class SingleOccurrenceInfo(TypedDict, total=True):
     length: int
     raw_value: int
     physical_value: SinglePhysicalValueAlias
-    children: tuple["SingleOccurrenceInfo", ...]
+    children: tuple["DataRecordInfoAlias", ...]
     unit: str | None
 
 
@@ -75,7 +75,7 @@ class MultipleOccurrencesInfo(TypedDict, total=True):
     length: int
     raw_value: tuple[int, ...]
     physical_value: MultiplePhysicalValuesAlias
-    children: tuple[tuple["SingleOccurrenceInfo", ...], ...]
+    children: tuple[tuple["DataRecordInfoAlias", ...], ...]
     unit: str | None
 
 

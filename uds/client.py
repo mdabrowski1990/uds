@@ -67,7 +67,7 @@ class Client:
         # tasks and threads
         self.__tester_present_task_event: Event = Event()
         self.__tester_present_task_event.clear()
-        self.__tester_present_thread: Thread| None = None
+        self.__tester_present_thread: Thread | None = None
         self.__background_receiving_task_event: Event = Event()
         self.__background_receiving_task_event.clear()
         self.__break_in_background_receiving_event: Event = Event()

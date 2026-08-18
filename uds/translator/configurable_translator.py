@@ -31,7 +31,6 @@ from .data_record_definitions import (
 )
 from .data_record_definitions.formula import (
     get_event_type_record_01,
-    get_event_type_record_07_2013,
     get_service_to_respond,
 )
 from .translator import Translator
