@@ -24,7 +24,6 @@ __all__ = [
     "message",
     "packet",
     "segmentation",
-    "client",
     "translator",
     "transport_interface",
     "utilities",
