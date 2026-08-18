@@ -112,7 +112,7 @@ class ConfigurableTranslator(Translator):
         :param did_mapping: Value to name mapping for :ref:`DIDs <knowledge-base-did>`.
         :param did_data_mapping: Value to data structure mapping for :ref:`DIDs <knowledge-base-did>`.
         """
-        self.__did_data_mapping = None
+        self.__did_data_mapping: Mapping[int, MessageStructureAlias] | None = None
         # create copy of base Translator
         super().__init__(services=deepcopy(base.services))
         # adapt SubFunctions
