@@ -64,28 +64,6 @@ class Client:
         :param p6_ext_client_timeout: Timeout value for P6*Client parameter.
         :param s3_client: Value of S3Client time parameter.
         """
-        # TIMING PARAMETERS
-        self.__p2_client_measured: None | TimeMillisecondsAlias = None
-        self.__p2_ext_client_measured: None | tuple[TimeMillisecondsAlias, ...] = None
-        self.__p6_client_measured: None | TimeMillisecondsAlias = None
-        self.__p6_ext_client_measured: None | TimeMillisecondsAlias = None
-        # set default values to avoid errors on values assignment
-        self.__p2_client_timeout = self.DEFAULT_P2_CLIENT_TIMEOUT
-        self.__p2_ext_client_timeout = self.DEFAULT_P2_EXT_CLIENT_TIMEOUT
-        self.__p3_client_physical = self.DEFAULT_P3_CLIENT
-        self.__p3_client_functional = self.DEFAULT_P3_CLIENT
-        self.__p6_client_timeout = self.DEFAULT_P6_CLIENT_TIMEOUT
-        self.__p6_ext_client_timeout = self.DEFAULT_P6_EXT_CLIENT_TIMEOUT
-        self.__s3_client = self.DEFAULT_S3_CLIENT
-        # values assignment
-        self.transport_interface = transport_interface
-        self.p2_client_timeout = p2_client_timeout
-        self.p2_ext_client_timeout = p2_ext_client_timeout
-        self.p3_client_physical = p3_client_physical
-        self.p3_client_functional = p3_client_functional
-        self.p6_client_timeout = p6_client_timeout
-        self.p6_ext_client_timeout = p6_ext_client_timeout
-        self.s3_client = s3_client
         # tasks and threads
         self.__tester_present_task_event: Event = Event()
         self.__tester_present_task_event.clear()
@@ -112,6 +90,28 @@ class Client:
         self.__last_functional_request: None | UdsMessageRecord = None
         self.__last_functional_response: None | UdsMessageRecord = None
         self.__last_tester_present_requests: list[UdsMessageRecord] = []
+        # TIMING PARAMETERS
+        self.__p2_client_measured: None | TimeMillisecondsAlias = None
+        self.__p2_ext_client_measured: None | tuple[TimeMillisecondsAlias, ...] = None
+        self.__p6_client_measured: None | TimeMillisecondsAlias = None
+        self.__p6_ext_client_measured: None | TimeMillisecondsAlias = None
+        # set default values to avoid errors on values assignment
+        self.__p2_client_timeout = self.DEFAULT_P2_CLIENT_TIMEOUT
+        self.__p2_ext_client_timeout = self.DEFAULT_P2_EXT_CLIENT_TIMEOUT
+        self.__p3_client_physical = self.DEFAULT_P3_CLIENT
+        self.__p3_client_functional = self.DEFAULT_P3_CLIENT
+        self.__p6_client_timeout = self.DEFAULT_P6_CLIENT_TIMEOUT
+        self.__p6_ext_client_timeout = self.DEFAULT_P6_EXT_CLIENT_TIMEOUT
+        self.__s3_client = self.DEFAULT_S3_CLIENT
+        # values assignment
+        self.transport_interface = transport_interface
+        self.p2_client_timeout = p2_client_timeout
+        self.p2_ext_client_timeout = p2_ext_client_timeout
+        self.p3_client_physical = p3_client_physical
+        self.p3_client_functional = p3_client_functional
+        self.p6_client_timeout = p6_client_timeout
+        self.p6_ext_client_timeout = p6_ext_client_timeout
+        self.s3_client = s3_client
 
     def __del__(self) -> None:
         """Safely finish all tasks."""
