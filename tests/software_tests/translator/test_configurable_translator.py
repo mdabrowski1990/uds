@@ -2439,7 +2439,90 @@ class TestConfigurableTranslatorIntegration:
             )
         ),
         # LinkControl
-        # TODO
+        (
+            [0x87, 0x81, 0x05],
+            (
+                {
+                    "name": "SID",
+                    "length": 8,
+                    "raw_value": 0x87,
+                    "physical_value": "LinkControl",
+                    "children": (),
+                    "unit": None,
+                },
+                {
+                    "name": "SubFunction",
+                    "length": 8,
+                    "raw_value": 0x81,
+                    "physical_value": 0x81,
+                    "children": (
+                        {
+                            "name": "suppressPosRspMsgIndicationBit",
+                            "length": 1,
+                            "raw_value": 1,
+                            "physical_value": "yes",
+                            "children": (),
+                            "unit": None,
+                        },
+                        {
+                            "name": "linkControlType",
+                            "length": 7,
+                            "raw_value": 0x01,
+                            "physical_value": link_control_type_mapping.get(0x01, 0x01),
+                            "children": (),
+                            "unit": None,
+                        },
+                    ),
+                    "unit": None,
+                },
+                {
+                    "name": "linkControlModeIdentifier",
+                    "length": 8,
+                    "raw_value": 0x05,
+                    "physical_value": "PC115200Baud",
+                    "children": (),
+                    "unit": None,
+                },
+            )
+        ),
+        (
+            [0xC7, 0x40],
+            (
+                {
+                    "name": "RSID",
+                    "length": 8,
+                    "raw_value": 0xC7,
+                    "physical_value": "LinkControl",
+                    "children": (),
+                    "unit": None,
+                },
+                {
+                    "name": "SubFunction",
+                    "length": 8,
+                    "raw_value": 0x40,
+                    "physical_value": 0x40,
+                    "children": (
+                        {
+                            "name": "suppressPosRspMsgIndicationBit",
+                            "length": 1,
+                            "raw_value": 0,
+                            "physical_value": "no",
+                            "children": (),
+                            "unit": None,
+                        },
+                        {
+                            "name": "linkControlType",
+                            "length": 7,
+                            "raw_value": 0x40,
+                            "physical_value": link_control_type_mapping.get(0x40, 0x40),
+                            "children": (),
+                            "unit": None,
+                        },
+                    ),
+                    "unit": None,
+                },
+            )
+        ),
         # ReadDataByIdentifier
         (
             [0x22, 0x01, 0x00, 0x01, 0x01, 0xF1, 0x85],
@@ -2536,7 +2619,73 @@ class TestConfigurableTranslatorIntegration:
             )
         ),
         # ReadScalingDataByIdentifier
-        # TODO
+        (
+            [0x24, 0x01, 0x01],
+            (
+                {
+                    "name": "SID",
+                    "length": 8,
+                    "raw_value": 0x24,
+                    "physical_value": "ReadScalingDataByIdentifier",
+                    "children": (),
+                    "unit": None,
+                },
+                {
+                    "name": "DID",
+                    "length": 16,
+                    "raw_value": 0x0101,
+                    "physical_value": did_mapping.get(0x0101, 0x0101),
+                    "children": (),
+                    "unit": None,
+                },
+            )
+        ),
+        (
+            [0x64, 0x00, 0x00, 0x04],
+            (
+                {
+                    "name": "RSID",
+                    "length": 8,
+                    "raw_value": 0x64,
+                    "physical_value": "ReadScalingDataByIdentifier",
+                    "children": (),
+                    "unit": None,
+                },
+                {
+                    "name": "DID",
+                    "length": 16,
+                    "raw_value": 0x0000,
+                    "physical_value": did_mapping.get(0x0000, 0x0000),
+                    "children": (),
+                    "unit": None,
+                },
+                {
+                    "name": "scalingByte#1",
+                    "length": 8,
+                    "raw_value": 0x04,
+                    "physical_value": 0x04,
+                    "children": (
+                        {
+                            "name": "type",
+                            "length": 4,
+                            "raw_value": 0x0,
+                            "physical_value": "unSignedNumeric",
+                            "children": (),
+                            "unit": None,
+                        },
+                        {
+                            "name": "numberOfBytesOfParameter",
+                            "length": 4,
+                            "raw_value": 0x4,
+                            "physical_value": 0x4,
+                            "children": (),
+                            "unit": "bytes",
+                        },
+                    ),
+                    "unit": None,
+                },
+            )
+        ),
         # DynamicallyDefineDataIdentifier
         # TODO
         # WriteDataByIdentifier
