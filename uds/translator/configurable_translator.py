@@ -965,6 +965,10 @@ class ConfigurableTranslator(Translator):
         """
         Get `eventWindowTime` Data Record.
 
+        .. note:: This method mimics
+            :func:`~uds.translator.data_record_definitions.formula.get_event_type_of_active_event_2020` and
+            :func:`~uds.translator.data_record_definitions.formula.get_event_type_of_active_event_2013`.
+
         :param event_number: Order number of the event record.
 
         :return: Created `eventWindowTime` Data Record.
@@ -996,11 +1000,28 @@ class ConfigurableTranslator(Translator):
         return event_type_record
 
     def __get_event_type_record_09_continuation(self, event_number: int) -> ConditionalMappingDataRecord | None:
+        """
+        Get continuation for `eventTypeRecord` Data Record (`event` equal to 0x09).
+
+        .. note:: This method mimics
+            :func:`~uds.translator.data_record_definitions.formula.get_event_type_record_09_2020_continuation`.
+
+        .. warning:: `DTCSnapshotRecordNumber`, `DTCExtDataRecordNumber` and `MemorySelection` cannot be part of
+            `eventTypeRecord` cause, names and length of the signals depends on `reportType` value that is part of
+            `eventTypeRecord` (Data Record cannot mutate while being analyzed).
+
+            This exception is mentioned in :ref:`ResponseOnEvent <knowledge-base-service-response-on-event>` as well.
+
+        :param event_number: Order number of the event record.
+            None if there are no records.
+
+        :return: Created Conditional Data Record with `eventTypeRecord` continuation.
+        """
         response_on_event = self.services_mapping.get(RequestSID.ResponseOnEvent, None)
         if response_on_event is None:
             raise ValueError("ResponseOnEvent service is not defined in this Translator.")
         conditional_response = response_on_event.response_structure[1].mapping.get(0x09, None)
-        if conditional_response is None:
+        if conditional_response is None or len(conditional_response) < 4:
             return None
         event_type_record_continuation = deepcopy(conditional_response[3])
         for data_records in event_type_record_continuation.mapping.values():
