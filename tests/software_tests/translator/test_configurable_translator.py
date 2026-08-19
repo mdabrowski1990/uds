@@ -109,7 +109,7 @@ class TestConfigurableTranslator:
         mock_base = Mock(spec=Translator, services=services)
         assert ConfigurableTranslator.__init__(self.mock_translator, mock_base, did_data_mapping=did_data_mapping) is None
         assert self.mock_translator.did_data_mapping == did_data_mapping
-        self.mock_deepcopy.assert_called_once_with(mock_base.services)
+        self.mock_deepcopy.assert_called_once_with(mock_base.services, memo={})
         mock_translator_init.assert_called_once_with(services=self.mock_deepcopy.return_value)
 
     @pytest.mark.parametrize("services, diagnostic_session_type_mapping, reset_type_mapping, report_type_mapping,"
@@ -183,7 +183,7 @@ class TestConfigurableTranslator:
         assert self.mock_translator.dtc_setting_type_mapping == dtc_setting_type_mapping
         assert self.mock_translator.event_type_mapping == event_type_mapping
         assert self.mock_translator.link_control_type_mapping == link_control_type_mapping
-        self.mock_deepcopy.assert_called_once_with(mock_base.services)
+        self.mock_deepcopy.assert_called_once_with(mock_base.services, memo={})
         mock_translator_init.assert_called_once_with(services=self.mock_deepcopy.return_value)
 
     # __deepcopy__
@@ -212,7 +212,7 @@ class TestConfigurableTranslator:
             rid_mapping=self.mock_translator.rid_mapping,
             did_mapping=self.mock_translator.did_mapping,
             did_data_mapping=self.mock_deepcopy.return_value)
-        self.mock_deepcopy.assert_called_once_with(self.mock_translator.did_data_mapping, memo=memo)
+        self.mock_deepcopy.assert_called_once_with(dict(self.mock_translator.did_data_mapping), memo=memo)
 
     # diagnostic_session_type_mapping
 

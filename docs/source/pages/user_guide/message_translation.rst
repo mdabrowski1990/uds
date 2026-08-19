@@ -96,7 +96,7 @@ but the diagnostic session types, DIDs, RIDs, or other values need to be adapted
 - Configuration:
 
   When creating a :class:`~uds.translator.configurable_translator.ConfigurableTranslator`,
-  provide a base translator and, optionally, any mappings that should be customized
+  provide a base translator and, optionally, any mappings that should be customized.
   It is recommended to use one of the predefined `Translator Definitions`_ as the base translator.
 
   For example, the standard diagnostic session types can be extended with an ECU-specific session:
@@ -135,10 +135,10 @@ but the diagnostic session types, DIDs, RIDs, or other values need to be adapted
   - :attr:`~uds.translator.configurable_translator.ConfigurableTranslator.did_mapping`
   - :attr:`~uds.translator.configurable_translator.ConfigurableTranslator.did_data_mapping`
 
-- Using
+- Using:
 
   :class:`~uds.translator.configurable_translator.ConfigurableTranslator` provides the same encoding and decoding
-  functionality as :class:`~uds.translator.translator.Translator`
+  functionality as :class:`~uds.translator.translator.Translator`.
   It can therefore be used anywhere a translator is required while allowing the translation mappings to be adapted to
   the target ECU.
 

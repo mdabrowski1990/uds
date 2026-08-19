@@ -852,7 +852,7 @@ def get_event_type_of_active_event_2020(event_number: int) -> RawDataRecord:
     """
     Get `eventTypeOfActiveEvent` Data Record (compatible with ISO 14229-1:2020).
 
-    :param event_number: Number of the active event.
+    :param event_number: Order number of the active event.
 
     :return: Created `eventTypeOfActiveEvent` Data Record.
     """
@@ -866,7 +866,7 @@ def get_event_type_of_active_event_2013(event_number: int) -> RawDataRecord:
     """
     Get `eventTypeOfActiveEvent` Data Record (compatible with ISO 14229-1:2013).
 
-    :param event_number: Number of the active event.
+    :param event_number: Order number of the active event.
 
     :return: Created `eventTypeOfActiveEvent` Data Record.
     """

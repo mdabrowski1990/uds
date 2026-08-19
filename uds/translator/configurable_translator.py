@@ -114,7 +114,8 @@ class ConfigurableTranslator(Translator):
         :param did_data_mapping: Value to data structure mapping for :ref:`DIDs <knowledge-base-did>`.
         """
         # create copy of base Translator
-        super().__init__(services=deepcopy(base.services))
+        memo = {}
+        super().__init__(services=deepcopy(base.services, memo=memo))
         # adapt SubFunctions
         if diagnostic_session_type_mapping is not None:
             self.diagnostic_session_type_mapping = diagnostic_session_type_mapping
@@ -172,7 +173,7 @@ class ConfigurableTranslator(Translator):
                                         link_control_type_mapping=self.link_control_type_mapping,
                                         rid_mapping=self.rid_mapping,
                                         did_mapping=self.did_mapping,
-                                        did_data_mapping=deepcopy(self.did_data_mapping, memo=memo))
+                                        did_data_mapping=deepcopy(dict(self.did_data_mapping), memo=memo))
         return self_copy
 
     @property
@@ -965,15 +966,15 @@ class ConfigurableTranslator(Translator):
 
     def __get_event_type_of_active_event(self, event_number: int) -> RawDataRecord:
         """
-        Get `eventWindowTime` Data Record.
+        Get `eventTypeOfActiveEvent` Data Record.
 
         .. note:: This method mimics
             :func:`~uds.translator.data_record_definitions.formula.get_event_type_of_active_event_2020` and
             :func:`~uds.translator.data_record_definitions.formula.get_event_type_of_active_event_2013`.
 
-        :param event_number: Order number of the event record.
+        :param event_number: Order number of the active event.
 
-        :return: Created `eventWindowTime` Data Record.
+        :return: Created `eventTypeOfActiveEvent` Data Record.
         """
         return RawDataRecord(name=f"eventTypeOfActiveEvent#{event_number}",
                              length=8,
