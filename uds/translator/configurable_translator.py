@@ -65,7 +65,7 @@ class ConfigurableTranslator(Translator):
                  link_control_type_mapping: Mapping[int, str] | None = None,
                  rid_mapping: Mapping[int, str] | None = None,
                  did_mapping: Mapping[int, str] | None = None,
-                 did_data_mapping: Mapping[int, MessageStructureAlias] | None = None) -> None:
+                 did_data_mapping: Mapping[int, MessageStructureAlias]) -> None:
         """
         Reconfigure a translator.
 
@@ -113,7 +113,6 @@ class ConfigurableTranslator(Translator):
         :param did_mapping: Value to name mapping for :ref:`DIDs <knowledge-base-did>`.
         :param did_data_mapping: Value to data structure mapping for :ref:`DIDs <knowledge-base-did>`.
         """
-        self.__did_data_mapping: Mapping[int, MessageStructureAlias] | None = None
         # create copy of base Translator
         super().__init__(services=deepcopy(base.services))
         # adapt SubFunctions
@@ -149,8 +148,7 @@ class ConfigurableTranslator(Translator):
         # adapt DIDs
         if did_mapping is not None:
             self.did_mapping = did_mapping
-        if did_data_mapping is not None:
-            self.did_data_mapping = did_data_mapping
+        self.did_data_mapping = did_data_mapping
 
     def __deepcopy__(self, memo: dict[int, Any]) -> "ConfigurableTranslator":
         """Get deep copy of the translator."""
@@ -559,12 +557,8 @@ class ConfigurableTranslator(Translator):
             response_on_event.response_structure[1].mapping = mapping  # type: ignore
 
     @property
-    def did_data_mapping(self) -> Mapping[int, MessageStructureAlias] | None:
-        """
-        Get :ref:`Data Identifier (DID) <knowledge-base-did>` value to data structure mapping.
-
-        .. warning:: None value means, it was never set and mapping from base Translator is used.
-        """
+    def did_data_mapping(self) -> Mapping[int, MessageStructureAlias]:
+        """Get :ref:`Data Identifier (DID) <knowledge-base-did>` value to data structure mapping."""
         return self.__did_data_mapping
 
     @did_data_mapping.setter
@@ -801,7 +795,7 @@ class ConfigurableTranslator(Translator):
                                      max_occurrences=data_record.max_occurrences)
 
         def _get_did_data_mask(did: int) -> tuple[RawDataRecord]:
-            data_records = self.did_data_mapping.get(did, None)  # type: ignore
+            data_records = self.did_data_mapping.get(did, None)
             if data_records is None:
                 raise ValueError(f"No data structure defined for DID 0x{did:04X}.")
             total_length = 0

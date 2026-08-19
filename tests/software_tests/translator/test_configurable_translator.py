@@ -100,15 +100,15 @@ class TestConfigurableTranslator:
 
     # __init__
 
-    @pytest.mark.parametrize("services", [
-        [Mock()],
-        [Mock(), Mock()],
+    @pytest.mark.parametrize("services, did_data_mapping", [
+        ([Mock()], {}),
+        ([Mock(), Mock()], {Mock(): Mock()}),
     ])
     @patch(f"{SCRIPT_LOCATION}.Translator.__init__")
-    def test_init__mandatory_args(self, mock_translator_init, services):
+    def test_init__mandatory_args(self, mock_translator_init, services, did_data_mapping):
         mock_base = Mock(spec=Translator, services=services)
-        assert ConfigurableTranslator.__init__(self.mock_translator, mock_base) is None
-        assert self.mock_translator._ConfigurableTranslator__did_data_mapping is None
+        assert ConfigurableTranslator.__init__(self.mock_translator, mock_base, did_data_mapping=did_data_mapping) is None
+        assert self.mock_translator.did_data_mapping == did_data_mapping
         self.mock_deepcopy.assert_called_once_with(mock_base.services)
         mock_translator_init.assert_called_once_with(services=self.mock_deepcopy.return_value)
 
@@ -167,7 +167,6 @@ class TestConfigurableTranslator:
                                                rid_mapping=rid_mapping,
                                                did_mapping=did_mapping,
                                                did_data_mapping=did_data_mapping) is None
-        assert self.mock_translator._ConfigurableTranslator__did_data_mapping is None
         assert self.mock_translator.rid_mapping == rid_mapping
         assert self.mock_translator.did_mapping == did_mapping
         assert self.mock_translator.did_data_mapping == did_data_mapping
