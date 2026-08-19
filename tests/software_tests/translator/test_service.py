@@ -174,7 +174,7 @@ class TestService:
     @pytest.mark.parametrize("value", [(Mock(), Mock()), tuple(NRC)])
     def test_request_sid__set(self, value):
         assert Service.supported_nrc.fset(self.mock_service, value) is None
-        assert self.mock_service._Service__supported_nrc == set(value)
+        assert self.mock_service._Service__supported_nrc == frozenset(value)
         self.mock_nrc_validate_member.assert_has_calls([call(nrc) for nrc in value], any_order=True)
 
     # name
