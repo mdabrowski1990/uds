@@ -7,6 +7,7 @@ __all__ = [
     # SID 0x11
     "CONDITIONAL_POWER_DOWN_TIME",
     # SID 0x19
+    "DID_COUNT_RECORDS",
     "CONDITIONAL_READ_DTC_INFORMATION_REQUEST_2020", "CONDITIONAL_READ_DTC_INFORMATION_REQUEST_2013",
     "CONDITIONAL_READ_DTC_INFORMATION_RESPONSE_2020", "CONDITIONAL_READ_DTC_INFORMATION_RESPONSE_2013",
     # SID 0x24
@@ -148,8 +149,8 @@ from .formula import (
     get_event_type_record_08_2020,
     get_event_type_record_09_2020,
     get_event_type_record_09_2020_continuation,
-    get_event_window_2013,
-    get_event_window_2020,
+    get_event_window_time_2013,
+    get_event_window_time_2020,
     get_file_path_and_name,
     get_file_sizes,
     get_file_sizes_or_dir_info,
@@ -221,6 +222,14 @@ CONDITIONAL_POWER_DOWN_TIME = ConditionalMappingDataRecord(mapping={0x4: [POWER_
 
 # SID 0x19
 
+DID_COUNT_RECORDS = tuple(RawDataRecord(name=f"DIDCount#{record_number + 1}",
+                                        length=8,
+                                        min_occurrences=1,
+                                        max_occurrences=1,
+                                        unit="DIDs")
+                          for record_number in range(REPEATED_DATA_RECORDS_NUMBER))
+"""Collection of `DIDCount` Data Records."""
+
 _DID_RECORDS_2020 = tuple(ConditionalFormulaDataRecord(formula=get_did_records_formula_2020(record_number + 1))
                           for record_number in range(REPEATED_DATA_RECORDS_NUMBER))
 """Collection of `DID` Data Records (compatible with ISO 14229-1:2020)."""
@@ -228,45 +237,42 @@ _DID_RECORDS_2013 = tuple(ConditionalFormulaDataRecord(formula=get_did_records_f
                           for record_number in range(REPEATED_DATA_RECORDS_NUMBER))
 """Collection of `DID` Data Records (compatible with ISO 14229-1:2013)."""
 
-_DID_COUNT_RECORDS = tuple(RawDataRecord(name=f"DIDCount#{record_number + 1}",
-                                         length=8,
-                                         min_occurrences=1,
-                                         max_occurrences=1,
-                                         unit="DIDs")
-                           for record_number in range(REPEATED_DATA_RECORDS_NUMBER))
-"""Collection of `DIDCount` Data Records."""
-
 _DTC_SNAPSHOT_RECORDS_2020 = tuple(item
                                    for snapshot_record in zip(OPTIONAL_DTC_SNAPSHOT_RECORDS_NUMBERS_LIST,
-                                                              _DID_COUNT_RECORDS,
-                                                              _DID_RECORDS_2020)
+                                                              DID_COUNT_RECORDS,
+                                                              _DID_RECORDS_2020,
+                                                              strict=True)
                                    for item in snapshot_record)
 """Collection of DTC Snapshot Data Records (compatible with ISO 14229-1:2020)."""
 _DTC_SNAPSHOT_RECORDS_2013 = tuple(item
                                    for snapshot_record in zip(OPTIONAL_DTC_SNAPSHOT_RECORDS_NUMBERS_LIST,
-                                                              _DID_COUNT_RECORDS,
-                                                              _DID_RECORDS_2013)
+                                                              DID_COUNT_RECORDS,
+                                                              _DID_RECORDS_2013,
+                                                              strict=True)
                                    for item in snapshot_record)
 """Collection of DTC Snapshot Data Records (compatible with ISO 14229-1:2013)."""
 
 _DTC_EXTENDED_DATA_RECORDS = tuple(item
                                    for data_records in zip(OPTIONAL_DTCS_AND_STATUSES_LIST,
-                                                           DTC_EXTENDED_DATA_RECORDS_DATA_LIST)
+                                                           DTC_EXTENDED_DATA_RECORDS_DATA_LIST,
+                                                           strict=True)
                                    for item in data_records)
 """Collection of DTC Extended Data Records."""
 
 _DTC_STORED_DATA_RECORDS_2020 = tuple(item
                                       for stored_data_record in zip(DTC_STORED_DATA_RECORD_NUMBERS_LIST,
                                                                     DTCS_AND_STATUSES_LIST,
-                                                                    _DID_COUNT_RECORDS,
-                                                                    _DID_RECORDS_2020)
+                                                                    DID_COUNT_RECORDS,
+                                                                    _DID_RECORDS_2020,
+                                                                    strict=True)
                                       for item in stored_data_record)
 """Collection of DTC Stored Data Records (compatible with ISO 14229-1:2020)."""
 _DTC_STORED_DATA_RECORDS_2013 = tuple(item
                                       for stored_data_record in zip(DTC_STORED_DATA_RECORD_NUMBERS_LIST,
                                                                     DTCS_AND_STATUSES_LIST,
-                                                                    _DID_COUNT_RECORDS,
-                                                                    _DID_RECORDS_2013)
+                                                                    DID_COUNT_RECORDS,
+                                                                    _DID_RECORDS_2013,
+                                                                    strict=True)
                                       for item in stored_data_record)
 """Collection of DTC Stored Data Records (compatible with ISO 14229-1:2013)."""
 
@@ -419,7 +425,8 @@ _SCALING_BYTES_EXTENSIONS_RECORDS = tuple(
 """Collection of `scalingByteExtension` Data Records."""
 
 SCALING_DATA_RECORDS = tuple(item
-                             for scaling_data_records in zip(_SCALING_BYTES_RECORDS, _SCALING_BYTES_EXTENSIONS_RECORDS)
+                             for scaling_data_records in
+                             zip(_SCALING_BYTES_RECORDS, _SCALING_BYTES_EXTENSIONS_RECORDS, strict=True)
                              for item in scaling_data_records)
 """Collection of `scalingByte` and `scalingByteExtension` Data Records."""
 
@@ -874,9 +881,9 @@ CONDITIONAL_SECURED_DATA_TRANSMISSION_RESPONSE = ConditionalFormulaDataRecord(
 
 # SID 0x86
 
-EVENT_WINDOW_TIME_2020 = get_event_window_2020()
+EVENT_WINDOW_TIME_2020 = get_event_window_time_2020()
 """Definition of `eventWindowTime` Data Record (compatible with ISO 14229-1:2020)."""
-EVENT_WINDOW_TIME_2013 = get_event_window_2013()
+EVENT_WINDOW_TIME_2013 = get_event_window_time_2013()
 """Definition of `eventWindowTime` Data Record (compatible with ISO 14229-1:2013)."""
 
 CONDITIONAL_ACTIVATED_EVENTS_2020 = ConditionalFormulaDataRecord(formula=get_activated_events_2020)

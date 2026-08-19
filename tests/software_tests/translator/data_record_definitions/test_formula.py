@@ -67,8 +67,8 @@ from uds.translator.data_record_definitions.formula import (
     get_event_type_record_08_2020,
     get_event_type_record_09_2020,
     get_event_type_record_09_2020_continuation,
-    get_event_window_2013,
-    get_event_window_2020,
+    get_event_window_time_2013,
+    get_event_window_time_2020,
     get_file_path_and_name,
     get_file_sizes,
     get_file_sizes_or_dir_info,
@@ -137,7 +137,7 @@ class TestFunctions:
     def test_get_raw_data_record_with_length_formula__value(self, data_record_name, accept_zero_length, length):
         formula = get_raw_data_record_with_length_formula(data_record_name=data_record_name,
                                                           accept_zero_length=accept_zero_length)
-        assert formula(length) == (self.mock_raw_data_record.return_value, )
+        assert formula(length) == (self.mock_raw_data_record.return_value,)
         self.mock_raw_data_record.assert_called_once_with(name=data_record_name,
                                                           length=8,
                                                           min_occurrences=length,
@@ -149,9 +149,9 @@ class TestFunctions:
     @pytest.mark.parametrize("exponent_bit_length, mantissa_bit_length, "
                              "exponent_unsigned_value, mantissa_unsigned_value, "
                              "exponent_value, mantissa_value", [
-        (6, 12, 1, 1, -1, -1),
-        (10, 10, 0xFF, 0x3FF, -2, 123),
-    ])
+                                 (6, 12, 1, 1, -1, -1),
+                                 (10, 10, 0xFF, 0x3FF, -2, 123),
+                             ])
     @patch(f"{SCRIPT_LOCATION}.get_signed_value_encoding_formula")
     def test_get_decode_float_value_formula(self, mock_get_signed_value_encoding_formula,
                                             exponent_bit_length, mantissa_bit_length,
@@ -164,7 +164,7 @@ class TestFunctions:
         formula = get_decode_float_value_formula(exponent_bit_length=exponent_bit_length,
                                                  mantissa_bit_length=mantissa_bit_length)
         assert (formula((exponent_unsigned_value << mantissa_bit_length) + mantissa_unsigned_value)
-                == (10 ** exponent_value) *  mantissa_value)
+                == (10 ** exponent_value) * mantissa_value)
         mock_get_signed_value_encoding_formula.assert_has_calls([call(exponent_bit_length), call(mantissa_bit_length)],
                                                                 any_order=False)
         mock_exponent_encode_formula.assert_called_once_with(exponent_unsigned_value)
@@ -176,7 +176,8 @@ class TestFunctions:
         (4, 12, float("inf")),
         (8, 24, float("inf")),
     ])
-    def test_get_encode_float_value_formula__formula_value_error(self, exponent_bit_length, mantissa_bit_length, float_value):
+    def test_get_encode_float_value_formula__formula_value_error(self, exponent_bit_length, mantissa_bit_length,
+                                                                 float_value):
         formula = get_encode_float_value_formula(exponent_bit_length=exponent_bit_length,
                                                  mantissa_bit_length=mantissa_bit_length)
         with pytest.raises(ValueError):
@@ -186,9 +187,9 @@ class TestFunctions:
                              "exponent_unsigned_value, mantissa_unsigned_value, "
                              "exponent_signed_value, mantissa_signed_value, "
                              "float_value", [
-        (4, 12, 0xF, 0x234, -1, 564, 56.4),
-        (8, 24, 0xFD, 0xF0E1D2, -3, -990766, -990.766),
-    ])
+                                 (4, 12, 0xF, 0x234, -1, 564, 56.4),
+                                 (8, 24, 0xFD, 0xF0E1D2, -3, -990766, -990.766),
+                             ])
     @patch(f"{SCRIPT_LOCATION}.get_signed_value_decoding_formula")
     def test_get_encode_float_value_formula(self, mock_get_signed_value_decoding_formula,
                                             exponent_bit_length, mantissa_bit_length,
@@ -254,7 +255,7 @@ class TestFunctions:
             input_kwargs["formula"](undefined_did)
         with pytest.raises(ValueError):
             input_kwargs["formula"](incorrect_did)
-        assert input_kwargs["formula"](some_defined_did) == (self.mock_raw_data_record.return_value, )
+        assert input_kwargs["formula"](some_defined_did) == (self.mock_raw_data_record.return_value,)
 
     # get_did_data_2013
 
@@ -273,8 +274,8 @@ class TestFunctions:
             input_kwargs["formula"](undefined_did)
         with pytest.raises(ValueError):
             input_kwargs["formula"](incorrect_did)
-        assert input_kwargs["formula"](some_defined_did) == (self.mock_raw_data_record.return_value, )
-        
+        assert input_kwargs["formula"](some_defined_did) == (self.mock_raw_data_record.return_value,)
+
     # get_did_record_2020
 
     @pytest.mark.parametrize("did_count, record_number", [
@@ -284,7 +285,7 @@ class TestFunctions:
     @patch(f"{SCRIPT_LOCATION}.get_did_data_2020")
     @patch(f"{SCRIPT_LOCATION}.get_did_2020")
     def test_get_did_record_2020(self, mock_get_did_2020, mock_get_did_data_2020,
-                                                  did_count, record_number):
+                                 did_count, record_number):
         assert (get_did_record_2020(did_count=did_count, record_number=record_number)
                 == (mock_get_did_2020.return_value, mock_get_did_data_2020.return_value) * did_count)
 
@@ -297,7 +298,7 @@ class TestFunctions:
     @patch(f"{SCRIPT_LOCATION}.get_did_data_2013")
     @patch(f"{SCRIPT_LOCATION}.get_did_2013")
     def test_get_did_record_2013(self, mock_get_did_2013, mock_get_did_data_2013,
-                                                  did_count, record_number):
+                                 did_count, record_number):
         assert (get_did_record_2013(did_count=did_count, record_number=record_number)
                 == (mock_get_did_2013.return_value, mock_get_did_data_2013.return_value) * did_count)
 
@@ -352,7 +353,7 @@ class TestFunctions:
         assert callable(formula)
         assert formula(mock_did_count) == mock_get_did_record_2020.return_value
         mock_get_did_record_2020.assert_called_once_with(did_count=mock_did_count,
-                                                   record_number=mock_record_number)
+                                                         record_number=mock_record_number)
 
     # get_did_records_formula_2013
 
@@ -364,7 +365,7 @@ class TestFunctions:
         assert callable(formula)
         assert formula(mock_did_count) == mock_get_did_record_2013.return_value
         mock_get_did_record_2013.assert_called_once_with(did_count=mock_did_count,
-                                                   record_number=mock_record_number)
+                                                         record_number=mock_record_number)
 
     # get_scaling_byte_extension
 
@@ -560,7 +561,7 @@ class TestFunctions:
             input_kwargs["formula"](undefined_did)
         with pytest.raises(ValueError):
             input_kwargs["formula"](incorrect_did)
-        assert input_kwargs["formula"](some_defined_did) == (self.mock_raw_data_record.return_value, )
+        assert input_kwargs["formula"](some_defined_did) == (self.mock_raw_data_record.return_value,)
 
     # get_did_data_mask_2013
 
@@ -588,7 +589,7 @@ class TestFunctions:
             input_kwargs["formula"](undefined_did)
         with pytest.raises(ValueError):
             input_kwargs["formula"](incorrect_did)
-        assert input_kwargs["formula"](some_defined_did) == (self.mock_raw_data_record.return_value, )
+        assert input_kwargs["formula"](some_defined_did) == (self.mock_raw_data_record.return_value,)
 
     # get_file_path_and_name
 
@@ -668,7 +669,6 @@ class TestFunctions:
                                                           length=8 * bytes_number,
                                                           unit="bytes")
 
-
     # get_data
 
     def test_get_data__value_error(self):
@@ -681,7 +681,7 @@ class TestFunctions:
         self.mock_raw_data_record.assert_called_once_with(name="data",
                                                           length=8,
                                                           min_occurrences=memory_size_length,
-                                                          max_occurrences=memory_size_length,)
+                                                          max_occurrences=memory_size_length, )
 
     # get_secured_data_transmission_request
 
@@ -721,32 +721,32 @@ class TestFunctions:
                                                           max_occurrences=signature_length,
                                                           enforce_reoccurring=True)
 
-    # get_event_window_2020
+    # get_event_window_time_2020
 
-    def test_get_event_window_2020__without_event_number(self):
-        assert get_event_window_2020() == self.mock_mapping_data_record.return_value
+    def test_get_event_window_time_2020__without_event_number(self):
+        assert get_event_window_time_2020() == self.mock_mapping_data_record.return_value
         self.mock_mapping_data_record.assert_called_once_with(name="eventWindowTime",
                                                               length=8,
                                                               values_mapping=EVENT_WINDOW_TIME_MAPPING_2020)
 
     @pytest.mark.parametrize("event_number", [1, 32])
-    def test_get_event_window_2020__with_event_number(self, event_number):
-        assert get_event_window_2020(event_number) == self.mock_mapping_data_record.return_value
+    def test_get_event_window_time_2020__with_event_number(self, event_number):
+        assert get_event_window_time_2020(event_number) == self.mock_mapping_data_record.return_value
         self.mock_mapping_data_record.assert_called_once_with(name=f"eventWindowTime#{event_number}",
                                                               length=8,
                                                               values_mapping=EVENT_WINDOW_TIME_MAPPING_2020)
 
-    # get_event_window_2013
+    # get_event_window_time_2013
 
-    def test_get_event_window_2013__without_event_number(self):
-        assert get_event_window_2013() == self.mock_mapping_data_record.return_value
+    def test_get_event_window_time_2013__without_event_number(self):
+        assert get_event_window_time_2013() == self.mock_mapping_data_record.return_value
         self.mock_mapping_data_record.assert_called_once_with(name="eventWindowTime",
                                                               length=8,
                                                               values_mapping=EVENT_WINDOW_TIME_MAPPING_2013)
 
     @pytest.mark.parametrize("event_number", [1, 32])
-    def test_get_event_window_2013__with_event_number(self, event_number):
-        assert get_event_window_2013(event_number) == self.mock_mapping_data_record.return_value
+    def test_get_event_window_time_2013__with_event_number(self, event_number):
+        assert get_event_window_time_2013(event_number) == self.mock_mapping_data_record.return_value
         self.mock_mapping_data_record.assert_called_once_with(name=f"eventWindowTime#{event_number}",
                                                               length=8,
                                                               values_mapping=EVENT_WINDOW_TIME_MAPPING_2013)
@@ -829,7 +829,7 @@ class TestFunctions:
         assert get_event_type_record_03_2013(event_number) == self.mock_raw_data_record.return_value
         self.mock_raw_data_record.assert_called_once_with(name=f"eventTypeRecord#{event_number}",
                                                           length=DID_BIT_LENGTH,
-                                                          children=(DID_2013, ))
+                                                          children=(DID_2013,))
 
     # get_event_type_record_07_2020
 
@@ -951,15 +951,15 @@ class TestFunctions:
     @patch(f"{SCRIPT_LOCATION}.get_event_type_record_03_2020")
     @patch(f"{SCRIPT_LOCATION}.get_event_type_record_02_2013")
     @patch(f"{SCRIPT_LOCATION}.get_event_type_record_01")
-    @patch(f"{SCRIPT_LOCATION}.get_event_window_2013")
-    @patch(f"{SCRIPT_LOCATION}.get_event_window_2020")
+    @patch(f"{SCRIPT_LOCATION}.get_event_window_time_2013")
+    @patch(f"{SCRIPT_LOCATION}.get_event_window_time_2020")
     @patch(f"{SCRIPT_LOCATION}.get_event_type_of_active_event_2013")
     @patch(f"{SCRIPT_LOCATION}.get_event_type_of_active_event_2020")
     def test_get_activated_events_2020(self,
                                        mock_get_event_type_of_active_event_2020,
                                        mock_get_event_type_of_active_event_2013,
-                                       mock_get_event_window_2020,
-                                       mock_get_event_window_2013,
+                                       mock_get_event_window_time_2020,
+                                       mock_get_event_window_time_2013,
                                        mock_get_event_type_record_01,
                                        mock_get_event_type_record_02_2013,
                                        mock_get_event_type_record_03_2020,
@@ -977,7 +977,7 @@ class TestFunctions:
         ) * number_of_activated_events
         calls = [call(i + 1) for i in range(number_of_activated_events)]
         mock_get_event_type_of_active_event_2020.assert_has_calls(calls, any_order=False)
-        mock_get_event_window_2020.assert_has_calls(calls, any_order=False)
+        mock_get_event_window_time_2020.assert_has_calls(calls, any_order=False)
         mock_get_event_type_record_01.assert_has_calls(calls, any_order=False)
         mock_get_event_type_record_03_2020.assert_has_calls(calls, any_order=False)
         mock_get_event_type_record_07_2020.assert_has_calls(calls, any_order=False)
@@ -987,7 +987,7 @@ class TestFunctions:
         mock_get_service_to_respond.assert_has_calls(calls, any_order=False)
         assert self.mock_conditional_mapping_data_record.call_count == number_of_activated_events
         mock_get_event_type_of_active_event_2013.assert_not_called()
-        mock_get_event_window_2013.assert_not_called()
+        mock_get_event_window_time_2013.assert_not_called()
         mock_get_event_type_record_02_2013.assert_not_called()
         mock_get_event_type_record_03_2013.assert_not_called()
         mock_get_event_type_record_07_2013.assert_not_called()
@@ -1005,15 +1005,15 @@ class TestFunctions:
     @patch(f"{SCRIPT_LOCATION}.get_event_type_record_03_2020")
     @patch(f"{SCRIPT_LOCATION}.get_event_type_record_02_2013")
     @patch(f"{SCRIPT_LOCATION}.get_event_type_record_01")
-    @patch(f"{SCRIPT_LOCATION}.get_event_window_2013")
-    @patch(f"{SCRIPT_LOCATION}.get_event_window_2020")
+    @patch(f"{SCRIPT_LOCATION}.get_event_window_time_2013")
+    @patch(f"{SCRIPT_LOCATION}.get_event_window_time_2020")
     @patch(f"{SCRIPT_LOCATION}.get_event_type_of_active_event_2013")
     @patch(f"{SCRIPT_LOCATION}.get_event_type_of_active_event_2020")
     def test_get_activated_events_2013(self,
                                        mock_get_event_type_of_active_event_2020,
                                        mock_get_event_type_of_active_event_2013,
-                                       mock_get_event_window_2020,
-                                       mock_get_event_window_2013,
+                                       mock_get_event_window_time_2020,
+                                       mock_get_event_window_time_2013,
                                        mock_get_event_type_record_01,
                                        mock_get_event_type_record_02_2013,
                                        mock_get_event_type_record_03_2020,
@@ -1031,7 +1031,7 @@ class TestFunctions:
         ) * number_of_activated_events
         calls = [call(i + 1) for i in range(number_of_activated_events)]
         mock_get_event_type_of_active_event_2013.assert_has_calls(calls, any_order=False)
-        mock_get_event_window_2013.assert_has_calls(calls, any_order=False)
+        mock_get_event_window_time_2013.assert_has_calls(calls, any_order=False)
         mock_get_event_type_record_01.assert_has_calls(calls, any_order=False)
         mock_get_event_type_record_02_2013.assert_has_calls(calls, any_order=False)
         mock_get_event_type_record_03_2013.assert_has_calls(calls, any_order=False)
@@ -1039,7 +1039,7 @@ class TestFunctions:
         mock_get_service_to_respond.assert_has_calls(calls, any_order=False)
         assert self.mock_conditional_mapping_data_record.call_count == number_of_activated_events
         mock_get_event_type_of_active_event_2020.assert_not_called()
-        mock_get_event_window_2020.assert_not_called()
+        mock_get_event_window_time_2020.assert_not_called()
         mock_get_event_type_record_03_2020.assert_not_called()
         mock_get_event_type_record_07_2020.assert_not_called()
         mock_get_event_type_record_08_2020.assert_not_called()

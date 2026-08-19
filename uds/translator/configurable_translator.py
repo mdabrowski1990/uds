@@ -1,0 +1,1033 @@
+"""Implementation of translator configurable through typical diagnostic parameters."""
+
+__all__ = ["ConfigurableTranslator"]
+
+from collections.abc import Callable, Mapping, Sequence
+from copy import deepcopy
+from types import MappingProxyType
+from typing import Any
+
+from uds.message import RequestSID
+from uds.utilities import DID_BIT_LENGTH, REPEATED_DATA_RECORDS_NUMBER
+
+from .data_record import (
+    AbstractDataRecord,
+    ConditionalFormulaDataRecord,
+    ConditionalMappingDataRecord,
+    MappingDataRecord,
+    MessageStructureAlias,
+    RawDataRecord,
+)
+from .data_record_definitions import (
+    DID_COUNT_RECORDS,
+    DTC_AND_STATUS,
+    DTC_STORED_DATA_RECORD_NUMBERS_LIST,
+    DTCS_AND_STATUSES_LIST,
+    INPUT_OUTPUT_CONTROL_PARAMETER,
+    MEMORY_SELECTION,
+    NUMBER_OF_ACTIVATED_EVENTS,
+    OPTIONAL_DTC_SNAPSHOT_RECORDS_NUMBERS_LIST,
+    RESERVED_BIT,
+)
+from .data_record_definitions.formula import get_event_type_record_01, get_service_to_respond
+from .translator import Translator
+from .translator_definitions import BASE_TRANSLATOR
+
+
+class ConfigurableTranslator(Translator):
+    """
+    Simplified translator for UDS messages that assumes typical messages structures.
+
+    Features:
+     - configuration with diagnostic parameters and messages structures
+     - building diagnostic messages (requests, positive and negative responses)
+     - extracting meaningful information from diagnostic messages payload
+
+    .. note:: It contains core features but in advances cases (where message structure has to be adapted)
+        :class:`~uds.translator.translator.Translator` shall be directly used instead.
+    """
+
+    def __init__(self,  # pylint: disable=too-many-branches
+                 base: Translator = BASE_TRANSLATOR,
+                 *,
+                 diagnostic_session_type_mapping: Mapping[int, str] | None = None,
+                 reset_type_mapping: Mapping[int, str] | None = None,
+                 report_type_mapping: Mapping[int, str] | None = None,
+                 security_access_type_mapping: Mapping[int, str] | None = None,
+                 control_type_type_mapping: Mapping[int, str] | None = None,
+                 authentication_task_mapping: Mapping[int, str] | None = None,
+                 definition_type_mapping: Mapping[int, str] | None = None,
+                 routine_control_type_mapping: Mapping[int, str] | None = None,
+                 zero_subfunction_mapping: Mapping[int, str] | None = None,
+                 timing_parameter_access_type_mapping: Mapping[int, str] | None = None,
+                 dtc_setting_type_mapping: Mapping[int, str] | None = None,
+                 event_type_mapping: Mapping[int, str] | None = None,
+                 link_control_type_mapping: Mapping[int, str] | None = None,
+                 rid_mapping: Mapping[int, str] | None = None,
+                 did_mapping: Mapping[int, str] | None = None,
+                 did_data_mapping: Mapping[int, MessageStructureAlias]) -> None:
+        """
+        Reconfigure a translator.
+
+        :param base: Translator to use as a base.
+        :param diagnostic_session_type_mapping: New value mapping for `diagnosticSessionType` DataRecord of
+            :ref:`DiagnosticSessionControl <knowledge-base-service-diagnostic-session-control>` service.
+            None to keep mapping unchanged.
+        :param reset_type_mapping: New value mapping for `resetType` DataRecord of
+            :ref:`ECUReset <knowledge-base-service-ecu-reset>` service.
+            None to keep mapping unchanged.
+        :param report_type_mapping: New value mapping for `reportType` DataRecord of
+            :ref:`ReadDTCInformation <knowledge-base-service-read-dtc-information>` service.
+            None to keep mapping unchanged.
+        :param security_access_type_mapping: New value mapping for `securityAccessType` DataRecord of
+            :ref:`SecurityAccess <knowledge-base-service-security-access>` service.
+            None to keep mapping unchanged.
+        :param control_type_type_mapping: New value mapping for `controlType` DataRecord of
+            :ref:`CommunicationControl <knowledge-base-service-communication-control>` service.
+            None to keep mapping unchanged.
+        :param authentication_task_mapping: New value mapping for `authenticationTask` DataRecord of
+            :ref:`Authentication <knowledge-base-service-authentication>` service.
+            None to keep mapping unchanged.
+        :param definition_type_mapping: New value mapping for `definitionType` DataRecord of
+            :ref:`DynamicallyDefineDataIdentifier <knowledge-base-service-dynamically-define-data-identifier>` service.
+            None to keep mapping unchanged.
+        :param routine_control_type_mapping: New value mapping for `routineControlType` DataRecord of
+            :ref:`RoutineControl <knowledge-base-service-routine-control>` service.
+            None to keep mapping unchanged.
+        :param zero_subfunction_mapping: New value mapping for `zeroSubFunction` DataRecord of
+            :ref:`TesterPresent <knowledge-base-service-tester-present>` service.
+            None to keep mapping unchanged.
+        :param timing_parameter_access_type_mapping: New value mapping for `timingParameterAccessType` DataRecord of
+            :ref:`AccessTimingParameter <knowledge-base-service-access-timing-parameter>` service.
+            None to keep mapping unchanged.
+        :param dtc_setting_type_mapping: New value mapping for `DTCSettingType` DataRecord of
+            :ref:`ControlDTCSetting <knowledge-base-service-control-dtc-setting>` service.
+            None to keep mapping unchanged.
+        :param event_type_mapping: New value mapping for `eventType` DataRecord of
+            :ref:`ResponseOnEvent <knowledge-base-service-response-on-event>` service.
+            None to keep mapping unchanged.
+        :param link_control_type_mapping: New value mapping for `linkControlType` DataRecord of
+            :ref:`LinkControl <knowledge-base-service-link-control>` service.
+            None to keep mapping unchanged.
+        :param rid_mapping: Value to name mapping for :ref:`RIDs <knowledge-base-rid>`.
+        :param did_mapping: Value to name mapping for :ref:`DIDs <knowledge-base-did>`.
+        :param did_data_mapping: Value to data structure mapping for :ref:`DIDs <knowledge-base-did>`.
+        """
+        # create copy of base Translator
+        super().__init__(services=deepcopy(base.services))
+        # adapt SubFunctions
+        if diagnostic_session_type_mapping is not None:
+            self.diagnostic_session_type_mapping = diagnostic_session_type_mapping
+        if reset_type_mapping is not None:
+            self.reset_type_mapping = reset_type_mapping
+        if report_type_mapping is not None:
+            self.report_type_mapping = report_type_mapping
+        if security_access_type_mapping is not None:
+            self.security_access_type_mapping = security_access_type_mapping
+        if control_type_type_mapping is not None:
+            self.control_type_type_mapping = control_type_type_mapping
+        if authentication_task_mapping is not None:
+            self.authentication_task_mapping = authentication_task_mapping
+        if routine_control_type_mapping is not None:
+            self.routine_control_type_mapping = routine_control_type_mapping
+        if definition_type_mapping is not None:
+            self.definition_type_mapping = definition_type_mapping
+        if zero_subfunction_mapping is not None:
+            self.zero_subfunction_mapping = zero_subfunction_mapping
+        if timing_parameter_access_type_mapping is not None:
+            self.timing_parameter_access_type_mapping = timing_parameter_access_type_mapping
+        if dtc_setting_type_mapping is not None:
+            self.dtc_setting_type_mapping = dtc_setting_type_mapping
+        if event_type_mapping is not None:
+            self.event_type_mapping = event_type_mapping
+        if link_control_type_mapping is not None:
+            self.link_control_type_mapping = link_control_type_mapping
+        # adapt RIDs
+        if rid_mapping is not None:
+            self.rid_mapping = rid_mapping
+        # adapt DIDs
+        if did_mapping is not None:
+            self.did_mapping = did_mapping
+        self.did_data_mapping = did_data_mapping
+
+    def __deepcopy__(self, memo: dict[int, Any]) -> "ConfigurableTranslator":
+        """Get deep copy of the translator."""
+        cls = self.__class__
+        self_copy = cls.__new__(cls)
+        memo[id(self)] = self_copy
+        ConfigurableTranslator.__init__(self_copy,
+                                        base=self,
+                                        diagnostic_session_type_mapping=self.diagnostic_session_type_mapping,
+                                        reset_type_mapping=self.reset_type_mapping,
+                                        report_type_mapping=self.report_type_mapping,
+                                        security_access_type_mapping=self.security_access_type_mapping,
+                                        control_type_type_mapping=self.control_type_type_mapping,
+                                        authentication_task_mapping=self.authentication_task_mapping,
+                                        definition_type_mapping=self.definition_type_mapping,
+                                        routine_control_type_mapping=self.routine_control_type_mapping,
+                                        zero_subfunction_mapping=self.zero_subfunction_mapping,
+                                        timing_parameter_access_type_mapping=self.timing_parameter_access_type_mapping,
+                                        dtc_setting_type_mapping=self.dtc_setting_type_mapping,
+                                        event_type_mapping=self.event_type_mapping,
+                                        link_control_type_mapping=self.link_control_type_mapping,
+                                        rid_mapping=self.rid_mapping,
+                                        did_mapping=self.did_mapping,
+                                        did_data_mapping=deepcopy(dict(self.did_data_mapping), memo=memo))
+        return self_copy
+
+    @property
+    def diagnostic_session_type_mapping(self) -> Mapping[int, str] | None:
+        """Get diagnosticSessionType (SubFunction of DiagnosticSessionControl) value to name mapping."""
+        diagnostic_session_control = self.services_mapping.get(RequestSID.DiagnosticSessionControl, None)
+        if diagnostic_session_control is None:
+            return None
+        sub_function: MappingDataRecord = diagnostic_session_control.request_structure[0].children[1]  # type: ignore
+        return sub_function.values_mapping
+
+    @diagnostic_session_type_mapping.setter
+    def diagnostic_session_type_mapping(self, value: Mapping[int, str]) -> None:
+        """
+        Set diagnosticSessionType (SubFunction of DiagnosticSessionControl) value to name mapping.
+
+        :param value: Mapping value to set.
+        """
+        diagnostic_session_control = self.services_mapping[RequestSID.DiagnosticSessionControl]
+        diagnostic_session_control.request_structure[0].children[1].values_mapping = value  # type: ignore
+        diagnostic_session_control.response_structure[0].children[1].values_mapping = value  # type: ignore
+
+    @property
+    def reset_type_mapping(self) -> Mapping[int, str] | None:
+        """Get resetType (SubFunction of ECUReset) value to name mapping."""
+        ecu_reset = self.services_mapping.get(RequestSID.ECUReset, None)
+        if ecu_reset is None:
+            return None
+        sub_function: MappingDataRecord = ecu_reset.request_structure[0].children[1]  # type: ignore
+        return sub_function.values_mapping
+
+    @reset_type_mapping.setter
+    def reset_type_mapping(self, value: Mapping[int, str]) -> None:
+        """
+        Set resetType (SubFunction of ECUReset) value to name mapping.
+
+        :param value: Mapping value to set.
+        """
+        ecu_reset = self.services_mapping[RequestSID.ECUReset]
+        ecu_reset.request_structure[0].children[1].values_mapping = value  # type: ignore
+        ecu_reset.response_structure[0].children[1].values_mapping = value  # type: ignore
+
+    @property
+    def report_type_mapping(self) -> Mapping[int, str] | None:
+        """Get reportType (SubFunction of ReadDTCInformation) value to name mapping."""
+        read_dtc_information = self.services_mapping.get(RequestSID.ReadDTCInformation, None)
+        if read_dtc_information is None:
+            return None
+        sub_function: MappingDataRecord = read_dtc_information.request_structure[0].children[1]  # type: ignore
+        return sub_function.values_mapping
+
+    @report_type_mapping.setter
+    def report_type_mapping(self, value: Mapping[int, str]) -> None:
+        """
+        Set reportType (SubFunction of ReadDTCInformation) value to name mapping.
+
+        :param value: Mapping value to set.
+        """
+        read_dtc_information = self.services_mapping[RequestSID.ReadDTCInformation]
+        read_dtc_information.request_structure[0].children[1].values_mapping = value  # type: ignore
+        read_dtc_information.response_structure[0].children[1].values_mapping = value  # type: ignore
+        response_on_event = self.services_mapping.get(RequestSID.ResponseOnEvent, None)
+        if response_on_event is not None:
+            subfunction_08_request_continuation = (
+                response_on_event.request_structure[1].mapping.get(0x08, None))  # type: ignore
+            if subfunction_08_request_continuation is not None:
+                subfunction_08_request_continuation[1].children[1].values_mapping = value
+            subfunction_09_request_continuation = (
+                response_on_event.request_structure[1].mapping.get(0x09, None))  # type: ignore
+            if subfunction_09_request_continuation is not None:
+                subfunction_09_request_continuation[1].children[2].values_mapping = value
+            subfunction_08_response_continuation = (
+                response_on_event.response_structure[1].mapping.get(0x08, None))  # type: ignore
+            if subfunction_08_response_continuation is not None:
+                subfunction_08_response_continuation[2].children[1].values_mapping = value
+            subfunction_09_response_continuation = (
+                response_on_event.response_structure[1].mapping.get(0x09, None))  # type: ignore
+            if subfunction_09_response_continuation is not None:
+                subfunction_09_response_continuation[2].children[2].values_mapping = value
+
+    @property
+    def security_access_type_mapping(self) -> Mapping[int, str] | None:
+        """Get securityAccessType (SubFunction of SecurityAccess) value to name mapping."""
+        security_access = self.services_mapping.get(RequestSID.SecurityAccess, None)
+        if security_access is None:
+            return None
+        sub_function: MappingDataRecord = security_access.request_structure[0].children[1]  # type: ignore
+        return sub_function.values_mapping
+
+    @security_access_type_mapping.setter
+    def security_access_type_mapping(self, value: Mapping[int, str]) -> None:
+        """
+        Set securityAccessType (SubFunction of SecurityAccess) value to name mapping.
+
+        :param value: Mapping value to set.
+        """
+        security_access = self.services_mapping[RequestSID.SecurityAccess]
+        security_access.request_structure[0].children[1].values_mapping = value  # type: ignore
+        security_access.response_structure[0].children[1].values_mapping = value  # type: ignore
+
+    @property
+    def control_type_type_mapping(self) -> Mapping[int, str] | None:
+        """Get controlType (SubFunction of CommunicationControl) value to name mapping."""
+        communication_control = self.services_mapping.get(RequestSID.CommunicationControl, None)
+        if communication_control is None:
+            return None
+        sub_function: MappingDataRecord = communication_control.request_structure[0].children[1]  # type: ignore
+        return sub_function.values_mapping
+
+    @control_type_type_mapping.setter
+    def control_type_type_mapping(self, value: Mapping[int, str]) -> None:
+        """
+        Set controlType (SubFunction of CommunicationControl) value to name mapping.
+
+        :param value: Mapping value to set.
+        """
+        communication_control = self.services_mapping[RequestSID.CommunicationControl]
+        communication_control.request_structure[0].children[1].values_mapping = value  # type: ignore
+        communication_control.response_structure[0].children[1].values_mapping = value  # type: ignore
+
+    @property
+    def authentication_task_mapping(self) -> Mapping[int, str] | None:
+        """Get authenticationTask (SubFunction of Authentication) value to name mapping."""
+        authentication = self.services_mapping.get(RequestSID.Authentication, None)
+        if authentication is None:
+            return None
+        sub_function: MappingDataRecord = authentication.request_structure[0].children[1]  # type: ignore
+        return sub_function.values_mapping
+
+    @authentication_task_mapping.setter
+    def authentication_task_mapping(self, value: Mapping[int, str]) -> None:
+        """
+        Set authenticationTask (SubFunction of Authentication) value to name mapping.
+
+        :param value: Mapping value to set.
+        """
+        authentication = self.services_mapping[RequestSID.Authentication]
+        authentication.request_structure[0].children[1].values_mapping = value  # type: ignore
+        authentication.response_structure[0].children[1].values_mapping = value  # type: ignore
+
+    @property
+    def definition_type_mapping(self) -> Mapping[int, str] | None:
+        """Get definitionType (SubFunction of DynamicallyDefineDataIdentifier) value to name mapping."""
+        dynamically_define_data_identifier = self.services_mapping.get(RequestSID.DynamicallyDefineDataIdentifier, None)
+        if dynamically_define_data_identifier is None:
+            return None
+        sub_function: MappingDataRecord = (  # type: ignore
+            dynamically_define_data_identifier.request_structure[0].children)[1]  # type: ignore
+        return sub_function.values_mapping
+
+    @definition_type_mapping.setter
+    def definition_type_mapping(self, value: Mapping[int, str]) -> None:
+        """
+        Set definitionType (SubFunction of DynamicallyDefineDataIdentifier) value to name mapping.
+
+        :param value: Mapping value to set.
+        """
+        dynamically_define_data_identifier = self.services_mapping[RequestSID.DynamicallyDefineDataIdentifier]
+        dynamically_define_data_identifier.request_structure[0].children[1].values_mapping = value  # type: ignore
+        dynamically_define_data_identifier.response_structure[0].children[1].values_mapping = value  # type: ignore
+
+    @property
+    def routine_control_type_mapping(self) -> Mapping[int, str] | None:
+        """Get routineControlType (SubFunction of RoutineControl) value to name mapping."""
+        routine_control = self.services_mapping.get(RequestSID.RoutineControl, None)
+        if routine_control is None:
+            return None
+        sub_function: MappingDataRecord = routine_control.request_structure[0].children[1]  # type: ignore
+        return sub_function.values_mapping
+
+    @routine_control_type_mapping.setter
+    def routine_control_type_mapping(self, value: Mapping[int, str]) -> None:
+        """
+        Set routineControlType (SubFunction of RoutineControl) value to name mapping.
+
+        :param value: Mapping value to set.
+        """
+        routine_control = self.services_mapping[RequestSID.RoutineControl]
+        routine_control.request_structure[0].children[1].values_mapping = value  # type: ignore
+        routine_control.response_structure[0].children[1].values_mapping = value  # type: ignore
+
+    @property
+    def zero_subfunction_mapping(self) -> Mapping[int, str] | None:
+        """Get zeroSubFunction (SubFunction of TesterPresent) value to name mapping."""
+        tester_present = self.services_mapping.get(RequestSID.TesterPresent, None)
+        if tester_present is None:
+            return None
+        sub_function: MappingDataRecord = tester_present.request_structure[0].children[1]  # type: ignore
+        return sub_function.values_mapping
+
+    @zero_subfunction_mapping.setter
+    def zero_subfunction_mapping(self, value: Mapping[int, str]) -> None:
+        """
+        Set zeroSubFunction (SubFunction of TesterPresent) value to name mapping.
+
+        :param value: Mapping value to set.
+        """
+        tester_present = self.services_mapping[RequestSID.TesterPresent]
+        tester_present.request_structure[0].children[1].values_mapping = value  # type: ignore
+        tester_present.response_structure[0].children[1].values_mapping = value  # type: ignore
+
+    @property
+    def timing_parameter_access_type_mapping(self) -> Mapping[int, str] | None:
+        """Get timingParameterAccessType (SubFunction of AccessTimingParameter) value to name mapping."""
+        access_timing_parameter = self.services_mapping.get(RequestSID.AccessTimingParameter, None)
+        if access_timing_parameter is None:
+            return None
+        sub_function: MappingDataRecord = access_timing_parameter.request_structure[0].children[1]  # type: ignore
+        return sub_function.values_mapping
+
+    @timing_parameter_access_type_mapping.setter
+    def timing_parameter_access_type_mapping(self, value: Mapping[int, str]) -> None:
+        """
+        Set timingParameterAccessType (SubFunction of AccessTimingParameter) value to name mapping.
+
+        :param value: Mapping value to set.
+        """
+        access_timing_parameter = self.services_mapping[RequestSID.AccessTimingParameter]
+        access_timing_parameter.request_structure[0].children[1].values_mapping = value  # type: ignore
+        access_timing_parameter.response_structure[0].children[1].values_mapping = value  # type: ignore
+
+    @property
+    def dtc_setting_type_mapping(self) -> Mapping[int, str] | None:
+        """Get DTCSettingType (SubFunction of ControlDTCSetting) value to name mapping."""
+        control_dtc_setting = self.services_mapping.get(RequestSID.ControlDTCSetting, None)
+        if control_dtc_setting is None:
+            return None
+        sub_function: MappingDataRecord = control_dtc_setting.request_structure[0].children[1]  # type: ignore
+        return sub_function.values_mapping
+
+    @dtc_setting_type_mapping.setter
+    def dtc_setting_type_mapping(self, value: Mapping[int, str]) -> None:
+        """
+        Set DTCSettingType (SubFunction of ControlDTCSetting) value to name mapping.
+
+        :param value: Mapping value to set.
+        """
+        control_dtc_setting = self.services_mapping[RequestSID.ControlDTCSetting]
+        control_dtc_setting.request_structure[0].children[1].values_mapping = value  # type: ignore
+        control_dtc_setting.response_structure[0].children[1].values_mapping = value  # type: ignore
+
+    @property
+    def event_type_mapping(self) -> Mapping[int, str] | None:
+        """
+        Get eventType (SubFunction of ResponseOnEvent) value to name mapping.
+
+        .. warning:: Mapping for `event` (mask 0x3F) part of the `eventType` SubFunction
+            (:ref:`ResponseOnEvent <knowledge-base-service-response-on-event>`) is returned.
+        """
+        response_on_event = self.services_mapping.get(RequestSID.ResponseOnEvent, None)
+        if response_on_event is None:
+            return None
+        sub_function: MappingDataRecord = response_on_event.request_structure[0].children[1].children[1]  # type: ignore
+        return sub_function.values_mapping
+
+    @event_type_mapping.setter
+    def event_type_mapping(self, value: Mapping[int, str]) -> None:
+        """
+        Set eventType (SubFunction of ResponseOnEvent) value to name mapping.
+
+        .. warning:: Mapping for `event` (mask 0x3F) part of the `eventType` SubFunction
+            (:ref:`ResponseOnEvent <knowledge-base-service-response-on-event>`) is set.
+
+        :param value: Mapping value to set.
+        """
+        response_on_event = self.services_mapping[RequestSID.ResponseOnEvent]
+        response_on_event.request_structure[0].children[1].children[1].values_mapping = value  # type: ignore
+        response_on_event.response_structure[0].children[1].children[1].values_mapping = value  # type: ignore
+
+    @property
+    def link_control_type_mapping(self) -> Mapping[int, str] | None:
+        """Get linkControlType (SubFunction of LinkControl) value to name mapping."""
+        link_control = self.services_mapping.get(RequestSID.LinkControl, None)
+        if link_control is None:
+            return None
+        sub_function: MappingDataRecord = link_control.request_structure[0].children[1]  # type: ignore
+        return sub_function.values_mapping
+
+    @link_control_type_mapping.setter
+    def link_control_type_mapping(self, value: Mapping[int, str]) -> None:
+        """
+        Set linkControlType (SubFunction of LinkControl) value to name mapping.
+
+        :param value: Mapping value to set.
+        """
+        link_control = self.services_mapping[RequestSID.LinkControl]
+        link_control.request_structure[0].children[1].values_mapping = value  # type: ignore
+        link_control.response_structure[0].children[1].values_mapping = value  # type: ignore
+
+    @property
+    def rid_mapping(self) -> Mapping[int, str] | None:
+        """Get :ref:`Routine Identifier (RID) <knowledge-base-rid>` value to name mapping."""
+        routine_control = self.services_mapping.get(RequestSID.RoutineControl, None)
+        if routine_control is None:
+            return None
+        rid: MappingDataRecord = routine_control.request_structure[1]  # type: ignore
+        return rid.values_mapping
+
+    @rid_mapping.setter
+    def rid_mapping(self, value: Mapping[int, str]) -> None:
+        """
+        Set :ref:`Routine Identifier (RID) <knowledge-base-rid>` value to name mapping.
+
+        :param value: Mapping value to set.
+        """
+        routine_control = self.services_mapping[RequestSID.RoutineControl]
+        rid: MappingDataRecord = routine_control.request_structure[1]  # type: ignore
+        rid.values_mapping = value
+
+    @property
+    def did_mapping(self) -> Mapping[int, str] | None:
+        """Get :ref:`Data Identifier (DID) <knowledge-base-did>` value to name mapping."""
+        read_data_by_identifier = self.services_mapping.get(RequestSID.ReadDataByIdentifier, None)
+        if read_data_by_identifier is None:
+            return None
+        did: MappingDataRecord = read_data_by_identifier.request_structure[0]  # type: ignore
+        return did.values_mapping
+
+    @did_mapping.setter
+    def did_mapping(self, value: Mapping[int, str]) -> None:
+        """
+        Set :ref:`Data Identifier (DID) <knowledge-base-did>` value to name mapping.
+
+        :param value: Mapping value to set.
+        """
+        # ReadDataByIdentifier
+        read_data_by_identifier = self.services_mapping[RequestSID.ReadDataByIdentifier]
+        read_data_by_identifier.request_structure[0].values_mapping = (  # type: ignore
+            value)  # did_mapping value is stored here
+        for did in read_data_by_identifier.response_structure[::2]:
+            did.values_mapping = value  # type: ignore
+        # WriteDataByIdentifier
+        write_data_by_identifier = self.services_mapping.get(RequestSID.WriteDataByIdentifier, None)
+        if write_data_by_identifier is not None:
+            write_data_by_identifier.request_structure[0].values_mapping = value  # type: ignore
+            write_data_by_identifier.response_structure[0].values_mapping = value  # type: ignore
+        # ReadScalingDataByIdentifier
+        read_scaling_data_by_identifier = self.services_mapping.get(RequestSID.ReadScalingDataByIdentifier, None)
+        if read_scaling_data_by_identifier is not None:
+            read_scaling_data_by_identifier.request_structure[0].values_mapping = value  # type: ignore
+            read_scaling_data_by_identifier.response_structure[0].values_mapping = value  # type: ignore
+        # DynamicallyDefineDataIdentifier
+        dynamically_define_data_identifier = self.services_mapping.get(RequestSID.DynamicallyDefineDataIdentifier, None)
+        if dynamically_define_data_identifier is not None:
+            dynamically_define_data_identifier.request_structure[1].mapping[0x01][0].values_mapping = (  # type: ignore
+                value)
+            dynamically_define_data_identifier.request_structure[1].mapping[0x01][1].children[0].values_mapping = value  # type: ignore  # pylint: disable=line-too-long
+            dynamically_define_data_identifier.request_structure[1].mapping[0x02][0].values_mapping = (  # type: ignore
+                value)
+            dynamically_define_data_identifier.request_structure[1].mapping[0x03][0].values_mapping = (  # type: ignore
+                value)
+            dynamically_define_data_identifier.response_structure[1].mapping[0x01][0].values_mapping = (  # type: ignore
+                value)
+            dynamically_define_data_identifier.response_structure[1].mapping[0x02][0].values_mapping = (  # type: ignore
+                value)
+            dynamically_define_data_identifier.response_structure[1].mapping[0x03][0].values_mapping = (  # type: ignore
+                value)
+        # InputOutputControlByIdentifier
+        input_output_control_by_identifier = self.services_mapping.get(RequestSID.InputOutputControlByIdentifier, None)
+        if input_output_control_by_identifier is not None:
+            input_output_control_by_identifier.request_structure[0].values_mapping = value  # type: ignore
+            input_output_control_by_identifier.response_structure[0].values_mapping = value  # type: ignore
+        # ReadDTCInformation
+        read_dtc_information = self.services_mapping.get(RequestSID.ReadDTCInformation, None)
+        if read_dtc_information is not None:
+            mapping = dict(read_dtc_information.response_structure[1].mapping)  # type: ignore
+            mapping[0x04] = (DTC_AND_STATUS, *self.__dtc_snapshot_records)
+            mapping[0x05] = self.__dtc_stored_data_records
+            mapping[0x18] = (MEMORY_SELECTION,
+                             DTC_AND_STATUS,
+                             *self.__dtc_snapshot_records)
+            read_dtc_information.response_structure[1].mapping = mapping  # type: ignore
+        # ResponseOnEvent
+        response_on_event = self.services_mapping.get(RequestSID.ResponseOnEvent, None)
+        if response_on_event is not None:
+            response_on_event.request_structure[1].mapping[0x03][1].children[0].values_mapping = value  # type: ignore
+            response_on_event.request_structure[1].mapping[0x07][1].children[0].values_mapping = value  # type: ignore
+            response_on_event.response_structure[1].mapping[0x03][2].children[0].values_mapping = value  # type: ignore
+            response_on_event.response_structure[1].mapping[0x07][2].children[0].values_mapping = value  # type: ignore
+            mapping = dict(response_on_event.response_structure[1].mapping)  # type: ignore
+            mapping[0x04] = (NUMBER_OF_ACTIVATED_EVENTS, self.__conditional_activated_events)
+            response_on_event.response_structure[1].mapping = mapping  # type: ignore
+
+    @property
+    def did_data_mapping(self) -> Mapping[int, MessageStructureAlias]:
+        """Get :ref:`Data Identifier (DID) <knowledge-base-did>` value to data structure mapping."""
+        return self.__did_data_mapping
+
+    @did_data_mapping.setter
+    def did_data_mapping(self, value: Mapping[int, MessageStructureAlias]) -> None:
+        """
+        Get :ref:`Data Identifier (DID) <knowledge-base-did>` value to data structure mapping.
+
+        :param value: Mapping value to set.
+        """
+        self.__did_data_mapping = MappingProxyType(value)
+        # ReadDataByIdentifier
+        read_data_by_identifier = self.services_mapping.get(RequestSID.ReadDataByIdentifier, None)
+        if read_data_by_identifier is not None:
+            read_data_by_identifier.response_structure = (
+                *self.__get_did_record(did_count=1, record_number=None, optional=False),
+                *self.__get_did_record(did_count=REPEATED_DATA_RECORDS_NUMBER, record_number=None, optional=True)[2:]
+            )
+        # WriteDataByIdentifier
+        write_data_by_identifier = self.services_mapping.get(RequestSID.WriteDataByIdentifier, None)
+        if write_data_by_identifier is not None:
+            write_data_by_identifier.request_structure = (write_data_by_identifier.request_structure[0],
+                                                          self.__get_did_data())
+        # InputOutputControlByIdentifier
+        input_output_control_by_identifier = self.services_mapping.get(RequestSID.InputOutputControlByIdentifier, None)
+        if input_output_control_by_identifier is not None:
+            input_output_control_by_identifier.request_structure[1].formula = (  # type: ignore
+                self.__get_input_output_control_by_identifier_request)
+            input_output_control_by_identifier.response_structure[1].formula = (  # type: ignore
+                self.__get_input_output_control_by_identifier_response)
+        # ReadDTCInformation
+        read_dtc_information = self.services_mapping.get(RequestSID.ReadDTCInformation, None)
+        if read_dtc_information is not None:
+            mapping = dict(read_dtc_information.response_structure[1].mapping)  # type: ignore
+            mapping[0x04] = (DTC_AND_STATUS, *self.__dtc_snapshot_records)
+            mapping[0x05] = self.__dtc_stored_data_records
+            mapping[0x18] = (MEMORY_SELECTION,
+                             DTC_AND_STATUS,
+                             *self.__dtc_snapshot_records)
+            read_dtc_information.response_structure[1].mapping = mapping  # type: ignore
+
+    @property
+    def __did_records(self) -> tuple[ConditionalFormulaDataRecord, ...]:
+        """
+        Get collection of `DID` Data Records.
+
+        .. note:: This attribute mimics
+            :obj:`~uds.translator.data_record_definitions.conditional._DID_RECORDS_2020` and
+            :obj:`~uds.translator.data_record_definitions.conditional._DID_RECORDS_2013`.
+        """
+        return tuple(ConditionalFormulaDataRecord(formula=self.__get_did_records_formula(record_number + 1))
+                     for record_number in range(REPEATED_DATA_RECORDS_NUMBER))
+
+    @property
+    def __dtc_snapshot_records(self) -> tuple[MappingDataRecord | RawDataRecord | ConditionalFormulaDataRecord, ...]:
+        """
+        Get collection of DTC Snapshot Data Records.
+
+        .. note:: This attribute mimics
+            :obj:`~uds.translator.data_record_definitions.conditional._DTC_SNAPSHOT_RECORDS_2020` and
+            :obj:`~uds.translator.data_record_definitions.conditional._DTC_SNAPSHOT_RECORDS_2013`.
+        """
+        return tuple(item
+                     for snapshot_record in zip(OPTIONAL_DTC_SNAPSHOT_RECORDS_NUMBERS_LIST,
+                                                DID_COUNT_RECORDS,
+                                                self.__did_records,
+                                                strict=True)
+                     for item in snapshot_record)
+
+    @property
+    def __dtc_stored_data_records(self) -> tuple[MappingDataRecord | RawDataRecord | ConditionalFormulaDataRecord, ...]:
+        """
+        Get collection of DTC Stored Data Records.
+
+        .. note:: This attribute mimics
+            :obj:`~uds.translator.data_record_definitions.conditional._DTC_STORED_DATA_RECORDS_2020` and
+            :obj:`~uds.translator.data_record_definitions.conditional._DTC_STORED_DATA_RECORDS_2013`.
+        """
+        return tuple(item
+                     for stored_data_record in zip(DTC_STORED_DATA_RECORD_NUMBERS_LIST,
+                                                   DTCS_AND_STATUSES_LIST,
+                                                   DID_COUNT_RECORDS,
+                                                   self.__did_records,
+                                                   strict=True)
+                     for item in stored_data_record)
+
+    @property
+    def __event_window_time(self) -> MappingDataRecord:
+        """
+        Get definition of `eventWindowTime` Data Record.
+
+        .. note:: This attribute mimics
+            :obj:`~uds.translator.data_record_definitions.conditional.EVENT_WINDOW_TIME_2020` and
+            :obj:`~uds.translator.data_record_definitions.conditional.EVENT_WINDOW_TIME_2013`.
+
+        :raise ValueError: ResponseOnEvent service is not defined in this Translator.
+        """
+        response_on_event = self.services_mapping.get(RequestSID.ResponseOnEvent, None)
+        if response_on_event is None:
+            raise ValueError("ResponseOnEvent service is not defined in this Translator.")
+        return response_on_event.request_structure[1][0x00][0]  # type: ignore
+
+    @property
+    def __event_type(self) -> RawDataRecord:
+        """
+        Get definition of `eventType` Data Record that is part of ResponseOnEvent SubFunction.
+
+        .. note:: This attribute mimics
+            :obj:`~uds.translator.data_record_definitions.subfunctions.EVENT_TYPE_2020` and
+            :obj:`~uds.translator.data_record_definitions.subfunctions.EVENT_TYPE_2013`.
+
+        :raise ValueError: ResponseOnEvent service is not defined in this Translator.
+        """
+        response_on_event = self.services_mapping.get(RequestSID.ResponseOnEvent, None)
+        if response_on_event is None:
+            raise ValueError("ResponseOnEvent service is not defined in this Translator.")
+        return response_on_event.request_structure[0].children[1]  # type: ignore
+
+    @property
+    def __conditional_control_state(self) -> ConditionalFormulaDataRecord:
+        """
+        Get definition of conditional `controlState` Data Record.
+
+        .. note:: This attribute mimics
+            :obj:`~uds.translator.data_record_definitions.conditional.CONDITIONAL_CONTROL_STATE_2020` and
+            :obj:`~uds.translator.data_record_definitions.conditional.CONDITIONAL_CONTROL_STATE_2013`.
+        """
+        return self.__get_did_data(name="controlState")
+
+    @property
+    def __conditional_optional_control_enable_mask(self) -> ConditionalFormulaDataRecord:
+        """
+        Get definition of optional conditional `controlEnableMask` Data Record.
+
+        .. note:: This attribute mimics
+            :obj:`~uds.translator.data_record_definitions.conditional.CONDITIONAL_OPTIONAL_CONTROL_ENABLE_MASK_2020` and
+            :obj:`~uds.translator.data_record_definitions.conditional.CONDITIONAL_OPTIONAL_CONTROL_ENABLE_MASK_2013`.
+        """
+        return self.__get_did_data_mask(name="controlEnableMask", optional=True)
+
+    @property
+    def __conditional_activated_events(self) -> ConditionalFormulaDataRecord:
+        """
+        Get definition conditional Data Record with Activated Events.
+
+        .. note:: This attribute mimics
+            :obj:`~uds.translator.data_record_definitions.conditional.CONDITIONAL_ACTIVATED_EVENTS_2020` and
+            :obj:`~uds.translator.data_record_definitions.conditional.CONDITIONAL_ACTIVATED_EVENTS_2013`.
+        """
+        return ConditionalFormulaDataRecord(formula=self.__get_activated_events)
+
+    def __get_did(self, name: str, optional: bool = False) -> MappingDataRecord:
+        """
+        Get `DID` Data Record.
+
+        .. note:: This method mimics
+            :func:`~uds.translator.data_record_definitions.formula.get_did_2020` and
+            :func:`~uds.translator.data_record_definitions.formula.get_did_2013`.
+
+        :param name: Name for the DID Data Record.
+        :param optional: False if the Data Record presence is mandatory, True otherwise.
+
+        :raise ValueError: ReadDataByIdentifier service is not defined in this Translator.
+
+        :return: Created DID Data Record.
+        """
+        if self.did_mapping is None:
+            raise ValueError("ReadDataByIdentifier service is not defined in this Translator.")
+        return MappingDataRecord(name=name,
+                                 length=DID_BIT_LENGTH,
+                                 values_mapping=self.did_mapping,
+                                 min_occurrences=0 if optional else 1,
+                                 max_occurrences=1)
+
+    def __get_did_data(self, name: str = "DID data") -> ConditionalFormulaDataRecord:
+        """
+        Get Conditional Data Record with DID data.
+
+        .. note:: This method mimics
+            :func:`~uds.translator.data_record_definitions.formula.get_did_data_2020` and
+            :func:`~uds.translator.data_record_definitions.formula.get_did_data_2013`.
+
+        :param name: Name for the Data Record that contains whole DID data.
+
+        :return: Conditional Data Record for DID data.
+        """
+        default_did_data = RawDataRecord(name=name,
+                                         length=8,
+                                         min_occurrences=1,
+                                         max_occurrences=None)
+
+        def _get_did_data(did: int) -> tuple[RawDataRecord]:
+            data_records: Sequence[AbstractDataRecord] = self.did_data_mapping.get(did, None)  # type: ignore
+            if data_records is None:
+                raise ValueError(f"No data structure defined for DID 0x{did:04X}.")
+            total_length = 0
+            for dr in data_records:
+                if not isinstance(dr, AbstractDataRecord) or not dr.fixed_total_length:
+                    raise ValueError(f"Incorrectly defined data structure for DID 0x{did:04X}. "
+                                     f"Only fixed length data records are supported right now.")
+                total_length += dr.min_occurrences * dr.length
+            return (RawDataRecord(name=name,
+                                  children=data_records,
+                                  length=total_length,
+                                  min_occurrences=1,
+                                  max_occurrences=1),)
+
+        return ConditionalFormulaDataRecord(formula=_get_did_data,
+                                            default_message_continuation=[default_did_data])
+
+    def __get_did_data_mask(self, name: str, optional: bool) -> ConditionalFormulaDataRecord:
+        """
+         Get Conditional Data Record for DID data mask.
+
+        .. note:: This method mimics
+            :func:`~uds.translator.data_record_definitions.formula.get_did_data_mask_2020` and
+            :func:`~uds.translator.data_record_definitions.formula.get_did_data_mask_2013`.
+
+        :param name: Name for the Data Record that contains whole DID data mask.
+        :param optional: False if the Data Record presence is mandatory, True otherwise.
+
+        :return: Conditional Data Record for DID data mask.
+        """
+        default_did_data_mask = RawDataRecord(name=name,
+                                              length=8,
+                                              min_occurrences=0 if optional else 1,
+                                              max_occurrences=None)
+
+        def _get_mask_data_record(data_record: AbstractDataRecord) -> RawDataRecord:
+            return MappingDataRecord(name=f"{data_record.name} (mask)",
+                                     length=data_record.length,
+                                     values_mapping={0: "no",
+                                                     data_record.max_raw_value: "yes"},
+                                     children=[_get_mask_data_record(child) for child in data_record.children],
+                                     min_occurrences=data_record.min_occurrences,
+                                     max_occurrences=data_record.max_occurrences)
+
+        def _get_did_data_mask(did: int) -> tuple[RawDataRecord]:
+            data_records = self.did_data_mapping.get(did, None)
+            if data_records is None:
+                raise ValueError(f"No data structure defined for DID 0x{did:04X}.")
+            total_length = 0
+            mask_data_records = []
+            for dr in data_records:
+                if not isinstance(dr, AbstractDataRecord) or not dr.fixed_total_length:
+                    raise ValueError(f"Incorrectly defined data structure for DID 0x{did:04X}. "
+                                     f"Only fixed length data records are supported right now.")
+                total_length += dr.min_occurrences * dr.length
+                mask_data_records.append(_get_mask_data_record(dr))
+            return (RawDataRecord(name=name,
+                                  children=mask_data_records,
+                                  length=total_length,
+                                  min_occurrences=0 if optional else 1,
+                                  max_occurrences=1),)
+
+        return ConditionalFormulaDataRecord(formula=_get_did_data_mask,
+                                            default_message_continuation=[default_did_data_mask])
+
+    def __get_did_records_formula(self, record_number: int | None) -> Callable[[int], MessageStructureAlias]:
+        """
+        Get formula that can be used by Conditional Data Record for getting DID related Data Records.
+
+        .. note:: This method mimics
+            :func:`~uds.translator.data_record_definitions.formula.get_did_records_formula_2020` and
+            :func:`~uds.translator.data_record_definitions.formula.get_did_records_formula_2013`.
+
+        :param record_number: Order number of the record that contains DIDs.
+            None if this is the only DIDs group (e.g. part of ReadDataByIdentifier).
+
+        :return: Formula for given record (e.g. Snapshot or Stored Data).
+        """
+        return lambda did_count: self.__get_did_record(did_count=did_count, record_number=record_number)
+
+    def __get_did_record(self,
+                         did_count: int,
+                         record_number: int | None,
+                         optional: bool = False) -> tuple[MappingDataRecord | ConditionalFormulaDataRecord, ...]:
+        """
+        Get DID record (e.g. for DTC Snapshot or DTC Stored Data) with DID numbers and data.
+
+        .. note:: This method mimics
+            :func:`~uds.translator.data_record_definitions.formula.get_did_record_2020` and
+            :func:`~uds.translator.data_record_definitions.formula.get_did_record_2013`.
+
+        :param did_count: Number of DIDs that are part of the record.
+        :param record_number: Order number of the record.
+            None if this is the only DIDs group (e.g. part of ReadDataByIdentifier).
+        :param optional: False if the Data Record presence is mandatory, True otherwise.
+
+        :return: Data Records that are part of the DID record.
+        """
+        data_records: list[MappingDataRecord | ConditionalFormulaDataRecord] = []
+        for did_number in range(1, did_count + 1):
+            name = f"DID#{did_number}" if record_number is None else f"DID#{record_number}_{did_number}"
+            data_records.append(self.__get_did(name=name, optional=optional))
+            data_records.append(self.__get_did_data(name=f"{name} data"))
+        return tuple(data_records)
+
+    def __get_input_output_control_by_identifier_request(self, did: int) -> MessageStructureAlias:
+        # pylint: disable=line-too-long
+        """
+        Get message continuation (after DID Data Record) for InputOutputControlByIdentifier request.
+
+        .. note:: This method mimics
+            :func:`~uds.translator.data_record_definitions.conditional.get_input_output_control_by_identifier_request_2020`
+            and
+            :func:`~uds.translator.data_record_definitions.conditional.get_input_output_control_by_identifier_request_2013`.
+
+        :param did: Value of proceeding DID.
+
+        :return: Following Data Records.
+        """
+        return (INPUT_OUTPUT_CONTROL_PARAMETER,
+                ConditionalMappingDataRecord(mapping={
+                    0x00: (),
+                    0x01: (),
+                    0x02: (),
+                    0x03: (*self.__conditional_control_state.get_message_continuation(did),
+                           *self.__conditional_optional_control_enable_mask.get_message_continuation(did)),
+                }))
+
+    def __get_input_output_control_by_identifier_response(self, did: int) -> MessageStructureAlias:
+        # pylint: disable=line-too-long
+        """
+        Get message continuation (after DID Data Record) for InputOutputControlByIdentifier positive response.
+
+        .. note:: This method mimics
+            :func:`~uds.translator.data_record_definitions.conditional.get_input_output_control_by_identifier_response_2020`
+            and
+            :func:`~uds.translator.data_record_definitions.conditional.get_input_output_control_by_identifier_response_2013`.
+
+        :param did: Value of proceeding DID.
+
+        :return: Following Data Records.
+        """
+        control_state_data_records = self.__conditional_control_state.get_message_continuation(did)
+        return (INPUT_OUTPUT_CONTROL_PARAMETER,
+                ConditionalMappingDataRecord(mapping={
+                    0x00: control_state_data_records,
+                    0x01: control_state_data_records,
+                    0x02: control_state_data_records,
+                    0x03: control_state_data_records,
+                }))
+
+    def __get_event_window_time(self, event_number: int) -> MappingDataRecord:
+        """
+        Get `eventWindowTime` Data Record.
+
+        .. note:: This method mimics
+            :func:`~uds.translator.data_record_definitions.formula.get_event_window_time_2020` and
+            :func:`~uds.translator.data_record_definitions.formula.get_event_window_time_2013`.
+
+        :param event_number: Order number of the event record.
+            None if there are no records.
+
+        :return: Created `eventWindowTime` Data Record.
+        """
+        event_window = deepcopy(self.__event_window_time)
+        event_window.name = f"{event_window.name}#{event_number}"
+        return event_window
+
+    def __get_activated_events(self, number_of_activated_events: int) -> tuple[RawDataRecord
+                                                                               | MappingDataRecord
+                                                                               | ConditionalMappingDataRecord, ...]:
+        """
+        Get activated events.
+
+        .. note:: This method mimics
+            :func:`~uds.translator.data_record_definitions.formula.get_activated_events_2020` and
+            :func:`~uds.translator.data_record_definitions.formula.get_activated_events_2013`.
+
+        :param number_of_activated_events: Number of activated events.
+
+        :return: Data Records for activated events.
+        """
+        data_records: list[RawDataRecord | MappingDataRecord | ConditionalMappingDataRecord] = []
+        for event_number in range(1, number_of_activated_events + 1):
+            event_window_time = self.__get_event_window_time(event_number)
+            service_to_respond = get_service_to_respond(event_number)
+            data_records.append(self.__get_event_type_of_active_event(event_number))
+            mapping: dict[int, MessageStructureAlias] = {
+                0x01: (event_window_time,
+                       get_event_type_record_01(event_number),
+                       service_to_respond),
+            }
+            for event_type in (0x02, 0x03, 0x07):
+                event_type_record = self.__get_event_type_record(event=event_type,
+                                                                 event_number=event_number)
+                if event_type_record is None:
+                    continue
+                mapping[event_type] = (event_window_time,
+                                       event_type_record,
+                                       service_to_respond)
+
+            event_type_record_08 = self.__get_event_type_record(event=0x08,
+                                                                event_number=event_number)
+            if event_type_record_08 is not None:
+                mapping[0x08] = (event_window_time, event_type_record_08)
+            event_type_record_09 = self.__get_event_type_record(event=0x09,
+                                                                event_number=event_number)
+            event_type_record_09_continuation = self.__get_event_type_record_09_continuation(event_number=event_number)
+            if event_type_record_09 is not None and event_type_record_09_continuation is not None:
+                mapping[0x09] = (event_window_time, event_type_record_09, event_type_record_09_continuation)
+            data_records.append(ConditionalMappingDataRecord(mapping=mapping, value_mask=0x3F))
+        return tuple(data_records)
+
+    def __get_event_type_of_active_event(self, event_number: int) -> RawDataRecord:
+        """
+        Get `eventTypeOfActiveEvent` Data Record.
+
+        .. note:: This method mimics
+            :func:`~uds.translator.data_record_definitions.formula.get_event_type_of_active_event_2020` and
+            :func:`~uds.translator.data_record_definitions.formula.get_event_type_of_active_event_2013`.
+
+        :param event_number: Order number of the active event.
+
+        :return: Created `eventTypeOfActiveEvent` Data Record.
+        """
+        return RawDataRecord(name=f"eventTypeOfActiveEvent#{event_number}",
+                             length=8,
+                             children=(RESERVED_BIT,
+                                       self.__event_type))
+
+    def __get_event_type_record(self, event: int, event_number: int) -> RawDataRecord | None:
+        """
+        Get `eventTypeRecord` Data Record.
+
+        :param event: Value of `event` SubFunction parameter.
+        :param event_number: Order number of the event record.
+
+        :raise ValueError: ResponseOnEvent service is not defined in this Translator.
+
+        :return: Created `eventTypeRecord` Data Record.
+        """
+        response_on_event = self.services_mapping.get(RequestSID.ResponseOnEvent, None)
+        if response_on_event is None:
+            raise ValueError("ResponseOnEvent service is not defined in this Translator.")
+        conditional_response = response_on_event.response_structure[1].mapping.get(event, None)  # type: ignore
+        if conditional_response is None or len(conditional_response) < 3:
+            return None
+        event_type_record: RawDataRecord = deepcopy(conditional_response[2])
+        event_type_record.name = f"{event_type_record.name}#{event_number}"
+        return event_type_record
+
+    def __get_event_type_record_09_continuation(self, event_number: int) -> ConditionalMappingDataRecord | None:
+        """
+        Get continuation for `eventTypeRecord` Data Record (`event` equal to 0x09).
+
+        .. note:: This method mimics
+            :func:`~uds.translator.data_record_definitions.formula.get_event_type_record_09_2020_continuation`.
+
+        .. warning:: `DTCSnapshotRecordNumber`, `DTCExtDataRecordNumber` and `MemorySelection` cannot be part of
+            `eventTypeRecord` cause, names and length of the signals depends on `reportType` value that is part of
+            `eventTypeRecord` (Data Record cannot mutate while being analyzed).
+
+            This exception is mentioned in :ref:`ResponseOnEvent <knowledge-base-service-response-on-event>` as well.
+
+        :param event_number: Order number of the event record.
+            None if there are no records.
+
+        :return: Created Conditional Data Record with `eventTypeRecord` continuation.
+        """
+        response_on_event = self.services_mapping.get(RequestSID.ResponseOnEvent, None)
+        if response_on_event is None:
+            raise ValueError("ResponseOnEvent service is not defined in this Translator.")
+        conditional_response = response_on_event.response_structure[1].mapping.get(0x09, None)  # type: ignore
+        if conditional_response is None or len(conditional_response) < 4:
+            return None
+        event_type_record_continuation: ConditionalMappingDataRecord = deepcopy(conditional_response[3])
+        for data_records in event_type_record_continuation.mapping.values():
+            for data_record in data_records:
+                data_record.name = f"{data_record.name}#{event_number}"  # type: ignore
+        return event_type_record_continuation

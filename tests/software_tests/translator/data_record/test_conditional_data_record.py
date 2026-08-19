@@ -162,6 +162,8 @@ class TestConditionalMappingDataRecord:
     def setup_method(self):
         self.mock_conditional_data_record = MagicMock(spec=ConditionalMappingDataRecord)
         # patching
+        self._patcher_deepcopy = patch(f"{SCRIPT_LOCATION}.deepcopy")
+        self.mock_deepcopy = self._patcher_deepcopy.start()
         self._patcher_abstract_conditional_data_record_init \
             = patch(f"{SCRIPT_LOCATION}.AbstractConditionalDataRecord.__init__")
         self.mock_abstract_conditional_data_record_init = self._patcher_abstract_conditional_data_record_init.start()
@@ -169,6 +171,7 @@ class TestConditionalMappingDataRecord:
         self.mock_mapping_proxy_type = self._patcher_mapping_proxy_type.start()
 
     def teardown_method(self):
+        self._patcher_deepcopy.stop()
         self._patcher_abstract_conditional_data_record_init.stop()
         self._patcher_mapping_proxy_type.stop()
 
@@ -260,6 +263,30 @@ class TestConditionalMappingDataRecord:
         mock_isinstance.assert_called_once_with(value, int)
         mock_getitem.assert_called_once_with(value & value_mask)
 
+    # __deepcopy__
+
+    @pytest.mark.parametrize("mapping", [
+        {i: i * [Mock()] for i in range(20)},
+        {20: 5 * [Mock()],
+         1: [],
+         0: [Mock(), Mock()]}
+    ])
+    @patch(f"{SCRIPT_LOCATION}.ConditionalMappingDataRecord.__init__")
+    def test_deepcopy(self, mock_init, mapping):
+        memo = {}
+        self.mock_conditional_data_record.mapping = mapping
+        output = ConditionalMappingDataRecord.__deepcopy__(self.mock_conditional_data_record, memo)
+        assert output == memo[id(self.mock_conditional_data_record)]
+        mock_init.assert_called_once_with(
+            output,
+            mapping={key: self.mock_deepcopy.return_value for key in mapping.keys()},
+            default_message_continuation=self.mock_deepcopy.return_value,
+            value_mask=self.mock_conditional_data_record.value_mask)
+        self.mock_deepcopy.assert_has_calls([call(self.mock_conditional_data_record.default_message_continuation,
+                                                   memo=memo),
+                                             *[call(value, memo=memo) for value in mapping.values()]],
+                                            any_order=True)
+
     # mapping
 
     def test_mapping__get(self):
@@ -338,6 +365,8 @@ class TestConditionalFormulaDataRecord:
     def setup_method(self):
         self.mock_conditional_data_record = MagicMock(spec=ConditionalFormulaDataRecord)
         # patching
+        self._patcher_deepcopy = patch(f"{SCRIPT_LOCATION}.deepcopy")
+        self.mock_deepcopy = self._patcher_deepcopy.start()
         self._patcher_abstract_conditional_data_record_init \
             = patch(f"{SCRIPT_LOCATION}.AbstractConditionalDataRecord.__init__")
         self.mock_abstract_conditional_data_record_init = self._patcher_abstract_conditional_data_record_init.start()
@@ -345,6 +374,7 @@ class TestConditionalFormulaDataRecord:
         self.mock_signature = self._patcher_signature.start()
 
     def teardown_method(self):
+        self._patcher_deepcopy.stop()
         self._patcher_abstract_conditional_data_record_init.stop()
         self._patcher_signature.stop()
 
@@ -388,6 +418,20 @@ class TestConditionalFormulaDataRecord:
                 == self.mock_conditional_data_record.formula.return_value)
         mock_isinstance.assert_called_once_with(value, int)
         self.mock_conditional_data_record.formula.assert_called_once_with(value)
+
+    # __deepcopy__
+
+    @patch(f"{SCRIPT_LOCATION}.ConditionalFormulaDataRecord.__init__")
+    def test_deepcopy(self, mock_init):
+        memo = {}
+        output = ConditionalFormulaDataRecord.__deepcopy__(self.mock_conditional_data_record, memo)
+        assert output == memo[id(self.mock_conditional_data_record)]
+        mock_init.assert_called_once_with(
+            output,
+            formula=self.mock_conditional_data_record.formula,
+            default_message_continuation=self.mock_deepcopy.return_value)
+        self.mock_deepcopy.assert_called_once_with(self.mock_conditional_data_record.default_message_continuation,
+                                                   memo=memo)
 
     # formula
 

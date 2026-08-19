@@ -1,5 +1,5 @@
 import pytest
-from mock import MagicMock, Mock, patch
+from mock import MagicMock, Mock, call, patch
 
 from uds.message import NRC
 from uds.translator.data_record import (
@@ -30,14 +30,41 @@ class TestTranslator:
     """Unit tests for `Translator` class."""
 
     def setup_method(self):
-        self.mock_translator = Mock(spec=Translator)
+        self.mock_translator = MagicMock(spec=Translator,
+                                         __class__=Translator)
+        # patching
+        self._patcher_deepcopy = patch(f"{SCRIPT_LOCATION}.deepcopy")
+        self.mock_deepcopy = self._patcher_deepcopy.start()
+
+    def teardown_method(self):
+        self._patcher_deepcopy.stop()
 
     # __init__
 
-    @pytest.mark.parametrize("services", [Mock(), [Mock(), Mock()]])
+    @pytest.mark.parametrize("services", [
+        [Mock()],
+        [Mock(), Mock()],
+    ])
     def test_init(self, services):
-        Translator.__init__(self.mock_translator, services=services)
+        assert Translator.__init__(self.mock_translator, services=services) is None
         assert self.mock_translator.services == services
+
+    # __deepcopy__
+
+    @pytest.mark.parametrize("services", [
+        [Mock()],
+        [Mock(), Mock()],
+    ])
+    @patch(f"{SCRIPT_LOCATION}.Translator.__init__")
+    def test_deepcopy(self, mock_init, services):
+        self.mock_translator.services = services
+        memo = {}
+        output = Translator.__deepcopy__(self.mock_translator, memo)
+        assert output == memo[id(self.mock_translator)]
+        mock_init.assert_called_once_with(output,
+                                          [self.mock_deepcopy.return_value] * len(services))
+        self.mock_deepcopy.assert_has_calls([call(service, memo=memo) for service in services],
+                                            any_order=True)
 
     # services
 

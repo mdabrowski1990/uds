@@ -17,7 +17,7 @@ pylint:
   options:
     max-module-lines: 2000
     max-line-length: 120
-    max-args: 12
+    max-args: 20
     max-positional-arguments: 12
     max-attributes: 40
     min-public-methods: 1

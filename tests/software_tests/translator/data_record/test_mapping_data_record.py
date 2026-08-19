@@ -4,6 +4,7 @@ from mock import Mock, patch
 from uds.translator.data_record.mapping_data_record import (
     AbstractMappingDataRecord,
     LinearFormulaDataRecord,
+    Mapping,
     MappingAndLinearFormulaDataRecord,
     MappingDataRecord,
     MappingProxyType,
@@ -33,27 +34,36 @@ class TestAbstractMappingDataRecord:
                 == self.mock_data_record._AbstractMappingDataRecord__values_mapping)
 
     @patch(f"{SCRIPT_LOCATION}.isinstance")
-    def test_values_mapping__type_error(self, mock_isinstance):
+    def test_values_mapping__set__type_error(self, mock_isinstance):
         mock_isinstance.return_value = False
         mock_value = Mock()
         with pytest.raises(TypeError):
             AbstractMappingDataRecord.values_mapping.fset(self.mock_data_record, mock_value)
-        mock_isinstance.assert_called_once_with(mock_value, dict)
+        mock_isinstance.assert_called_once_with(mock_value, Mapping)
 
     @pytest.mark.parametrize("max_raw_value, mapping_value", [
         (1, {0: "No", "1": "Yes"}),
         (3, {4: "ECU#4"}),
     ])
-    def test_values_mapping__value_error(self, max_raw_value, mapping_value):
+    def test_values_mapping__set__value_error_1(self, max_raw_value, mapping_value):
         self.mock_data_record.max_raw_value = max_raw_value
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match="out of raw values range"):
+            AbstractMappingDataRecord.values_mapping.fset(self.mock_data_record, mapping_value)
+
+    @pytest.mark.parametrize("max_raw_value, mapping_value", [
+        (1, {0: False, 1: True}),
+        (3, {3: 4.5}),
+    ])
+    def test_values_mapping__set__value_error_2(self, max_raw_value, mapping_value):
+        self.mock_data_record.max_raw_value = max_raw_value
+        with pytest.raises(ValueError, match="not str type"):
             AbstractMappingDataRecord.values_mapping.fset(self.mock_data_record, mapping_value)
 
     @pytest.mark.parametrize("max_raw_value, mapping_value", [
         (1, {0: "No", 1: "Yes"}),
         (3, {i: f"ECU#{i}" for i in range(4)}),
     ])
-    def test_values_mapping__valid(self, max_raw_value, mapping_value):
+    def test_values_mapping__set__valid(self, max_raw_value, mapping_value):
         self.mock_data_record.max_raw_value = max_raw_value
         assert AbstractMappingDataRecord.values_mapping.fset(self.mock_data_record, mapping_value) is None
         assert isinstance(self.mock_data_record._AbstractMappingDataRecord__values_mapping, MappingProxyType)
@@ -75,10 +85,14 @@ class TestMappingDataRecord:
 
     def setup_method(self):
         self.mock_data_record = Mock(spec=MappingDataRecord)
+        # patching
+        self._patcher_deepcopy = patch(f"{SCRIPT_LOCATION}.deepcopy")
+        self.mock_deepcopy = self._patcher_deepcopy.start()
         self._patcher_warn = patch(f"{SCRIPT_LOCATION}.warn")
         self.mock_warn = self._patcher_warn.start()
 
     def teardown_method(self):
+        self._patcher_deepcopy.stop()
         self._patcher_warn.stop()
 
     # inheritance
@@ -138,6 +152,25 @@ class TestMappingDataRecord:
         mock_abstract_mapping_data_record_init.assert_called_once_with(self.mock_data_record,
                                                                        values_mapping=values_mapping)
 
+    # __deepcopy__
+
+    @patch(f"{SCRIPT_LOCATION}.MappingDataRecord.__init__")
+    def test_deepcopy(self,  mock_init):
+        memo = {}
+        output = MappingDataRecord.__deepcopy__(self.mock_data_record, memo)
+        assert output == memo[id(self.mock_data_record)]
+        mock_init.assert_called_once_with(
+            output,
+            name=self.mock_data_record.name,
+            length=self.mock_data_record.length,
+            values_mapping=self.mock_data_record.values_mapping,
+            children=self.mock_deepcopy.return_value,
+            min_occurrences=self.mock_data_record.min_occurrences,
+            max_occurrences=self.mock_data_record.max_occurrences,
+            unit=self.mock_data_record.unit,
+            enforce_reoccurring=self.mock_data_record.enforce_reoccurring)
+        self.mock_deepcopy.assert_called_once_with(self.mock_data_record.children, memo=memo)
+
     # get_physical_value
 
     @pytest.mark.parametrize("raw_value, values_mapping", [
@@ -186,10 +219,14 @@ class TestMappingAndLinearFormulaDataRecord:
 
     def setup_method(self):
         self.mock_data_record = Mock(spec=MappingAndLinearFormulaDataRecord)
+        # patching
+        self._patcher_deepcopy = patch(f"{SCRIPT_LOCATION}.deepcopy")
+        self.mock_deepcopy = self._patcher_deepcopy.start()
         self._patcher_warn = patch(f"{SCRIPT_LOCATION}.warn")
         self.mock_warn = self._patcher_warn.start()
 
     def teardown_method(self):
+        self._patcher_deepcopy.stop()
         self._patcher_warn.stop()
 
     # inheritance
@@ -257,6 +294,25 @@ class TestMappingAndLinearFormulaDataRecord:
                                                              enforce_reoccurring=enforce_reoccurring)
         mock_abstract_mapping_data_record_init.assert_called_once_with(self.mock_data_record,
                                                                        values_mapping=values_mapping)
+
+    # __deepcopy__
+
+    @patch(f"{SCRIPT_LOCATION}.MappingAndLinearFormulaDataRecord.__init__")
+    def test_deepcopy(self, mock_init):
+        memo = {}
+        output = MappingAndLinearFormulaDataRecord.__deepcopy__(self.mock_data_record, memo)
+        assert output == memo[id(self.mock_data_record)]
+        mock_init.assert_called_once_with(
+            output,
+            name=self.mock_data_record.name,
+            length=self.mock_data_record.length,
+            values_mapping=self.mock_data_record.values_mapping,
+            factor=self.mock_data_record.factor,
+            offset=self.mock_data_record.offset,
+            min_occurrences=self.mock_data_record.min_occurrences,
+            max_occurrences=self.mock_data_record.max_occurrences,
+            unit=self.mock_data_record.unit,
+            enforce_reoccurring=self.mock_data_record.enforce_reoccurring)
 
     # get_physical_value
 
@@ -372,48 +428,48 @@ class TestMappingDataRecordIntegration:
     @pytest.mark.parametrize("dtc_status_value, expected_output", [
         (0x00, {
             "DTC Status": "Inactive",
-            "Test Failed": 0,
-            "Test Failed This Operation Cycle": 0,
-            "Pending DTC": 0,
-            "Confirmed DTC": 0,
-            "Test Not Completed Since Last Clear": 0,
-            "Test Failed Since Last Clear": 0,
-            "Test Not Completed This Operation Cycle": 0,
-            "Warning Indicator Requested/MIL on": 0,
+            "Test Failed": (0,),
+            "Test Failed This Operation Cycle": (0,),
+            "Pending DTC": (0,),
+            "Confirmed DTC": (0,),
+            "Test Not Completed Since Last Clear": (0,),
+            "Test Failed Since Last Clear": (0,),
+            "Test Not Completed This Operation Cycle": (0,),
+            "Warning Indicator Requested/MIL on": (0,),
         }),
         (0x2F, {
             "DTC Status": "Active with Lamp OFF",
-            "Test Failed": 1,
-            "Test Failed This Operation Cycle": 1,
-            "Pending DTC": 1,
-            "Confirmed DTC": 1,
-            "Test Not Completed Since Last Clear": 0,
-            "Test Failed Since Last Clear": 1,
-            "Test Not Completed This Operation Cycle": 0,
-            "Warning Indicator Requested/MIL on": 0,
+            "Test Failed": (1,),
+            "Test Failed This Operation Cycle": (1,),
+            "Pending DTC": (1,),
+            "Confirmed DTC": (1,),
+            "Test Not Completed Since Last Clear": (0,),
+            "Test Failed Since Last Clear": (1,),
+            "Test Not Completed This Operation Cycle": (0,),
+            "Warning Indicator Requested/MIL on": (0,),
         }),
         (0xAF, {
             "DTC Status": "Active with Lamp ON",
-            "Test Failed": 1,
-            "Test Failed This Operation Cycle": 1,
-            "Pending DTC": 1,
-            "Confirmed DTC": 1,
-            "Test Not Completed Since Last Clear": 0,
-            "Test Failed Since Last Clear": 1,
-            "Test Not Completed This Operation Cycle": 0,
-            "Warning Indicator Requested/MIL on": 1,
+            "Test Failed": (1,),
+            "Test Failed This Operation Cycle":(1,),
+            "Pending DTC": (1,),
+            "Confirmed DTC": (1,),
+            "Test Not Completed Since Last Clear":(0,),
+            "Test Failed Since Last Clear": (1,),
+            "Test Not Completed This Operation Cycle": (0,),
+            "Warning Indicator Requested/MIL on": (1,),
         }),
         (0xFF, {
             "DTC Status": 0xFF,
-            "Test Failed": 1,
-            "Test Failed This Operation Cycle": 1,
-            "Pending DTC": 1,
-            "Confirmed DTC": 1,
-            "Test Not Completed Since Last Clear": 1,
-            "Test Failed Since Last Clear": 1,
-            "Test Not Completed This Operation Cycle": 1,
-            "Warning Indicator Requested/MIL on": 1,
-        }),
+            "Test Failed": (1,),
+            "Test Failed This Operation Cycle": (1,),
+            "Pending DTC": (1,),
+            "Confirmed DTC": (1,),
+            "Test Not Completed Since Last Clear": (1,),
+            "Test Failed Since Last Clear": (1,),
+            "Test Not Completed This Operation Cycle": (1,),
+            "Warning Indicator Requested/MIL on": (1,),
+        })
     ])
     def test_get_physical_value__valid(self, dtc_status_value, expected_output):
         assert self.dtc_status.get_physical_value(dtc_status_value) == expected_output["DTC Status"]

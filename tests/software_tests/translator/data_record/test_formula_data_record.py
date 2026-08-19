@@ -64,6 +64,24 @@ class TestLinearFormulaDataRecord:
                                                                     max_occurrences=max_occurrences,
                                                                     enforce_reoccurring=enforce_reoccurring)
 
+    # __deepcopy__
+
+    @patch(f"{SCRIPT_LOCATION}.LinearFormulaDataRecord.__init__")
+    def test_deepcopy(self, mock_init):
+        memo = {}
+        output = LinearFormulaDataRecord.__deepcopy__(self.mock_formula_data_record, memo=memo)
+        assert output == memo[id(self.mock_formula_data_record)]
+        mock_init.assert_called_once_with(
+            output,
+            name=self.mock_formula_data_record.name,
+            length=self.mock_formula_data_record.length,
+            factor=self.mock_formula_data_record.factor,
+            offset=self.mock_formula_data_record.offset,
+            min_occurrences=self.mock_formula_data_record.min_occurrences,
+            max_occurrences=self.mock_formula_data_record.max_occurrences,
+            unit=self.mock_formula_data_record.unit,
+            enforce_reoccurring=self.mock_formula_data_record.enforce_reoccurring)
+
     # factor
 
     def test_factor__get(self):
@@ -200,10 +218,13 @@ class TestCustomFormulaDataRecord:
     def setup_method(self):
         self.mock_formula_data_record = MagicMock(spec=CustomFormulaDataRecord)
         # patching
+        self._patcher_deepcopy = patch(f"{SCRIPT_LOCATION}.deepcopy")
+        self.mock_deepcopy = self._patcher_deepcopy.start()
         self._patcher_abstract_data_record_init = patch(f"{SCRIPT_LOCATION}.AbstractDataRecord.__init__")
         self.mock_abstract_data_record_init = self._patcher_abstract_data_record_init.start()
 
     def teardown_method(self):
+        self._patcher_deepcopy.stop()
         self._patcher_abstract_data_record_init.stop()
 
     # __init__
@@ -254,7 +275,30 @@ class TestCustomFormulaDataRecord:
                                                                     min_occurrences=min_occurrences,
                                                                     max_occurrences=max_occurrences,
                                                                     enforce_reoccurring=enforce_reoccurring)
-        
+
+    # __deepcopy__
+
+    @patch(f"{SCRIPT_LOCATION}.CustomFormulaDataRecord.__init__")
+    def test_deepcopy(self, mock_init):
+        memo = {}
+        output = CustomFormulaDataRecord.__deepcopy__(self.mock_formula_data_record, memo)
+        assert output == memo[id(self.mock_formula_data_record)]
+        mock_init.assert_called_once_with(
+            output,
+            name=self.mock_formula_data_record.name,
+            length=self.mock_formula_data_record.length,
+            encoding_formula=self.mock_deepcopy.return_value,
+            decoding_formula=self.mock_deepcopy.return_value,
+            children=self.mock_deepcopy.return_value,
+            min_occurrences=self.mock_formula_data_record.min_occurrences,
+            max_occurrences=self.mock_formula_data_record.max_occurrences,
+            unit=self.mock_formula_data_record.unit,
+            enforce_reoccurring=self.mock_formula_data_record.enforce_reoccurring)
+        self.mock_deepcopy.assert_has_calls([call(self.mock_formula_data_record.encoding_formula, memo=memo),
+                                             call(self.mock_formula_data_record.decoding_formula, memo=memo),
+                                             call(self.mock_formula_data_record.children, memo=memo)],
+                                            any_order=True)
+
     # encoding_formula
     
     def test_encoding_formula__get(self):

@@ -84,6 +84,69 @@ Translator
     decoded_message_record_information = my_translator.decode(some_message_record)
 
 
+Configurable Translator
+```````````````````````
+:class:`~uds.translator.configurable_translator.ConfigurableTranslator` provides a convenient way to adapt an existing
+:class:`~uds.translator.translator.Translator` without having to define a new set of services from scratch.
+
+A configurable translator is based on an existing translator and allows selected mappings to be customized.
+This is particularly useful when the standard translator definitions are suitable for a project,
+but the diagnostic session types, DIDs, RIDs, or other values need to be adapted to project/ECU specific requirements.
+
+- Configuration:
+
+  When creating a :class:`~uds.translator.configurable_translator.ConfigurableTranslator`,
+  provide a base translator and, optionally, any mappings that should be customized.
+  It is recommended to use one of the predefined `Translator Definitions`_ as the base translator.
+
+  For example, the standard diagnostic session types can be extended with an ECU-specific session:
+
+  **Example code:**
+
+  .. code-block::  python
+
+    from uds.translator import BASE_TRANSLATOR, ConfigurableTranslator
+
+    my_translator = ConfigurableTranslator(base=BASE_TRANSLATOR,
+                                           diagnostic_session_type_mapping={0x01: "Default",
+                                                                            0x03: "Extended",
+                                                                            0x60: "My Session"},
+                                           did_data_mapping={})
+
+  In this example, *my_translator* retains the translation logic provided by *BASE_TRANSLATOR* while using
+  the supplied mapping for diagnostic session types.
+
+  Mappings can also be changed after the :class:`~uds.translator.configurable_translator.ConfigurableTranslator`
+  instance has been created. The following attributes are available for customization:
+
+  - :attr:`~uds.translator.configurable_translator.ConfigurableTranslator.diagnostic_session_type_mapping`
+  - :attr:`~uds.translator.configurable_translator.ConfigurableTranslator.reset_type_mapping`
+  - :attr:`~uds.translator.configurable_translator.ConfigurableTranslator.report_type_mapping`
+  - :attr:`~uds.translator.configurable_translator.ConfigurableTranslator.security_access_type_mapping`
+  - :attr:`~uds.translator.configurable_translator.ConfigurableTranslator.control_type_type_mapping`
+  - :attr:`~uds.translator.configurable_translator.ConfigurableTranslator.authentication_task_mapping`
+  - :attr:`~uds.translator.configurable_translator.ConfigurableTranslator.definition_type_mapping`
+  - :attr:`~uds.translator.configurable_translator.ConfigurableTranslator.routine_control_type_mapping`
+  - :attr:`~uds.translator.configurable_translator.ConfigurableTranslator.zero_subfunction_mapping`
+  - :attr:`~uds.translator.configurable_translator.ConfigurableTranslator.timing_parameter_access_type_mapping`
+  - :attr:`~uds.translator.configurable_translator.ConfigurableTranslator.dtc_setting_type_mapping`
+  - :attr:`~uds.translator.configurable_translator.ConfigurableTranslator.event_type_mapping`
+  - :attr:`~uds.translator.configurable_translator.ConfigurableTranslator.link_control_type_mapping`
+  - :attr:`~uds.translator.configurable_translator.ConfigurableTranslator.rid_mapping`
+  - :attr:`~uds.translator.configurable_translator.ConfigurableTranslator.did_mapping`
+  - :attr:`~uds.translator.configurable_translator.ConfigurableTranslator.did_data_mapping`
+
+- Using:
+
+  :class:`~uds.translator.configurable_translator.ConfigurableTranslator` provides the same encoding and decoding
+  functionality as :class:`~uds.translator.translator.Translator`.
+  It can therefore be used anywhere a translator is required while allowing the translation mappings to be adapted to
+  the target ECU.
+
+  In particular, :meth:`~uds.translator.translator.Translator.encode` and
+  :meth:`~uds.translator.translator.Translator.decode` remain available without any changes to their usage.
+
+
 Translator Definitions
 ----------------------
 Package defines following standard (compatible with ISO 14229-1) translators:
@@ -226,7 +289,7 @@ Translators for
 
 - :obj:`~uds.translator.service_definitions.diagnostic_session_control.DIAGNOSTIC_SESSION_CONTROL`
 
-.. seealso:: Use case examples are available as integration tests:
+.. seealso:: The integration tests serve as examples:
 
   https://github.com/mdabrowski1990/uds/blob/main/tests/software_tests/translator/service_definitions/test_diagnostic_session_control.py
 
@@ -238,7 +301,7 @@ Translators for
 
 - :obj:`~uds.translator.service_definitions.ecu_reset.ECU_RESET`
 
-.. seealso:: Use case examples are available as integration tests:
+.. seealso:: The integration tests serve as examples:
 
   https://github.com/mdabrowski1990/uds/blob/main/tests/software_tests/translator/service_definitions/test_ecu_reset.py
 
@@ -257,7 +320,7 @@ Translators for
 - :obj:`~uds.translator.service_definitions.clear_diagnostic_information.CLEAR_DIAGNOSTIC_INFORMATION_2013`
   - compatible with ISO 14229-1:2013
 
-.. seealso:: Use case examples are available as integration tests:
+.. seealso:: The integration tests serve as examples:
 
   https://github.com/mdabrowski1990/uds/blob/main/tests/software_tests/translator/service_definitions/test_clear_dtc_information.py
 
@@ -276,7 +339,7 @@ Translators for
 - :obj:`~uds.translator.service_definitions.read_dtc_information.READ_DTC_INFORMATION_2013`
   - compatible with ISO 14229-1:2013
 
-.. seealso:: Use case examples are available as integration tests:
+.. seealso:: The integration tests serve as examples:
 
   https://github.com/mdabrowski1990/uds/blob/main/tests/software_tests/translator/service_definitions/test_read_dtc_information.py
 
@@ -295,7 +358,7 @@ Translators for
 - :obj:`~uds.translator.service_definitions.read_data_by_identifier.READ_DATA_BY_IDENTIFIER_2013`
   - compatible with ISO 14229-1:2013
 
-.. seealso:: Use case examples are available as integration tests:
+.. seealso:: The integration tests serve as examples:
 
   https://github.com/mdabrowski1990/uds/blob/main/tests/software_tests/translator/service_definitions/test_read_data_by_identifier.py
 
@@ -307,7 +370,7 @@ Translators for
 
 - obj:`~uds.translator.service_definitions.read_memory_by_address.READ_MEMORY_BY_ADDRESS`
 
-.. seealso:: Use case examples are available as integration tests:
+.. seealso:: The integration tests serve as examples:
 
   https://github.com/mdabrowski1990/uds/blob/main/tests/software_tests/translator/service_definitions/test_read_memory_by_address.py
 
@@ -326,7 +389,7 @@ Translators for
 - :obj:`~uds.translator.service_definitions.read_scaling_data_by_identifier.READ_SCALING_DATA_BY_IDENTIFIER_2013`
   - compatible with ISO 14229-1:2013
 
-.. seealso:: Use case examples are available as integration tests:
+.. seealso:: The integration tests serve as examples:
 
   https://github.com/mdabrowski1990/uds/blob/main/tests/software_tests/translator/service_definitions/test_read_scaling_data_by_identifier.py
 
@@ -338,7 +401,7 @@ Translators for
 
 - :obj:`~uds.translator.service_definitions.security_access.SECURITY_ACCESS`
 
-.. seealso:: Use case examples are available as integration tests:
+.. seealso:: The integration tests serve as examples:
 
   https://github.com/mdabrowski1990/uds/blob/main/tests/software_tests/translator/service_definitions/test_security_access.py
 
@@ -350,7 +413,7 @@ Translators for
 
 - :obj:`~uds.translator.service_definitions.communication_control.COMMUNICATION_CONTROL`
 
-.. seealso:: Use case examples are available as integration tests:
+.. seealso:: The integration tests serve as examples:
 
   https://github.com/mdabrowski1990/uds/blob/main/tests/software_tests/translator/service_definitions/test_communication_control.py
 
@@ -362,7 +425,7 @@ Translators for
 
 - :obj:`~uds.translator.service_definitions.authentication.AUTHENTICATION`
 
-.. seealso:: Use case examples are available as integration tests:
+.. seealso:: The integration tests serve as examples:
 
   https://github.com/mdabrowski1990/uds/blob/main/tests/software_tests/translator/service_definitions/test_authentication.py
 
@@ -374,7 +437,7 @@ Translators for
 
 - :obj:`~uds.translator.service_definitions.read_data_by_periodic_identifier.READ_DATA_BY_PERIODIC_IDENTIFIER`
 
-.. seealso:: Use case examples are available as integration tests:
+.. seealso:: The integration tests serve as examples:
 
   https://github.com/mdabrowski1990/uds/blob/main/tests/software_tests/translator/service_definitions/test_read_data_by_periodic_identifier.py
 
@@ -393,7 +456,7 @@ Translators for
 - :obj:`~uds.translator.service_definitions.dynamically_define_data_identifier.DYNAMICALLY_DEFINE_DATA_IDENTIFIER_2013`
   - compatible with ISO 14229-1:2013
 
-.. seealso:: Use case examples are available as integration tests:
+.. seealso:: The integration tests serve as examples:
 
   https://github.com/mdabrowski1990/uds/blob/main/tests/software_tests/translator/service_definitions/test_dynamically_define_data_identifier.py
 
@@ -412,7 +475,7 @@ Translators for
 - :obj:`~uds.translator.service_definitions.write_data_by_identifier.WRITE_DATA_BY_IDENTIFIER_2013`
   - compatible with ISO 14229-1:2013
 
-.. seealso:: Use case examples are available as integration tests:
+.. seealso:: The integration tests serve as examples:
 
   https://github.com/mdabrowski1990/uds/blob/main/tests/software_tests/translator/service_definitions/test_write_data_by_identifier.py
 
@@ -431,7 +494,7 @@ Translators for
 - :obj:`~uds.translator.service_definitions.input_output_control_by_identifier.INPUT_OUTPUT_CONTROL_BY_IDENTIFIER_2013`
   - compatible with ISO 14229-1:2013
 
-.. seealso:: Use case examples are available as integration tests:
+.. seealso:: The integration tests serve as examples:
 
   https://github.com/mdabrowski1990/uds/blob/main/tests/software_tests/translator/service_definitions/test_input_output_control_by_identifier.py
 
@@ -443,7 +506,7 @@ Translators for
 
 - :obj:`~uds.translator.service_definitions.routine_control.ROUTINE_CONTROL`
 
-.. seealso:: Use case examples are available as integration tests:
+.. seealso:: The integration tests serve as examples:
 
   https://github.com/mdabrowski1990/uds/blob/main/tests/software_tests/translator/service_definitions/test_routine_control.py
 
@@ -456,7 +519,7 @@ Translators for
 
 - :obj:`~uds.translator.service_definitions.request_download.REQUEST_DOWNLOAD`
 
-.. seealso:: Use case examples are available as integration tests:
+.. seealso:: The integration tests serve as examples:
 
   https://github.com/mdabrowski1990/uds/blob/main/tests/software_tests/translator/service_definitions/test_request_download.py
 
@@ -469,7 +532,7 @@ Translators for
 
 - :obj:`~uds.translator.service_definitions.request_upload.REQUEST_UPLOAD`
 
-.. seealso:: Use case examples are available as integration tests:
+.. seealso:: The integration tests serve as examples:
 
   https://github.com/mdabrowski1990/uds/blob/main/tests/software_tests/translator/service_definitions/test_request_upload.py
 
@@ -482,7 +545,7 @@ Translators for
 
 - :obj:`~uds.translator.service_definitions.transfer_data.TRANSFER_DATA`
 
-.. seealso:: Use case examples are available as integration tests:
+.. seealso:: The integration tests serve as examples:
 
   https://github.com/mdabrowski1990/uds/blob/main/tests/software_tests/translator/service_definitions/test_transfer_data.py
 
@@ -494,7 +557,7 @@ Translators for
 
 - :obj:`~uds.translator.service_definitions.request_transfer_exit.REQUEST_TRANSFER_EXIT`
 
-.. seealso:: Use case examples are available as integration tests:
+.. seealso:: The integration tests serve as examples:
 
   https://github.com/mdabrowski1990/uds/blob/main/tests/software_tests/translator/service_definitions/test_request_transfer_exit.py
 
@@ -513,7 +576,7 @@ Translators for
 - :obj:`~uds.translator.service_definitions.request_file_transfer.REQUEST_FILE_TRANSFER_2013`
   - compatible with ISO 14229-1:2013
 
-.. seealso:: Use case examples are available as integration tests:
+.. seealso:: The integration tests serve as examples:
 
   https://github.com/mdabrowski1990/uds/blob/main/tests/software_tests/translator/service_definitions/test_request_file_transfer.py
 
@@ -525,7 +588,7 @@ Translators for
 
 - :obj:`~uds.translator.service_definitions.write_memory_by_address.WRITE_MEMORY_BY_ADDRESS`
 
-.. seealso:: Use case examples are available as integration tests:
+.. seealso:: The integration tests serve as examples:
 
   https://github.com/mdabrowski1990/uds/blob/main/tests/software_tests/translator/service_definitions/test_write_memory_by_address.py
 
@@ -537,7 +600,7 @@ Translators for
 
 - :obj:`~uds.translator.service_definitions.tester_present.TESTER_PRESENT`
 
-.. seealso:: Use case examples are available as integration tests:
+.. seealso:: The integration tests serve as examples:
 
   https://github.com/mdabrowski1990/uds/blob/main/tests/software_tests/translator/service_definitions/test_tester_present.py
 
@@ -550,7 +613,7 @@ Translators for
 - :obj:`~uds.translator.service_definitions.access_timing_parameter.ACCESS_TIMING_PARAMETER_2013`
   - compatible with ISO 14229-1:2013
 
-.. seealso:: Use case examples are available as integration tests:
+.. seealso:: The integration tests serve as examples:
 
   https://github.com/mdabrowski1990/uds/blob/main/tests/software_tests/translator/service_definitions/test_access_timing_parameter.py
 
@@ -569,7 +632,7 @@ Translators for
 - :obj:`~uds.translator.service_definitions.secured_data_transmission.SECURED_DATA_TRANSMISSION_2013`
   - compatible with ISO 14229-1:2013
 
-.. seealso:: Use case examples are available as integration tests:
+.. seealso:: The integration tests serve as examples:
 
   https://github.com/mdabrowski1990/uds/blob/main/tests/software_tests/translator/service_definitions/test_secured_data_transmission.py
 
@@ -581,7 +644,7 @@ Translators for
 
 - :obj:`~uds.translator.service_definitions.control_dtc_setting.CONTROL_DTC_SETTING`
 
-.. seealso:: Use case examples are available as integration tests:
+.. seealso:: The integration tests serve as examples:
 
   https://github.com/mdabrowski1990/uds/blob/main/tests/software_tests/translator/service_definitions/test_control_dtc_setting.py
 
@@ -600,7 +663,7 @@ Translators for
 - :obj:`~uds.translator.service_definitions.response_on_event.RESPONSE_ON_EVENT_2013`
   - compatible with ISO 14229-1:2013
 
-.. seealso:: Use case examples are available as integration tests:
+.. seealso:: The integration tests serve as examples:
 
   https://github.com/mdabrowski1990/uds/blob/main/tests/software_tests/translator/service_definitions/test_response_on_event.py
 
@@ -612,7 +675,7 @@ Translators for
 
 - :obj:`~uds.translator.service_definitions.link_control.LINK_CONTROL`
 
-.. seealso:: Use case examples are available as integration tests:
+.. seealso:: The integration tests serve as examples:
 
   https://github.com/mdabrowski1990/uds/blob/main/tests/software_tests/translator/service_definitions/test_link_control.py
 

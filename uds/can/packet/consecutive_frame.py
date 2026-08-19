@@ -57,10 +57,10 @@ def validate_consecutive_frame_data(addressing_format: CanAddressingFormat, raw_
 def create_consecutive_frame_data(addressing_format: CanAddressingFormat,
                                   payload: RawBytesAlias,
                                   sequence_number: int,
-                                  dlc: None | int = None,
+                                  dlc: int | None = None,
                                   filler_byte: int = DEFAULT_FILLER_BYTE,
-                                  target_address: None | int = None,
-                                  address_extension: None | int = None) -> bytearray:
+                                  target_address: int | None = None,
+                                  address_extension: int | None = None) -> bytearray:
     """
     Create a data field of a CAN frame that carries a valid Consecutive Frame packet.
 
@@ -117,8 +117,8 @@ def generate_consecutive_frame_data(addressing_format: CanAddressingFormat,
                                     sequence_number: int,
                                     dlc: int,
                                     filler_byte: int = DEFAULT_FILLER_BYTE,
-                                    target_address: None | int = None,
-                                    address_extension: None | int = None) -> bytearray:
+                                    target_address: int | None = None,
+                                    address_extension: int | None = None) -> bytearray:
     """
     Generate CAN frame data field that carries any combination of Consecutive Frame packet data parameters.
 
@@ -202,7 +202,7 @@ def get_consecutive_frame_min_dlc(addressing_format: CanAddressingFormat, payloa
 
 
 def get_consecutive_frame_max_payload_size(addressing_format: CanAddressingFormat,
-                                           dlc: None | int = None) -> int:
+                                           dlc: int | None = None) -> int:
     """
     Get the maximum payload size that could be carried by a Consecutive Frame.
 

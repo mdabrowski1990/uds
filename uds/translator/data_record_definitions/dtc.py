@@ -263,7 +263,8 @@ OPTIONAL_DTC_EXTENDED_DATA_RECORDS_DATA_LIST = [RawDataRecord(name=f"DTCExtDataR
 
 DTC_EXTENDED_DATA_RECORDS_NUMBERS_AND_DATA_LIST = [
     item for extended_data_record in zip(DTC_EXTENDED_DATA_RECORDS_NUMBERS_LIST,
-                                         DTC_EXTENDED_DATA_RECORDS_DATA_LIST)
+                                         DTC_EXTENDED_DATA_RECORDS_DATA_LIST,
+                                         strict=True)
     for item in extended_data_record]
 """Collection of `DTCExtDataRecordNumber` and corresponding `DTCExtDataRecord` Data Records."""
 

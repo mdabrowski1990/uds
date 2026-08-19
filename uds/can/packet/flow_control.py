@@ -221,12 +221,12 @@ def validate_flow_control_data(addressing_format: CanAddressingFormat, raw_frame
 
 def create_flow_control_data(addressing_format: CanAddressingFormat,
                              flow_status: CanFlowStatus,
-                             block_size: None | int = None,
-                             st_min: None | int = None,
-                             dlc: None | int = None,
+                             block_size: int | None = None,
+                             st_min: int | None = None,
+                             dlc: int | None = None,
                              filler_byte: int = DEFAULT_FILLER_BYTE,
-                             target_address: None | int = None,
-                             address_extension: None | int = None) -> bytearray:
+                             target_address: int | None = None,
+                             address_extension: int | None = None) -> bytearray:
     """
     Create a data field of a CAN frame that carries a valid Flow Control packet.
 
@@ -288,11 +288,11 @@ def create_flow_control_data(addressing_format: CanAddressingFormat,
 def generate_flow_control_data(addressing_format: CanAddressingFormat,
                                flow_status: int,
                                dlc: int,
-                               block_size: None | int = None,
-                               st_min: None | int = None,
+                               block_size: int | None = None,
+                               st_min: int | None = None,
                                filler_byte: int = DEFAULT_FILLER_BYTE,
-                               target_address: None | int = None,
-                               address_extension: None | int = None) -> bytearray:
+                               target_address: int | None = None,
+                               address_extension: int | None = None) -> bytearray:
     """
     Generate CAN frame data field that carries any combination of Flow Control packet data parameters.
 
@@ -426,7 +426,7 @@ def generate_flow_status(flow_status: int) -> bytearray:
     return bytearray([(FLOW_CONTROL_N_PCI << 4) + flow_status])
 
 
-FlowControlParametersAlias = tuple[CanFlowStatus, None | int, None | int]
+FlowControlParametersAlias = tuple[CanFlowStatus, int | None, int | None]
 """Alias of :ref:`Flow Control <knowledge-base-can-flow-control>` parameters which contain:
 - :ref:`Flow Status <knowledge-base-can-flow-status>`
 - :ref:`Block Size <knowledge-base-can-block-size>`
@@ -473,7 +473,7 @@ class DefaultFlowControlParametersGenerator(AbstractFlowControlParametersGenerat
         self.st_min = st_min
         self.wait_count = wait_count
         self.repeat_wait = repeat_wait
-        self._remaining_wait: None | int = None
+        self._remaining_wait: int | None = None
 
     def __iter__(self) -> "DefaultFlowControlParametersGenerator":
         """Get iterator object."""

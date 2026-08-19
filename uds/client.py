@@ -64,11 +64,37 @@ class Client:
         :param p6_ext_client_timeout: Timeout value for P6*Client parameter.
         :param s3_client: Value of S3Client time parameter.
         """
+        # tasks and threads
+        self.__tester_present_task_event: Event = Event()
+        self.__tester_present_task_event.clear()
+        self.__tester_present_thread: Thread | None = None
+        self.__background_receiving_task_event: Event = Event()
+        self.__background_receiving_task_event.clear()
+        self.__break_in_background_receiving_event: Event = Event()
+        self.__break_in_background_receiving_event.clear()
+        self.__background_receiving_thread: Thread | None = None
+        self.__send_and_receive_not_in_progress_event: Event = Event()
+        self.__send_and_receive_not_in_progress_event.set()
+        self.__receiving_not_in_progress_event: Event = Event()
+        self.__receiving_not_in_progress_event.set()
+        self.__transmission_not_in_progress_event: Event = Event()
+        self.__transmission_not_in_progress_event.set()
+        self.__receiving_lock: Lock = Lock()
+        self.__transmission_lock: Lock = Lock()
+        self.__physical_transmission_lock: Lock = Lock()
+        self.__functional_transmission_lock: Lock = Lock()
+        # other
+        self.__response_queue: Queue[UdsMessageRecord] = Queue()
+        self.__last_physical_request: UdsMessageRecord | None = None
+        self.__last_physical_response: UdsMessageRecord | None = None
+        self.__last_functional_request: UdsMessageRecord | None = None
+        self.__last_functional_response: UdsMessageRecord | None = None
+        self.__last_tester_present_requests: list[UdsMessageRecord] = []
         # TIMING PARAMETERS
-        self.__p2_client_measured: None | TimeMillisecondsAlias = None
-        self.__p2_ext_client_measured: None | tuple[TimeMillisecondsAlias, ...] = None
-        self.__p6_client_measured: None | TimeMillisecondsAlias = None
-        self.__p6_ext_client_measured: None | TimeMillisecondsAlias = None
+        self.__p2_client_measured: TimeMillisecondsAlias | None = None
+        self.__p2_ext_client_measured: tuple[TimeMillisecondsAlias, ...] | None = None
+        self.__p6_client_measured: TimeMillisecondsAlias | None = None
+        self.__p6_ext_client_measured: TimeMillisecondsAlias | None = None
         # set default values to avoid errors on values assignment
         self.__p2_client_timeout = self.DEFAULT_P2_CLIENT_TIMEOUT
         self.__p2_ext_client_timeout = self.DEFAULT_P2_EXT_CLIENT_TIMEOUT
@@ -86,32 +112,6 @@ class Client:
         self.p6_client_timeout = p6_client_timeout
         self.p6_ext_client_timeout = p6_ext_client_timeout
         self.s3_client = s3_client
-        # tasks and threads
-        self.__tester_present_task_event: Event = Event()
-        self.__tester_present_task_event.clear()
-        self.__tester_present_thread: None | Thread = None
-        self.__background_receiving_task_event: Event = Event()
-        self.__background_receiving_task_event.clear()
-        self.__break_in_background_receiving_event: Event = Event()
-        self.__break_in_background_receiving_event.clear()
-        self.__background_receiving_thread: None | Thread = None
-        self.__send_and_receive_not_in_progress_event: Event = Event()
-        self.__send_and_receive_not_in_progress_event.set()
-        self.__receiving_not_in_progress_event: Event = Event()
-        self.__receiving_not_in_progress_event.set()
-        self.__transmission_not_in_progress_event: Event = Event()
-        self.__transmission_not_in_progress_event.set()
-        self.__receiving_lock: Lock = Lock()
-        self.__transmission_lock: Lock = Lock()
-        self.__physical_transmission_lock: Lock = Lock()
-        self.__functional_transmission_lock: Lock = Lock()
-        # other
-        self.__response_queue: Queue[UdsMessageRecord] = Queue()
-        self.__last_physical_request: None | UdsMessageRecord = None
-        self.__last_physical_response: None | UdsMessageRecord = None
-        self.__last_functional_request: None | UdsMessageRecord = None
-        self.__last_functional_response: None | UdsMessageRecord = None
-        self.__last_tester_present_requests: list[UdsMessageRecord] = []
 
     def __del__(self) -> None:
         """Safely finish all tasks."""
@@ -176,7 +176,7 @@ class Client:
             self.p6_client_timeout = value
 
     @property  # noqa: vulture
-    def p2_client_measured(self) -> None | TimeMillisecondsAlias:
+    def p2_client_measured(self) -> TimeMillisecondsAlias | None:
         """
         Get last measured value of P2Client parameter.
 
@@ -210,7 +210,7 @@ class Client:
             self.p6_ext_client_timeout = value
 
     @property  # noqa: vulture
-    def p2_ext_client_measured(self) -> None | tuple[TimeMillisecondsAlias, ...]:
+    def p2_ext_client_measured(self) -> tuple[TimeMillisecondsAlias, ...] | None:
         """
         Get last measured values of P2*Client parameter.
 
@@ -306,7 +306,7 @@ class Client:
             self.p6_ext_client_timeout = value
 
     @property  # noqa: vulture
-    def p6_client_measured(self) -> None | TimeMillisecondsAlias:
+    def p6_client_measured(self) -> TimeMillisecondsAlias | None:
         """
         Get last measured value of P6Client parameter.
 
@@ -342,7 +342,7 @@ class Client:
         self.__p6_ext_client_timeout = value
 
     @property  # noqa: vulture
-    def p6_ext_client_measured(self) -> None | TimeMillisecondsAlias:
+    def p6_ext_client_measured(self) -> TimeMillisecondsAlias | None:
         """
         Get last measured value of P6*Client parameter.
 
@@ -384,7 +384,7 @@ class Client:
         return tuple(self.__last_tester_present_requests)
 
     @property
-    def last_sent_request(self) -> None | UdsMessageRecord:
+    def last_sent_request(self) -> UdsMessageRecord | None:
         """Get record with the last request message sent."""
         records = []
         if self.__last_physical_request is not None:
@@ -396,7 +396,7 @@ class Client:
         return max(records, key=lambda record: record.transmission_end_timestamp)
 
     @property  # noqa: vulture
-    def last_received_response(self) -> None | UdsMessageRecord:
+    def last_received_response(self) -> UdsMessageRecord | None:
         """
         Get record with the last response message sent.
 
@@ -673,7 +673,7 @@ class Client:
             self._update_last_response(response_record)
         return response_record
 
-    def _receive_initial_response(self, request_record: UdsMessageRecord) -> None | UdsMessageRecord:
+    def _receive_initial_response(self, request_record: UdsMessageRecord) -> UdsMessageRecord | None:
         """
         Receive the first UDS response to a request message.
 
@@ -854,7 +854,7 @@ class Client:
         raise NotImplementedError("Request message with unexpected `addressing_type` attribute value was provided: "
                                   f"{request.addressing_type!r}")
 
-    def get_response(self, timeout: None | TimeMillisecondsAlias = None) -> None | UdsMessageRecord:
+    def get_response(self, timeout: TimeMillisecondsAlias | None = None) -> UdsMessageRecord | None:
         """
         Wait for the first received response message.
 
@@ -883,7 +883,7 @@ class Client:
         except Empty:
             return None
 
-    def get_response_no_wait(self) -> None | UdsMessageRecord:
+    def get_response_no_wait(self) -> UdsMessageRecord | None:
         """
         Get the first received response message, but do not wait for its arrival.
 

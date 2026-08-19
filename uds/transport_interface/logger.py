@@ -29,9 +29,9 @@ class TransportLogger:
 
     def __init__(self,
                  *,
-                 logger_name: None | str = None,
-                 message_logging_level: None | int = INFO,
-                 packet_logging_level: None | int = INFO,
+                 logger_name: str | None = None,
+                 message_logging_level: int | None = INFO,
+                 packet_logging_level: int | None = INFO,
                  log_sending: bool = True,
                  log_receiving: bool = True,
                  message_log_format: str = DEFAULT_LOG_FORMAT,
@@ -70,12 +70,12 @@ class TransportLogger:
         return self.__logger
 
     @property
-    def message_logging_level(self) -> None | int:
+    def message_logging_level(self) -> int | None:
         """Get logging level to use for UDS Messages logging."""
         return self.__message_logging_level
 
     @message_logging_level.setter
-    def message_logging_level(self, value: None | int) -> None:
+    def message_logging_level(self, value: int | None) -> None:
         """
         Set logging level to use for UDS Messages logging.
 
@@ -88,12 +88,12 @@ class TransportLogger:
         self.__message_logging_level = value
 
     @property
-    def packet_logging_level(self) -> None | int:
+    def packet_logging_level(self) -> int | None:
         """Get logging level to use for Packets logging."""
         return self.__packet_logging_level
 
     @packet_logging_level.setter
-    def packet_logging_level(self, value: None | int) -> None:
+    def packet_logging_level(self, value: int | None) -> None:
         """
         Set logging level to use for Packets logging.
 

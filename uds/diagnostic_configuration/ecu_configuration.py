@@ -249,7 +249,7 @@ class EcuDiagnosticConfiguration:
         return MappingProxyType(mapping)
 
     @staticmethod
-    def __extract_subfunction(message_payload: RawBytesAlias) -> None | int:
+    def __extract_subfunction(message_payload: RawBytesAlias) -> int | None:
         """Extract subfunction from message payload."""
         if message_payload[0] in SERVICES_WITH_SUBFUNCTION and len(message_payload) > 1:
             return message_payload[1] & SUBFUNCTION_MASK

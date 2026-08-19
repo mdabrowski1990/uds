@@ -51,8 +51,8 @@ class PythonCanTransportInterface(AbstractCanTransportInterface):
     def __init__(self,
                  network_manager: BusABC,
                  addressing_information: AbstractCanAddressingInformation,
-                 notifier: None | Notifier = None,
-                 async_notifier: None | Notifier = None,
+                 notifier: Notifier | None = None,
+                 async_notifier: Notifier | None = None,
                  **configuration_params: Any) -> None:
         """
         Create Transport Interface that uses python-can package to control CAN bus.
@@ -112,12 +112,12 @@ class PythonCanTransportInterface(AbstractCanTransportInterface):
         self.__async_fc_frames_buffer.stop()
 
     @property
-    def notifier(self) -> None | Notifier:
+    def notifier(self) -> Notifier | None:
         """Notifier used by python-can for reporting received and sent CAN Frames to listeners."""
         return self.__notifier
 
     @notifier.setter
-    def notifier(self, value: None | Notifier) -> None:
+    def notifier(self, value: Notifier | None) -> None:
         """
         Set notifier for reporting received and sent CAN Frames to listeners.
 
@@ -138,12 +138,12 @@ class PythonCanTransportInterface(AbstractCanTransportInterface):
             raise TypeError(f"Provided value is not None neither Notifier type. Actual type: {type(value)}.")
 
     @property
-    def async_notifier(self) -> None | Notifier:
+    def async_notifier(self) -> Notifier | None:
         """Notifier used by python-can for reporting received and sent CAN Frames to async listeners."""
         return self.__async_notifier
 
     @async_notifier.setter
-    def async_notifier(self, value: None | Notifier) -> None:
+    def async_notifier(self, value: Notifier | None) -> None:
         """
         Set notifier for reporting received and sent CAN Frames to async listeners.
 
@@ -251,7 +251,7 @@ class PythonCanTransportInterface(AbstractCanTransportInterface):
                      category=UserWarning)
 
     @staticmethod
-    def __validate_timeout(value: None | TimeMillisecondsAlias) -> None:
+    def __validate_timeout(value: TimeMillisecondsAlias | None) -> None:
         """
         Validate value of a timeout.
 
@@ -353,7 +353,7 @@ class PythonCanTransportInterface(AbstractCanTransportInterface):
 
     def _wait_for_rx_packet(self,
                             buffer: BufferedReader,
-                            timeout: None | TimeMillisecondsAlias = None) -> CanPacketRecord:
+                            timeout: TimeMillisecondsAlias | None = None) -> CanPacketRecord:
         """
         Wait till CAN Packet is received.
 
@@ -390,7 +390,7 @@ class PythonCanTransportInterface(AbstractCanTransportInterface):
 
     async def _async_wait_for_rx_packet(self,
                                         buffer: AsyncBufferedReader,
-                                        timeout: None | TimeMillisecondsAlias = None) -> CanPacketRecord:
+                                        timeout: TimeMillisecondsAlias | None = None) -> CanPacketRecord:
         """
         Wait till CAN Packet is received.
 
@@ -502,7 +502,7 @@ class PythonCanTransportInterface(AbstractCanTransportInterface):
                                   sequence_number: int,
                                   block_size: int,
                                   remaining_data_length: int,
-                                  timestamp_end: None | TimestampAlias
+                                  timestamp_end: TimestampAlias | None
                                   ) -> UdsMessageRecord | tuple[CanPacketRecord, ...]:
         """
         Receive block of :ref:`Consecutive Frames <knowledge-base-can-consecutive-frame>`.
@@ -560,7 +560,7 @@ class PythonCanTransportInterface(AbstractCanTransportInterface):
                                               sequence_number: int,
                                               block_size: int,
                                               remaining_data_length: int,
-                                              timestamp_end: None | TimestampAlias,
+                                              timestamp_end: TimestampAlias | None,
                                               loop: AbstractEventLoop
                                               ) -> UdsMessageRecord | tuple[CanPacketRecord, ...]:
         """
@@ -616,7 +616,7 @@ class PythonCanTransportInterface(AbstractCanTransportInterface):
 
     def _receive_consecutive_frames(self,
                                     first_frame: CanPacketRecord,
-                                    timestamp_end: None | TimestampAlias) -> UdsMessageRecord:
+                                    timestamp_end: TimestampAlias | None) -> UdsMessageRecord:
         """
         Receive Consecutive Frames after reception of First Frame.
 
@@ -676,7 +676,7 @@ class PythonCanTransportInterface(AbstractCanTransportInterface):
 
     async def _async_receive_consecutive_frames(self,
                                                 first_frame: CanPacketRecord,
-                                                timestamp_end: None | TimestampAlias,
+                                                timestamp_end: TimestampAlias | None,
                                                 loop: AbstractEventLoop) -> UdsMessageRecord:
         """
         Receive asynchronously Consecutive Frames after reception of First Frame.
@@ -742,7 +742,7 @@ class PythonCanTransportInterface(AbstractCanTransportInterface):
 
     def _message_receive_start(self,
                                initial_packet: CanPacketRecord,
-                               timestamp_end: None | TimestampAlias) -> UdsMessageRecord:
+                               timestamp_end: TimestampAlias | None) -> UdsMessageRecord:
         """
         Continue to receive message after receiving initial packet.
 
@@ -762,7 +762,7 @@ class PythonCanTransportInterface(AbstractCanTransportInterface):
 
     async def _async_message_receive_start(self,
                                            initial_packet: CanPacketRecord,
-                                           timestamp_end: None | TimestampAlias,
+                                           timestamp_end: TimestampAlias | None,
                                            loop: AbstractEventLoop) -> UdsMessageRecord:
         """
         Continue to receive message asynchronously after receiving initial packet.
@@ -882,7 +882,7 @@ class PythonCanTransportInterface(AbstractCanTransportInterface):
 
     async def async_send_packet(self,
                                 packet: CanPacket,  # type: ignore
-                                loop: None | AbstractEventLoop = None) -> CanPacketRecord:
+                                loop: AbstractEventLoop | None = None) -> CanPacketRecord:
         """
         Transmit asynchronously CAN packet.
 
@@ -941,7 +941,7 @@ class PythonCanTransportInterface(AbstractCanTransportInterface):
                                transmission_time=datetime.fromtimestamp(sent_can_frame.timestamp),
                                transmission_timestamp=transmission_timestamp)
 
-    def receive_packet(self, timeout: None | TimeMillisecondsAlias = None) -> CanPacketRecord:
+    def receive_packet(self, timeout: TimeMillisecondsAlias | None = None) -> CanPacketRecord:
         """
         Receive CAN packet.
 
@@ -957,8 +957,8 @@ class PythonCanTransportInterface(AbstractCanTransportInterface):
         return self._wait_for_rx_packet(buffer=self.__rx_frames_buffer, timeout=timeout)
 
     async def async_receive_packet(self,
-                                   timeout: None | TimeMillisecondsAlias = None,
-                                   loop: None | AbstractEventLoop = None) -> CanPacketRecord:
+                                   timeout: TimeMillisecondsAlias | None = None,
+                                   loop: AbstractEventLoop | None = None) -> CanPacketRecord:
         """
         Receive asynchronously CAN packet.
 
@@ -1018,7 +1018,7 @@ class PythonCanTransportInterface(AbstractCanTransportInterface):
 
     async def async_send_message(self,
                                  message: UdsMessage,
-                                 loop: None | AbstractEventLoop = None) -> UdsMessageRecord:
+                                 loop: AbstractEventLoop | None = None) -> UdsMessageRecord:
         """
         Transmit asynchronously UDS message over CAN.
 
@@ -1063,8 +1063,8 @@ class PythonCanTransportInterface(AbstractCanTransportInterface):
         return message_records
 
     def receive_message(self,
-                        start_timeout: None | TimeMillisecondsAlias = None,
-                        end_timeout: None | TimeMillisecondsAlias = None) -> UdsMessageRecord:
+                        start_timeout: TimeMillisecondsAlias | None = None,
+                        end_timeout: TimeMillisecondsAlias | None = None) -> UdsMessageRecord:
         """
         Receive UDS message over CAN.
 
@@ -1113,9 +1113,9 @@ class PythonCanTransportInterface(AbstractCanTransportInterface):
                  category=UnexpectedPacketReceptionWarning)
 
     async def async_receive_message(self,
-                                    start_timeout: None | TimeMillisecondsAlias = None,
-                                    end_timeout: None | TimeMillisecondsAlias = None,
-                                    loop: None | AbstractEventLoop = None) -> UdsMessageRecord:
+                                    start_timeout: TimeMillisecondsAlias | None = None,
+                                    end_timeout: TimeMillisecondsAlias | None = None,
+                                    loop: AbstractEventLoop | None = None) -> UdsMessageRecord:
         """
         Receive asynchronously UDS message over CAN.
 

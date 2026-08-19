@@ -3,6 +3,8 @@
 __all__ = ["RawDataRecord"]
 
 from collections.abc import Sequence
+from copy import deepcopy
+from typing import Any
 
 from .abstract_data_record import AbstractDataRecord
 
@@ -24,8 +26,8 @@ class RawDataRecord(AbstractDataRecord):
                  length: int,
                  children: Sequence[AbstractDataRecord] = tuple(),
                  min_occurrences: int = 1,
-                 max_occurrences: None | int = 1,
-                 unit: None | str = None,
+                 max_occurrences: int | None = 1,
+                 unit: str | None = None,
                  enforce_reoccurring: bool = False) -> None:
         """
         Create Raw Data Record.
@@ -46,6 +48,22 @@ class RawDataRecord(AbstractDataRecord):
                          min_occurrences=min_occurrences,
                          max_occurrences=max_occurrences,
                          enforce_reoccurring=enforce_reoccurring)
+
+    def __deepcopy__(self, memo: dict[int, Any]) -> "RawDataRecord":
+        """Get deep copy of this Data Record."""
+        cls = self.__class__
+        self_copy = cls.__new__(cls)
+        memo[id(self)] = self_copy
+        RawDataRecord.__init__(self_copy,
+                               name=self.name,
+                               length=self.length,
+                               children=deepcopy(self.children, memo=memo),
+                               min_occurrences=self.min_occurrences,
+                               max_occurrences=self.max_occurrences,
+                               unit=self.unit,
+                               enforce_reoccurring=self.enforce_reoccurring)
+        memo[id(self)] = self_copy
+        return self_copy
 
     def get_physical_value(self, raw_value: int) -> int:
         """

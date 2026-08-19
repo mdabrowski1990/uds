@@ -53,7 +53,8 @@ class TestUDS:
         mock_importlib.assert_not_called()
         mock_sys.assert_not_called()
 
-    @pytest.mark.parametrize("name", filter(lambda name: name[:2] != "__" and name[-2:] != "__", uds.__all__))
+    @pytest.mark.parametrize("name", list(filter(lambda name: name[:2] != "__" and name[-2:] != "__",
+                                                 uds.__all__)))
     @patch(f"{SCRIPT_LOCATION}.sys")
     @patch(f"{SCRIPT_LOCATION}.importlib")
     def test_getattr__attribute_error(self, mock_importlib, mock_sys, name):

@@ -73,8 +73,8 @@ def create_first_frame_data(addressing_format: CanAddressingFormat,
                             payload: RawBytesAlias,
                             dlc: int,
                             data_length: int,
-                            target_address: None | int = None,
-                            address_extension: None | int = None) -> bytearray:
+                            target_address: int | None = None,
+                            address_extension: int | None = None) -> bytearray:
     """
     Create a data field of a CAN frame that carries a valid First Frame packet.
 
@@ -116,8 +116,8 @@ def generate_first_frame_data(addressing_format: CanAddressingFormat,
                               dlc: int,
                               ff_dl: int,
                               long_ff_dl_format: bool = False,
-                              target_address: None | int = None,
-                              address_extension: None | int = None) -> bytearray:
+                              target_address: int | None = None,
+                              address_extension: int | None = None) -> bytearray:
     """
     Generate CAN frame data field that carries any combination of First Frame packet data parameters.
 
@@ -281,9 +281,9 @@ def generate_ff_dl_bytes(ff_dl: int, long_ff_dl_format: bool) -> bytearray:
 
 
 def validate_ff_dl(ff_dl: int,
-                   ff_dl_bytes_number: None | int = None,
-                   dlc: None | int = None,
-                   addressing_format: None | CanAddressingFormat = None) -> None:
+                   ff_dl_bytes_number: int | None = None,
+                   dlc: int | None = None,
+                   addressing_format: CanAddressingFormat | None = None) -> None:
     """
     Validate a value of First Frame Data Length.
 

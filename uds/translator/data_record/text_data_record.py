@@ -3,7 +3,7 @@
 __all__ = ["TextDataRecord", "TextEncoding"]
 
 from collections.abc import Callable
-from typing import TypedDict
+from typing import Any, TypedDict
 
 from uds.utilities import MAX_DTC_VALUE, ValidatedEnum, int_to_obd_dtc, obd_dtc_to_int
 
@@ -91,24 +91,28 @@ class TextDataRecord(AbstractDataRecord):
         length: int
         encode: Callable[[int], str]  # noqa: vulture
         decode: Callable[[str], int]
+        max_raw_value: int
 
     __ENCODINGS: dict[TextEncoding, _EncodingInfo] = {
         TextEncoding.ASCII: _EncodingInfo(length=8,
                                           encode=chr,
-                                          decode=decode_ascii),
+                                          decode=decode_ascii,
+                                          max_raw_value=0x7F),
         TextEncoding.BCD: _EncodingInfo(length=4,
                                         encode=str,
-                                        decode=decode_bcd),
+                                        decode=decode_bcd,
+                                        max_raw_value=9),
         TextEncoding.DTC_OBD_FORMAT: _EncodingInfo(length=24,
                                                    encode=int_to_obd_dtc,
-                                                   decode=obd_dtc_to_int),
+                                                   decode=obd_dtc_to_int,
+                                                   max_raw_value=MAX_DTC_VALUE),
     }
 
     def __init__(self,
                  name: str,
                  encoding: TextEncoding,
                  min_occurrences: int = 1,
-                 max_occurrences: None | int = None,
+                 max_occurrences: int | None = None,
                  enforce_reoccurring: bool = True) -> None:
         """
         Configure Text Data Record.
@@ -128,6 +132,20 @@ class TextDataRecord(AbstractDataRecord):
                          max_occurrences=max_occurrences,
                          enforce_reoccurring=enforce_reoccurring)
 
+    def __deepcopy__(self, memo: dict[int, Any]) -> "TextDataRecord":
+        """Get deep copy of this Data Record."""
+        cls = self.__class__
+        self_copy = cls.__new__(cls)
+        memo[id(self)] = self_copy
+        TextDataRecord.__init__(self_copy,
+                                name=self.name,
+                                encoding=self.encoding,
+                                min_occurrences=self.min_occurrences,
+                                max_occurrences=self.max_occurrences,
+                                enforce_reoccurring=self.enforce_reoccurring)
+        memo[id(self)] = self_copy
+        return self_copy
+
     @property
     def encoding(self) -> TextEncoding:
         """Get Text Encoding."""
@@ -141,13 +159,7 @@ class TextDataRecord(AbstractDataRecord):
     @property
     def max_raw_value(self) -> int:
         """Maximum raw (bit) value for this Data Record."""
-        if self.encoding == TextEncoding.ASCII:
-            return 0x7F
-        if self.encoding == TextEncoding.BCD:
-            return 9
-        if self.encoding == TextEncoding.DTC_OBD_FORMAT:
-            return MAX_DTC_VALUE
-        raise NotImplementedError(f"Missing implementation for {self.encoding!r}.")
+        return self.__ENCODINGS[self.encoding]["max_raw_value"]
 
     def get_physical_values(self, *raw_values: int) -> str:
         """

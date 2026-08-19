@@ -259,6 +259,7 @@ class TestTimeSync:
     def teardown_method(self):
         self._patcher_perf_counter.stop()
         self._patcher_time.stop()
+        TimeSync._instance = None
 
     # __init__
 

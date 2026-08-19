@@ -33,7 +33,7 @@ __all__ = [
     "get_secured_data_transmission_request",
     "get_secured_data_transmission_response",
     # SID 0x86
-    "get_event_window_2020", "get_event_window_2013",
+    "get_event_window_time_2020", "get_event_window_time_2013",
     "get_event_type_of_active_event_2020", "get_event_type_of_active_event_2013",
     "get_event_type_record_01",
     "get_event_type_record_02_2013",
@@ -275,7 +275,7 @@ def get_did_data_2013(name: str = "DID data") -> ConditionalFormulaDataRecord:
 
 
 def get_did_record_2020(did_count: int,
-                        record_number: None | int,
+                        record_number: int | None,
                         optional: bool = False) -> tuple[MappingDataRecord | ConditionalFormulaDataRecord, ...]:
     """
     Get DID record (e.g. for DTC Snapshot or DTC Stored Data) with DID numbers and data.
@@ -298,7 +298,7 @@ def get_did_record_2020(did_count: int,
 
 
 def get_did_record_2013(did_count: int,
-                        record_number: None | int,
+                        record_number: int | None,
                         optional: bool = False) -> tuple[MappingDataRecord | ConditionalFormulaDataRecord, ...]:
     """
     Get DID record (e.g. for DTC Snapshot or DTC Stored Data) with DID numbers and data.
@@ -368,7 +368,7 @@ def get_max_number_of_block_length(length_format_identifier: int) -> tuple[RawDa
 # SID 0x19
 
 
-def get_did_records_formula_2020(record_number: None | int) -> Callable[[int], MessageStructureAlias]:
+def get_did_records_formula_2020(record_number: int | None) -> Callable[[int], MessageStructureAlias]:
     """
     Get formula that can be used by Conditional Data Record for getting DID related Data Records.
 
@@ -383,7 +383,7 @@ def get_did_records_formula_2020(record_number: None | int) -> Callable[[int], M
                                                  record_number=record_number)
 
 
-def get_did_records_formula_2013(record_number: None | int) -> Callable[[int], MessageStructureAlias]:
+def get_did_records_formula_2013(record_number: int | None) -> Callable[[int], MessageStructureAlias]:
     """
     Get formula that can be used by Conditional Data Record for getting DID related Data Records.
 
@@ -820,7 +820,7 @@ def get_secured_data_transmission_response(signature_length: int) -> (
 # SID 0x86
 
 
-def get_event_window_2020(event_number: None | int = None) -> MappingDataRecord:
+def get_event_window_time_2020(event_number: int | None = None) -> MappingDataRecord:
     """
     Get `eventWindowTime` Data Record (compatible with ISO 14229-1:2020).
 
@@ -834,7 +834,7 @@ def get_event_window_2020(event_number: None | int = None) -> MappingDataRecord:
                              values_mapping=EVENT_WINDOW_TIME_MAPPING_2020)
 
 
-def get_event_window_2013(event_number: None | int = None) -> MappingDataRecord:
+def get_event_window_time_2013(event_number: int | None = None) -> MappingDataRecord:
     """
     Get `eventWindowTime` Data Record (compatible with ISO 14229-1:2013).
 
@@ -852,7 +852,7 @@ def get_event_type_of_active_event_2020(event_number: int) -> RawDataRecord:
     """
     Get `eventTypeOfActiveEvent` Data Record (compatible with ISO 14229-1:2020).
 
-    :param event_number: Number of the active event.
+    :param event_number: Order number of the active event.
 
     :return: Created `eventTypeOfActiveEvent` Data Record.
     """
@@ -866,7 +866,7 @@ def get_event_type_of_active_event_2013(event_number: int) -> RawDataRecord:
     """
     Get `eventTypeOfActiveEvent` Data Record (compatible with ISO 14229-1:2013).
 
-    :param event_number: Number of the active event.
+    :param event_number: Order number of the active event.
 
     :return: Created `eventTypeOfActiveEvent` Data Record.
     """
@@ -876,7 +876,7 @@ def get_event_type_of_active_event_2013(event_number: int) -> RawDataRecord:
                                    EVENT_TYPE_2013))
 
 
-def get_event_type_record_01(event_number: None | int = None) -> RawDataRecord:
+def get_event_type_record_01(event_number: int | None = None) -> RawDataRecord:
     """
     Get `eventTypeRecord` Data Record for `event` equal to 0x01.
 
@@ -890,7 +890,7 @@ def get_event_type_record_01(event_number: None | int = None) -> RawDataRecord:
                          children=(DTC_STATUS_MASK,))
 
 
-def get_event_type_record_02_2013(event_number: None | int = None) -> RawDataRecord:
+def get_event_type_record_02_2013(event_number: int | None = None) -> RawDataRecord:
     """
     Get `eventTypeRecord` Data Record (compatible with ISO 14229-1:2013) for `event` equal to 0x02.
 
@@ -904,7 +904,7 @@ def get_event_type_record_02_2013(event_number: None | int = None) -> RawDataRec
                          children=(TIMER_SCHEDULE_2013,))
 
 
-def get_event_type_record_03_2020(event_number: None | int = None) -> RawDataRecord:
+def get_event_type_record_03_2020(event_number: int | None = None) -> RawDataRecord:
     """
     Get `eventTypeRecord` Data Record (compatible with ISO 14229-1:2020) for `event` equal to 0x03.
 
@@ -918,7 +918,7 @@ def get_event_type_record_03_2020(event_number: None | int = None) -> RawDataRec
                          children=(DID_2020,))
 
 
-def get_event_type_record_03_2013(event_number: None | int = None) -> RawDataRecord:
+def get_event_type_record_03_2013(event_number: int | None = None) -> RawDataRecord:
     """
     Get `eventTypeRecord` Data Record (compatible with ISO 14229-1:2013) for `event` equal to 0x03.
 
@@ -932,7 +932,7 @@ def get_event_type_record_03_2013(event_number: None | int = None) -> RawDataRec
                          children=(DID_2013,))
 
 
-def get_event_type_record_07_2020(event_number: None | int = None) -> RawDataRecord:
+def get_event_type_record_07_2020(event_number: int | None = None) -> RawDataRecord:
     """
     Get `eventTypeRecord` Data Record (compatible with ISO 14229-1:2020) for `event` equal to 0x07.
 
@@ -950,7 +950,7 @@ def get_event_type_record_07_2020(event_number: None | int = None) -> RawDataRec
                                    LOCALIZATION))
 
 
-def get_event_type_record_07_2013(event_number: None | int = None) -> RawDataRecord:
+def get_event_type_record_07_2013(event_number: int | None = None) -> RawDataRecord:
     """
     Get `eventTypeRecord` Data Record (compatible with ISO 14229-1:2013) for `event` equal to 0x07.
 
@@ -968,7 +968,7 @@ def get_event_type_record_07_2013(event_number: None | int = None) -> RawDataRec
                                    LOCALIZATION))
 
 
-def get_event_type_record_08_2020(event_number: None | int = None) -> RawDataRecord:
+def get_event_type_record_08_2020(event_number: int | None = None) -> RawDataRecord:
     """
     Get `eventTypeRecord` Data Record (compatible with ISO 14229-1:2020) for `event` equal to 0x08.
 
@@ -983,7 +983,7 @@ def get_event_type_record_08_2020(event_number: None | int = None) -> RawDataRec
                                    REPORT_TYPE_2020))
 
 
-def get_event_type_record_09_2020(event_number: None | int = None) -> RawDataRecord:
+def get_event_type_record_09_2020(event_number: int | None = None) -> RawDataRecord:
     """
     Get `eventTypeRecord` Data Record (compatible with ISO 14229-1:2020) for `event` equal to 0x09.
 
@@ -999,7 +999,7 @@ def get_event_type_record_09_2020(event_number: None | int = None) -> RawDataRec
                                    REPORT_TYPE_2020))
 
 
-def get_event_type_record_09_2020_continuation(event_number: None | int = None) -> ConditionalMappingDataRecord:
+def get_event_type_record_09_2020_continuation(event_number: int | None = None) -> ConditionalMappingDataRecord:
     """
     Get continuation for `eventTypeRecord` Data Record (`event` equal to 0x09).
 
@@ -1041,7 +1041,7 @@ def get_event_type_record_09_2020_continuation(event_number: None | int = None) 
         value_mask=0x7F)
 
 
-def get_service_to_respond(event_number: None | int = None) -> RawDataRecord:
+def get_service_to_respond(event_number: int | None = None) -> RawDataRecord:
     """
     Get `serviceToRespondToRecord` Data Record.
 
@@ -1069,7 +1069,7 @@ def get_activated_events_2020(number_of_activated_events: int) -> tuple[RawDataR
     """
     data_records: list[RawDataRecord | MappingDataRecord | ConditionalMappingDataRecord] = []
     for event_number in range(1, number_of_activated_events + 1):
-        event_window = get_event_window_2020(event_number)
+        event_window = get_event_window_time_2020(event_number)
         service_to_respond = get_service_to_respond(event_number)
         data_records.append(get_event_type_of_active_event_2020(event_number))
         data_records.append(ConditionalMappingDataRecord(mapping={
@@ -1104,7 +1104,7 @@ def get_activated_events_2013(number_of_activated_events: int) -> tuple[RawDataR
     """
     data_records: list[RawDataRecord | MappingDataRecord | ConditionalMappingDataRecord] = []
     for event_number in range(1, number_of_activated_events + 1):
-        event_window = get_event_window_2013(event_number)
+        event_window = get_event_window_time_2013(event_number)
         service_to_respond = get_service_to_respond(event_number)
         data_records.append(get_event_type_of_active_event_2013(event_number))
         data_records.append(ConditionalMappingDataRecord(mapping={

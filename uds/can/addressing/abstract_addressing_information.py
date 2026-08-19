@@ -17,9 +17,9 @@ class CANAddressingParams(TypedDict, total=True):
     addressing_format: CanAddressingFormat
     addressing_type: AddressingType
     can_id: int
-    target_address: None | int
-    source_address: None | int
-    address_extension: None | int
+    target_address: int | None
+    source_address: int | None
+    address_extension: int | None
 
 
 class AbstractCanAddressingInformation(AbstractAddressingInformation, ABC):
@@ -29,17 +29,17 @@ class AbstractCanAddressingInformation(AbstractAddressingInformation, ABC):
         """:ref:`Addressing Information <knowledge-base-n-ai>` configuration parameters."""
 
         can_id: int
-        target_address: None | int
-        source_address: None | int
-        address_extension: None | int
+        target_address: int | None
+        source_address: int | None
+        address_extension: int | None
 
     class CanIdAIParams(TypedDict, total=True):
         """ref:`Addressing Information <knowledge-base-n-ai>` parameters that are carried by CAN Identifier."""
 
-        addressing_type: None | AddressingType
-        target_address: None | int
-        source_address: None | int
-        priority: None | int
+        addressing_type: AddressingType | None
+        target_address: int | None
+        source_address: int | None
+        priority: int | None
 
     class DataBytesAIParamsAlias(TypedDict, total=False):
         """Alias of :ref:`Addressing Information <knowledge-base-n-ai>` parameters encoded in data field."""
@@ -50,10 +50,10 @@ class AbstractCanAddressingInformation(AbstractAddressingInformation, ABC):
     class DecodedAIParamsAlias(TypedDict, total=True):
         """Alias of :ref:`Addressing Information <knowledge-base-n-ai>` parameters encoded in CAN ID and data field."""
 
-        addressing_type: None | AddressingType
-        target_address: None | int
-        source_address: None | int
-        address_extension: None | int
+        addressing_type: AddressingType | None
+        target_address: int | None
+        source_address: int | None
+        address_extension: int | None
 
     ADDRESSING_FORMAT: CanAddressingFormat
     """CAN Addressing Format used."""
@@ -84,10 +84,10 @@ class AbstractCanAddressingInformation(AbstractAddressingInformation, ABC):
     def validate_addressing_params(cls,  # type: ignore  # pylint: disable=arguments-differ
                                    addressing_type: AddressingType,
                                    addressing_format: CanAddressingFormat,
-                                   can_id: None | int = None,
-                                   target_address: None | int = None,
-                                   source_address: None | int = None,
-                                   address_extension: None | int = None) -> CANAddressingParams:
+                                   can_id: int | None = None,
+                                   target_address: int | None = None,
+                                   source_address: int | None = None,
+                                   address_extension: int | None = None) -> CANAddressingParams:
         """
         Validate Addressing Information parameters of a CAN packet.
 
@@ -108,7 +108,7 @@ class AbstractCanAddressingInformation(AbstractAddressingInformation, ABC):
     @staticmethod
     @abstractmethod
     def is_compatible_can_id(can_id: int,
-                             addressing_type: None | AddressingType) -> bool:
+                             addressing_type: AddressingType | None) -> bool:
         """
         Check whether provided CAN ID is consistent with this CAN Addressing Format.
 
@@ -163,8 +163,8 @@ class AbstractCanAddressingInformation(AbstractAddressingInformation, ABC):
     @classmethod
     @abstractmethod
     def encode_ai_data_bytes(cls,
-                             target_address: None | int = None,
-                             address_extension: None | int = None) -> bytearray:
+                             target_address: int | None = None,
+                             address_extension: int | None = None) -> bytearray:
         """
         Generate data bytes that carry Addressing Information.
 
@@ -177,7 +177,7 @@ class AbstractCanAddressingInformation(AbstractAddressingInformation, ABC):
     def is_input_packet(self,  # type: ignore  # pylint: disable=arguments-differ
                         can_id: int,
                         raw_frame_data: RawBytesAlias,
-                        **_: Any) -> None | AddressingType:
+                        **_: Any) -> AddressingType | None:
         """
         Check if a frame with provided attributes is an input packet for this UDS Entity.
 

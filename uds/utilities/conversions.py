@@ -50,7 +50,7 @@ def bytes_to_int(bytes_list: RawBytesAlias, endianness: Endianness = Endianness.
 
 
 def int_to_bytes(int_value: int,
-                 size: None | int = None,
+                 size: int | None = None,
                  endianness: Endianness = Endianness.BIG_ENDIAN) -> bytes:
     """
     Convert integer value to a list of bytes.
@@ -191,8 +191,8 @@ class TimeSync:
     """Default expiration time (in seconds) of the offset calculated during last synchronization."""
 
     def __init__(self,
-                 samples_number: None | int = None,
-                 sync_expiration: None | int | float = None) -> None:
+                 samples_number: int | None = None,
+                 sync_expiration: int | float | None = None) -> None:
         """
         Get time synchronization object.
 
@@ -206,9 +206,9 @@ class TimeSync:
         if not hasattr(self, "_TimeSync__sync_expiration"):
             self.sync_expiration = self.DEFAULT_SYNC_EXPIRATION_S
         if not hasattr(self, "_TimeSync__last_sync_timestamp"):
-            self.__last_sync_timestamp: None | float = None
+            self.__last_sync_timestamp: float | None = None
         if not hasattr(self, "_TimeSync__offset"):
-            self.__offset: None | float = None
+            self.__offset: float | None = None
         if samples_number is not None:
             self.samples_number = samples_number
         if sync_expiration is not None:
@@ -263,7 +263,7 @@ class TimeSync:
         self.__sync_expiration = float(value)
 
     @property
-    def last_sync_timestamp(self) -> None | float:
+    def last_sync_timestamp(self) -> float | None:
         """Value of performance counter for the last synchronization point."""
         return self.__last_sync_timestamp
 
@@ -275,7 +275,7 @@ class TimeSync:
         return perf_counter() - self.last_sync_timestamp > self.sync_expiration
 
     @property
-    def offset(self) -> None | float:
+    def offset(self) -> float | None:
         """Difference between wall clock and performance counter."""
         return self.__offset
 
@@ -297,8 +297,8 @@ class TimeSync:
 
     def time_to_perf_counter(self,
                              time_value: float,
-                             min_value: None | float = None,
-                             max_value: None | float = None) -> float:
+                             min_value: float | None = None,
+                             max_value: float | None = None) -> float:
         """
         Convert wall clock time to performance counter.
 
@@ -319,8 +319,8 @@ class TimeSync:
 
     def perf_counter_to_time(self,
                              perf_counter_value: float,
-                             min_value: None | float = None,
-                             max_value: None | float = None) -> float:
+                             min_value: float | None = None,
+                             max_value: float | None = None) -> float:
         """
         Convert performance counter to wall clock time.
 

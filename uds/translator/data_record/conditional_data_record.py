@@ -4,10 +4,11 @@ __all__ = ["DEFAULT_DIAGNOSTIC_MESSAGE_CONTINUATION", "MessageStructureAlias",
            "AbstractConditionalDataRecord", "ConditionalMappingDataRecord", "ConditionalFormulaDataRecord"]
 
 from abc import ABC, abstractmethod
-from collections.abc import Callable, Mapping, Sequence
+from copy import deepcopy
 from inspect import signature
 from operator import getitem
 from types import MappingProxyType
+from typing import Any, Callable, Mapping, Sequence
 
 from uds.utilities import InconsistencyError
 
@@ -37,7 +38,7 @@ class AbstractConditionalDataRecord(ABC):
      - Contains logic of diagnostic message continuation building.
     """
 
-    def __init__(self, default_message_continuation: None | MessageStructureAlias) -> None:
+    def __init__(self, default_message_continuation: MessageStructureAlias | None) -> None:
         """
         Initialize the common part for all Conditional Data Records.
 
@@ -59,7 +60,7 @@ class AbstractConditionalDataRecord(ABC):
         """
 
     @property
-    def default_message_continuation(self) -> None | MessageStructureAlias:
+    def default_message_continuation(self) -> MessageStructureAlias | None:
         """
         Get default diagnostic message continuation.
 
@@ -71,7 +72,7 @@ class AbstractConditionalDataRecord(ABC):
         return self.__default_message_continuation
 
     @default_message_continuation.setter
-    def default_message_continuation(self, value: None | MessageStructureAlias) -> None:
+    def default_message_continuation(self, value: MessageStructureAlias | None) -> None:
         """
         Set default diagnostic message continuation.
 
@@ -148,8 +149,8 @@ class ConditionalMappingDataRecord(AbstractConditionalDataRecord):
 
     def __init__(self,
                  mapping: Mapping[int, MessageStructureAlias],
-                 default_message_continuation: None | MessageStructureAlias = None,
-                 value_mask: None | int = None) -> None:
+                 default_message_continuation: MessageStructureAlias | None = None,
+                 value_mask: int | None = None) -> None:
         """
         Define logic for this Conditional Data Record.
 
@@ -180,6 +181,18 @@ class ConditionalMappingDataRecord(AbstractConditionalDataRecord):
             raise ValueError(f"Provided value is not a raw value as it is less than 0. Actual value: {raw_value}")
         return self.mapping[raw_value if self.value_mask is None else raw_value & self.value_mask]
 
+    def __deepcopy__(self, memo: dict[int, Any]) -> "ConditionalMappingDataRecord":
+        """Get deep copy of this Data Record."""
+        cls = self.__class__
+        self_copy = cls.__new__(cls)
+        memo[id(self)] = self_copy
+        ConditionalMappingDataRecord.__init__(
+            self_copy,
+            mapping={key: deepcopy(value, memo=memo) for key, value in self.mapping.items()},
+            default_message_continuation=deepcopy(self.default_message_continuation, memo=memo),
+            value_mask=self.value_mask)
+        return self_copy
+
     @property
     def mapping(self) -> Mapping[int, MessageStructureAlias]:
         """Get the mapping with diagnostic message continuation selection."""
@@ -206,12 +219,12 @@ class ConditionalMappingDataRecord(AbstractConditionalDataRecord):
         self.__mapping = MappingProxyType(mapping)
 
     @property
-    def value_mask(self) -> None | int:
+    def value_mask(self) -> int | None:
         """Get the mask to apply on a raw value of the proceeding Data Record."""
         return self.__value_mask
 
     @value_mask.setter
-    def value_mask(self, value: None | int) -> None:
+    def value_mask(self, value: int | None) -> None:
         """
         Set the mask to apply on a raw value of the proceeding Data Record.
 
@@ -236,7 +249,7 @@ class ConditionalFormulaDataRecord(AbstractConditionalDataRecord):
 
     def __init__(self,
                  formula: Callable[[int], MessageStructureAlias],
-                 default_message_continuation: None | MessageStructureAlias = None) -> None:
+                 default_message_continuation: MessageStructureAlias | None = None) -> None:
         """
         Define logic for this Conditional Data Record.
 
@@ -263,6 +276,17 @@ class ConditionalFormulaDataRecord(AbstractConditionalDataRecord):
         if raw_value < 0:
             raise ValueError(f"Provided value is not a raw value as it is lower than 0. Actual value: {raw_value}")
         return self.formula(raw_value)
+
+    def __deepcopy__(self, memo: dict[int, Any]) -> "ConditionalFormulaDataRecord":
+        """Get deep copy of this Data Record."""
+        cls = self.__class__
+        self_copy = cls.__new__(cls)
+        memo[id(self)] = self_copy
+        ConditionalFormulaDataRecord.__init__(
+            self_copy,
+            formula=self.formula,
+            default_message_continuation=deepcopy(self.default_message_continuation, memo=memo))
+        return self_copy
 
     @property
     def formula(self) -> Callable[[int], MessageStructureAlias]:

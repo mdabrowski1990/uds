@@ -28,7 +28,7 @@ class State:
         """
         self.name = name
         self.possible_values = possible_values
-        self.__current_value: None | Any = None
+        self.__current_value: Any | None = None
 
     @property
     def name(self) -> str:
@@ -69,12 +69,12 @@ class State:
         self.__current_value = None  # if possible values are change, then the current state is also affected
 
     @property
-    def current_value(self) -> None | Any:
+    def current_value(self) -> Any | None:
         """Get currently assigned value."""
         return self.__current_value
 
     @current_value.setter
-    def current_value(self, value: None | Any) -> None:
+    def current_value(self, value: Any | None) -> None:
         """
         Set currently assigned value.
 

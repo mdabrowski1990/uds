@@ -91,10 +91,10 @@ def validate_single_frame_data(addressing_format: CanAddressingFormat, raw_frame
 
 def create_single_frame_data(addressing_format: CanAddressingFormat,
                              payload: RawBytesAlias,
-                             dlc: None | int = None,
+                             dlc: int | None = None,
                              filler_byte: int = DEFAULT_FILLER_BYTE,
-                             target_address: None | int = None,
-                             address_extension: None | int = None) -> bytearray:
+                             target_address: int | None = None,
+                             address_extension: int | None = None) -> bytearray:
     """
     Create data field of a CAN frame that carries a valid Single Frame packet.
 
@@ -148,10 +148,10 @@ def generate_single_frame_data(addressing_format: CanAddressingFormat,
                                payload: RawBytesAlias,
                                dlc: int,
                                sf_dl_short: int,
-                               sf_dl_long: None | int = None,
+                               sf_dl_long: int | None = None,
                                filler_byte: int = DEFAULT_FILLER_BYTE,
-                               target_address: None | int = None,
-                               address_extension: None | int = None) -> bytearray:
+                               target_address: int | None = None,
+                               address_extension: int | None = None) -> bytearray:
     """
     Generate CAN frame data field that carries any combination of Single Frame packet data parameters.
 
@@ -236,7 +236,7 @@ def extract_sf_dl(addressing_format: CanAddressingFormat, raw_frame_data: RawByt
 
 
 def get_max_sf_dl(addressing_format: CanAddressingFormat,
-                  dlc: None | int = None) -> int:
+                  dlc: int | None = None) -> int:
     """
     Get the maximum value Single Frame Data Length.
 
@@ -332,7 +332,7 @@ def encode_sf_dl(addressing_format: CanAddressingFormat,
     return generate_sf_dl_bytes(sf_dl_long=sf_dl)
 
 
-def generate_sf_dl_bytes(sf_dl_short: int = 0, sf_dl_long: None | int = None) -> bytearray:
+def generate_sf_dl_bytes(sf_dl_short: int = 0, sf_dl_long: int | None = None) -> bytearray:
     """
     Create Single Frame bytes containing Single Frame Data Length and N_PCI values.
 
