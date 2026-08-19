@@ -110,7 +110,8 @@ but the diagnostic session types, DIDs, RIDs, or other values need to be adapted
     my_translator = ConfigurableTranslator(base=BASE_TRANSLATOR,
                                            diagnostic_session_type_mapping={0x01: "Default",
                                                                             0x03: "Extended",
-                                                                            0x60: "My Session"})
+                                                                            0x60: "My Session"},
+                                           did_data_mapping={})
 
   In this example, *my_translator* retains the translation logic provided by *BASE_TRANSLATOR* while using
   the supplied mapping for diagnostic session types.
