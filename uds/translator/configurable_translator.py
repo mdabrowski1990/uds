@@ -114,8 +114,7 @@ class ConfigurableTranslator(Translator):
         :param did_data_mapping: Value to data structure mapping for :ref:`DIDs <knowledge-base-did>`.
         """
         # create copy of base Translator
-        memo = {}
-        super().__init__(services=deepcopy(base.services, memo=memo))
+        super().__init__(services=deepcopy(base.services))
         # adapt SubFunctions
         if diagnostic_session_type_mapping is not None:
             self.diagnostic_session_type_mapping = diagnostic_session_type_mapping
