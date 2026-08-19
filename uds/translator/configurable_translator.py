@@ -2,7 +2,7 @@
 
 __all__ = ["ConfigurableTranslator"]
 
-from collections.abc import Callable, Mapping
+from collections.abc import Callable, Mapping, Sequence
 from copy import deepcopy
 from types import MappingProxyType
 from typing import Any
@@ -183,7 +183,7 @@ class ConfigurableTranslator(Translator):
         diagnostic_session_control = self.services_mapping.get(RequestSID.DiagnosticSessionControl, None)
         if diagnostic_session_control is None:
             return None
-        sub_function: MappingDataRecord = diagnostic_session_control.request_structure[0].children[1]
+        sub_function: MappingDataRecord = diagnostic_session_control.request_structure[0].children[1]  # type: ignore
         return sub_function.values_mapping
 
     @diagnostic_session_type_mapping.setter
@@ -194,8 +194,8 @@ class ConfigurableTranslator(Translator):
         :param value: Mapping value to set.
         """
         diagnostic_session_control = self.services_mapping[RequestSID.DiagnosticSessionControl]
-        diagnostic_session_control.request_structure[0].children[1].values_mapping = value
-        diagnostic_session_control.response_structure[0].children[1].values_mapping = value
+        diagnostic_session_control.request_structure[0].children[1].values_mapping = value  # type: ignore
+        diagnostic_session_control.response_structure[0].children[1].values_mapping = value  # type: ignore
 
     @property
     def reset_type_mapping(self) -> Mapping[int, str] | None:
@@ -203,7 +203,7 @@ class ConfigurableTranslator(Translator):
         ecu_reset = self.services_mapping.get(RequestSID.ECUReset, None)
         if ecu_reset is None:
             return None
-        sub_function: MappingDataRecord = ecu_reset.request_structure[0].children[1]
+        sub_function: MappingDataRecord = ecu_reset.request_structure[0].children[1]  # type: ignore
         return sub_function.values_mapping
 
     @reset_type_mapping.setter
@@ -214,8 +214,8 @@ class ConfigurableTranslator(Translator):
         :param value: Mapping value to set.
         """
         ecu_reset = self.services_mapping[RequestSID.ECUReset]
-        ecu_reset.request_structure[0].children[1].values_mapping = value
-        ecu_reset.response_structure[0].children[1].values_mapping = value
+        ecu_reset.request_structure[0].children[1].values_mapping = value  # type: ignore
+        ecu_reset.response_structure[0].children[1].values_mapping = value  # type: ignore
 
     @property
     def report_type_mapping(self) -> Mapping[int, str] | None:
@@ -223,7 +223,7 @@ class ConfigurableTranslator(Translator):
         read_dtc_information = self.services_mapping.get(RequestSID.ReadDTCInformation, None)
         if read_dtc_information is None:
             return None
-        sub_function: MappingDataRecord = read_dtc_information.request_structure[0].children[1]
+        sub_function: MappingDataRecord = read_dtc_information.request_structure[0].children[1]  # type: ignore
         return sub_function.values_mapping
 
     @report_type_mapping.setter
@@ -234,20 +234,24 @@ class ConfigurableTranslator(Translator):
         :param value: Mapping value to set.
         """
         read_dtc_information = self.services_mapping[RequestSID.ReadDTCInformation]
-        read_dtc_information.request_structure[0].children[1].values_mapping = value
-        read_dtc_information.response_structure[0].children[1].values_mapping = value
+        read_dtc_information.request_structure[0].children[1].values_mapping = value  # type: ignore
+        read_dtc_information.response_structure[0].children[1].values_mapping = value  # type: ignore
         response_on_event = self.services_mapping.get(RequestSID.ResponseOnEvent, None)
         if response_on_event is not None:
-            subfunction_08_request_continuation = response_on_event.request_structure[1].mapping.get(0x08, None)
+            subfunction_08_request_continuation = (
+                response_on_event.request_structure[1].mapping.get(0x08, None))  # type: ignore
             if subfunction_08_request_continuation is not None:
                 subfunction_08_request_continuation[1].children[1].values_mapping = value
-            subfunction_09_request_continuation = response_on_event.request_structure[1].mapping.get(0x09, None)
+            subfunction_09_request_continuation = (
+                response_on_event.request_structure[1].mapping.get(0x09, None))  # type: ignore
             if subfunction_09_request_continuation is not None:
                 subfunction_09_request_continuation[1].children[2].values_mapping = value
-            subfunction_08_response_continuation = response_on_event.response_structure[1].mapping.get(0x08, None)
+            subfunction_08_response_continuation = (
+                response_on_event.response_structure[1].mapping.get(0x08, None))  # type: ignore
             if subfunction_08_response_continuation is not None:
                 subfunction_08_response_continuation[2].children[1].values_mapping = value
-            subfunction_09_response_continuation = response_on_event.response_structure[1].mapping.get(0x09, None)
+            subfunction_09_response_continuation = (
+                response_on_event.response_structure[1].mapping.get(0x09, None))  # type: ignore
             if subfunction_09_response_continuation is not None:
                 subfunction_09_response_continuation[2].children[2].values_mapping = value
 
@@ -257,7 +261,7 @@ class ConfigurableTranslator(Translator):
         security_access = self.services_mapping.get(RequestSID.SecurityAccess, None)
         if security_access is None:
             return None
-        sub_function: MappingDataRecord = security_access.request_structure[0].children[1]
+        sub_function: MappingDataRecord = security_access.request_structure[0].children[1]  # type: ignore
         return sub_function.values_mapping
 
     @security_access_type_mapping.setter
@@ -268,8 +272,8 @@ class ConfigurableTranslator(Translator):
         :param value: Mapping value to set.
         """
         security_access = self.services_mapping[RequestSID.SecurityAccess]
-        security_access.request_structure[0].children[1].values_mapping = value
-        security_access.response_structure[0].children[1].values_mapping = value
+        security_access.request_structure[0].children[1].values_mapping = value  # type: ignore
+        security_access.response_structure[0].children[1].values_mapping = value  # type: ignore
 
     @property
     def control_type_type_mapping(self) -> Mapping[int, str] | None:
@@ -277,7 +281,7 @@ class ConfigurableTranslator(Translator):
         communication_control = self.services_mapping.get(RequestSID.CommunicationControl, None)
         if communication_control is None:
             return None
-        sub_function: MappingDataRecord = communication_control.request_structure[0].children[1]
+        sub_function: MappingDataRecord = communication_control.request_structure[0].children[1]  # type: ignore
         return sub_function.values_mapping
 
     @control_type_type_mapping.setter
@@ -288,8 +292,8 @@ class ConfigurableTranslator(Translator):
         :param value: Mapping value to set.
         """
         communication_control = self.services_mapping[RequestSID.CommunicationControl]
-        communication_control.request_structure[0].children[1].values_mapping = value
-        communication_control.response_structure[0].children[1].values_mapping = value
+        communication_control.request_structure[0].children[1].values_mapping = value  # type: ignore
+        communication_control.response_structure[0].children[1].values_mapping = value  # type: ignore
 
     @property
     def authentication_task_mapping(self) -> Mapping[int, str] | None:
@@ -297,7 +301,7 @@ class ConfigurableTranslator(Translator):
         authentication = self.services_mapping.get(RequestSID.Authentication, None)
         if authentication is None:
             return None
-        sub_function: MappingDataRecord = authentication.request_structure[0].children[1]
+        sub_function: MappingDataRecord = authentication.request_structure[0].children[1]  # type: ignore
         return sub_function.values_mapping
 
     @authentication_task_mapping.setter
@@ -308,8 +312,8 @@ class ConfigurableTranslator(Translator):
         :param value: Mapping value to set.
         """
         authentication = self.services_mapping[RequestSID.Authentication]
-        authentication.request_structure[0].children[1].values_mapping = value
-        authentication.response_structure[0].children[1].values_mapping = value
+        authentication.request_structure[0].children[1].values_mapping = value  # type: ignore
+        authentication.response_structure[0].children[1].values_mapping = value  # type: ignore
 
     @property
     def definition_type_mapping(self) -> Mapping[int, str] | None:
@@ -317,7 +321,8 @@ class ConfigurableTranslator(Translator):
         dynamically_define_data_identifier = self.services_mapping.get(RequestSID.DynamicallyDefineDataIdentifier, None)
         if dynamically_define_data_identifier is None:
             return None
-        sub_function: MappingDataRecord = dynamically_define_data_identifier.request_structure[0].children[1]
+        sub_function: MappingDataRecord = (  # type: ignore
+            dynamically_define_data_identifier.request_structure[0].children)[1]  # type: ignore
         return sub_function.values_mapping
 
     @definition_type_mapping.setter
@@ -328,8 +333,8 @@ class ConfigurableTranslator(Translator):
         :param value: Mapping value to set.
         """
         dynamically_define_data_identifier = self.services_mapping[RequestSID.DynamicallyDefineDataIdentifier]
-        dynamically_define_data_identifier.request_structure[0].children[1].values_mapping = value
-        dynamically_define_data_identifier.response_structure[0].children[1].values_mapping = value
+        dynamically_define_data_identifier.request_structure[0].children[1].values_mapping = value  # type: ignore
+        dynamically_define_data_identifier.response_structure[0].children[1].values_mapping = value  # type: ignore
 
     @property
     def routine_control_type_mapping(self) -> Mapping[int, str] | None:
@@ -337,7 +342,7 @@ class ConfigurableTranslator(Translator):
         routine_control = self.services_mapping.get(RequestSID.RoutineControl, None)
         if routine_control is None:
             return None
-        sub_function: MappingDataRecord = routine_control.request_structure[0].children[1]
+        sub_function: MappingDataRecord = routine_control.request_structure[0].children[1]  # type: ignore
         return sub_function.values_mapping
 
     @routine_control_type_mapping.setter
@@ -348,8 +353,8 @@ class ConfigurableTranslator(Translator):
         :param value: Mapping value to set.
         """
         routine_control = self.services_mapping[RequestSID.RoutineControl]
-        routine_control.request_structure[0].children[1].values_mapping = value
-        routine_control.response_structure[0].children[1].values_mapping = value
+        routine_control.request_structure[0].children[1].values_mapping = value  # type: ignore
+        routine_control.response_structure[0].children[1].values_mapping = value  # type: ignore
 
     @property
     def zero_subfunction_mapping(self) -> Mapping[int, str] | None:
@@ -357,7 +362,7 @@ class ConfigurableTranslator(Translator):
         tester_present = self.services_mapping.get(RequestSID.TesterPresent, None)
         if tester_present is None:
             return None
-        sub_function: MappingDataRecord = tester_present.request_structure[0].children[1]
+        sub_function: MappingDataRecord = tester_present.request_structure[0].children[1]  # type: ignore
         return sub_function.values_mapping
 
     @zero_subfunction_mapping.setter
@@ -368,8 +373,8 @@ class ConfigurableTranslator(Translator):
         :param value: Mapping value to set.
         """
         tester_present = self.services_mapping[RequestSID.TesterPresent]
-        tester_present.request_structure[0].children[1].values_mapping = value
-        tester_present.response_structure[0].children[1].values_mapping = value
+        tester_present.request_structure[0].children[1].values_mapping = value  # type: ignore
+        tester_present.response_structure[0].children[1].values_mapping = value  # type: ignore
 
     @property
     def timing_parameter_access_type_mapping(self) -> Mapping[int, str] | None:
@@ -377,7 +382,7 @@ class ConfigurableTranslator(Translator):
         access_timing_parameter = self.services_mapping.get(RequestSID.AccessTimingParameter, None)
         if access_timing_parameter is None:
             return None
-        sub_function: MappingDataRecord = access_timing_parameter.request_structure[0].children[1]
+        sub_function: MappingDataRecord = access_timing_parameter.request_structure[0].children[1]  # type: ignore
         return sub_function.values_mapping
 
     @timing_parameter_access_type_mapping.setter
@@ -388,8 +393,8 @@ class ConfigurableTranslator(Translator):
         :param value: Mapping value to set.
         """
         access_timing_parameter = self.services_mapping[RequestSID.AccessTimingParameter]
-        access_timing_parameter.request_structure[0].children[1].values_mapping = value
-        access_timing_parameter.response_structure[0].children[1].values_mapping = value
+        access_timing_parameter.request_structure[0].children[1].values_mapping = value  # type: ignore
+        access_timing_parameter.response_structure[0].children[1].values_mapping = value  # type: ignore
 
     @property
     def dtc_setting_type_mapping(self) -> Mapping[int, str] | None:
@@ -397,7 +402,7 @@ class ConfigurableTranslator(Translator):
         control_dtc_setting = self.services_mapping.get(RequestSID.ControlDTCSetting, None)
         if control_dtc_setting is None:
             return None
-        sub_function: MappingDataRecord = control_dtc_setting.request_structure[0].children[1]
+        sub_function: MappingDataRecord = control_dtc_setting.request_structure[0].children[1]  # type: ignore
         return sub_function.values_mapping
 
     @dtc_setting_type_mapping.setter
@@ -408,8 +413,8 @@ class ConfigurableTranslator(Translator):
         :param value: Mapping value to set.
         """
         control_dtc_setting = self.services_mapping[RequestSID.ControlDTCSetting]
-        control_dtc_setting.request_structure[0].children[1].values_mapping = value
-        control_dtc_setting.response_structure[0].children[1].values_mapping = value
+        control_dtc_setting.request_structure[0].children[1].values_mapping = value  # type: ignore
+        control_dtc_setting.response_structure[0].children[1].values_mapping = value  # type: ignore
 
     @property
     def event_type_mapping(self) -> Mapping[int, str] | None:
@@ -422,7 +427,7 @@ class ConfigurableTranslator(Translator):
         response_on_event = self.services_mapping.get(RequestSID.ResponseOnEvent, None)
         if response_on_event is None:
             return None
-        sub_function: MappingDataRecord = response_on_event.request_structure[0].children[1].children[1]
+        sub_function: MappingDataRecord = response_on_event.request_structure[0].children[1].children[1]  # type: ignore
         return sub_function.values_mapping
 
     @event_type_mapping.setter
@@ -436,8 +441,8 @@ class ConfigurableTranslator(Translator):
         :param value: Mapping value to set.
         """
         response_on_event = self.services_mapping[RequestSID.ResponseOnEvent]
-        response_on_event.request_structure[0].children[1].children[1].values_mapping = value
-        response_on_event.response_structure[0].children[1].children[1].values_mapping = value
+        response_on_event.request_structure[0].children[1].children[1].values_mapping = value  # type: ignore
+        response_on_event.response_structure[0].children[1].children[1].values_mapping = value  # type: ignore
 
     @property
     def link_control_type_mapping(self) -> Mapping[int, str] | None:
@@ -445,7 +450,7 @@ class ConfigurableTranslator(Translator):
         link_control = self.services_mapping.get(RequestSID.LinkControl, None)
         if link_control is None:
             return None
-        sub_function: MappingDataRecord = link_control.request_structure[0].children[1]
+        sub_function: MappingDataRecord = link_control.request_structure[0].children[1]  # type: ignore
         return sub_function.values_mapping
 
     @link_control_type_mapping.setter
@@ -456,8 +461,8 @@ class ConfigurableTranslator(Translator):
         :param value: Mapping value to set.
         """
         link_control = self.services_mapping[RequestSID.LinkControl]
-        link_control.request_structure[0].children[1].values_mapping = value
-        link_control.response_structure[0].children[1].values_mapping = value
+        link_control.request_structure[0].children[1].values_mapping = value  # type: ignore
+        link_control.response_structure[0].children[1].values_mapping = value  # type: ignore
 
     @property
     def rid_mapping(self) -> Mapping[int, str] | None:
@@ -465,7 +470,7 @@ class ConfigurableTranslator(Translator):
         routine_control = self.services_mapping.get(RequestSID.RoutineControl, None)
         if routine_control is None:
             return None
-        rid: MappingDataRecord = routine_control.request_structure[1]
+        rid: MappingDataRecord = routine_control.request_structure[1]  # type: ignore
         return rid.values_mapping
 
     @rid_mapping.setter
@@ -476,7 +481,7 @@ class ConfigurableTranslator(Translator):
         :param value: Mapping value to set.
         """
         routine_control = self.services_mapping[RequestSID.RoutineControl]
-        rid: MappingDataRecord = routine_control.request_structure[1]
+        rid: MappingDataRecord = routine_control.request_structure[1]  # type: ignore
         rid.values_mapping = value
 
     @property
@@ -485,7 +490,7 @@ class ConfigurableTranslator(Translator):
         read_data_by_identifier = self.services_mapping.get(RequestSID.ReadDataByIdentifier, None)
         if read_data_by_identifier is None:
             return None
-        did: MappingDataRecord = read_data_by_identifier.request_structure[0]
+        did: MappingDataRecord = read_data_by_identifier.request_structure[0]  # type: ignore
         return did.values_mapping
 
     @did_mapping.setter
@@ -497,54 +502,61 @@ class ConfigurableTranslator(Translator):
         """
         # ReadDataByIdentifier
         read_data_by_identifier = self.services_mapping[RequestSID.ReadDataByIdentifier]
-        read_data_by_identifier.request_structure[0].values_mapping = value  # did_mapping value is stored here
+        read_data_by_identifier.request_structure[0].values_mapping = (  # type: ignore
+            value)  # did_mapping value is stored here
         for did in read_data_by_identifier.response_structure[::2]:
-            did.values_mapping = value
+            did.values_mapping = value  # type: ignore
         # WriteDataByIdentifier
         write_data_by_identifier = self.services_mapping.get(RequestSID.WriteDataByIdentifier, None)
         if write_data_by_identifier is not None:
-            write_data_by_identifier.request_structure[0].values_mapping = value
-            write_data_by_identifier.response_structure[0].values_mapping = value
+            write_data_by_identifier.request_structure[0].values_mapping = value  # type: ignore
+            write_data_by_identifier.response_structure[0].values_mapping = value  # type: ignore
         # ReadScalingDataByIdentifier
         read_scaling_data_by_identifier = self.services_mapping.get(RequestSID.ReadScalingDataByIdentifier, None)
         if read_scaling_data_by_identifier is not None:
-            read_scaling_data_by_identifier.request_structure[0].values_mapping = value
-            read_scaling_data_by_identifier.response_structure[0].values_mapping = value
+            read_scaling_data_by_identifier.request_structure[0].values_mapping = value  # type: ignore
+            read_scaling_data_by_identifier.response_structure[0].values_mapping = value  # type: ignore
         # DynamicallyDefineDataIdentifier
         dynamically_define_data_identifier = self.services_mapping.get(RequestSID.DynamicallyDefineDataIdentifier, None)
         if dynamically_define_data_identifier is not None:
-            dynamically_define_data_identifier.request_structure[1].mapping[0x01][0].values_mapping = value
-            dynamically_define_data_identifier.request_structure[1].mapping[0x01][1].children[0].values_mapping = value
-            dynamically_define_data_identifier.request_structure[1].mapping[0x02][0].values_mapping = value
-            dynamically_define_data_identifier.request_structure[1].mapping[0x03][0].values_mapping = value
-            dynamically_define_data_identifier.response_structure[1].mapping[0x01][0].values_mapping = value
-            dynamically_define_data_identifier.response_structure[1].mapping[0x02][0].values_mapping = value
-            dynamically_define_data_identifier.response_structure[1].mapping[0x03][0].values_mapping = value
+            dynamically_define_data_identifier.request_structure[1].mapping[0x01][0].values_mapping = (  # type: ignore
+                value)
+            dynamically_define_data_identifier.request_structure[1].mapping[0x01][1].children[0].values_mapping = value  # type: ignore  # pylint: disable=line-too-long
+            dynamically_define_data_identifier.request_structure[1].mapping[0x02][0].values_mapping = (  # type: ignore
+                value)
+            dynamically_define_data_identifier.request_structure[1].mapping[0x03][0].values_mapping = (  # type: ignore
+                value)
+            dynamically_define_data_identifier.response_structure[1].mapping[0x01][0].values_mapping = (  # type: ignore
+                value)
+            dynamically_define_data_identifier.response_structure[1].mapping[0x02][0].values_mapping = (  # type: ignore
+                value)
+            dynamically_define_data_identifier.response_structure[1].mapping[0x03][0].values_mapping = (  # type: ignore
+                value)
         # InputOutputControlByIdentifier
         input_output_control_by_identifier = self.services_mapping.get(RequestSID.InputOutputControlByIdentifier, None)
         if input_output_control_by_identifier is not None:
-            input_output_control_by_identifier.request_structure[0].values_mapping = value
-            input_output_control_by_identifier.response_structure[0].values_mapping = value
+            input_output_control_by_identifier.request_structure[0].values_mapping = value  # type: ignore
+            input_output_control_by_identifier.response_structure[0].values_mapping = value  # type: ignore
         # ReadDTCInformation
         read_dtc_information = self.services_mapping.get(RequestSID.ReadDTCInformation, None)
         if read_dtc_information is not None:
-            mapping = dict(read_dtc_information.response_structure[1].mapping)
+            mapping = dict(read_dtc_information.response_structure[1].mapping)  # type: ignore
             mapping[0x04] = (DTC_AND_STATUS, *self.__dtc_snapshot_records)
             mapping[0x05] = self.__dtc_stored_data_records
             mapping[0x18] = (MEMORY_SELECTION,
                              DTC_AND_STATUS,
                              *self.__dtc_snapshot_records)
-            read_dtc_information.response_structure[1].mapping = mapping
+            read_dtc_information.response_structure[1].mapping = mapping  # type: ignore
         # ResponseOnEvent
         response_on_event = self.services_mapping.get(RequestSID.ResponseOnEvent, None)
         if response_on_event is not None:
-            response_on_event.request_structure[1].mapping[0x03][1].children[0].values_mapping = value
-            response_on_event.request_structure[1].mapping[0x07][1].children[0].values_mapping = value
-            response_on_event.response_structure[1].mapping[0x03][2].children[0].values_mapping = value
-            response_on_event.response_structure[1].mapping[0x07][2].children[0].values_mapping = value
-            mapping = dict(response_on_event.response_structure[1].mapping)
+            response_on_event.request_structure[1].mapping[0x03][1].children[0].values_mapping = value  # type: ignore
+            response_on_event.request_structure[1].mapping[0x07][1].children[0].values_mapping = value  # type: ignore
+            response_on_event.response_structure[1].mapping[0x03][2].children[0].values_mapping = value  # type: ignore
+            response_on_event.response_structure[1].mapping[0x07][2].children[0].values_mapping = value  # type: ignore
+            mapping = dict(response_on_event.response_structure[1].mapping)  # type: ignore
             mapping[0x04] = (NUMBER_OF_ACTIVATED_EVENTS, self.__conditional_activated_events)
-            response_on_event.response_structure[1].mapping = mapping
+            response_on_event.response_structure[1].mapping = mapping  # type: ignore
 
     @property
     def did_data_mapping(self) -> Mapping[int, MessageStructureAlias] | None:
@@ -577,20 +589,20 @@ class ConfigurableTranslator(Translator):
         # InputOutputControlByIdentifier
         input_output_control_by_identifier = self.services_mapping.get(RequestSID.InputOutputControlByIdentifier, None)
         if input_output_control_by_identifier is not None:
-            input_output_control_by_identifier.request_structure[1].formula \
-                = self.__get_input_output_control_by_identifier_request
-            input_output_control_by_identifier.response_structure[1].formula \
-                = self.__get_input_output_control_by_identifier_response
+            input_output_control_by_identifier.request_structure[1].formula = (  # type: ignore
+                self.__get_input_output_control_by_identifier_request)
+            input_output_control_by_identifier.response_structure[1].formula = (  # type: ignore
+                self.__get_input_output_control_by_identifier_response)
         # ReadDTCInformation
         read_dtc_information = self.services_mapping.get(RequestSID.ReadDTCInformation, None)
         if read_dtc_information is not None:
-            mapping = dict(read_dtc_information.response_structure[1].mapping)
+            mapping = dict(read_dtc_information.response_structure[1].mapping)  # type: ignore
             mapping[0x04] = (DTC_AND_STATUS, *self.__dtc_snapshot_records)
             mapping[0x05] = self.__dtc_stored_data_records
             mapping[0x18] = (MEMORY_SELECTION,
                              DTC_AND_STATUS,
                              *self.__dtc_snapshot_records)
-            read_dtc_information.response_structure[1].mapping = mapping
+            read_dtc_information.response_structure[1].mapping = mapping  # type: ignore
 
     @property
     def __did_records(self) -> tuple[ConditionalFormulaDataRecord, ...]:
@@ -651,7 +663,7 @@ class ConfigurableTranslator(Translator):
         response_on_event = self.services_mapping.get(RequestSID.ResponseOnEvent, None)
         if response_on_event is None:
             raise ValueError("ResponseOnEvent service is not defined in this Translator.")
-        return response_on_event.request_structure[1][0x00][0]
+        return response_on_event.request_structure[1][0x00][0]  # type: ignore
 
     @property
     def __event_type(self) -> RawDataRecord:
@@ -667,7 +679,7 @@ class ConfigurableTranslator(Translator):
         response_on_event = self.services_mapping.get(RequestSID.ResponseOnEvent, None)
         if response_on_event is None:
             raise ValueError("ResponseOnEvent service is not defined in this Translator.")
-        return response_on_event.request_structure[0].children[1]
+        return response_on_event.request_structure[0].children[1]  # type: ignore
 
     @property
     def __conditional_control_state(self) -> ConditionalFormulaDataRecord:
@@ -743,7 +755,7 @@ class ConfigurableTranslator(Translator):
                                          max_occurrences=None)
 
         def _get_did_data(did: int) -> tuple[RawDataRecord]:
-            data_records = self.did_data_mapping.get(did, None)
+            data_records: Sequence[AbstractDataRecord] = self.did_data_mapping.get(did, None)  # type: ignore
             if data_records is None:
                 raise ValueError(f"No data structure defined for DID 0x{did:04X}.")
             total_length = 0
@@ -789,7 +801,7 @@ class ConfigurableTranslator(Translator):
                                      max_occurrences=data_record.max_occurrences)
 
         def _get_did_data_mask(did: int) -> tuple[RawDataRecord]:
-            data_records = self.did_data_mapping.get(did, None)
+            data_records = self.did_data_mapping.get(did, None)  # type: ignore
             if data_records is None:
                 raise ValueError(f"No data structure defined for DID 0x{did:04X}.")
             total_length = 0
@@ -931,7 +943,7 @@ class ConfigurableTranslator(Translator):
             event_window_time = self.__get_event_window_time(event_number)
             service_to_respond = get_service_to_respond(event_number)
             data_records.append(self.__get_event_type_of_active_event(event_number))
-            mapping = {
+            mapping: dict[int, MessageStructureAlias] = {
                 0x01: (event_window_time,
                        get_event_type_record_01(event_number),
                        service_to_respond),
@@ -988,10 +1000,10 @@ class ConfigurableTranslator(Translator):
         response_on_event = self.services_mapping.get(RequestSID.ResponseOnEvent, None)
         if response_on_event is None:
             raise ValueError("ResponseOnEvent service is not defined in this Translator.")
-        conditional_response = response_on_event.response_structure[1].mapping.get(event, None)
+        conditional_response = response_on_event.response_structure[1].mapping.get(event, None)  # type: ignore
         if conditional_response is None or len(conditional_response) < 3:
             return None
-        event_type_record = deepcopy(conditional_response[2])
+        event_type_record: RawDataRecord = deepcopy(conditional_response[2])
         event_type_record.name = f"{event_type_record.name}#{event_number}"
         return event_type_record
 
@@ -1016,11 +1028,11 @@ class ConfigurableTranslator(Translator):
         response_on_event = self.services_mapping.get(RequestSID.ResponseOnEvent, None)
         if response_on_event is None:
             raise ValueError("ResponseOnEvent service is not defined in this Translator.")
-        conditional_response = response_on_event.response_structure[1].mapping.get(0x09, None)
+        conditional_response = response_on_event.response_structure[1].mapping.get(0x09, None)  # type: ignore
         if conditional_response is None or len(conditional_response) < 4:
             return None
-        event_type_record_continuation = deepcopy(conditional_response[3])
+        event_type_record_continuation: ConditionalMappingDataRecord = deepcopy(conditional_response[3])
         for data_records in event_type_record_continuation.mapping.values():
             for data_record in data_records:
-                data_record.name = f"{data_record.name}#{event_number}"
+                data_record.name = f"{data_record.name}#{event_number}"  # type: ignore
         return event_type_record_continuation
