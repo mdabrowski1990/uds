@@ -635,23 +635,12 @@ class TestConfigurableTranslator:
         assert (ConfigurableTranslator.did_data_mapping.fget(self.mock_translator)
                 == self.mock_translator._ConfigurableTranslator__did_data_mapping)
 
-    def test_did_data_mapping__set__rdbi_only(self):
+    def test_did_data_mapping__set__none(self):
         self.mock_translator.services_mapping = {
-            RequestSID.ReadDataByIdentifier: MagicMock(response_structure = 10 * [Mock()]),
         }
-        mock_rdbi_response_structure = 52 * (Mock(),)
-        self.mock_translator._ConfigurableTranslator__get_did_record.side_effect = [
-            mock_rdbi_response_structure[:2],
-            mock_rdbi_response_structure
-        ]
         mock_value = {Mock(): Mock()}
         assert ConfigurableTranslator.did_data_mapping.fset(self.mock_translator, mock_value) is None
         assert self.mock_translator._ConfigurableTranslator__did_data_mapping == self.mock_mapping_proxy_type.return_value
-        assert (self.mock_translator.services_mapping[RequestSID.ReadDataByIdentifier].response_structure
-                == mock_rdbi_response_structure)
-        self.mock_translator._ConfigurableTranslator__get_did_record.assert_has_calls(
-            [call(did_count=1, record_number=None, optional=False),
-             call(did_count=REPEATED_DATA_RECORDS_NUMBER, record_number=None, optional=True)])
         self.mock_mapping_proxy_type.assert_called_once_with(mock_value)
 
     def test_did_data_mapping__set__all(self):

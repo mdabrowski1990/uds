@@ -570,11 +570,12 @@ class ConfigurableTranslator(Translator):
         """
         self.__did_data_mapping = MappingProxyType(value)
         # ReadDataByIdentifier
-        read_data_by_identifier = self.services_mapping[RequestSID.ReadDataByIdentifier]
-        read_data_by_identifier.response_structure = (
-            *self.__get_did_record(did_count=1, record_number=None, optional=False),
-            *self.__get_did_record(did_count=REPEATED_DATA_RECORDS_NUMBER, record_number=None, optional=True)[2:]
-        )
+        read_data_by_identifier = self.services_mapping.get(RequestSID.ReadDataByIdentifier, None)
+        if read_data_by_identifier is not None:
+            read_data_by_identifier.response_structure = (
+                *self.__get_did_record(did_count=1, record_number=None, optional=False),
+                *self.__get_did_record(did_count=REPEATED_DATA_RECORDS_NUMBER, record_number=None, optional=True)[2:]
+            )
         # WriteDataByIdentifier
         write_data_by_identifier = self.services_mapping.get(RequestSID.WriteDataByIdentifier, None)
         if write_data_by_identifier is not None:
