@@ -93,6 +93,15 @@ docs = [
 docs-checks = [
     "doc8 == 1.1.1",
 ]
+dev = [
+    "pre-commit",
+    "uds[test]",
+    "uds[static-code-analysis]",
+    "uds[dependency-scan]",
+    "uds[sorting-imports]",
+    "uds[docs]",
+    "uds[docs-checks]",
+]
 
 
 [build-system]
@@ -143,7 +152,7 @@ asyncio_mode = "strict"
 
 
 [tool.isort]
-src_paths = ["uds"]
+src_paths = ["uds", "tests", "examples"]
 line_length = 120
 use_parentheses = true
 include_trailing_comma = true
