@@ -9,8 +9,8 @@ Handlers for :ref:`CAN Frame <knowledge-base-can-frame>` fields:
 
 __all__ = ["CanVersion", "CanIdHandler", "CanDlcHandler", "DEFAULT_FILLER_BYTE"]
 
-from collections.abc import Mapping
 from bisect import bisect_left
+from collections.abc import Mapping
 from types import MappingProxyType
 
 from uds.utilities import ValidatedEnum

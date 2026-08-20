@@ -2,10 +2,9 @@
 
 __all__ = ["AbstractAddressingInformation"]
 
-from types import MappingProxyType
 from abc import ABC, abstractmethod
 from collections.abc import Mapping
-
+from types import MappingProxyType
 from typing import Any
 
 from uds.utilities import ReassignmentError
