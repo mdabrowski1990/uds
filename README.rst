@@ -98,12 +98,12 @@ Contact
 
 .. _python-can: https://github.com/hardbyte/python-can
 
-.. |CI| image:: https://github.com/mdabrowski1990/uds/actions/workflows/testing.yml/badge.svg?branch=main
-   :target: https://github.com/mdabrowski1990/uds/actions/workflows/testing.yml
+.. |CI| image:: https://github.com/mdabrowski1990/uds/actions/workflows/CI.yml/badge.svg?branch=main
+   :target: https://github.com/mdabrowski1990/uds/actions/workflows/CI.yml
    :alt: Continuous Integration Status
 
-.. |SecurityScan| image:: https://github.com/mdabrowski1990/uds/actions/workflows/codeql-analysis.yml/badge.svg?branch=main
-   :target: https://github.com/mdabrowski1990/uds/actions/workflows/codeql-analysis.yml
+.. |SecurityScan| image:: https://github.com/mdabrowski1990/uds/actions/workflows/SecurityScan.yml/badge.svg?branch=main
+   :target: https://github.com/mdabrowski1990/uds/actions/workflows/SecurityScan.yml
    :alt: Security Scan Status
 
 .. |ReadTheDocs| image:: https://readthedocs.org/projects/uds/badge/?version=latest
