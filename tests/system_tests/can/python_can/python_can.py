@@ -4,9 +4,9 @@ from threading import Timer
 from time import perf_counter, sleep
 
 import pytest
-from tests.system_tests import BaseSystemTests
 
 from can import Bus, Message
+from tests.system_tests import BaseSystemTests
 from uds.addressing import AddressingType, TransmissionDirection
 from uds.can import (
     CanAddressingFormat,

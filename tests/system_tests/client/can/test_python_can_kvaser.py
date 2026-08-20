@@ -1,9 +1,8 @@
 from random import choice
 from time import sleep
 
-from tests.conftest import make_can_addressing_information
-
 from can import Bus
+from tests.conftest import make_can_addressing_information
 from uds.can import CanAddressingFormat, DefaultFlowControlParametersGenerator, PythonCanTransportInterface
 from uds.utilities import TimeMillisecondsAlias
 

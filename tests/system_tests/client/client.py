@@ -11,8 +11,8 @@ from datetime import datetime
 from time import perf_counter, sleep
 
 import pytest
-from tests.system_tests import BaseSystemTests
 
+from tests.system_tests import BaseSystemTests
 from uds.addressing import AddressingType, TransmissionDirection
 from uds.client import Client
 from uds.message import RequestSID, UdsMessage, UdsMessageRecord
