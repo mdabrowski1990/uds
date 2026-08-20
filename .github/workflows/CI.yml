@@ -22,6 +22,7 @@ jobs:
         uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python-version }}
+          persist-credentials: false
 
       - name: Install project dependencies
         run: |
@@ -54,6 +55,7 @@ jobs:
         uses: actions/setup-python@v7
         with:
           python-version: 3.13
+          persist-credentials: false
 
       - name: Install project dependencies
         run: |
@@ -84,7 +86,7 @@ jobs:
           pytest tests/software_tests --cov-report=xml --cov=uds -m "not integration and not performance" --cov-branch
 
       - name: Upload unit tests report with branch coverage [CodeCov]
-        uses: codecov/codecov-action@v6
+        uses: codecov/codecov-action@v7
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         with:
@@ -98,7 +100,7 @@ jobs:
           pytest tests/software_tests --cov-report=xml --cov=uds -m "integration"
 
       - name: Upload integration tests report with instruction coverage [CodeCov]
-        uses: codecov/codecov-action@v6
+        uses: codecov/codecov-action@v7
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         with:
@@ -112,7 +114,7 @@ jobs:
           pytest tests/software_tests --cov-report=xml --cov=uds -m "integration" --cov-branch
 
       - name: Upload integration tests report with branch coverage [CodeCov]
-        uses: codecov/codecov-action@v6
+        uses: codecov/codecov-action@v7
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         with:
@@ -137,6 +139,7 @@ jobs:
         uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python-version }}
+          persist-credentials: false
 
       - name: Install project dependencies
         run: |
@@ -168,6 +171,7 @@ jobs:
         uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python-version }}
+          persist-credentials: false
 
       - name: Install external packages used for dependency scanning
         run: |
@@ -192,6 +196,7 @@ jobs:
         uses: actions/setup-python@v7
         with:
           python-version: 3.13
+          persist-credentials: false
 
       - name: Install project dependencies
         run: |
@@ -222,6 +227,7 @@ jobs:
         uses: actions/setup-python@v7
         with:
           python-version: 3.13
+          persist-credentials: false
 
       - name: Install project dependencies
         run: |
