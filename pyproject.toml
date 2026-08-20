@@ -95,12 +95,12 @@ docs-checks = [
 ]
 dev = [
     "pre-commit",
-    "uds[test]",
-    "uds[static-code-analysis]",
-    "uds[dependency-scan]",
-    "uds[sorting-imports]",
-    "uds[docs]",
-    "uds[docs-checks]",
+    "py-uds[test]",
+    "py-uds[static-code-analysis]",
+    "py-uds[dependency-scan]",
+    "py-uds[sorting-imports]",
+    "py-uds[docs]",
+    "py-uds[docs-checks]",
 ]
 
 
