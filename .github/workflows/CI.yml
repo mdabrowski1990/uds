@@ -22,7 +22,6 @@ jobs:
         uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python-version }}
-          persist-credentials: false
 
       - name: Install project dependencies
         run: |
@@ -55,7 +54,6 @@ jobs:
         uses: actions/setup-python@v7
         with:
           python-version: 3.13
-          persist-credentials: false
 
       - name: Install project dependencies
         run: |
@@ -139,7 +137,6 @@ jobs:
         uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python-version }}
-          persist-credentials: false
 
       - name: Install project dependencies
         run: |
@@ -171,7 +168,6 @@ jobs:
         uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python-version }}
-          persist-credentials: false
 
       - name: Install external packages used for dependency scanning
         run: |
@@ -196,7 +192,6 @@ jobs:
         uses: actions/setup-python@v7
         with:
           python-version: 3.13
-          persist-credentials: false
 
       - name: Install project dependencies
         run: |
@@ -227,7 +222,6 @@ jobs:
         uses: actions/setup-python@v7
         with:
           python-version: 3.13
-          persist-credentials: false
 
       - name: Install project dependencies
         run: |
