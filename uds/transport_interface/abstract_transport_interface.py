@@ -5,12 +5,46 @@ __all__ = ["AbstractTransportInterface"]
 from abc import ABC, abstractmethod
 from asyncio import AbstractEventLoop
 from typing import Any
+from warnings import warn
 
+from aenum import StrEnum as AStrEnum
+
+from can.interfaces.canalystii import CANalystIIBus
+from can.interfaces.cantact import CantactBus
+from can.interfaces.etas import EtasBus
+from can.interfaces.gs_usb import GsUsbBus
+from can.interfaces.ics_neovi import NeoViBus
+from can.interfaces.iscan import IscanBus
+from can.interfaces.ixxat import IXXATBus
+from can.interfaces.kvaser import KvaserBus
+from can.interfaces.neousys import NeousysBus
+from can.interfaces.nican import NicanBus
+from can.interfaces.nixnet import NiXNETcanBus
+from can.interfaces.pcan import PcanBus
+from can.interfaces.robotell import robotellBus
+from can.interfaces.seeedstudio import SeeedBus
+from can.interfaces.serial import SerialBus
+from can.interfaces.slcan import slcanBus
+from can.interfaces.socketcan import SocketcanBus
+from can.interfaces.socketcand import SocketCanDaemonBus
+from can.interfaces.systec import UcanBus
+from can.interfaces.udp_multicast import UdpMulticastBus
+from can.interfaces.usb2can import Usb2canBus
+from can.interfaces.vector import VectorBus
+from can.interfaces.virtual import VirtualBus
 from uds.addressing import AbstractAddressingInformation
 from uds.message import UdsMessage, UdsMessageRecord
 from uds.packet import AbstractPacket, AbstractPacketRecord
 from uds.segmentation import AbstractSegmenter
-from uds.utilities import ReassignmentError, TimeMillisecondsAlias, TimeSync
+from uds.utilities import ReassignmentError, TimeMillisecondsAlias, TimeSync, ValidatedEnum
+
+
+class SyncType(ValidatedEnum, AStrEnum):
+    """Type of synchronization with python time."""
+
+    NONE: "SyncType" = "no synchronization"
+    START: "SyncType" = "synchronizes once at start"
+    RUNTIME: "SyncType" = "uses python time"
 
 
 class AbstractTransportInterface(ABC):
@@ -29,6 +63,22 @@ class AbstractTransportInterface(ABC):
         """
         self.network_manager = network_manager
         self.__time_sync: TimeSync = TimeSync()
+
+    @property
+    @abstractmethod
+    def sync_type(self) -> SyncType:
+        """Type of synchronization with python time used by this Transport Interface."""
+        if isinstance(self.network_manager, (SerialBus, Usb2canBus, EtasBus, CANalystIIBus, CantactBus, IXXATBus,
+                                             NicanBus, IscanBus, UdpMulticastBus, NeoViBus, robotellBus, UcanBus,
+                                             SeeedBus, GsUsbBus, NiXNETcanBus, NeousysBus, SocketCanDaemonBus)):
+            return SyncType.NONE
+        if isinstance(self.network_manager, (VectorBus, KvaserBus)):
+            return SyncType.START
+        if isinstance(self.network_manager, (PcanBus, SocketcanBus, VirtualBus, slcanBus, )):
+            return SyncType.RUNTIME
+        warn(message="Unclassified python-can Bus object is used.",
+             category=RuntimeWarning)
+        return SyncType.NONE
 
     @property
     def time_sync(self) -> TimeSync:
