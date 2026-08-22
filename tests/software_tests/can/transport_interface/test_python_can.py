@@ -8,6 +8,10 @@ import pytest
 from mock import AsyncMock, MagicMock, Mock, call, patch
 
 from can import Bus
+from can.interfaces.kvaser import KvaserBus
+from can.interfaces.serial import SerialBus
+from can.interfaces.vector import VectorBus
+from can.interfaces.virtual import VirtualBus
 from uds.addressing import AddressingType
 from uds.can import DEFAULT_FILLER_BYTE, CanAddressingInformation, DefaultFlowControlParametersGenerator
 from uds.can.transport_interface.python_can import (
@@ -23,6 +27,7 @@ from uds.can.transport_interface.python_can import (
     MessageTransmissionNotStartedError,
     Notifier,
     PythonCanTransportInterface,
+    SyncType,
     TransmissionDirection,
     UdsMessage,
 )
@@ -208,6 +213,71 @@ class TestPythonCanTransportInterface:
         self.mock_can_transport_interface._PythonCanTransportInterface__async_rx_frames_buffer.stop.assert_called_once_with()
         self.mock_can_transport_interface._PythonCanTransportInterface__async_tx_frames_buffer.stop.assert_called_once_with()
         self.mock_can_transport_interface._PythonCanTransportInterface__async_fc_frames_buffer.stop.assert_called_once_with()
+
+    # sync_type
+
+    def test_sync_type__get__unrecognized(self):
+        self.mock_can_transport_interface.network_manager = Mock()
+        with pytest.raises(RuntimeError):
+            PythonCanTransportInterface.sync_type.fget(self.mock_can_transport_interface)
+
+    @pytest.mark.parametrize("bus, backend", [
+        (Mock(spec=SerialBus), "serial"),
+        (Mock(spec=KvaserBus), "kvaser"),
+        (Mock(spec=VectorBus), "vector"),
+    ])
+    def test_sync_type__get__no_sync(self, bus, backend):
+        mock_is_in = Mock(return_value=True)
+        self.mock_can_transport_interface.network_manager = bus
+        self.mock_can_transport_interface._NONE_SYNC_TYPES = MagicMock(__contains__=mock_is_in)
+        self.mock_can_transport_interface._START_SYNC_TYPES = MagicMock(__contains__=Mock(return_value=False))
+        self.mock_can_transport_interface._RUNTIME_SYNC_TYPES = MagicMock(__contains__=Mock(return_value=False))
+        assert PythonCanTransportInterface.sync_type.fget(self.mock_can_transport_interface) == SyncType.NONE
+        mock_is_in.assert_called_once_with(backend)
+        self.mock_warn.assert_not_called()
+
+    @pytest.mark.parametrize("bus, backend", [
+        (Mock(spec=SerialBus), "serial"),
+        (Mock(spec=KvaserBus), "kvaser"),
+        (Mock(spec=VectorBus), "vector"),
+    ])
+    def test_sync_type__get__start_sync(self, bus, backend):
+        mock_is_in = Mock(return_value=True)
+        self.mock_can_transport_interface.network_manager = bus
+        self.mock_can_transport_interface._NONE_SYNC_TYPES = MagicMock(__contains__=Mock(return_value=False))
+        self.mock_can_transport_interface._START_SYNC_TYPES = MagicMock(__contains__=mock_is_in)
+        self.mock_can_transport_interface._RUNTIME_SYNC_TYPES = MagicMock(__contains__=Mock(return_value=False))
+        assert PythonCanTransportInterface.sync_type.fget(self.mock_can_transport_interface) == SyncType.START
+        mock_is_in.assert_called_once_with(backend)
+        self.mock_warn.assert_not_called()
+
+    @pytest.mark.parametrize("bus, backend", [
+        (Mock(spec=SerialBus), "serial"),
+        (Mock(spec=KvaserBus), "kvaser"),
+        (Mock(spec=VectorBus), "vector"),
+    ])
+    def test_sync_type__get__runtime_sync(self, bus, backend):
+        mock_is_in = Mock(return_value=True)
+        self.mock_can_transport_interface.network_manager = bus
+        self.mock_can_transport_interface._NONE_SYNC_TYPES = MagicMock(__contains__=Mock(return_value=False))
+        self.mock_can_transport_interface._START_SYNC_TYPES = MagicMock(__contains__=Mock(return_value=False))
+        self.mock_can_transport_interface._RUNTIME_SYNC_TYPES = MagicMock(__contains__=mock_is_in)
+        assert PythonCanTransportInterface.sync_type.fget(self.mock_can_transport_interface) == SyncType.RUNTIME
+        mock_is_in.assert_called_once_with(backend)
+        self.mock_warn.assert_not_called()
+
+    @pytest.mark.parametrize("bus, backend", [
+        (Mock(spec=SerialBus), "serial"),
+        (Mock(spec=KvaserBus), "kvaser"),
+        (Mock(spec=VectorBus), "vector"),
+    ])
+    def test_sync_type__get__undefined(self, bus, backend):
+        self.mock_can_transport_interface.network_manager = bus
+        self.mock_can_transport_interface._NONE_SYNC_TYPES = MagicMock(__contains__=Mock(return_value=False))
+        self.mock_can_transport_interface._START_SYNC_TYPES = MagicMock(__contains__=Mock(return_value=False))
+        self.mock_can_transport_interface._RUNTIME_SYNC_TYPES = MagicMock(__contains__=Mock(return_value=False))
+        assert PythonCanTransportInterface.sync_type.fget(self.mock_can_transport_interface) == SyncType.NONE
+        self.mock_warn.assert_called_once()
 
     # notifier
 
@@ -1727,14 +1797,16 @@ class TestPythonCanTransportInterface:
     # is_supported_network_manager
 
     @pytest.mark.parametrize("value", ["something", Mock()])
-    @patch(f"{SCRIPT_LOCATION}.isinstance")
-    def test_is_supported_network_manager(self, mock_isinstance, value):
-        assert PythonCanTransportInterface.is_supported_network_manager(value) == mock_isinstance.return_value
-        mock_isinstance.assert_called_once_with(value, BusABC)
+    def test_is_supported_network_manager__false(self, value):
+        assert PythonCanTransportInterface.is_supported_network_manager(value) is False
+
+    @pytest.mark.parametrize("value", [Mock(spec=KvaserBus), Mock(spec=VectorBus), Mock(spec=VirtualBus)])
+    def test_is_supported_network_manager__true(self, value):
+        assert PythonCanTransportInterface.is_supported_network_manager(value) is True
 
     # send_packet
 
-    @pytest.mark.parametrize("packet", ["something", Mock()])
+    @pytest.mark.parametrize("packet", ["something", MagicMock()])
     @patch(f"{SCRIPT_LOCATION}.isinstance")
     def test_send_packet__type_error(self, mock_isinstance, packet):
         mock_isinstance.return_value = False

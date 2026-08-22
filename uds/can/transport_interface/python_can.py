@@ -14,8 +14,10 @@ from warnings import warn
 from can import AsyncBufferedReader, BufferedReader, BusABC
 from can import Message as PythonCanFrame
 from can import Notifier
+from can.interfaces import BACKENDS
 from uds.addressing import AddressingType, TransmissionDirection
 from uds.message import UdsMessage, UdsMessageRecord
+from uds.transport_interface.abstract_transport_interface import SyncType
 from uds.utilities import (
     MessageTransmissionNotStartedError,
     NewMessageReceptionWarning,
@@ -37,6 +39,8 @@ class PythonCanTransportInterface(AbstractCanTransportInterface):
     .. note:: Documentation for python-can package: https://python-can.readthedocs.io/
     """
 
+    network_manager: BusABC
+
     _TX_TOLERANCE: float = 0.01  # s
     """Tolerance of CAN frames transmission."""
     _MAX_TX_WAIT: float = 0.005  # s
@@ -46,7 +50,15 @@ class PythonCanTransportInterface(AbstractCanTransportInterface):
     """Maximal timeout value accepted by python-can listeners."""
     _MIN_NOTIFIER_TIMEOUT: float = 0.001  # s
     """Minimal timeout for notifiers that does not cause malfunctioning of listeners."""
-    network_manager: BusABC
+
+    _NONE_SYNC_TYPES: frozenset[str] = frozenset({"serial", "usb2can", "ixxat", "nican", "iscan", "udp_multicast",
+                                                  "neovi", "robotell", "canalystii", "systec", "seeedstudio", "cantact",
+                                                  "gs_usb", "nixnet", "neousys", "etas", "socketcand"})
+    """Python-can interfaces that do not synchronize with python time."""
+    _START_SYNC_TYPES: frozenset[str] = frozenset({"kvaser", "vector"})
+    """Python-can interfaces that synchronize with python time at creation."""
+    _RUNTIME_SYNC_TYPES: frozenset[str] = frozenset({"socketcan", "pcan", "virtual", "slcan"})
+    """Python-can interfaces that uses python time or synchronizes during runtime."""
 
     def __init__(self,
                  network_manager: BusABC,
@@ -110,6 +122,35 @@ class PythonCanTransportInterface(AbstractCanTransportInterface):
         self.__async_rx_frames_buffer.stop()
         self.__async_tx_frames_buffer.stop()
         self.__async_fc_frames_buffer.stop()
+
+    @property
+    def sync_type(self) -> SyncType:
+        """
+        Get type of synchronization with python time used by this Transport Interface.
+
+        :raise RuntimeError: Cannot recognize python-can backend used.
+
+        :return:
+        """
+        network_manager_class_name = self.network_manager.__class__.__name__
+        network_manager_module = self.network_manager.__class__.__module__
+        used_backend: str | None = None
+        for backend_name, (module_path, class_name) in BACKENDS.items():
+            if network_manager_module.startswith(module_path) and network_manager_class_name == class_name:
+                used_backend = backend_name
+                break
+        if used_backend is None:
+            raise RuntimeError(f"Python-can backed used as network_manager ({self.network_manager}) "
+                               f"could not be recognised.")
+        if used_backend in self._NONE_SYNC_TYPES:
+            return SyncType.NONE
+        if used_backend in self._START_SYNC_TYPES:
+            return SyncType.START
+        if used_backend in self._RUNTIME_SYNC_TYPES:
+            return SyncType.RUNTIME
+        warn(message="Unclassified python-can Bus object is used as network_manager.",
+             category=RuntimeWarning)
+        return SyncType.NONE
 
     @property
     def notifier(self) -> Notifier | None:
@@ -815,9 +856,16 @@ class PythonCanTransportInterface(AbstractCanTransportInterface):
 
         :param bus_manager: Value to check.
 
-        :return: True if provided bus object is compatible with this Transport Interface, False otherwise.
+        :return: True if provided bus object is python-can Bus object, False otherwise.
         """
-        return isinstance(bus_manager, BusABC)
+        if not isinstance(bus_manager, BusABC):
+            return False
+        network_manager_class_name = bus_manager.__class__.__name__
+        network_manager_module = bus_manager.__class__.__module__
+        for backend_name, (module_path, class_name) in BACKENDS.items():
+            if network_manager_module.startswith(module_path) and network_manager_class_name == class_name:
+                return True
+        return False
 
     def send_packet(self, packet: CanPacket) -> CanPacketRecord:  # type: ignore
         """
