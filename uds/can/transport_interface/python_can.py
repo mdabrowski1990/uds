@@ -24,6 +24,7 @@ from uds.utilities import (
     TimeMillisecondsAlias,
     TimestampAlias,
     UnexpectedPacketReceptionWarning,
+    validate_timeout,
 )
 
 from ..addressing import AbstractCanAddressingInformation
@@ -984,7 +985,7 @@ class PythonCanTransportInterface(AbstractCanTransportInterface):
 
         :return: Record with historic information about received CAN packet.
         """
-        self._validate_timeout(timeout)
+        validate_timeout(timeout)
         self.__setup_sync_listening()
         return self._wait_for_rx_packet(buffer=self.__rx_frames_buffer, timeout=timeout)
 
@@ -1000,7 +1001,7 @@ class PythonCanTransportInterface(AbstractCanTransportInterface):
 
         :return: Record with historic information about received CAN packet.
         """
-        self._validate_timeout(timeout)
+        validate_timeout(timeout)
         loop = loop if isinstance(loop, AbstractEventLoop) else get_running_loop()
         self.__setup_async_listening(loop=loop)
         return await self._async_wait_for_rx_packet(buffer=self.__async_rx_frames_buffer, timeout=timeout)
@@ -1111,8 +1112,8 @@ class PythonCanTransportInterface(AbstractCanTransportInterface):
         :return: Record with historic information about received UDS message.
         """
         timestamp_now = perf_counter()
-        self._validate_timeout(start_timeout)
-        self._validate_timeout(end_timeout)
+        validate_timeout(start_timeout)
+        validate_timeout(end_timeout)
         if start_timeout is not None:
             if end_timeout is not None and end_timeout < start_timeout:
                 timestamp_start_timeout = timestamp_now + end_timeout / 1000.
@@ -1163,8 +1164,8 @@ class PythonCanTransportInterface(AbstractCanTransportInterface):
         :return: Record with historic information about received UDS message.
         """
         timestamp_now = perf_counter()
-        self._validate_timeout(start_timeout)
-        self._validate_timeout(end_timeout)
+        validate_timeout(start_timeout)
+        validate_timeout(end_timeout)
         if start_timeout is not None:
             if end_timeout is not None and end_timeout < start_timeout:
                 timestamp_start_timeout = timestamp_now + end_timeout / 1000.
