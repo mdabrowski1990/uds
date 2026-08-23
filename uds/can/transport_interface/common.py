@@ -10,7 +10,7 @@ from warnings import warn
 from uds.addressing import TransmissionDirection
 from uds.message import UdsMessageRecord
 from uds.transport_interface import AbstractTransportInterface
-from uds.utilities import TimeMillisecondsAlias, ValueWarning
+from uds.utilities import TimeMillisecondsAlias, ValueWarning, validate_time
 
 from ..addressing import AbstractCanAddressingInformation
 from ..frame import CanVersion
@@ -275,14 +275,8 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
         Set timeout value for :ref:`N_As <knowledge-base-can-n-as>` time parameter.
 
         :param value: Value of timeout to set.
-
-        :raise TypeError: Provided value is not int or float type.
-        :raise ValueError: Provided value is less or equal to 0.
         """
-        if not isinstance(value, (int, float)):
-            raise TypeError(f"Provided time parameter value must be int or float type. Actual type: {type(value)}.")
-        if value <= 0:
-            raise ValueError(f"Provided time parameter value must be greater than 0. Actual value: {value}")
+        validate_time(value, accept_zero=False)
         if value != self.N_AS_TIMEOUT:
             warn(message="Non-default value of N_As timeout was set.",
                  category=ValueWarning)
@@ -312,14 +306,8 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
         Set timeout value for :ref:`N_Ar <knowledge-base-can-n-ar>` time parameter.
 
         :param value: Value of timeout to set.
-
-        :raise TypeError: Provided value is not int or float type.
-        :raise ValueError: Provided value is less or equal to 0.
         """
-        if not isinstance(value, (int, float)):
-            raise TypeError(f"Provided time parameter value must be int or float type. Actual type: {type(value)}.")
-        if value <= 0:
-            raise ValueError(f"Provided time parameter value must be greater than 0. Actual value: {value}")
+        validate_time(value, accept_zero=False)
         if value != self.N_AR_TIMEOUT:
             warn(message="Non-default value of N_Ar timeout was set.",
                  category=ValueWarning)
@@ -349,14 +337,8 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
         Set timeout value for :ref:`N_Bs <knowledge-base-can-n-bs>` time parameter.
 
         :param value: Value of timeout to set.
-
-        :raise TypeError: Provided value is not int or float type.
-        :raise ValueError: Provided value is less or equal to 0.
         """
-        if not isinstance(value, (int, float)):
-            raise TypeError(f"Provided time parameter value must be int or float type. Actual type: {type(value)}.")
-        if value <= 0:
-            raise ValueError(f"Provided time parameter value must be greater than 0. Actual value: {value}")
+        validate_time(value, accept_zero=False)
         if value != self.N_BS_TIMEOUT:
             warn(message="Non-default value of N_Bs timeout was set.",
                  category=ValueWarning)
@@ -391,15 +373,11 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
         Set the value of :ref:`N_Br <knowledge-base-can-n-br>` time parameter to use.
 
         :param value: The value to set.
-
-        :raise TypeError: Provided value is not int or float type.
-        :raise ValueError: Provided value is out of range (0 <= value < MAX N_Br).
         """
-        if not isinstance(value, (int, float)):
-            raise TypeError(f"Provided time parameter value must be int or float type. Actual type: {type(value)}.")
-        if not 0 <= value < self.n_br_max:
-            raise ValueError("Provided time parameter value is out of range. "
-                             f"Expected: 0 <= value < {self.n_br_max}. Actual value: {value}.")
+        validate_time(value, accept_zero=True)
+        if value >= self.n_br_max:
+            raise ValueError("Provided time parameter value is greater than N_Br Max value. "
+                             f"Expected: value < {self.n_br_max}. Actual value: {value}.")
         self.__n_br = value
 
     @property
@@ -435,16 +413,12 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
                 :ref:`Flow Control CAN packet <knowledge-base-can-flow-control>`
             - int/float type - timing value to be used regardless of a received
                 :ref:`STmin <knowledge-base-can-st-min>` value
-
-        :raise TypeError: Provided value is not int or float type.
-        :raise ValueError: Provided value is out of range (0 <= value < MAX N_Cs).
         """
         if value is not None:
-            if not isinstance(value, (int, float)):
-                raise TypeError(f"Provided time parameter value must be int or float type. Actual type: {type(value)}.")
-            if not 0 <= value < self.n_cs_max:
-                raise ValueError("Provided time parameter value is out of range. "
-                                 f"Expected: 0 <= value < {self.n_cs_max}. Actual value: {value}.")
+            validate_time(value, accept_zero=True)
+            if value >= self.n_cs_max:
+                raise ValueError("Provided time parameter value is greater than N_Cs Max value. "
+                                 f"Expected: value < {self.n_cs_max}. Actual value: {value}.")
         self.__n_cs = value
 
     @property
@@ -471,14 +445,8 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
         Set timeout value for :ref:`N_Cr <knowledge-base-can-n-cr>` time parameter.
 
         :param value: Value of timeout to set.
-
-        :raise TypeError: Provided value is not int or float type.
-        :raise ValueError: Provided value is less or equal to 0.
         """
-        if not isinstance(value, (int, float)):
-            raise TypeError(f"Provided time parameter value must be int or float type. Actual type: {type(value)}.")
-        if value <= 0:
-            raise ValueError(f"Provided time parameter value must be greater than 0. Actual value: {value}")
+        validate_time(value, accept_zero=False)
         if value != self.N_CR_TIMEOUT:
             warn(message="Non-default value of N_Cr timeout was set.",
                  category=ValueWarning)
@@ -502,14 +470,8 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
         Update measured values of :ref:`N_Ar <knowledge-base-can-n-ar>`.
 
         :param value: Value to set.
-
-        :raise TypeError: Provided value is not int or float type.
-        :raise ValueError: Provided value is out of range.
         """
-        if not isinstance(value, (int, float)):
-            raise TypeError(f"Provided value is not int or float type. Actual type: {type(value)}.")
-        if value < 0:
-            raise ValueError(f"Provided time parameter cannot be a negative number. Actual value: {value}")
+        validate_time(value, accept_zero=True)
         if value > self.n_ar_timeout:
             warn("Measured value of N_Ar was greater than N_Ar timeout.",
                  category=ValueWarning)
@@ -520,14 +482,8 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
         Update measured values of :ref:`N_As <knowledge-base-can-n-as>`.
 
         :param value: Value to set.
-
-        :raise TypeError: Provided value is not int or float type.
-        :raise ValueError: Provided value is out of range.
         """
-        if not isinstance(value, (int, float)):
-            raise TypeError(f"Provided value is not int or float type. Actual type: {type(value)}.")
-        if value < 0:
-            raise ValueError(f"Provided time parameter cannot be a negative number. Actual value: {value}")
+        validate_time(value, accept_zero=True)
         if value > self.n_as_timeout:
             warn("Measured value of N_As was greater than N_As timeout.",
                  category=ValueWarning)
