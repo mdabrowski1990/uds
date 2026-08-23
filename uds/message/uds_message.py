@@ -54,13 +54,13 @@ class AbstractUdsMessageContainer(ABC):
 
 class UdsMessage(AbstractUdsMessageContainer):
     """
-    Definition of a diagnostic message.
+    Representation of a diagnostic message.
 
-    Objects of this class act as a storage for all relevant attributes of a
+    Objects of this class store all relevant attributes of a
     :ref:`diagnostic message <knowledge-base-diagnostic-message>`.
-    Later on, such object might be used in a segmentation process or to transmit the message.
-    Once a message is transmitted, its historic data would be stored in
-    :class:`~uds.message.uds_message.UdsMessageRecord`.
+    Such objects can later be used for message segmentation or transmission.
+    Historical data associated with a transmitted message is stored
+    in :class:`~uds.message.uds_message.UdsMessageRecord`.
     """
 
     def __init__(self, payload: RawBytesAlias, addressing_type: AddressingType) -> None:
@@ -119,7 +119,7 @@ class UdsMessage(AbstractUdsMessageContainer):
 
 
 class UdsMessageRecord(AbstractUdsMessageContainer):
-    """Storage for historic information about a diagnostic message that was either received or transmitted."""
+    """Container for historical information about a diagnostic message that was received or transmitted."""
 
     def __init__(self, packets_records: PacketsRecordsSequenceAlias) -> None:
         """
@@ -226,35 +226,61 @@ class UdsMessageRecord(AbstractUdsMessageContainer):
     @property
     def transmission_start_time(self) -> datetime:
         """
-        Get time when message was initiated.
+        Get the approximate wall-clock time at which this message transmission was initiated.
 
-        :return: Time when transmission of this message was initiated.
+        .. warning:: This value is approximate.
+            The most precise available timestamp is provided by
+            :attr:`~uds.message.uds_message.UdsMessageRecord.transmission_start_native_timestamp`.
         """
         return self.packets_records[0].transmission_time
 
     @property
     def transmission_end_time(self) -> datetime:
         """
-        Get time when message was sent.
+        Get the approximate wall-clock time at which this message transmission was completed.
 
-        :return: Time when transmission of this message was completed.
+        .. warning:: This value is approximate.
+            The most precise available timestamp is provided by
+            :attr:`~uds.message.uds_message.UdsMessageRecord.transmission_end_native_timestamp`.
         """
         return self.packets_records[-1].transmission_time
 
     @property
     def transmission_start_timestamp(self) -> float:
         """
-        Get timestamp when message was initiated.
+        Get the approximate monotonic timestamp associated with the start of this message transmission.
 
-        :return: Timestamp when transmission of this message was initiated.
+        .. warning:: This value is approximate.
+            The most precise available timestamp is provided by
+            :attr:`~uds.message.uds_message.UdsMessageRecord.transmission_start_native_timestamp`.
         """
         return self.packets_records[0].transmission_timestamp
 
     @property
     def transmission_end_timestamp(self) -> float:
         """
-        Get timestamp when message was sent.
+        Get the approximate monotonic timestamp associated with the end of this message transmission.
 
-        :return: Timestamp when transmission of this message was completed.
+        .. warning:: This value is approximate.
+            The most precise available timestamp is provided by
+            :attr:`~uds.message.uds_message.UdsMessageRecord.transmission_end_native_timestamp`.
         """
         return self.packets_records[-1].transmission_timestamp
+
+    @property
+    def transmission_start_native_timestamp(self) -> float:
+        """
+        Get the native timestamp at the start of this message transmission.
+
+        This timestamp is provided by the underlying Transport Interface.
+        """
+        return self.packets_records[0].transmission_native_timestamp
+
+    @property
+    def transmission_end_native_timestamp(self) -> float:
+        """
+        Get the native timestamp at the end of this message transmission.
+
+        This timestamp is provided by the underlying Transport Interface.
+        """
+        return self.packets_records[-1].transmission_native_timestamp

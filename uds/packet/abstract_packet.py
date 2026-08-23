@@ -75,7 +75,7 @@ class AbstractPacketRecord(AbstractPacketContainer, ABC):
         :param direction: Information whether this packet was transmitted or received.
         :param transmission_time: Wall-clock time at which the packet was transmitted or received
         :param transmission_timestamp: Monotonic timestamp associated with the packet transmission or reception.
-        :param transmission_native_timestamp: Timestamp provided by the underlying network interface.
+        :param transmission_native_timestamp: Timestamp provided by the underlying network manager.
         """
         self.frame = frame
         self.direction = direction
@@ -203,19 +203,20 @@ class AbstractPacketRecord(AbstractPacketContainer, ABC):
     @property
     def transmission_native_timestamp(self) -> float:
         """
-        Get the timestamp provided by the underlying network interface.
+        Get the timestamp provided by the underlying Transport Interface.
 
-        .. note:: This value represents the timestamp natively reported by the network interface that
-            transmitted or received the packet.
+        .. note:: This value represents the timestamp natively reported by the network manager (attribute
+            :attr:`~uds.transport_interface.abstract_transport_interface.AbstractTransportInterface.network_manager`
+            in Transport Interface) that transmitted or received the packet.
         """
         return self.__transmission_native_timestamp
 
     @transmission_native_timestamp.setter
     def transmission_native_timestamp(self, value: float) -> None:
         """
-        Set the timestamp provided by the underlying network interface.
+        Set the timestamp provided by the underlying Transport Interface.
 
-        :param value: Native timestamp provided by the network interface.
+        :param value: Native timestamp provided by the network manager.
         :raise TypeError: Provided value is not float type.
         :raise ReassignmentError: An attempt to change the value after it has been set.
         """
