@@ -30,6 +30,25 @@ class TestAbstractTransportInterface:
         assert self.mock_transport_interface.network_manager == network_manager
         assert self.mock_transport_interface._AbstractTransportInterface__time_sync == self.mock_time_sync.return_value
 
+    # _validate_timeout
+
+    @pytest.mark.parametrize("value", ["some value", Mock()])
+    @patch(f"{SCRIPT_LOCATION}.isinstance")
+    def test_validate_timeout__type_error(self, mock_isinstance, value):
+        mock_isinstance.return_value = False
+        with pytest.raises(TypeError):
+            AbstractTransportInterface._validate_timeout(value)
+        mock_isinstance.assert_called_once_with(value, (int, float))
+
+    @pytest.mark.parametrize("value", [0, -0.231])
+    def test_validate_timeout__value_error(self, value):
+        with pytest.raises(ValueError):
+            AbstractTransportInterface._validate_timeout(value)
+
+    @pytest.mark.parametrize("value", [None, 0.1, 543])
+    def test_validate_timeout__valid(self, value):
+        assert AbstractTransportInterface._validate_timeout(value) is None
+
     # time_sync
 
     def test_time_sync__get(self):

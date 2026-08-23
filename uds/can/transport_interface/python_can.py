@@ -291,22 +291,6 @@ class PythonCanTransportInterface(AbstractCanTransportInterface):
                              "`PythonCanTransportInterface.receive_packet methods`) calls shall not be used together.",
                      category=UserWarning)
 
-    @staticmethod
-    def __validate_timeout(value: TimeMillisecondsAlias | None) -> None:
-        """
-        Validate value of a timeout.
-
-        :param value: Value of a timeout to check.
-
-        :raise TypeError: Provided value is not int or float type.
-        :raise ValueError: Provided value is a negative number.
-        """
-        if value is not None:
-            if not isinstance(value, (int, float)):
-                raise TypeError(f"Timeout value must be None, int or float type. Actual type: {type(value)}.")
-            if value <= 0:
-                raise ValueError(f"Provided timeout value is less or equal to 0. Actual value: {value}")
-
     def _send_cf_packets_block(self,
                                cf_packets_block: list[CanPacket],
                                delay: TimeMillisecondsAlias,
@@ -1000,7 +984,7 @@ class PythonCanTransportInterface(AbstractCanTransportInterface):
 
         :return: Record with historic information about received CAN packet.
         """
-        self.__validate_timeout(timeout)
+        self._validate_timeout(timeout)
         self.__setup_sync_listening()
         return self._wait_for_rx_packet(buffer=self.__rx_frames_buffer, timeout=timeout)
 
@@ -1016,7 +1000,7 @@ class PythonCanTransportInterface(AbstractCanTransportInterface):
 
         :return: Record with historic information about received CAN packet.
         """
-        self.__validate_timeout(timeout)
+        self._validate_timeout(timeout)
         loop = loop if isinstance(loop, AbstractEventLoop) else get_running_loop()
         self.__setup_async_listening(loop=loop)
         return await self._async_wait_for_rx_packet(buffer=self.__async_rx_frames_buffer, timeout=timeout)
@@ -1127,8 +1111,8 @@ class PythonCanTransportInterface(AbstractCanTransportInterface):
         :return: Record with historic information about received UDS message.
         """
         timestamp_now = perf_counter()
-        self.__validate_timeout(start_timeout)
-        self.__validate_timeout(end_timeout)
+        self._validate_timeout(start_timeout)
+        self._validate_timeout(end_timeout)
         if start_timeout is not None:
             if end_timeout is not None and end_timeout < start_timeout:
                 timestamp_start_timeout = timestamp_now + end_timeout / 1000.
@@ -1179,8 +1163,8 @@ class PythonCanTransportInterface(AbstractCanTransportInterface):
         :return: Record with historic information about received UDS message.
         """
         timestamp_now = perf_counter()
-        self.__validate_timeout(start_timeout)
-        self.__validate_timeout(end_timeout)
+        self._validate_timeout(start_timeout)
+        self._validate_timeout(end_timeout)
         if start_timeout is not None:
             if end_timeout is not None and end_timeout < start_timeout:
                 timestamp_start_timeout = timestamp_now + end_timeout / 1000.

@@ -668,25 +668,6 @@ class TestPythonCanTransportInterface:
         mock_notifier.stop.assert_called_once_with()
         self.mock_warn.assert_not_called()
 
-    # __validate_timeout
-
-    @pytest.mark.parametrize("value", ["some value", Mock()])
-    @patch(f"{SCRIPT_LOCATION}.isinstance")
-    def test_validate_timeout__type_error(self, mock_isinstance, value):
-        mock_isinstance.return_value = False
-        with pytest.raises(TypeError):
-            PythonCanTransportInterface._PythonCanTransportInterface__validate_timeout(value)
-        mock_isinstance.assert_called_once_with(value, (int, float))
-
-    @pytest.mark.parametrize("value", [0, -0.231])
-    def test_validate_timeout__value_error(self, value):
-        with pytest.raises(ValueError):
-            PythonCanTransportInterface._PythonCanTransportInterface__validate_timeout(value)
-
-    @pytest.mark.parametrize("value", [None, 0.1, 543])
-    def test_validate_timeout__valid(self, value):
-        assert PythonCanTransportInterface._PythonCanTransportInterface__validate_timeout(value) is None
-
     # _send_cf_packets_block
 
     @pytest.mark.parametrize("packets, delay", [
@@ -1796,7 +1777,7 @@ class TestPythonCanTransportInterface:
 
     # is_supported_network_manager
 
-    @pytest.mark.parametrize("value", ["something", Mock()])
+    @pytest.mark.parametrize("value", ["something", Mock(spec=BusABC)])
     def test_is_supported_network_manager__false(self, value):
         assert PythonCanTransportInterface.is_supported_network_manager(value) is False
 
@@ -2038,7 +2019,7 @@ class TestPythonCanTransportInterface:
     def test_receive_packet(self, timeout):
         assert (PythonCanTransportInterface.receive_packet(self.mock_can_transport_interface, timeout)
                 == self.mock_can_transport_interface._wait_for_rx_packet.return_value)
-        self.mock_can_transport_interface._PythonCanTransportInterface__validate_timeout.assert_called_once_with(timeout)
+        self.mock_can_transport_interface._validate_timeout.assert_called_once_with(timeout)
         self.mock_can_transport_interface._wait_for_rx_packet.assert_called_once_with(
             buffer=self.mock_can_transport_interface._PythonCanTransportInterface__rx_frames_buffer,
             timeout=timeout)
@@ -2057,7 +2038,7 @@ class TestPythonCanTransportInterface:
                                                                        timeout=timeout,
                                                                        loop=loop)
                 == self.mock_can_transport_interface._async_wait_for_rx_packet.return_value)
-        self.mock_can_transport_interface._PythonCanTransportInterface__validate_timeout.assert_called_once_with(timeout)
+        self.mock_can_transport_interface._validate_timeout.assert_called_once_with(timeout)
         self.mock_can_transport_interface._async_wait_for_rx_packet.assert_called_once_with(
             buffer=self.mock_can_transport_interface._PythonCanTransportInterface__async_rx_frames_buffer,
             timeout=timeout)
@@ -2512,7 +2493,7 @@ class TestPythonCanTransportInterface:
         with pytest.raises(MessageTransmissionNotStartedError):
             PythonCanTransportInterface.receive_message(self.mock_can_transport_interface,
                                                         start_timeout=start_timeout)
-        self.mock_can_transport_interface._PythonCanTransportInterface__validate_timeout.assert_has_calls([
+        self.mock_can_transport_interface._validate_timeout.assert_has_calls([
             call(start_timeout),
             call(None)])
         mock_is_timeout_reached.assert_called_once()
@@ -2530,7 +2511,7 @@ class TestPythonCanTransportInterface:
         with pytest.raises(MessageTransmissionNotStartedError):
             PythonCanTransportInterface.receive_message(self.mock_can_transport_interface,
                                                         start_timeout=start_timeout)
-        self.mock_can_transport_interface._PythonCanTransportInterface__validate_timeout.assert_has_calls([
+        self.mock_can_transport_interface._validate_timeout.assert_has_calls([
             call(start_timeout),
             call(None)])
         mock_is_timeout_reached.assert_called_once()
@@ -2553,7 +2534,7 @@ class TestPythonCanTransportInterface:
                                                             start_timeout=start_timeout,
                                                             end_timeout=end_timeout)
                 == self.mock_can_transport_interface._message_receive_start.return_value)
-        self.mock_can_transport_interface._PythonCanTransportInterface__validate_timeout.assert_has_calls([
+        self.mock_can_transport_interface._validate_timeout.assert_has_calls([
             call(start_timeout),
             call(end_timeout)])
         self.mock_can_transport_interface._message_receive_start.assert_called_once_with(
@@ -2579,7 +2560,7 @@ class TestPythonCanTransportInterface:
                                                             start_timeout=start_timeout,
                                                             end_timeout=end_timeout)
                 == self.mock_can_transport_interface._message_receive_start.return_value)
-        self.mock_can_transport_interface._PythonCanTransportInterface__validate_timeout.assert_has_calls([
+        self.mock_can_transport_interface._validate_timeout.assert_has_calls([
             call(start_timeout),
             call(end_timeout)])
         self.mock_can_transport_interface._message_receive_start.assert_called_once_with(
@@ -2607,7 +2588,7 @@ class TestPythonCanTransportInterface:
             await PythonCanTransportInterface.async_receive_message(self.mock_can_transport_interface,
                                                                     start_timeout=start_timeout,
                                                                     loop=mock_loop)
-        self.mock_can_transport_interface._PythonCanTransportInterface__validate_timeout.assert_has_calls([
+        self.mock_can_transport_interface._validate_timeout.assert_has_calls([
             call(start_timeout),
             call(None)])
         mock_is_timeout_reached.assert_called_once()
@@ -2629,7 +2610,7 @@ class TestPythonCanTransportInterface:
             await PythonCanTransportInterface.async_receive_message(self.mock_can_transport_interface,
                                                                     start_timeout=start_timeout,
                                                                     loop=mock_loop)
-        self.mock_can_transport_interface._PythonCanTransportInterface__validate_timeout.assert_has_calls([
+        self.mock_can_transport_interface._validate_timeout.assert_has_calls([
             call(start_timeout),
             call(None)])
         mock_is_timeout_reached.assert_called_once()
@@ -2656,7 +2637,7 @@ class TestPythonCanTransportInterface:
                                                                         end_timeout=end_timeout,
                                                                         loop=mock_loop)
                 == self.mock_can_transport_interface._async_message_receive_start.return_value)
-        self.mock_can_transport_interface._PythonCanTransportInterface__validate_timeout.assert_has_calls([
+        self.mock_can_transport_interface._validate_timeout.assert_has_calls([
             call(start_timeout),
             call(end_timeout)])
         self.mock_can_transport_interface._PythonCanTransportInterface__setup_async_listening.assert_called_once_with(
@@ -2686,7 +2667,7 @@ class TestPythonCanTransportInterface:
                                                                         end_timeout=end_timeout,
                                                                         loop=None)
                 == self.mock_can_transport_interface._async_message_receive_start.return_value)
-        self.mock_can_transport_interface._PythonCanTransportInterface__validate_timeout.assert_has_calls([
+        self.mock_can_transport_interface._validate_timeout.assert_has_calls([
             call(start_timeout),
             call(end_timeout)])
         self.mock_can_transport_interface._async_message_receive_start.assert_called_once_with(
