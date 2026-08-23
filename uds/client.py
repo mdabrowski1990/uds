@@ -135,13 +135,13 @@ class Client:
         :param value: Value to set.
 
         :raise TypeError: Provided value is not an instance of AbstractTransportInterface class.
-        :raise ReassignmentError: An attempt to change the value after object creation.
+        raise ReassignmentError("Value of 'frame' attribute cannot be changed once set.")
         """
         if not isinstance(value, AbstractTransportInterface):
             raise TypeError("Provided value is not an instance of AbstractTransportInterface class. "
                             f"Actual type: {type(value)}.")
         if hasattr(self, "_Client__transport_interface"):
-            raise ReassignmentError("Value of 'transport_interface' attribute cannot be changed once assigned.")
+            raise ReassignmentError("Value of 'transport_interface' attribute cannot be changed once set.")
         self.__transport_interface = value
 
     @property

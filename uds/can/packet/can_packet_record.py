@@ -98,10 +98,10 @@ class CanPacketRecord(AbstractCanPacketContainer, AbstractPacketRecord):
 
         :param value: Value of CAN Addressing Format.
 
-        :raise ReassignmentError: An attempt to change the value after object creation.
+        raise ReassignmentError("Value of 'frame' attribute cannot be changed once set.")
         """
         if hasattr(self, "_CanPacketRecord__addressing_format"):
-            raise ReassignmentError("Value of 'addressing_format' attribute cannot be changed once assigned.")
+            raise ReassignmentError("Value of 'addressing_format' attribute cannot be changed once set.")
         self.__addressing_format = CanAddressingFormat.validate_member(value)
 
     @property
@@ -117,7 +117,7 @@ class CanPacketRecord(AbstractCanPacketContainer, AbstractPacketRecord):
         :param value: Value of addressing type.
         """
         if hasattr(self, "_CanPacketRecord__addressing_type"):
-            raise ReassignmentError("Value of 'addressing_type' attribute cannot be changed once assigned.")
+            raise ReassignmentError("Value of 'addressing_type' attribute cannot be changed once set.")
         self.__addressing_type = AddressingType.validate_member(value)
 
     @staticmethod

@@ -91,12 +91,12 @@ class AbstractTransportInterface(ABC):
         :param value: Value to set.
 
         :raise ValueError: Provided value is not a supported Network Manager.
-        :raise ReassignmentError: An attempt to change the value after object creation.
+        raise ReassignmentError("Value of 'frame' attribute cannot be changed once set.")
         """
         if not self.is_supported_network_manager(value):
             raise ValueError("Unsupported network manager was provided.")
         if hasattr(self, "_AbstractTransportInterface__network_manager"):
-            raise ReassignmentError("Value of 'network_manager' attribute cannot be changed once assigned.")
+            raise ReassignmentError("Value of 'network_manager' attribute cannot be changed once set.")
         self.__network_manager = value
 
     @staticmethod

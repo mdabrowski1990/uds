@@ -153,7 +153,7 @@ class AbstractDataRecord(ABC):
 
         :raise TypeError: Provided value is not str type.
         :raise ValueError: Provided value empty.
-        :raise ReassignmentError: An attempt to change the value after object creation.
+        raise ReassignmentError("Value of 'frame' attribute cannot be changed once set.")
         """
         if not isinstance(value, str):
             raise TypeError(f"Provided name is not str type. Actual type: {type(value)}.")
@@ -161,7 +161,7 @@ class AbstractDataRecord(ABC):
         if stripped_names == "":
             raise ValueError(f"Name must not be empty. Actual value: {value!r}")
         if hasattr(self, "_AbstractDataRecord__name"):
-            raise ReassignmentError("Value of 'name' attribute cannot be changed once assigned.")
+            raise ReassignmentError("Value of 'name' attribute cannot be changed once set.")
         self.__name = stripped_names
 
     @property
@@ -178,14 +178,14 @@ class AbstractDataRecord(ABC):
 
         :raise TypeError: Provided value is not int type.
         :raise ValueError: Provided value is not positive integer.
-        :raise ReassignmentError: An attempt to change the value after object creation.
+        raise ReassignmentError("Value of 'frame' attribute cannot be changed once set.")
         """
         if not isinstance(value, int):
             raise TypeError(f"Length must be an integer. Actual type: {type(value)}.")
         if value <= 0:
             raise ValueError(f"Length must be a positive value. Actual value: {value}")
         if hasattr(self, "_AbstractDataRecord__length"):
-            raise ReassignmentError("Value of 'length' attribute cannot be changed once assigned.")
+            raise ReassignmentError("Value of 'length' attribute cannot be changed once set.")
         self.__length = value
 
     @property
@@ -235,14 +235,14 @@ class AbstractDataRecord(ABC):
 
         :raise TypeError: Provided value is not int type.
         :raise ValueError: Provided value is negative number.
-        :raise ReassignmentError: An attempt to change the value after object creation.
+        raise ReassignmentError("Value of 'frame' attribute cannot be changed once set.")
         """
         if not isinstance(value, int):
             raise TypeError(f"Minimal occurrence number must be int type. Actual type: {type(value)}.")
         if value < 0:
             raise ValueError(f"Minimal occurrence number must be a non-negative value. Actual value: {value}")
         if hasattr(self, "_AbstractDataRecord__min_occurrences"):
-            raise ReassignmentError("Value of 'min_occurrences' attribute cannot be changed once assigned.")
+            raise ReassignmentError("Value of 'min_occurrences' attribute cannot be changed once set.")
         self.__min_occurrences = value
 
     @property
@@ -263,7 +263,7 @@ class AbstractDataRecord(ABC):
 
         :raise TypeError: Provided value is not int type.
         :raise ValueError: Maximal occurrences number must be greater or equal minimal occurrences number.
-        :raise ReassignmentError: An attempt to change the value after object creation.
+        raise ReassignmentError("Value of 'frame' attribute cannot be changed once set.")
         """
         if value is not None:
             if not isinstance(value, int):
@@ -272,7 +272,7 @@ class AbstractDataRecord(ABC):
                 raise ValueError("Maximal occurrence number must be greater or equal minimal occurrences number. "
                                  f"Actual value: {value}")
         if hasattr(self, "_AbstractDataRecord__max_occurrences"):
-            raise ReassignmentError("Value of 'max_occurrences' attribute cannot be changed once assigned.")
+            raise ReassignmentError("Value of 'max_occurrences' attribute cannot be changed once set.")
         self.__max_occurrences = value
 
     @property

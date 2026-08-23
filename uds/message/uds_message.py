@@ -196,10 +196,10 @@ class UdsMessageRecord(AbstractUdsMessageContainer):
 
         :param value: Sequence of Packet Records to set.
 
-        :raise ReassignmentError: An attempt to change the value after object creation.
+        raise ReassignmentError("Value of 'frame' attribute cannot be changed once set.")
         """
         if hasattr(self, "_UdsMessageRecord__packets_records"):
-            raise ReassignmentError("Value of 'packets_records' attribute cannot be changed once assigned.")
+            raise ReassignmentError("Value of 'packets_records' attribute cannot be changed once set.")
         self.__validate_packets_records(value)
         self.__packets_records = tuple(value)
 

@@ -59,26 +59,29 @@ class AbstractPacket(AbstractPacketContainer, ABC):
 
 
 class AbstractPacketRecord(AbstractPacketContainer, ABC):
-    """Abstract definition of a storage for historic information about transmitted or received packet."""
+    """Abstract container for historical information about transmitted or received packets."""
 
     @abstractmethod
     def __init__(self,
                  frame: Any,
                  direction: TransmissionDirection,
                  transmission_time: datetime,
-                 transmission_timestamp: float) -> None:
+                 transmission_timestamp: float,
+                 transmission_native_timestamp: float) -> None:
         """
         Create a record of historic information about a packet.
 
         :param frame: Frame that carried this packet.
         :param direction: Information whether this packet was transmitted or received.
-        :param transmission_time: Time when this packet was transmitted on a bus/network.
-        :param transmission_timestamp: Timestamp when this packet was transmitted on a bus/network.
+        :param transmission_time: Wall-clock time at which the packet was transmitted or received
+        :param transmission_timestamp: Monotonic timestamp associated with the packet transmission or reception.
+        :param transmission_native_timestamp: Timestamp provided by the underlying network interface.
         """
         self.frame = frame
         self.direction = direction
         self.transmission_time = transmission_time
         self.transmission_timestamp = transmission_timestamp
+        self.transmission_native_timestamp = transmission_native_timestamp
         self._validate_attributes()
 
     def __str__(self) -> str:
@@ -90,7 +93,8 @@ class AbstractPacketRecord(AbstractPacketContainer, ABC):
                 f"payload={None if self.payload is None else bytes_to_hex(self.payload)}, "
                 f"packet_type={self.packet_type}, "
                 f"transmission_time={self.transmission_time}, "
-                f"transmission_timestamp={self.transmission_timestamp})")
+                f"transmission_timestamp={self.transmission_timestamp},"
+                f"transmission_native_timestamp={self.transmission_native_timestamp})")
 
     @property
     def frame(self) -> Any:
@@ -104,10 +108,10 @@ class AbstractPacketRecord(AbstractPacketContainer, ABC):
 
         :param value: Frame value to set.
 
-        :raise ReassignmentError: An attempt to change the value after object creation.
+        :raise ReassignmentError: An attempt to change the value after it has been set.
         """
         if hasattr(self, "_AbstractPacketRecord__frame"):
-            raise ReassignmentError("Value of 'frame' attribute cannot be changed once assigned.")
+            raise ReassignmentError("Value of 'frame' attribute cannot be changed once set.")
         self._validate_frame(value)
         self.__frame = value
 
@@ -123,32 +127,37 @@ class AbstractPacketRecord(AbstractPacketContainer, ABC):
 
         :param value: Direction value to set.
 
-        :raise ReassignmentError: An attempt to change the value after object creation.
+        :raise ReassignmentError: An attempt to change the value after it has been set.
         """
         if hasattr(self, "_AbstractPacketRecord__direction"):
-            raise ReassignmentError("Value of 'direction' attribute cannot be changed once assigned.")
+            raise ReassignmentError("Value of 'direction' attribute cannot be changed once set.")
         self.__direction = TransmissionDirection.validate_member(value)
 
     @property
     def transmission_time(self) -> datetime:
-        """Time when this packet was transmitted on a bus/network."""
+        """
+        Get the approximate wall-clock time at which the packet was transmitted or received.
+
+        .. warning:: This value is approximate.
+            The most precise available timestamp is provided by
+            :attr:`~uds.packet.abstract_packet.AbstractPacketRecord.transmission_native_timestamp`.
+        """
         return self.__transmission_time
 
     @transmission_time.setter
     def transmission_time(self, value: datetime) -> None:
         """
-        Set time value when this packet was transmitted on a bus/network.
+        Set the approximate wall-clock time at which the packet was transmitted or received.
 
-        :param value: Value of transmission time to set.
-
-        :raise TypeError: Provided value is not datetime type.
-        :raise ReassignmentError: An attempt to change the value after object creation.
+        :param value: Approximate wall-clock transmission time.
+        :raise TypeError: Provided value is not a datetime instance.
+        :raise ReassignmentError: An attempt to change the value after it has been set.
         """
         time_now = datetime.now()
         if not isinstance(value, datetime):
             raise TypeError(f"Provided value is not datetime type. Actual type: {type(value)}.")
         if hasattr(self, "_AbstractPacketRecord__transmission_time"):
-            raise ReassignmentError("Value of 'transmission_time' attribute cannot be changed once assigned.")
+            raise ReassignmentError("Value of 'transmission_time' attribute cannot be changed once set.")
         if value > time_now:
             warn(message="Future time provided as `transmission_time` to a packet record. "
                          "Current time was used instead.",
@@ -158,30 +167,63 @@ class AbstractPacketRecord(AbstractPacketContainer, ABC):
 
     @property
     def transmission_timestamp(self) -> float:
-        """Timestamp when this packet was transmitted on a bus/network."""
+        """
+        Get the approximate monotonic timestamp associated with the packet transmission or reception.
+
+        This value is obtained from :func:`~time.perf_counter` and is suitable for measuring elapsed time relative
+        to other timestamps obtained from the same clock.
+
+        .. warning:: This value is approximate.
+            The most precise available timestamp is provided by
+            :attr:`~uds.packet.abstract_packet.AbstractPacketRecord.transmission_native_timestamp`.
+        """
         return self.__transmission_timestamp
 
     @transmission_timestamp.setter
     def transmission_timestamp(self, value: float) -> None:
         """
-        Set timestamp value when this packet was transmitted on a bus/network.
+        Set the approximate monotonic timestamp associated with the packet transmission or reception.
 
-        :param value: Value of transmission timestamp to set.
-
+        :param value: Monotonic timestamp associated with the packet transmission or reception.
         :raise TypeError: Provided value is not float type.
-        :raise ReassignmentError: An attempt to change the value after object creation.
+        :raise ReassignmentError: An attempt to change the value after it has been set.
         """
         timestamp_now = perf_counter()
         if not isinstance(value, float):
             raise TypeError(f"Provided value is not float type. Actual type: {type(value)}.")
         if hasattr(self, "_AbstractPacketRecord__transmission_timestamp"):
-            raise ReassignmentError("Value of 'transmission_timestamp' attribute cannot be changed once assigned.")
+            raise ReassignmentError("Value of 'transmission_timestamp' attribute cannot be changed once set.")
         if value > timestamp_now:
             warn(message="Future timestamp provided as `transmission_timestamp` to a packet record. "
                          "Current timestamp was used instead.",
                  category=RuntimeWarning)
             value = timestamp_now
         self.__transmission_timestamp = value
+
+    @property
+    def transmission_native_timestamp(self) -> float:
+        """
+        Get the timestamp provided by the underlying network interface.
+
+        .. note:: This value represents the timestamp natively reported by the network interface that
+            transmitted or received the packet.
+        """
+        return self.__transmission_native_timestamp
+
+    @transmission_native_timestamp.setter
+    def transmission_native_timestamp(self, value: float) -> None:
+        """
+        Set the timestamp provided by the underlying network interface.
+
+        :param value: Native timestamp provided by the network interface.
+        :raise TypeError: Provided value is not float type.
+        :raise ReassignmentError: An attempt to change the value after it has been set.
+        """
+        if not isinstance(value, float):
+            raise TypeError(f"Provided value is not float type. Actual type: {type(value)}.")
+        if hasattr(self, "_AbstractPacketRecord__transmission_native_timestamp"):
+            raise ReassignmentError("Value of 'transmission_native_timestamp' attribute cannot be changed once set.")
+        self.__transmission_native_timestamp = value
 
     @staticmethod
     @abstractmethod
