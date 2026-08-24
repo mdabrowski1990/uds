@@ -32,7 +32,8 @@ class CanPacketRecord(AbstractCanPacketContainer, AbstractPacketRecord):
                  addressing_type: AddressingType,
                  direction: TransmissionDirection,
                  transmission_time: datetime,
-                 transmission_timestamp: float) -> None:
+                 transmission_timestamp: float,
+                 transmission_native_timestamp: float) -> None:
         """
         Create a record of historic information about a CAN packet that was either received or transmitted.
 
@@ -47,7 +48,8 @@ class CanPacketRecord(AbstractCanPacketContainer, AbstractPacketRecord):
         super().__init__(frame=frame,
                          direction=direction,
                          transmission_time=transmission_time,
-                         transmission_timestamp=transmission_timestamp)
+                         transmission_timestamp=transmission_timestamp,
+                         transmission_native_timestamp=transmission_native_timestamp)
 
     def __str__(self) -> str:
         """Present object in string format."""

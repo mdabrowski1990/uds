@@ -12,10 +12,13 @@ class TestAbstractTransportInterface:
     def setup_method(self):
         self.mock_transport_interface = Mock(spec=AbstractTransportInterface)
         # patching
+        self._patcher_warn = patch(f"{SCRIPT_LOCATION}.warn")
+        self.mock_warn = self._patcher_warn.start()
         self._patcher_time_sync = patch(f"{SCRIPT_LOCATION}.TimeSync")
         self.mock_time_sync = self._patcher_time_sync.start()
 
     def teardown_method(self):
+        self._patcher_warn.stop()
         self._patcher_time_sync.stop()
 
     # __init__
@@ -76,3 +79,41 @@ class TestAbstractTransportInterface:
         with pytest.raises(ValueError):
             AbstractTransportInterface.network_manager.fset(self.mock_transport_interface, value)
         self.mock_transport_interface.is_supported_network_manager.assert_called_with(value)
+
+    # teardown_sync
+
+    @pytest.mark.parametrize("is_sync_active, suppress_warning", [
+        (True, True),
+        (False, True),
+        (False, False),
+    ])
+    def test_teardown_sync__no_warning(self, is_sync_active, suppress_warning):
+        self.mock_transport_interface.is_sync_active = is_sync_active
+        assert AbstractTransportInterface.teardown_sync(self.mock_transport_interface,
+                                                        suppress_warning=suppress_warning) is None
+        self.mock_warn.assert_not_called()
+
+    def test_teardown_sync__warning(self):
+        self.mock_transport_interface.is_sync_active = True
+        assert AbstractTransportInterface.teardown_sync(self.mock_transport_interface,
+                                                        suppress_warning=False) is None
+        self.mock_warn.assert_called_once()
+        
+    # teardown_async
+
+    @pytest.mark.parametrize("is_async_active, suppress_warning", [
+        (True, True),
+        (False, True),
+        (False, False),
+    ])
+    def test_teardown_async__no_warning(self, is_async_active, suppress_warning):
+        self.mock_transport_interface.is_async_active = is_async_active
+        assert AbstractTransportInterface.teardown_async(self.mock_transport_interface,
+                                                        suppress_warning=suppress_warning) is None
+        self.mock_warn.assert_not_called()
+
+    def test_teardown_async__warning(self):
+        self.mock_transport_interface.is_async_active = True
+        assert AbstractTransportInterface.teardown_async(self.mock_transport_interface,
+                                                        suppress_warning=False) is None
+        self.mock_warn.assert_called_once()

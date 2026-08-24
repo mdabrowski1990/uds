@@ -27,7 +27,6 @@ from uds.can.transport_interface.python_can import (
     MessageTransmissionNotStartedError,
     Notifier,
     PythonCanTransportInterface,
-    SyncType,
     TransmissionDirection,
     UdsMessage,
 )
@@ -216,71 +215,6 @@ class TestPythonCanTransportInterface:
         self.mock_can_transport_interface._PythonCanTransportInterface__async_rx_frames_buffer.stop.assert_called_once_with()
         self.mock_can_transport_interface._PythonCanTransportInterface__async_tx_frames_buffer.stop.assert_called_once_with()
         self.mock_can_transport_interface._PythonCanTransportInterface__async_fc_frames_buffer.stop.assert_called_once_with()
-
-    # sync_type
-
-    def test_sync_type__get__unrecognized(self):
-        self.mock_can_transport_interface.network_manager = Mock()
-        with pytest.raises(RuntimeError):
-            PythonCanTransportInterface.sync_type.fget(self.mock_can_transport_interface)
-
-    @pytest.mark.parametrize("bus, backend", [
-        (Mock(spec=SerialBus), "serial"),
-        (Mock(spec=KvaserBus), "kvaser"),
-        (Mock(spec=VectorBus), "vector"),
-    ])
-    def test_sync_type__get__no_sync(self, bus, backend):
-        mock_is_in = Mock(return_value=True)
-        self.mock_can_transport_interface.network_manager = bus
-        self.mock_can_transport_interface._NONE_SYNC_TYPES = MagicMock(__contains__=mock_is_in)
-        self.mock_can_transport_interface._START_SYNC_TYPES = MagicMock(__contains__=Mock(return_value=False))
-        self.mock_can_transport_interface._RUNTIME_SYNC_TYPES = MagicMock(__contains__=Mock(return_value=False))
-        assert PythonCanTransportInterface.sync_type.fget(self.mock_can_transport_interface) == SyncType.NONE
-        mock_is_in.assert_called_once_with(backend)
-        self.mock_warn.assert_not_called()
-
-    @pytest.mark.parametrize("bus, backend", [
-        (Mock(spec=SerialBus), "serial"),
-        (Mock(spec=KvaserBus), "kvaser"),
-        (Mock(spec=VectorBus), "vector"),
-    ])
-    def test_sync_type__get__start_sync(self, bus, backend):
-        mock_is_in = Mock(return_value=True)
-        self.mock_can_transport_interface.network_manager = bus
-        self.mock_can_transport_interface._NONE_SYNC_TYPES = MagicMock(__contains__=Mock(return_value=False))
-        self.mock_can_transport_interface._START_SYNC_TYPES = MagicMock(__contains__=mock_is_in)
-        self.mock_can_transport_interface._RUNTIME_SYNC_TYPES = MagicMock(__contains__=Mock(return_value=False))
-        assert PythonCanTransportInterface.sync_type.fget(self.mock_can_transport_interface) == SyncType.START
-        mock_is_in.assert_called_once_with(backend)
-        self.mock_warn.assert_not_called()
-
-    @pytest.mark.parametrize("bus, backend", [
-        (Mock(spec=SerialBus), "serial"),
-        (Mock(spec=KvaserBus), "kvaser"),
-        (Mock(spec=VectorBus), "vector"),
-    ])
-    def test_sync_type__get__runtime_sync(self, bus, backend):
-        mock_is_in = Mock(return_value=True)
-        self.mock_can_transport_interface.network_manager = bus
-        self.mock_can_transport_interface._NONE_SYNC_TYPES = MagicMock(__contains__=Mock(return_value=False))
-        self.mock_can_transport_interface._START_SYNC_TYPES = MagicMock(__contains__=Mock(return_value=False))
-        self.mock_can_transport_interface._RUNTIME_SYNC_TYPES = MagicMock(__contains__=mock_is_in)
-        assert PythonCanTransportInterface.sync_type.fget(self.mock_can_transport_interface) == SyncType.RUNTIME
-        mock_is_in.assert_called_once_with(backend)
-        self.mock_warn.assert_not_called()
-
-    @pytest.mark.parametrize("bus, backend", [
-        (Mock(spec=SerialBus), "serial"),
-        (Mock(spec=KvaserBus), "kvaser"),
-        (Mock(spec=VectorBus), "vector"),
-    ])
-    def test_sync_type__get__undefined(self, bus, backend):
-        self.mock_can_transport_interface.network_manager = bus
-        self.mock_can_transport_interface._NONE_SYNC_TYPES = MagicMock(__contains__=Mock(return_value=False))
-        self.mock_can_transport_interface._START_SYNC_TYPES = MagicMock(__contains__=Mock(return_value=False))
-        self.mock_can_transport_interface._RUNTIME_SYNC_TYPES = MagicMock(__contains__=Mock(return_value=False))
-        assert PythonCanTransportInterface.sync_type.fget(self.mock_can_transport_interface) == SyncType.NONE
-        self.mock_warn.assert_called_once()
 
     # notifier
 

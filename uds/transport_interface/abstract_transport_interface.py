@@ -1,26 +1,17 @@
 """Abstract definition of UDS Transport Interface."""
 
-__all__ = ["AbstractTransportInterface", "SyncType"]
+__all__ = ["AbstractTransportInterface"]
 
 from abc import ABC, abstractmethod
 from asyncio import AbstractEventLoop
 from typing import Any
-
-from aenum import StrEnum as AStrEnum
+from warnings import warn
 
 from uds.addressing import AbstractAddressingInformation
 from uds.message import UdsMessage, UdsMessageRecord
 from uds.packet import AbstractPacket, AbstractPacketRecord
 from uds.segmentation import AbstractSegmenter
-from uds.utilities import ReassignmentError, TimeMillisecondsAlias, TimeSync, ValidatedEnum
-
-
-class SyncType(ValidatedEnum, AStrEnum):
-    """Type of synchronization with python time."""
-
-    NONE: "SyncType" = "no synchronization"
-    START: "SyncType" = "synchronizes once at start"
-    RUNTIME: "SyncType" = "uses python time"
+from uds.utilities import ReassignmentError, TimeMillisecondsAlias, TimeSync
 
 
 class AbstractTransportInterface(ABC):
@@ -39,11 +30,6 @@ class AbstractTransportInterface(ABC):
         """
         self.network_manager = network_manager
         self.__time_sync: TimeSync = TimeSync()
-
-    @property
-    @abstractmethod
-    def sync_type(self) -> SyncType:
-        """Type of synchronization with python time used by this Transport Interface."""
 
     @property
     def time_sync(self) -> TimeSync:
@@ -98,6 +84,60 @@ class AbstractTransportInterface(ABC):
         if hasattr(self, "_AbstractTransportInterface__network_manager"):
             raise ReassignmentError("Value of 'network_manager' attribute cannot be changed once set.")
         self.__network_manager = value
+
+    @property
+    @abstractmethod
+    def is_sync_active(self) -> bool:
+        """Get flag indicating whether synchronous communication is active."""
+
+    @property
+    @abstractmethod
+    def is_async_active(self) -> bool:
+        """Get flag indicating whether asynchronous communication is active."""
+
+    @abstractmethod
+    def setup_sync(self) -> None:
+        """
+        Prepare this Transport Interface for synchronous communication.
+
+        This method activates synchronous communication and deactivates asynchronous communication.
+        """
+
+    @abstractmethod
+    def setup_async(self, loop: AbstractEventLoop) -> None:
+        """
+        Prepare this Transport Interface for asynchronous communication.
+
+        This method activates asynchronous communication and deactivates synchronous communication.
+
+        :param loop: An :mod:`asyncio` event loop to use.
+        """
+
+    @abstractmethod
+    def teardown_sync(self, suppress_warning: bool = False) -> None:
+        """
+        Deactivate synchronous communication.
+
+        :param suppress_warning: Do not warn about mixing Synchronous and Asynchronous implementation.
+        """
+        if self.is_sync_active and not suppress_warning:
+            warn(message="Synchronous (send_packet, receive_packet, send_message and receive_message) and "
+                         "Asynchronous (async_send_packet, async_receive_packet, async_send_message, "
+                         "async_receive_message) communication cannot be used together.",
+                 category=UserWarning)
+
+    @abstractmethod
+    def teardown_async(self, suppress_warning: bool = False) -> None:
+        """
+        Deactivate asynchronous communication.
+
+        :param suppress_warning: Do not warn about mixing Synchronous and Asynchronous implementation.
+        """
+        if self.is_async_active and not suppress_warning:
+            warn(message="Synchronous (send_packet, receive_packet, send_message and receive_message) and "
+                         "Asynchronous (async_send_packet, async_receive_packet, async_send_message, "
+                         "async_receive_message) communication cannot be used together.",
+                 category=UserWarning)
 
     @staticmethod
     @abstractmethod

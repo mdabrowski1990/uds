@@ -17,7 +17,6 @@ from can import Notifier
 from can.interfaces import BACKENDS
 from uds.addressing import AddressingType, TransmissionDirection
 from uds.message import UdsMessage, UdsMessageRecord
-from uds.transport_interface.abstract_transport_interface import SyncType
 from uds.utilities import (
     MessageTransmissionNotStartedError,
     NewMessageReceptionWarning,
@@ -52,14 +51,9 @@ class PythonCanTransportInterface(AbstractCanTransportInterface):
     _MIN_NOTIFIER_TIMEOUT: float = 0.001  # s
     """Minimal timeout for notifiers that does not cause malfunctioning of listeners."""
 
-    _NONE_SYNC_TYPES: frozenset[str] = frozenset({"serial", "usb2can", "ixxat", "nican", "iscan", "udp_multicast",
-                                                  "neovi", "robotell", "canalystii", "systec", "seeedstudio", "cantact",
-                                                  "gs_usb", "nixnet", "neousys", "etas", "socketcand"})
-    """Python-can interfaces that do not synchronize with python time."""
-    _START_SYNC_TYPES: frozenset[str] = frozenset({"kvaser", "vector"})
-    """Python-can interfaces that synchronize with python time at creation."""
-    _RUNTIME_SYNC_TYPES: frozenset[str] = frozenset({"socketcan", "pcan", "virtual", "slcan"})
-    """Python-can interfaces that uses python time or synchronizes during runtime."""
+    _INTERFACES_USING_WALL_TIME_TIMESTAMPS = frozenset({"vector", "kvaser", "etas", "ixxat", "nican", "pcan",
+                                                        "socketcan", "udp_multicast", "iscan", "slcan", "robotell",
+                                                        "neousys", "virtual", "seeedstudio", "nixnet"})
 
     def __init__(self,
                  network_manager: BusABC,
@@ -115,43 +109,14 @@ class PythonCanTransportInterface(AbstractCanTransportInterface):
 
     def __del__(self) -> None:
         """Safely close all threads opened by this object."""
-        self.__teardown_sync_listening(suppress_warning=True)
-        self.__teardown_async_listening(suppress_warning=True)
+        self.teardown_sync(suppress_warning=True)
+        self.teardown_async(suppress_warning=True)
         self.__rx_frames_buffer.stop()
         self.__tx_frames_buffer.stop()
         self.__fc_frames_buffer.stop()
         self.__async_rx_frames_buffer.stop()
         self.__async_tx_frames_buffer.stop()
         self.__async_fc_frames_buffer.stop()
-
-    @property
-    def sync_type(self) -> SyncType:
-        """
-        Get type of synchronization with python time used by this Transport Interface.
-
-        :raise RuntimeError: Cannot recognize python-can backend used.
-
-        :return:
-        """
-        network_manager_class_name = self.network_manager.__class__.__name__
-        network_manager_module = self.network_manager.__class__.__module__
-        used_backend: str | None = None
-        for backend_name, (module_path, class_name) in BACKENDS.items():
-            if network_manager_module.startswith(module_path) and network_manager_class_name == class_name:
-                used_backend = backend_name
-                break
-        if used_backend is None:
-            raise RuntimeError(f"Python-can backed used as network_manager ({self.network_manager}) "
-                               f"could not be recognised.")
-        if used_backend in self._NONE_SYNC_TYPES:
-            return SyncType.NONE
-        if used_backend in self._START_SYNC_TYPES:
-            return SyncType.START
-        if used_backend in self._RUNTIME_SYNC_TYPES:
-            return SyncType.RUNTIME
-        warn(message="Unclassified python-can Bus object is used as network_manager.",
-             category=RuntimeWarning)
-        return SyncType.NONE
 
     @property
     def notifier(self) -> Notifier | None:
@@ -205,9 +170,12 @@ class PythonCanTransportInterface(AbstractCanTransportInterface):
         else:
             raise TypeError(f"Provided value is not None neither Notifier type. Actual type: {type(value)}.")
 
-    def __setup_sync_listening(self) -> None:
+    # TODO: is_sync_active
+    # TODO: is_async_active
+
+    def setup_sync(self) -> None:  # TODO
         """Configure CAN frame notifier for synchronous communication."""
-        self.__teardown_async_listening()
+        self.teardown_async()
         self.__rx_frames_buffer.is_stopped = False  # noqa: vulture
         self.__tx_frames_buffer.is_stopped = False  # noqa: vulture
         self.__fc_frames_buffer.is_stopped = False  # noqa: vulture
@@ -226,13 +194,13 @@ class PythonCanTransportInterface(AbstractCanTransportInterface):
         if self.__fc_frames_buffer not in self.notifier.listeners:
             self.notifier.add_listener(self.__fc_frames_buffer)
 
-    def __setup_async_listening(self, loop: AbstractEventLoop) -> None:
+    def setup_async(self, loop: AbstractEventLoop) -> None:  # TODO
         """
         Configure CAN frame notifier for asynchronous communication.
 
         :param loop: An :mod:`asyncio` event loop to use.
         """
-        self.__teardown_sync_listening()
+        self.teardown_sync()
         if (self.async_notifier is None
                 or self.async_notifier.stopped
                 or self.async_notifier._loop != loop):  # pylint: disable= protected-access
@@ -258,7 +226,7 @@ class PythonCanTransportInterface(AbstractCanTransportInterface):
         if self.__async_fc_frames_buffer not in self.async_notifier.listeners:
             self.async_notifier.add_listener(self.__async_fc_frames_buffer)
 
-    def __teardown_sync_listening(self, suppress_warning: bool = False) -> None:
+    def teardown_sync(self, suppress_warning: bool = False) -> None:  # TODO
         """
         Stop and remove CAN frame notifier for synchronous communication.
 
@@ -275,7 +243,7 @@ class PythonCanTransportInterface(AbstractCanTransportInterface):
                              "`PythonCanTransportInterface.receive_packet methods`) calls shall not be used together.",
                      category=UserWarning)
 
-    def __teardown_async_listening(self, suppress_warning: bool = False) -> None:
+    def teardown_async(self, suppress_warning: bool = False) -> None:  # TODO
         """
         Stop and remove CAN frame notifier for asynchronous communication.
 
@@ -866,7 +834,7 @@ class PythonCanTransportInterface(AbstractCanTransportInterface):
         """
         if not isinstance(packet, CanPacket):
             raise TypeError(f"Provided value is not an instance of CanPacket class. Actual type: {type(packet)}.")
-        self.__setup_sync_listening()
+        self.setup_sync()
         is_flow_control_packet = packet.packet_type == CanPacketType.FLOW_CONTROL
         timeout_ms = self.n_ar_timeout if is_flow_control_packet else self.n_as_timeout
         fd = self.can_version == CanVersion.CAN_FD or CanDlcHandler.is_can_fd_specific_dlc(packet.dlc)
@@ -927,7 +895,7 @@ class PythonCanTransportInterface(AbstractCanTransportInterface):
         if not isinstance(packet, CanPacket):
             raise TypeError(f"Provided value is not an instance of CanPacket class. Actual type: {type(packet)}.")
         loop = loop if isinstance(loop, AbstractEventLoop) else get_running_loop()
-        self.__setup_async_listening(loop=loop)
+        self.setup_async(loop=loop)
         is_flow_control_packet = packet.packet_type == CanPacketType.FLOW_CONTROL
         timeout_ms = self.n_ar_timeout if is_flow_control_packet else self.n_as_timeout
         fd = self.can_version == CanVersion.CAN_FD or CanDlcHandler.is_can_fd_specific_dlc(packet.dlc)
@@ -986,7 +954,7 @@ class PythonCanTransportInterface(AbstractCanTransportInterface):
         :return: Record with historic information about received CAN packet.
         """
         validate_timeout(timeout)
-        self.__setup_sync_listening()
+        self.setup_sync()
         return self._wait_for_rx_packet(buffer=self.__rx_frames_buffer, timeout=timeout)
 
     async def async_receive_packet(self,
@@ -1003,7 +971,7 @@ class PythonCanTransportInterface(AbstractCanTransportInterface):
         """
         validate_timeout(timeout)
         loop = loop if isinstance(loop, AbstractEventLoop) else get_running_loop()
-        self.__setup_async_listening(loop=loop)
+        self.setup_async(loop=loop)
         return await self._async_wait_for_rx_packet(buffer=self.__async_rx_frames_buffer, timeout=timeout)
 
     def send_message(self, message: UdsMessage) -> UdsMessageRecord:
@@ -1020,7 +988,7 @@ class PythonCanTransportInterface(AbstractCanTransportInterface):
 
         :return: Record with historic information about transmitted UDS message.
         """
-        self.__setup_sync_listening()
+        self.setup_sync()
         self.clear_fc_frames_buffers()
         packets_to_send = list(self.segmenter.segmentation(message))
         packet_records = [self.send_packet(packets_to_send.pop(0))]
@@ -1065,7 +1033,7 @@ class PythonCanTransportInterface(AbstractCanTransportInterface):
         :return: Record with historic information about transmitted UDS message.
         """
         loop = loop if isinstance(loop, AbstractEventLoop) else get_running_loop()
-        self.__setup_async_listening(loop)
+        self.setup_async(loop)
         self.clear_fc_frames_buffers()
         packets_to_send = list(self.segmenter.segmentation(message))
         packet_records = [await self.async_send_packet(packets_to_send.pop(0), loop=loop)]
@@ -1124,7 +1092,7 @@ class PythonCanTransportInterface(AbstractCanTransportInterface):
             timestamp_end_timeout = timestamp_now + end_timeout / 1000.
         else:
             timestamp_end_timeout = None
-        self.__setup_sync_listening()
+        self.setup_sync()
         while True:
             # calculate remaining timeout
             if start_timeout is not None:
@@ -1177,7 +1145,7 @@ class PythonCanTransportInterface(AbstractCanTransportInterface):
         else:
             timestamp_end_timeout = None
         loop = get_running_loop() if loop is None else loop
-        self.__setup_async_listening(loop=loop)
+        self.setup_async(loop=loop)
         while True:
             # calculate remaining timeout
             if start_timeout is not None:
