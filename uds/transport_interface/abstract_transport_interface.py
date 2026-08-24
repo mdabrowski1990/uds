@@ -31,6 +31,11 @@ class AbstractTransportInterface(ABC):
         self.network_manager = network_manager
         self.__time_sync: TimeSync = TimeSync()
 
+    def __del__(self):  # TODO: test
+        """Safely close all threads opened by this object."""
+        self.teardown_sync(suppress_warning=True)
+        self.teardown_async(suppress_warning=True)
+
     @property
     def time_sync(self) -> TimeSync:
         """Get time and timestamp synchronizer."""

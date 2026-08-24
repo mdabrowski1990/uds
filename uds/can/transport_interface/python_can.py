@@ -109,8 +109,7 @@ class PythonCanTransportInterface(AbstractCanTransportInterface):
 
     def __del__(self) -> None:
         """Safely close all threads opened by this object."""
-        self.teardown_sync(suppress_warning=True)
-        self.teardown_async(suppress_warning=True)
+        super().__del__()   # TODO: update tests
         self.__rx_frames_buffer.stop()
         self.__tx_frames_buffer.stop()
         self.__fc_frames_buffer.stop()
