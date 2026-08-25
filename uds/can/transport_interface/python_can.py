@@ -109,7 +109,7 @@ class PythonCanTransportInterface(AbstractCanTransportInterface):
 
     def __del__(self) -> None:
         """Safely close all threads opened by this object."""
-        super().__del__()   # TODO: update tests
+        super().__del__()
         self.__rx_frames_buffer.stop()
         self.__tx_frames_buffer.stop()
         self.__fc_frames_buffer.stop()
@@ -169,8 +169,13 @@ class PythonCanTransportInterface(AbstractCanTransportInterface):
         else:
             raise TypeError(f"Provided value is not None neither Notifier type. Actual type: {type(value)}.")
 
-    # TODO: is_sync_active
-    # TODO: is_async_active
+    def is_sync_active(self) -> bool:
+        """Get flag indicating whether CAN synchronous communication is active."""
+        return self.notifier is not None and not self.notifier.stopped
+
+    def is_async_active(self) -> bool:
+        """Get flag indicating whether CAN asynchronous communication is active."""
+        return self.async_notifier is not None and not self.async_notifier.stopped
 
     def setup_sync(self) -> None:  # TODO
         """Configure CAN frame notifier for synchronous communication."""

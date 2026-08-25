@@ -203,18 +203,16 @@ class TestPythonCanTransportInterface:
 
     # __del__
 
-    def test_del(self):
+    @patch(f"uds.transport_interface.abstract_transport_interface.AbstractTransportInterface.__del__")
+    def test_del(self, mock_parent_del):
         assert PythonCanTransportInterface.__del__(self.mock_can_transport_interface) is None
-        self.mock_can_transport_interface._PythonCanTransportInterface__teardown_sync_listening.assert_called_once_with(
-            suppress_warning=True)
-        self.mock_can_transport_interface._PythonCanTransportInterface__teardown_async_listening.assert_called_once_with(
-            suppress_warning=True)
         self.mock_can_transport_interface._PythonCanTransportInterface__rx_frames_buffer.stop.assert_called_once_with()
         self.mock_can_transport_interface._PythonCanTransportInterface__tx_frames_buffer.stop.assert_called_once_with()
         self.mock_can_transport_interface._PythonCanTransportInterface__fc_frames_buffer.stop.assert_called_once_with()
         self.mock_can_transport_interface._PythonCanTransportInterface__async_rx_frames_buffer.stop.assert_called_once_with()
         self.mock_can_transport_interface._PythonCanTransportInterface__async_tx_frames_buffer.stop.assert_called_once_with()
         self.mock_can_transport_interface._PythonCanTransportInterface__async_fc_frames_buffer.stop.assert_called_once_with()
+        mock_parent_del.assert_called_once_with()
 
     # notifier
 
@@ -305,6 +303,34 @@ class TestPythonCanTransportInterface:
         assert self.mock_can_transport_interface._PythonCanTransportInterface__async_notifier == value
         mock_isinstance.assert_called_once_with(value, self.mock_notifier)
         self.mock_warn.assert_not_called()
+
+    # is_sync_active
+
+    def test_is_sync_active__get__true(self):
+        self.mock_can_transport_interface.notifier = Mock(stopped=False)
+        assert PythonCanTransportInterface.is_sync_active(self.mock_can_transport_interface) is True
+
+    def test_is_sync_active__get__false__none(self):
+        self.mock_can_transport_interface.notifier = None
+        assert PythonCanTransportInterface.is_sync_active(self.mock_can_transport_interface) is False
+
+    def test_is_sync_active__get__false__stopped(self):
+        self.mock_can_transport_interface.notifier = Mock(stopped=True)
+        assert PythonCanTransportInterface.is_sync_active(self.mock_can_transport_interface) is False
+
+    # is_ssync_active
+
+    def test_is_async_active__get__true(self):
+        self.mock_can_transport_interface.async_notifier = Mock(stopped=False)
+        assert PythonCanTransportInterface.is_async_active(self.mock_can_transport_interface) is True
+
+    def test_is_async_active__get__false__none(self):
+        self.mock_can_transport_interface.async_notifier = None
+        assert PythonCanTransportInterface.is_async_active(self.mock_can_transport_interface) is False
+
+    def test_is_async_active__get__false__stopped(self):
+        self.mock_can_transport_interface.async_notifier = Mock(stopped=True)
+        assert PythonCanTransportInterface.is_async_active(self.mock_can_transport_interface) is False
 
     # __setup_sync_listening
 
