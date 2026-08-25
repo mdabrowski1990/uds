@@ -33,6 +33,13 @@ class TestAbstractTransportInterface:
         assert self.mock_transport_interface.network_manager == network_manager
         assert self.mock_transport_interface._AbstractTransportInterface__time_sync == self.mock_time_sync.return_value
 
+    # __del__
+
+    def test_del(self):
+        assert AbstractTransportInterface.__del__(self.mock_transport_interface) is None
+        self.mock_transport_interface.teardown_sync.assert_called_once_with(suppress_warning=True)
+        self.mock_transport_interface.teardown_async.assert_called_once_with(suppress_warning=True)
+
     # time_sync
 
     def test_time_sync__get(self):
