@@ -169,16 +169,45 @@ class PythonCanTransportInterface(AbstractCanTransportInterface):
         else:
             raise TypeError(f"Provided value is not None neither Notifier type. Actual type: {type(value)}.")
 
+    @property
     def is_sync_active(self) -> bool:
         """Get flag indicating whether CAN synchronous communication is active."""
-        return self.notifier is not None and not self.notifier.stopped
+        if self.notifier is None or self.notifier.stopped:
+            return False
+        if self.network_manager not in self.notifier._bus_list:
+            return False
+        if self.__rx_frames_buffer.is_stopped or self.__rx_frames_buffer not in self.notifier.listeners:
+            return False
+        if self.__tx_frames_buffer.is_stopped or self.__tx_frames_buffer not in self.notifier.listeners:
+            return False
+        if self.__fc_frames_buffer.is_stopped or self.__fc_frames_buffer not in self.notifier.listeners:
+            return False
+        return True
 
+    @property
     def is_async_active(self) -> bool:
         """Get flag indicating whether CAN asynchronous communication is active."""
-        return self.async_notifier is not None and not self.async_notifier.stopped
+        if self.async_notifier is None or self.async_notifier.stopped:
+            return False
+        if self.network_manager not in self.async_notifier._bus_list:
+            return False
+        if (self.__async_rx_frames_buffer.is_stopped
+                or self.__async_rx_frames_buffer not in self.async_notifier.listeners):
+            return False
+        if (self.__async_tx_frames_buffer.is_stopped
+                or self.__async_tx_frames_buffer not in self.async_notifier.listeners):
+            return False
+        if (self.__async_fc_frames_buffer.is_stopped
+                or self.__async_fc_frames_buffer not in self.async_notifier.listeners):
+            return False
+        return True
 
-    def setup_sync(self) -> None:  # TODO
-        """Configure CAN frame notifier for synchronous communication."""
+    def setup_sync(self) -> None:
+        """
+        Prepare this Transport Interface for synchronous communication.
+
+        This method activates synchronous communication and deactivates asynchronous communication.
+        """
         self.teardown_async()
         self.__rx_frames_buffer.is_stopped = False  # noqa: vulture
         self.__tx_frames_buffer.is_stopped = False  # noqa: vulture
@@ -189,7 +218,7 @@ class PythonCanTransportInterface(AbstractCanTransportInterface):
                                                 self.__tx_frames_buffer,
                                                 self.__fc_frames_buffer],
                                      timeout=self._MIN_NOTIFIER_TIMEOUT)
-        if self.network_manager != self.notifier.bus and self.network_manager not in self.notifier.bus:
+        if self.network_manager not in self.notifier._bus_list:
             self.notifier.add_bus(self.network_manager)
         if self.__rx_frames_buffer not in self.notifier.listeners:
             self.notifier.add_listener(self.__rx_frames_buffer)
@@ -198,7 +227,7 @@ class PythonCanTransportInterface(AbstractCanTransportInterface):
         if self.__fc_frames_buffer not in self.notifier.listeners:
             self.notifier.add_listener(self.__fc_frames_buffer)
 
-    def setup_async(self, loop: AbstractEventLoop) -> None:  # TODO
+    def setup_async(self, loop: AbstractEventLoop) -> None:
         """
         Configure CAN frame notifier for asynchronous communication.
 
@@ -221,7 +250,7 @@ class PythonCanTransportInterface(AbstractCanTransportInterface):
             self.__async_rx_frames_buffer.is_stopped = False  # noqa: vulture
             self.__async_tx_frames_buffer.is_stopped = False  # noqa: vulture
             self.__async_fc_frames_buffer.is_stopped = False  # noqa: vulture
-        if self.network_manager != self.async_notifier.bus and self.network_manager not in self.async_notifier.bus:
+        if self.network_manager not in self.async_notifier._bus_list:
             self.async_notifier.add_bus(self.network_manager)
         if self.__async_rx_frames_buffer not in self.async_notifier.listeners:
             self.async_notifier.add_listener(self.__async_rx_frames_buffer)
@@ -230,39 +259,33 @@ class PythonCanTransportInterface(AbstractCanTransportInterface):
         if self.__async_fc_frames_buffer not in self.async_notifier.listeners:
             self.async_notifier.add_listener(self.__async_fc_frames_buffer)
 
-    def teardown_sync(self, suppress_warning: bool = False) -> None:  # TODO
+    def teardown_sync(self, suppress_warning: bool = False) -> None:
         """
         Stop and remove CAN frame notifier for synchronous communication.
 
         :param suppress_warning: Do not warn about mixing Synchronous and Asynchronous implementation.
         """
+        super().teardown_sync(suppress_warning=suppress_warning)
         if self.notifier is not None:
             self.notifier.stop()
             self.notifier = None
             if not suppress_warning:
-                warn(message="Notifier (python-can) was stopped. "
-                             "Asynchronous (`PythonCanTransportInterface.async_send_packet`, "
-                             "`PythonCanTransportInterface.async_receive_packet methods`) "
-                             "and synchronous (`PythonCanTransportInterface.send_packet`, "
-                             "`PythonCanTransportInterface.receive_packet methods`) calls shall not be used together.",
-                     category=UserWarning)
+                warn(message="Notifier (python-can) for synchronous communication was stopped.",
+                     category=RuntimeWarning)
 
-    def teardown_async(self, suppress_warning: bool = False) -> None:  # TODO
+    def teardown_async(self, suppress_warning: bool = False) -> None:
         """
         Stop and remove CAN frame notifier for asynchronous communication.
 
         :param suppress_warning: Do not warn about mixing Synchronous and Asynchronous implementation.
         """
+        super().teardown_async(suppress_warning=suppress_warning)
         if self.async_notifier is not None:
             self.async_notifier.stop()
             self.async_notifier = None
             if not suppress_warning:
-                warn(message="Async notifier (python-can) was stopped. "
-                             "Asynchronous (`PythonCanTransportInterface.async_send_packet`, "
-                             "`PythonCanTransportInterface.async_receive_packet methods`) "
-                             "and synchronous (`PythonCanTransportInterface.send_packet`, "
-                             "`PythonCanTransportInterface.receive_packet methods`) calls shall not be used together.",
-                     category=UserWarning)
+                warn(message="Notifier (python-can) for asynchronous communication was stopped.",
+                     category=RuntimeWarning)
 
     def _send_cf_packets_block(self,  # TODO: move to AbstractCanTransportInterface
                                cf_packets_block: list[CanPacket],
