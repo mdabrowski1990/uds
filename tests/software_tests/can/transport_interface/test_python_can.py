@@ -770,10 +770,6 @@ class TestPythonCanTransportInterface:
             self.mock_can_transport_interface,
             timeout_timestamp=MagicMock()) == packet_records[-1])
 
-    # TODO: review / move
-
-
-
     # _wait_for_rx_packet
 
     @pytest.mark.parametrize("timeout", [0.001, 123.456])
@@ -792,8 +788,8 @@ class TestPythonCanTransportInterface:
         mock_get_message.assert_called_once()
         assert mock_is_timeout_reached.call_count == 2
 
-    @pytest.mark.parametrize("timeout", [None, 0.001, 123.456])
-    def test_wait_for_rx_packet(self, timeout):
+    @pytest.mark.parametrize("timeout", [None, 123.456])
+    def test_wait_for_rx_packet__wall_time_timestamp(self, timeout):
         mock_is_timeout_reached = Mock(return_value=False)
         self.mock_perf_counter.return_value = self.mock_can_transport_interface._MAX_LISTENER_TIMEOUT = MagicMock(
             __sub__=lambda this, other: this,
@@ -802,13 +798,12 @@ class TestPythonCanTransportInterface:
             __le__=mock_is_timeout_reached)
         mock_get_message = Mock()
         mock_frames_buffer = Mock(get_message=mock_get_message)
+        self.mock_can_transport_interface._INTERFACES_USING_WALL_TIME_TIMESTAMPS = [self.mock_can_transport_interface.backend]
         assert (PythonCanTransportInterface._wait_for_rx_packet(self.mock_can_transport_interface,
                                                                 buffer=mock_frames_buffer,
                                                                 timeout=timeout)
                 == self.mock_can_packet_record.return_value)
         self.mock_datetime.fromtimestamp.assert_called_once_with(mock_get_message.return_value.timestamp)
-        self.mock_can_transport_interface.time_sync.time_to_perf_counter.assert_called_once_with(
-            mock_get_message.return_value.timestamp)
         self.mock_can_transport_interface.addressing_information.is_input_packet.assert_called_once_with(
             can_id=mock_get_message.return_value.arbitration_id,
             raw_frame_data=mock_get_message.return_value.data)
@@ -818,7 +813,36 @@ class TestPythonCanTransportInterface:
             addressing_type=self.mock_can_transport_interface.addressing_information.is_input_packet.return_value,
             addressing_format=self.mock_can_transport_interface.segmenter.addressing_format,
             transmission_time=self.mock_datetime.fromtimestamp.return_value,
-            transmission_timestamp=self.mock_can_transport_interface.time_sync.time_to_perf_counter.return_value)
+            transmission_timestamp=self.mock_perf_counter.return_value,
+            transmission_native_timestamp=mock_get_message.return_value.timestamp)
+
+    @pytest.mark.parametrize("timeout", [None, 0.001])
+    def test_wait_for_rx_packet__other_timestamp(self, timeout):
+        mock_is_timeout_reached = Mock(return_value=False)
+        self.mock_perf_counter.return_value = self.mock_can_transport_interface._MAX_LISTENER_TIMEOUT = MagicMock(
+            __sub__=lambda this, other: this,
+            __add__=lambda this, other: this,
+            __mul__=lambda this, other: this,
+            __le__=mock_is_timeout_reached)
+        mock_get_message = Mock()
+        mock_frames_buffer = Mock(get_message=mock_get_message)
+        self.mock_can_transport_interface._INTERFACES_USING_WALL_TIME_TIMESTAMPS = []
+        assert (PythonCanTransportInterface._wait_for_rx_packet(self.mock_can_transport_interface,
+                                                                buffer=mock_frames_buffer,
+                                                                timeout=timeout)
+                == self.mock_can_packet_record.return_value)
+        self.mock_datetime.now.assert_called_once_with()
+        self.mock_can_transport_interface.addressing_information.is_input_packet.assert_called_once_with(
+            can_id=mock_get_message.return_value.arbitration_id,
+            raw_frame_data=mock_get_message.return_value.data)
+        self.mock_can_packet_record.assert_called_once_with(
+            frame=mock_get_message.return_value,
+            direction=TransmissionDirection.RECEIVED,
+            addressing_type=self.mock_can_transport_interface.addressing_information.is_input_packet.return_value,
+            addressing_format=self.mock_can_transport_interface.segmenter.addressing_format,
+            transmission_time=self.mock_datetime.now.return_value,
+            transmission_timestamp=self.mock_perf_counter.return_value,
+            transmission_native_timestamp=mock_get_message.return_value.timestamp)
 
     # _async_wait_for_rx_packet
 
@@ -838,9 +862,9 @@ class TestPythonCanTransportInterface:
         self.mock_can_transport_interface.addressing_information.is_input_packet.assert_not_called()
         assert mock_is_timeout_reached.call_count == 2
 
-    @pytest.mark.parametrize("timeout", [None, 0.001, 123.456])
+    @pytest.mark.parametrize("timeout", [None, 123.456])
     @pytest.mark.asyncio
-    async def test_async_wait_for_rx_packet(self, timeout):
+    async def test_async_wait_for_rx_packet__wall_time_timestamp(self, timeout):
         mock_is_timeout_reached = Mock(return_value=False)
         mock_buffer = Mock(get_message=AsyncMock())
         self.mock_perf_counter.return_value = self.mock_can_transport_interface._MAX_LISTENER_TIMEOUT = MagicMock(
@@ -848,14 +872,13 @@ class TestPythonCanTransportInterface:
             __add__=lambda this, other: this,
             __mul__=lambda this, other: this,
             __le__=mock_is_timeout_reached)
+        self.mock_can_transport_interface._INTERFACES_USING_WALL_TIME_TIMESTAMPS = [self.mock_can_transport_interface.backend]
         assert (await PythonCanTransportInterface._async_wait_for_rx_packet(self.mock_can_transport_interface,
                                                                             buffer=mock_buffer,
                                                                             timeout=timeout)
                 == self.mock_can_packet_record.return_value)
         mock_frame = mock_buffer.get_message.return_value
         self.mock_datetime.fromtimestamp.assert_called_once_with(mock_frame.timestamp)
-        self.mock_can_transport_interface.time_sync.time_to_perf_counter.assert_called_once_with(
-            mock_frame.timestamp)
         self.mock_can_transport_interface.addressing_information.is_input_packet.assert_called_once_with(
             can_id=mock_frame.arbitration_id,
             raw_frame_data=mock_frame.data)
@@ -865,7 +888,39 @@ class TestPythonCanTransportInterface:
             addressing_type=self.mock_can_transport_interface.addressing_information.is_input_packet.return_value,
             addressing_format=self.mock_can_transport_interface.segmenter.addressing_format,
             transmission_time=self.mock_datetime.fromtimestamp.return_value,
-            transmission_timestamp=self.mock_can_transport_interface.time_sync.time_to_perf_counter.return_value)
+            transmission_timestamp=self.mock_perf_counter.return_value,
+            transmission_native_timestamp=mock_frame.timestamp)
+
+    @pytest.mark.parametrize("timeout", [None, 0.001])
+    @pytest.mark.asyncio
+    async def test_async_wait_for_rx_packet__other_timestamp(self, timeout):
+        mock_is_timeout_reached = Mock(return_value=False)
+        mock_buffer = Mock(get_message=AsyncMock())
+        self.mock_perf_counter.return_value = self.mock_can_transport_interface._MAX_LISTENER_TIMEOUT = MagicMock(
+            __sub__=lambda this, other: this,
+            __add__=lambda this, other: this,
+            __mul__=lambda this, other: this,
+            __le__=mock_is_timeout_reached)
+        self.mock_can_transport_interface._INTERFACES_USING_WALL_TIME_TIMESTAMPS = []
+        assert (await PythonCanTransportInterface._async_wait_for_rx_packet(self.mock_can_transport_interface,
+                                                                            buffer=mock_buffer,
+                                                                            timeout=timeout)
+                == self.mock_can_packet_record.return_value)
+        mock_frame = mock_buffer.get_message.return_value
+        self.mock_datetime.now.assert_called_once_with()
+        self.mock_can_transport_interface.addressing_information.is_input_packet.assert_called_once_with(
+            can_id=mock_frame.arbitration_id,
+            raw_frame_data=mock_frame.data)
+        self.mock_can_packet_record.assert_called_once_with(
+            frame=mock_frame,
+            direction=TransmissionDirection.RECEIVED,
+            addressing_type=self.mock_can_transport_interface.addressing_information.is_input_packet.return_value,
+            addressing_format=self.mock_can_transport_interface.segmenter.addressing_format,
+            transmission_time=self.mock_datetime.now.return_value,
+            transmission_timestamp=self.mock_perf_counter.return_value,
+            transmission_native_timestamp=mock_frame.timestamp)
+
+    # TODO: review / move
 
     # _wait_for_tx_frame
 

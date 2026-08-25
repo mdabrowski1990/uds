@@ -125,7 +125,7 @@ class PythonCanTransportInterface(AbstractCanTransportInterface):
     def network_manager(self, value: BusABC) -> None:
         """Set python-can Bus object to be used by this Transport Interface for CAN communication."""
         AbstractCanTransportInterface.network_manager.fset(self, value=value)
-        print(f"{self.__dict__.pop("backend", None) = }")
+        self.__dict__.pop("backend", None)
 
     @cached_property
     def backend(self) -> str:
@@ -376,7 +376,8 @@ class PythonCanTransportInterface(AbstractCanTransportInterface):
                                direction=TransmissionDirection.RECEIVED,
                                addressing_type=packet_addressing_type,
                                addressing_format=self.segmenter.addressing_format,
-                               transmission_time=datetime.fromtimestamp(received_frame.timestamp),
+                               transmission_time=datetime.fromtimestamp(received_frame.timestamp)
+                               if self.backend in self._INTERFACES_USING_WALL_TIME_TIMESTAMPS else datetime.now(),
                                transmission_timestamp=perf_counter(),
                                transmission_native_timestamp=received_frame.timestamp)
 
@@ -412,14 +413,14 @@ class PythonCanTransportInterface(AbstractCanTransportInterface):
                 packet_addressing_type = self.addressing_information.is_input_packet(
                     can_id=received_frame.arbitration_id,
                     raw_frame_data=received_frame.data)
-        frame_datetime = datetime.fromtimestamp(received_frame.timestamp)
-        frame_timestamp = self.time_sync.time_to_perf_counter(received_frame.timestamp)
         return CanPacketRecord(frame=received_frame,
                                direction=TransmissionDirection.RECEIVED,
                                addressing_type=packet_addressing_type,
                                addressing_format=self.segmenter.addressing_format,
-                               transmission_time=frame_datetime,
-                               transmission_timestamp=frame_timestamp)
+                               transmission_time=datetime.fromtimestamp(received_frame.timestamp)
+                               if self.backend in self._INTERFACES_USING_WALL_TIME_TIMESTAMPS else datetime.now(),
+                               transmission_timestamp=perf_counter(),
+                               transmission_native_timestamp=received_frame.timestamp)
 
     def _wait_for_tx_frame(self,
                            buffer: BufferedReader,
@@ -438,8 +439,8 @@ class PythonCanTransportInterface(AbstractCanTransportInterface):
         """
         timestamp_timeout = perf_counter() + self._MAX_TX_WAIT
         time_sent = self.time_sync.perf_counter_to_time(timestamp)
-        min_time_arrived = time_sent - self._TX_TOLERANCE
-        max_time_arrived = time_sent + self._TX_TOLERANCE
+        min_time_arrived = time_sent - self._TX_TOLERANCE  # TODO: remove
+        max_time_arrived = time_sent + self._TX_TOLERANCE  # TODO: remove
         sent_frame = None
         while sent_frame is None:
             timestamp_now = perf_counter()
@@ -472,8 +473,8 @@ class PythonCanTransportInterface(AbstractCanTransportInterface):
         """
         timestamp_timeout = perf_counter() + self._MAX_TX_WAIT
         time_sent = self.time_sync.perf_counter_to_time(timestamp)
-        min_time_arrived = time_sent - self._TX_TOLERANCE
-        max_time_arrived = time_sent + self._TX_TOLERANCE
+        min_time_arrived = time_sent - self._TX_TOLERANCE  # TODO: remove
+        max_time_arrived = time_sent + self._TX_TOLERANCE  # TODO: remove
         sent_frame = None
         while sent_frame is None:
             timestamp_now = perf_counter()
