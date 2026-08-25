@@ -3,22 +3,42 @@
 __all__ = ["AbstractCanTransportInterface"]
 
 from abc import ABC, abstractmethod
-from asyncio import AbstractEventLoop
+from asyncio import AbstractEventLoop, get_running_loop
+from asyncio import sleep as async_sleep
+from asyncio import timeout as async_timeout
+from asyncio.exceptions import TimeoutError as AsyncioTimeoutError
+from datetime import datetime
+from time import perf_counter, sleep
 from typing import Any
 from warnings import warn
 
-from uds.addressing import TransmissionDirection
-from uds.message import UdsMessageRecord
+from can import AsyncBufferedReader, BufferedReader, BusABC
+from can import Message as PythonCanFrame
+from can import Notifier
+from can.interfaces import BACKENDS
+from uds.addressing import AddressingType, TransmissionDirection
+from uds.message import UdsMessage, UdsMessageRecord
 from uds.transport_interface import AbstractTransportInterface
-from uds.utilities import TimeMillisecondsAlias, ValueWarning, validate_time
+from uds.utilities import (
+    MessageTransmissionNotStartedError,
+    NewMessageReceptionWarning,
+    TimeMillisecondsAlias,
+    TimestampAlias,
+    UnexpectedPacketReceptionWarning,
+    ValueWarning,
+    validate_time,
+    validate_timeout,
+)
 
 from ..addressing import AbstractCanAddressingInformation
-from ..frame import CanVersion
+from ..frame import CanDlcHandler, CanIdHandler, CanVersion
 from ..packet import (
     AbstractFlowControlParametersGenerator,
+    CanFlowStatus,
     CanPacket,
     CanPacketRecord,
     CanPacketType,
+    CanSTminTranslator,
     DefaultFlowControlParametersGenerator,
 )
 from ..segmenter import CanSegmenter
@@ -545,6 +565,77 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
         self.__n_cr_measured = None
 
     # Packets transmission and reception
+
+    def _send_cf_packets_block(self,
+                               cf_packets_block: list[CanPacket],
+                               delay: TimeMillisecondsAlias,
+                               fc_transmission_timestamp: float) -> tuple[CanPacketRecord, ...]:
+        """
+        Send a block of Consecutive Frame CAN packets.
+
+        :param cf_packets_block: Consecutive Frame CAN packets to send.
+        :param delay: Minimum delay between sending following Consecutive Frame packets [ms].
+        :param fc_transmission_timestamp: Transmission timestamp of the preceding Flow Control packet.
+
+        :return: Records containing historical information about the transmitted Consecutive Frame CAN packets.
+        """
+        packet_records = []
+        timestamp_send = fc_transmission_timestamp + delay / 1000.
+        for cf_packet in cf_packets_block:
+            time_to_wait_s = timestamp_send - perf_counter()
+            if time_to_wait_s > 0:
+                sleep(time_to_wait_s)
+            cf_packet_record = self.send_packet(cf_packet)
+            timestamp_send = cf_packet_record.transmission_timestamp + delay / 1000.
+            packet_records.append(cf_packet_record)
+        return tuple(packet_records)
+
+    async def _async_send_cf_packets_block(self,
+                                           cf_packets_block: list[CanPacket],
+                                           delay: TimeMillisecondsAlias,
+                                           fc_transmission_timestamp: float,
+                                           loop: AbstractEventLoop) -> tuple[CanPacketRecord, ...]:
+        """
+        Asynchronously send a block of Consecutive Frame CAN packets.
+
+        :param cf_packets_block: Consecutive Frame CAN packets to send.
+        :param delay: Minimum delay between sending following Consecutive Frame packets [ms].
+        :param fc_transmission_timestamp: Transmission timestamp of the preceding Flow Control packet.
+        :param loop: The asyncio event loop to use for scheduling this task.
+
+        :return: Records containing historical information about the transmitted Consecutive Frame CAN packets.
+        """
+        packet_records = []
+        timestamp_send = fc_transmission_timestamp + delay / 1000.
+        for cf_packet in cf_packets_block:
+            time_to_wait_s = timestamp_send - perf_counter()
+            if time_to_wait_s > 0:
+                await async_sleep(time_to_wait_s)
+            cf_packet_record = await self.async_send_packet(cf_packet, loop=loop)
+            timestamp_send = cf_packet_record.transmission_timestamp + delay / 1000.
+            packet_records.append(cf_packet_record)
+        return tuple(packet_records)
+
+    @abstractmethod
+    def _wait_for_flow_control(self, timeout_timestamp: float) -> CanPacketRecord:
+        """
+        Wait until a Flow Control CAN packet is received.
+
+        :param timeout_timestamp: Deadline for receiving the Flow Control CAN packet,
+            expressed as a :func:`time.perf_counter` timestamp.
+
+        :return: Record containing historical information about the received Flow Control CAN packet.
+        """
+
+    async def _async_wait_for_flow_control(self, timeout_timestamp: float) -> CanPacketRecord:
+        """
+        Asynchronously wait until a Flow Control CAN packet is received.
+
+        :param timeout_timestamp: Deadline for receiving the Flow Control CAN packet,
+            expressed as a :func:`time.perf_counter` timestamp.
+
+        :return: Record containing historical information about the received Flow Control CAN packet.
+        """
 
     @abstractmethod
     def send_packet(self, packet: CanPacket) -> CanPacketRecord:  # type: ignore

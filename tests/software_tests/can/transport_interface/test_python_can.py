@@ -213,6 +213,36 @@ class TestPythonCanTransportInterface:
         self.mock_can_transport_interface._PythonCanTransportInterface__async_fc_frames_buffer.stop.assert_called_once_with()
         mock_parent_del.assert_called_once_with()
 
+    # network_manager
+
+    @patch("uds.transport_interface.abstract_transport_interface.AbstractTransportInterface.network_manager")
+    def test_network_manager__get(self, mock_network_manager):
+        assert (PythonCanTransportInterface.network_manager.fget(self.mock_can_transport_interface)
+                == mock_network_manager)
+
+    def test_network_manager__set(self):
+        mock_value = Mock()
+        self.mock_can_transport_interface.__dict__["backend"] = Mock()
+        assert PythonCanTransportInterface.network_manager.fset(self.mock_can_transport_interface,
+                                                                value=mock_value) is None
+        assert "backend" not in self.mock_can_transport_interface.__dict__
+
+    # backed
+
+    def test_backed__get__runtime_error(self):
+        self.mock_can_transport_interface.network_manager = Mock(spec=BusABC)
+        with pytest.raises(RuntimeError):
+            PythonCanTransportInterface.backend.__get__(self.mock_can_transport_interface)
+
+    @pytest.mark.parametrize("cls, name", [
+        (KvaserBus, "kvaser"),
+        (VectorBus, "vector"),
+        (VirtualBus, "virtual"),
+    ])
+    def test_backed__get__valid(self, cls, name):
+        self.mock_can_transport_interface.network_manager = Mock(spec=cls)
+        assert PythonCanTransportInterface.backend.__get__(self.mock_can_transport_interface) == name
+
     # notifier
 
     def test_notifier__get(self):
@@ -497,7 +527,7 @@ class TestPythonCanTransportInterface:
             self.mock_can_transport_interface.network_manager)
         self.mock_can_transport_interface.notifier.add_listener.assert_not_called()
 
-    # __setup_async
+    # setup_async
 
     def test_setup_async__no_notifier(self):
         mock_loop = Mock()
@@ -709,74 +739,6 @@ class TestPythonCanTransportInterface:
         mock_notifier.stop.assert_called_once_with()
         self.mock_warn.assert_not_called()
 
-
-    # TODO: review / move
-
-    # _send_cf_packets_block
-
-    @pytest.mark.parametrize("packets, delay", [
-        ([Mock(spec=CanPacket), Mock(spec=CanPacket)], 0),
-        ([Mock(spec=CanPacket), Mock(spec=CanPacket), Mock(spec=CanPacket)], 12.34),
-    ])
-    def test_send_cf_packets_block(self, packets, delay):
-        mock_fc_timestamp_gt = Mock(return_value=False)
-        mock_cf_timestamp_gt = Mock(return_value=True)
-        mock_fc_transmission_timestamp = MagicMock(__add__=lambda this, other: this,
-                                                   __sub__=lambda this, other: this,
-                                                   __gt__=mock_fc_timestamp_gt)
-        mock_cf_transmission_timestamp = MagicMock(__add__=lambda this, other: this,
-                                                   __sub__=lambda this, other: this,
-                                                   __gt__=mock_cf_timestamp_gt)
-        packet_records = tuple(MagicMock(spec=CanPacketRecord,
-                                         transmission_timestamp=mock_cf_transmission_timestamp)
-                               for _ in packets)
-        self.mock_can_transport_interface.send_packet.side_effect = packet_records
-        assert (PythonCanTransportInterface._send_cf_packets_block
-                (self.mock_can_transport_interface,
-                 cf_packets_block=packets,
-                 fc_transmission_timestamp=mock_fc_transmission_timestamp,
-                 delay=delay) == packet_records)
-        self.mock_can_transport_interface.send_packet.assert_has_calls(
-            [call(packet) for packet in packets], any_order=False)
-        mock_fc_timestamp_gt.assert_called_once_with(0)
-        mock_cf_timestamp_gt.assert_has_calls([call(0)] * len(packets[1:]))
-        self.mock_sleep.assert_called()
-        self.mock_async_sleep.assert_not_called()
-
-    # _async_send_cf_packets_block
-
-    @pytest.mark.parametrize("packets, delay", [
-        ([Mock(spec=CanPacket), Mock(spec=CanPacket)], 0),
-        ([Mock(spec=CanPacket), Mock(spec=CanPacket), Mock(spec=CanPacket)], 12.34),
-    ])
-    @pytest.mark.asyncio
-    async def test_async_send_cf_packets_block(self, packets, delay):
-        mock_loop = Mock()
-        mock_fc_timestamp_gt = Mock(return_value=False)
-        mock_cf_timestamp_gt = Mock(return_value=True)
-        mock_fc_transmission_timestamp = MagicMock(__add__=lambda this, other: this,
-                                                   __sub__=lambda this, other: this,
-                                                   __gt__=mock_fc_timestamp_gt)
-        mock_cf_transmission_timestamp = MagicMock(__add__=lambda this, other: this,
-                                                   __sub__=lambda this, other: this,
-                                                   __gt__=mock_cf_timestamp_gt)
-        packet_records = tuple(MagicMock(spec=CanPacketRecord,
-                                         transmission_timestamp=mock_cf_transmission_timestamp)
-                               for _ in packets)
-        self.mock_can_transport_interface.async_send_packet.side_effect = packet_records
-        assert await PythonCanTransportInterface._async_send_cf_packets_block(
-            self.mock_can_transport_interface,
-            cf_packets_block=packets,
-            delay=delay,
-            fc_transmission_timestamp=mock_fc_transmission_timestamp,
-            loop=mock_loop) == packet_records
-        self.mock_can_transport_interface.async_send_packet.assert_has_calls(
-            [call(packet, loop=mock_loop) for packet in packets], any_order=False)
-        mock_fc_timestamp_gt.assert_called_once_with(0)
-        mock_cf_timestamp_gt.assert_has_calls([call(0)] * len(packets[1:]))
-        self.mock_sleep.assert_not_called()
-        self.mock_async_sleep.assert_called()
-
     # _wait_for_flow_control
 
     @pytest.mark.parametrize("packet_records", [
@@ -788,9 +750,9 @@ class TestPythonCanTransportInterface:
     ])
     def test_wait_for_flow_control(self, packet_records):
         self.mock_can_transport_interface._wait_for_rx_packet.side_effect = packet_records
-        assert (PythonCanTransportInterface._wait_for_flow_control(self.mock_can_transport_interface,
-                                                                   last_packet_transmission_timestamp=MagicMock())
-                == packet_records[-1])
+        assert (PythonCanTransportInterface._wait_for_flow_control(
+            self.mock_can_transport_interface,
+            timeout_timestamp=MagicMock()) == packet_records[-1])
 
     # _async_wait_for_flow_control
 
@@ -804,9 +766,13 @@ class TestPythonCanTransportInterface:
     @pytest.mark.asyncio
     async def test_async_wait_for_flow_control(self, packet_records):
         self.mock_can_transport_interface._async_wait_for_rx_packet.side_effect = packet_records
-        assert (await PythonCanTransportInterface._async_wait_for_flow_control(self.mock_can_transport_interface,
-                                                                               last_packet_transmission_timestamp=MagicMock())
-                == packet_records[-1])
+        assert (await PythonCanTransportInterface._async_wait_for_flow_control(
+            self.mock_can_transport_interface,
+            timeout_timestamp=MagicMock()) == packet_records[-1])
+
+    # TODO: review / move
+
+
 
     # _wait_for_rx_packet
 
