@@ -40,10 +40,8 @@ class PythonCanTransportInterface(AbstractCanTransportInterface):
     .. note:: Documentation for python-can package: https://python-can.readthedocs.io/
     """
 
-    _TX_TOLERANCE: float = 0.01  # s
-    """Tolerance of CAN frames transmission."""
     _MAX_TX_WAIT: float = 0.005  # s
-    """Tolerance of CAN frames transmission."""
+    """Maximal time to wait for CAN frames transmission."""
 
     _MAX_LISTENER_TIMEOUT: float = 4280.  # s
     """Maximal timeout value accepted by python-can listeners."""
@@ -435,12 +433,9 @@ class PythonCanTransportInterface(AbstractCanTransportInterface):
 
         :raise TimeoutError: Timeout was reached before a CAN frame was observed.
 
-        :return: Record with historic information about sent CAN frame or None if not observed.
+        :return: Record containing historical information about the transmitted CAN packet or None if not observed.
         """
         timestamp_timeout = perf_counter() + self._MAX_TX_WAIT
-        time_sent = self.time_sync.perf_counter_to_time(timestamp)
-        min_time_arrived = time_sent - self._TX_TOLERANCE  # TODO: remove
-        max_time_arrived = time_sent + self._TX_TOLERANCE  # TODO: remove
         sent_frame = None
         while sent_frame is None:
             timestamp_now = perf_counter()
@@ -451,8 +446,7 @@ class PythonCanTransportInterface(AbstractCanTransportInterface):
             if (sent_frame is None
                     or sent_frame.is_rx
                     or sent_frame.arbitration_id != frame.arbitration_id
-                    or sent_frame.data != frame.data
-                    or not min_time_arrived <= sent_frame.timestamp <= max_time_arrived):
+                    or sent_frame.data != frame.data):
                 sent_frame = None  # clear as this is a record of another frame
         return sent_frame
 
@@ -469,12 +463,9 @@ class PythonCanTransportInterface(AbstractCanTransportInterface):
 
         :raise TimeoutError: Timeout was reached before a CAN frame was observed.
 
-        :return: Record with historic information about sent CAN frame or None if not observed.
+        :return: Record containing historical information about the transmitted CAN packet or None if not observed.
         """
         timestamp_timeout = perf_counter() + self._MAX_TX_WAIT
-        time_sent = self.time_sync.perf_counter_to_time(timestamp)
-        min_time_arrived = time_sent - self._TX_TOLERANCE  # TODO: remove
-        max_time_arrived = time_sent + self._TX_TOLERANCE  # TODO: remove
         sent_frame = None
         while sent_frame is None:
             timestamp_now = perf_counter()
@@ -486,8 +477,7 @@ class PythonCanTransportInterface(AbstractCanTransportInterface):
             if (sent_frame is None
                     or sent_frame.is_rx
                     or sent_frame.arbitration_id != frame.arbitration_id
-                    or sent_frame.data != frame.data
-                    or not min_time_arrived <= sent_frame.timestamp <= max_time_arrived):
+                    or sent_frame.data != frame.data):
                 sent_frame = None  # clear as this is a record of another frame
         return sent_frame
 

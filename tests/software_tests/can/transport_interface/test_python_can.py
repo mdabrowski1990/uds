@@ -920,13 +920,11 @@ class TestPythonCanTransportInterface:
             transmission_timestamp=self.mock_perf_counter.return_value,
             transmission_native_timestamp=mock_frame.timestamp)
 
-    # TODO: review / move
-
     # _wait_for_tx_frame
 
     def test_wait_for_tx_frame__timeout(self):
         mock_is_timeout_reached = Mock(return_value=True)
-        self.mock_perf_counter.return_value = self.mock_can_transport_interface._MAX_LISTENER_TIMEOUT = MagicMock(
+        self.mock_perf_counter.return_value = MagicMock(
             __sub__=lambda this, other: this,
             __add__=lambda this, other: this,
             __mul__=lambda this, other: this,
@@ -945,21 +943,15 @@ class TestPythonCanTransportInterface:
          Mock(arbitration_id=2, data=(0x52, 0xFF, 0xC0), is_rx=False)),
         (Mock(arbitration_id=0x7DF, data=[1, 2, 3, 4]),
          Mock(arbitration_id=0x7DF, data=[5, 6, 7, 8], is_rx=False)),
-        (Mock(arbitration_id=0x7DF, data=[1, 2, 3, 4]),
-         Mock(arbitration_id=0x7DF, data=[1, 2, 3, 4], is_rx=False, timestamp=4.9)),
-        (Mock(arbitration_id=0x7DF, data=[1, 2, 3, 4]),
-         Mock(arbitration_id=0x7DF, data=[1, 2, 3, 4], is_rx=False, timestamp=7.1)),
     ])
     def test_wait_for_tx_frame__other_then_timeout(self, can_frame, observed_can_frame):
         mock_buffer = Mock(get_message=Mock(return_value=observed_can_frame))
         mock_is_timeout_reached = Mock(side_effect=[False, True])
-        self.mock_perf_counter.return_value = self.mock_can_transport_interface._MAX_LISTENER_TIMEOUT = MagicMock(
+        self.mock_perf_counter.return_value = MagicMock(
             __sub__=lambda this, other: this,
             __add__=lambda this, other: this,
             __mul__=lambda this, other: this,
             __le__=mock_is_timeout_reached)
-        self.mock_can_transport_interface._TX_TOLERANCE = 1
-        self.mock_can_transport_interface.time_sync.perf_counter_to_time.return_value = 6
         with pytest.raises(TimeoutError):
             PythonCanTransportInterface._wait_for_tx_frame(self.mock_can_transport_interface,
                                                            buffer=mock_buffer,
@@ -970,20 +962,18 @@ class TestPythonCanTransportInterface:
 
     @pytest.mark.parametrize("can_frame, observed_can_frame", [
         (Mock(arbitration_id=0x123, data=[0x00, 0xFF]),
-         Mock(arbitration_id=0x123, data=[0x00, 0xFF], is_rx=False, timestamp=5.66)),
+         Mock(arbitration_id=0x123, data=[0x00, 0xFF], is_rx=False)),
         (Mock(arbitration_id=0xF6B26, data=[0x12, 0x34, 0x56, 0x78, 0x9A]),
-         Mock(arbitration_id=0xF6B26, data=[0x12, 0x34, 0x56, 0x78, 0x9A], is_rx=False, timestamp=5.68)),
+         Mock(arbitration_id=0xF6B26, data=[0x12, 0x34, 0x56, 0x78, 0x9A], is_rx=False)),
     ])
     def test_wait_for_tx_frame__valid(self, can_frame, observed_can_frame):
         mock_buffer = Mock(get_message=Mock(return_value=observed_can_frame))
         mock_is_timeout_reached = Mock(return_value=False)
-        self.mock_perf_counter.return_value = self.mock_can_transport_interface._MAX_LISTENER_TIMEOUT = MagicMock(
+        self.mock_perf_counter.return_value = MagicMock(
             __sub__=lambda this, other: this,
             __add__=lambda this, other: this,
             __mul__=lambda this, other: this,
             __le__=mock_is_timeout_reached)
-        self.mock_can_transport_interface._TX_TOLERANCE = 0.01
-        self.mock_can_transport_interface.time_sync.perf_counter_to_time.return_value = 5.67
         assert PythonCanTransportInterface._wait_for_tx_frame(self.mock_can_transport_interface,
                                                               buffer=mock_buffer,
                                                               frame=can_frame,
@@ -996,7 +986,7 @@ class TestPythonCanTransportInterface:
     @pytest.mark.asyncio
     async def test_async_wait_for_tx_frame__timeout(self):
         mock_is_timeout_reached = Mock(return_value=True)
-        self.mock_perf_counter.return_value = self.mock_can_transport_interface._MAX_LISTENER_TIMEOUT = MagicMock(
+        self.mock_perf_counter.return_value =  MagicMock(
             __sub__=lambda this, other: this,
             __add__=lambda this, other: this,
             __mul__=lambda this, other: this,
@@ -1015,21 +1005,15 @@ class TestPythonCanTransportInterface:
          Mock(arbitration_id=2, data=(0x52, 0xFF, 0xC0), is_rx=False)),
         (Mock(arbitration_id=0x7DF, data=[1, 2, 3, 4]),
          Mock(arbitration_id=0x7DF, data=[5, 6, 7, 8], is_rx=False)),
-        (Mock(arbitration_id=0x7DF, data=[1, 2, 3, 4]),
-         Mock(arbitration_id=0x7DF, data=[1, 2, 3, 4], is_rx=False, timestamp=7.49)),
-        (Mock(arbitration_id=0x7DF, data=[1, 2, 3, 4]),
-         Mock(arbitration_id=0x7DF, data=[1, 2, 3, 4], is_rx=False, timestamp=8.01)),
     ])
     @pytest.mark.asyncio
     async def test_async_wait_for_tx_frame__other_then_timeout(self, can_frame, observed_can_frame):
         mock_is_timeout_reached = Mock(side_effect=[False, True])
-        self.mock_perf_counter.return_value = self.mock_can_transport_interface._MAX_LISTENER_TIMEOUT = MagicMock(
+        self.mock_perf_counter.return_value = MagicMock(
             __sub__=lambda this, other: this,
             __add__=lambda this, other: this,
             __mul__=lambda this, other: this,
             __le__=mock_is_timeout_reached)
-        self.mock_can_transport_interface._TX_TOLERANCE = 0.25
-        self.mock_can_transport_interface.time_sync.perf_counter_to_time.return_value = 7.75
         with pytest.raises(TimeoutError):
             await PythonCanTransportInterface._async_wait_for_tx_frame(
                 self.mock_can_transport_interface,
@@ -1047,19 +1031,20 @@ class TestPythonCanTransportInterface:
     @pytest.mark.asyncio
     async def test_async_wait_for_tx_frame__valid(self, can_frame, observed_can_frame):
         mock_is_timeout_reached = Mock(return_value=False)
-        self.mock_perf_counter.return_value = self.mock_can_transport_interface._MAX_LISTENER_TIMEOUT = MagicMock(
+        self.mock_perf_counter.return_value = MagicMock(
             __sub__=lambda this, other: this,
             __add__=lambda this, other: this,
             __mul__=lambda this, other: this,
             __le__=mock_is_timeout_reached)
-        self.mock_can_transport_interface._TX_TOLERANCE = 0.05
-        self.mock_can_transport_interface.time_sync.perf_counter_to_time.return_value = 100.161
         assert await PythonCanTransportInterface._async_wait_for_tx_frame(self.mock_can_transport_interface,
                                                                           buffer=Mock(get_message=AsyncMock(
                                                                               return_value=observed_can_frame)),
                                                                           frame=can_frame,
                                                                           timestamp=Mock()) == observed_can_frame
         assert mock_is_timeout_reached.call_count == 1
+
+
+    # TODO: review / move
 
     # _receive_cf_packets_block
 
