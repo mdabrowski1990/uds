@@ -223,8 +223,7 @@ class TestPythonCanTransportInterface:
     def test_network_manager__set(self):
         mock_value = Mock()
         self.mock_can_transport_interface.__dict__["backend"] = Mock()
-        assert PythonCanTransportInterface.network_manager.fset(self.mock_can_transport_interface,
-                                                                value=mock_value) is None
+        assert PythonCanTransportInterface.network_manager.fset(self.mock_can_transport_interface, mock_value) is None
         assert "backend" not in self.mock_can_transport_interface.__dict__
 
     # backed
@@ -924,16 +923,15 @@ class TestPythonCanTransportInterface:
 
     def test_wait_for_tx_frame__timeout(self):
         mock_is_timeout_reached = Mock(return_value=True)
-        self.mock_perf_counter.return_value = MagicMock(
-            __sub__=lambda this, other: this,
-            __add__=lambda this, other: this,
-            __mul__=lambda this, other: this,
-            __le__=mock_is_timeout_reached)
+        mock_timestamp = MagicMock(__sub__=lambda this, other: this,
+                                    __add__=lambda this, other: this,
+                                    __mul__=lambda this, other: this,
+                                    __le__=mock_is_timeout_reached)
         with pytest.raises(TimeoutError):
             PythonCanTransportInterface._wait_for_tx_frame(self.mock_can_transport_interface,
                                                            buffer=Mock(),
                                                            frame=Mock(),
-                                                           timestamp=Mock())
+                                                           timestamp=mock_timestamp)
         mock_is_timeout_reached.assert_called_once()
 
     @pytest.mark.parametrize("can_frame, observed_can_frame", [
@@ -947,16 +945,15 @@ class TestPythonCanTransportInterface:
     def test_wait_for_tx_frame__other_then_timeout(self, can_frame, observed_can_frame):
         mock_buffer = Mock(get_message=Mock(return_value=observed_can_frame))
         mock_is_timeout_reached = Mock(side_effect=[False, True])
-        self.mock_perf_counter.return_value = MagicMock(
-            __sub__=lambda this, other: this,
-            __add__=lambda this, other: this,
-            __mul__=lambda this, other: this,
-            __le__=mock_is_timeout_reached)
+        mock_timestamp = MagicMock(__sub__=lambda this, other: this,
+                                    __add__=lambda this, other: this,
+                                    __mul__=lambda this, other: this,
+                                    __le__=mock_is_timeout_reached)
         with pytest.raises(TimeoutError):
             PythonCanTransportInterface._wait_for_tx_frame(self.mock_can_transport_interface,
                                                            buffer=mock_buffer,
                                                            frame=can_frame,
-                                                           timestamp=Mock())
+                                                           timestamp=mock_timestamp)
         assert mock_is_timeout_reached.call_count == 2
         mock_buffer.get_message.assert_called_once()
 
@@ -969,15 +966,14 @@ class TestPythonCanTransportInterface:
     def test_wait_for_tx_frame__valid(self, can_frame, observed_can_frame):
         mock_buffer = Mock(get_message=Mock(return_value=observed_can_frame))
         mock_is_timeout_reached = Mock(return_value=False)
-        self.mock_perf_counter.return_value = MagicMock(
-            __sub__=lambda this, other: this,
-            __add__=lambda this, other: this,
-            __mul__=lambda this, other: this,
-            __le__=mock_is_timeout_reached)
+        mock_timestamp = MagicMock(__sub__=lambda this, other: this,
+                                    __add__=lambda this, other: this,
+                                    __mul__=lambda this, other: this,
+                                    __le__=mock_is_timeout_reached)
         assert PythonCanTransportInterface._wait_for_tx_frame(self.mock_can_transport_interface,
                                                               buffer=mock_buffer,
                                                               frame=can_frame,
-                                                              timestamp=Mock()) == observed_can_frame
+                                                              timestamp=mock_timestamp) == observed_can_frame
         assert mock_is_timeout_reached.call_count == 1
         mock_buffer.get_message.assert_called_once()
 
@@ -986,16 +982,15 @@ class TestPythonCanTransportInterface:
     @pytest.mark.asyncio
     async def test_async_wait_for_tx_frame__timeout(self):
         mock_is_timeout_reached = Mock(return_value=True)
-        self.mock_perf_counter.return_value =  MagicMock(
-            __sub__=lambda this, other: this,
-            __add__=lambda this, other: this,
-            __mul__=lambda this, other: this,
-            __le__=mock_is_timeout_reached)
+        mock_timestamp = MagicMock(__sub__=lambda this, other: this,
+                                   __add__=lambda this, other: this,
+                                   __mul__=lambda this, other: this,
+                                   __le__=mock_is_timeout_reached)
         with pytest.raises(TimeoutError):
             await PythonCanTransportInterface._async_wait_for_tx_frame(self.mock_can_transport_interface,
                                                                        buffer=Mock(),
                                                                        frame=Mock(),
-                                                                       timestamp=Mock())
+                                                                       timestamp=mock_timestamp)
         mock_is_timeout_reached.assert_called_once()
 
     @pytest.mark.parametrize("can_frame, observed_can_frame", [
@@ -1009,17 +1004,16 @@ class TestPythonCanTransportInterface:
     @pytest.mark.asyncio
     async def test_async_wait_for_tx_frame__other_then_timeout(self, can_frame, observed_can_frame):
         mock_is_timeout_reached = Mock(side_effect=[False, True])
-        self.mock_perf_counter.return_value = MagicMock(
-            __sub__=lambda this, other: this,
-            __add__=lambda this, other: this,
-            __mul__=lambda this, other: this,
-            __le__=mock_is_timeout_reached)
+        mock_timestamp = MagicMock(__sub__=lambda this, other: this,
+                                   __add__=lambda this, other: this,
+                                   __mul__=lambda this, other: this,
+                                   __le__=mock_is_timeout_reached)
         with pytest.raises(TimeoutError):
             await PythonCanTransportInterface._async_wait_for_tx_frame(
                 self.mock_can_transport_interface,
                 buffer=Mock(get_message=AsyncMock(return_value=observed_can_frame)),
                 frame=can_frame,
-                timestamp=Mock())
+                timestamp=mock_timestamp)
         assert mock_is_timeout_reached.call_count == 2
 
     @pytest.mark.parametrize("can_frame, observed_can_frame", [
@@ -1031,736 +1025,26 @@ class TestPythonCanTransportInterface:
     @pytest.mark.asyncio
     async def test_async_wait_for_tx_frame__valid(self, can_frame, observed_can_frame):
         mock_is_timeout_reached = Mock(return_value=False)
-        self.mock_perf_counter.return_value = MagicMock(
-            __sub__=lambda this, other: this,
-            __add__=lambda this, other: this,
-            __mul__=lambda this, other: this,
-            __le__=mock_is_timeout_reached)
-        assert await PythonCanTransportInterface._async_wait_for_tx_frame(self.mock_can_transport_interface,
-                                                                          buffer=Mock(get_message=AsyncMock(
-                                                                              return_value=observed_can_frame)),
-                                                                          frame=can_frame,
-                                                                          timestamp=Mock()) == observed_can_frame
+        mock_timestamp = MagicMock(__sub__=lambda this, other: this,
+                                   __add__=lambda this, other: this,
+                                   __mul__=lambda this, other: this,
+                                   __le__=mock_is_timeout_reached)
+        mock_buffer = Mock(get_message=AsyncMock(return_value=observed_can_frame))
+        assert await PythonCanTransportInterface._async_wait_for_tx_frame(
+            self.mock_can_transport_interface,
+            buffer=mock_buffer,
+            frame=can_frame,
+            timestamp=mock_timestamp) == observed_can_frame
         assert mock_is_timeout_reached.call_count == 1
 
 
     # TODO: review / move
 
-    # _receive_cf_packets_block
 
-    @pytest.mark.parametrize("sequence_number, block_size, remaining_data_length, timestamp_end", [
-        (Mock(), Mock(), 1, MagicMock(__sub__=lambda this, other: this,
-                                      __mul__=lambda this, other: this,
-                                      __le__=Mock(return_value=False))),
-        (Mock(), Mock(), 987, None),
-    ])
-    def test_receive_cf_packets_block__timeout__n_cr(self, sequence_number, block_size,
-                                                     remaining_data_length, timestamp_end):
-        mock_is_n_cr_timeout_reached = Mock(side_effect=(False, True))
-        self.mock_perf_counter.return_value = MagicMock(__sub__=lambda this, other: this,
-                                                        __add__=lambda this, other: this,
-                                                        __mul__=lambda this, other: this,
-                                                        __le__=Mock(return_value=False))
-        self.mock_can_transport_interface.n_cr_timeout = MagicMock(__sub__=lambda this, other: this,
-                                                                   __add__=lambda this, other: this,
-                                                                   __mul__=lambda this, other: this,
-                                                                   __le__=mock_is_n_cr_timeout_reached)
-        self.mock_can_packet_type_is_initial_packet_type.return_value = False
-        with pytest.raises(TimeoutError):
-            PythonCanTransportInterface._receive_cf_packets_block(self.mock_can_transport_interface,
-                                                                  sequence_number=sequence_number,
-                                                                  block_size=block_size,
-                                                                  remaining_data_length=remaining_data_length,
-                                                                  timestamp_end=timestamp_end)
-        assert mock_is_n_cr_timeout_reached.call_count == 2
-        self.mock_can_transport_interface.receive_packet.assert_called_once_with(timeout=self.mock_min.return_value)
-        self.mock_can_transport_interface._message_receive_start.assert_not_called()
-        self.mock_warn.assert_not_called()
 
-    @pytest.mark.parametrize("sequence_number, block_size, remaining_data_length, timestamp_end", [
-        (Mock(), Mock(), 1, MagicMock(__sub__=lambda this, other: this,
-                                      __mul__=lambda this, other: this,
-                                      __le__=Mock(return_value=True))),
-        (Mock(), Mock(), 987, MagicMock(__sub__=lambda this, other: this,
-                                        __mul__=lambda this, other: this,
-                                        __le__=Mock(side_effect=(False, True)))),
-    ])
-    def test_receive_cf_packets_block__timeout__end(self, sequence_number, block_size,
-                                                    remaining_data_length, timestamp_end):
-        self.mock_perf_counter.return_value = self.mock_can_transport_interface.n_cr_timeout = MagicMock(
-            __sub__=lambda this, other: this,
-            __add__=lambda this, other: this,
-            __mul__=lambda this, other: this,
-            __le__=Mock(return_value=False))
-        self.mock_can_packet_type_is_initial_packet_type.return_value = False
-        with pytest.raises(TimeoutError):
-            PythonCanTransportInterface._receive_cf_packets_block(self.mock_can_transport_interface,
-                                                                  sequence_number=sequence_number,
-                                                                  block_size=block_size,
-                                                                  remaining_data_length=remaining_data_length,
-                                                                  timestamp_end=timestamp_end)
-        self.mock_can_transport_interface._message_receive_start.assert_not_called()
-        self.mock_warn.assert_not_called()
 
-    @pytest.mark.parametrize("sequence_number, block_size, remaining_data_length, timestamp_end", [
-        (Mock(), Mock(), 1, MagicMock(__sub__=lambda this, other: this,
-                                      __mul__=lambda this, other: this,
-                                      __le__=Mock(return_value=False))),
-        (Mock(), Mock(), 987, None),
-    ])
-    def test_receive_cf_packets_block__initial_packet(self, sequence_number, block_size,
-                                                      remaining_data_length, timestamp_end):
-        self.mock_perf_counter.return_value = self.mock_can_transport_interface.n_cr_timeout = MagicMock(
-            __sub__=lambda this, other: this,
-            __add__=lambda this, other: this,
-            __mul__=lambda this, other: this,
-            __le__=Mock(return_value=False))
-        self.mock_can_packet_type_is_initial_packet_type.return_value = True
-        assert (PythonCanTransportInterface._receive_cf_packets_block(self.mock_can_transport_interface,
-                                                                      sequence_number=sequence_number,
-                                                                      block_size=block_size,
-                                                                      remaining_data_length=remaining_data_length,
-                                                                      timestamp_end=timestamp_end)
-                == self.mock_can_transport_interface._message_receive_start.return_value)
-        self.mock_can_transport_interface.receive_packet.assert_called_once_with(
-            timeout=self.mock_min.return_value)
-        self.mock_can_packet_type_is_initial_packet_type.assert_called_once_with(
-            self.mock_can_transport_interface.receive_packet.return_value.packet_type)
-        self.mock_can_transport_interface._message_receive_start.assert_called_once_with(
-            initial_packet=self.mock_can_transport_interface.receive_packet.return_value,
-            timestamp_end=timestamp_end)
-        self.mock_warn.assert_called_once()
 
-    @pytest.mark.parametrize("sequence_number, block_size, remaining_data_length, timestamp_end", [
-        (1, 1, 1, MagicMock(__sub__=lambda this, other: this,
-                            __mul__=lambda this, other: this,
-                            __le__=Mock(return_value=False))),
-        (13, 5, 987, None),
-    ])
-    def test_receive_cf_packets_block__cf_block(self, sequence_number, block_size, remaining_data_length,
-                                                timestamp_end):
-        self.mock_perf_counter.return_value = self.mock_can_transport_interface.n_cr_timeout = MagicMock(
-            __sub__=lambda this, other: this,
-            __add__=lambda this, other: this,
-            __mul__=lambda this, other: this,
-            __le__=Mock(return_value=False))
-        self.mock_can_packet_type_is_initial_packet_type.return_value = False
-        packet_sequence = [
-            Mock(spec=CanPacketRecord,
-                 packet_type=CanPacketType.CONSECUTIVE_FRAME,
-                 sequence_number=(sequence_number + i) & 0xF,
-                 payload=[])
-            for i in range(block_size)
-        ]
-        self.mock_can_transport_interface.receive_packet.side_effect = packet_sequence[:]
-        assert (PythonCanTransportInterface._receive_cf_packets_block(self.mock_can_transport_interface,
-                                                                      sequence_number=sequence_number,
-                                                                      block_size=block_size,
-                                                                      remaining_data_length=remaining_data_length,
-                                                                      timestamp_end=timestamp_end)
-                == tuple(packet_sequence))
-        self.mock_can_transport_interface.receive_packet.assert_has_calls(
-            [call(timeout=self.mock_min.return_value)] * block_size)
-        self.mock_can_packet_type_is_initial_packet_type.assert_has_calls([
-            call(packet.packet_type) for packet in packet_sequence])
-        self.mock_can_transport_interface._message_receive_start.assert_not_called()
-        self.mock_warn.assert_not_called()
 
-    @pytest.mark.parametrize("sequence_number, remaining_data_length, payload, timestamp_end", [
-        (1, 1, [0x12], MagicMock(__sub__=lambda this, other: this,
-                                 __mul__=lambda this, other: this,
-                                 __le__=Mock(return_value=False))),
-        (13, 987, [*range(100, 162)], None),
-    ])
-    def test_receive_cf_packets_block__remaining_payload(self, sequence_number, remaining_data_length, payload,
-                                                         timestamp_end):
-        self.mock_perf_counter.return_value = self.mock_can_transport_interface.n_cr_timeout = MagicMock(
-            __sub__=lambda this, other: this,
-            __add__=lambda this, other: this,
-            __mul__=lambda this, other: this,
-            __le__=Mock(return_value=False))
-        self.mock_can_packet_type_is_initial_packet_type.return_value = False
-        packet_sequence = [
-            Mock(spec=CanPacketRecord,
-                 packet_type=CanPacketType.CONSECUTIVE_FRAME,
-                 sequence_number=(sequence_number + i) & 0xF,
-                 payload=payload)
-            for i in range(remaining_data_length // len(payload) + bool(remaining_data_length % len(payload)))
-        ]
-        self.mock_can_transport_interface.receive_packet.side_effect = packet_sequence[:]
-        assert (PythonCanTransportInterface._receive_cf_packets_block(self.mock_can_transport_interface,
-                                                                      sequence_number=sequence_number,
-                                                                      block_size=0,
-                                                                      remaining_data_length=remaining_data_length,
-                                                                      timestamp_end=timestamp_end)
-                == tuple(packet_sequence))
-        self.mock_can_transport_interface.receive_packet.assert_has_calls(
-            [call(timeout=self.mock_min.return_value)] * len(packet_sequence))
-        self.mock_can_packet_type_is_initial_packet_type.assert_has_calls([
-            call(packet.packet_type) for packet in packet_sequence])
-        self.mock_can_transport_interface._message_receive_start.assert_not_called()
-        self.mock_warn.assert_not_called()
-
-    # _async_receive_cf_packets_block
-
-    @pytest.mark.parametrize("sequence_number, block_size, remaining_data_length, timestamp_end", [
-        (Mock(), Mock(), 1, MagicMock(__sub__=lambda this, other: this,
-                                      __mul__=lambda this, other: this,
-                                      __le__=Mock(return_value=False))),
-        (Mock(), Mock(), 987, None),
-    ])
-    @pytest.mark.asyncio
-    async def test_async_receive_cf_packets_block__timeout__n_cr(self, sequence_number, block_size,
-                                                                 remaining_data_length, timestamp_end):
-        mock_loop = Mock()
-        mock_is_n_cr_timeout_reached = Mock(side_effect=(False, True))
-        self.mock_perf_counter.return_value = MagicMock(__sub__=lambda this, other: this,
-                                                        __add__=lambda this, other: this,
-                                                        __mul__=lambda this, other: this,
-                                                        __le__=Mock(return_value=False))
-        self.mock_can_transport_interface.n_cr_timeout = MagicMock(__sub__=lambda this, other: this,
-                                                                   __add__=lambda this, other: this,
-                                                                   __mul__=lambda this, other: this,
-                                                                   __le__=mock_is_n_cr_timeout_reached)
-        self.mock_can_packet_type_is_initial_packet_type.return_value = False
-        with pytest.raises(TimeoutError):
-            await PythonCanTransportInterface._async_receive_cf_packets_block(self.mock_can_transport_interface,
-                                                                              sequence_number=sequence_number,
-                                                                              block_size=block_size,
-                                                                              remaining_data_length=remaining_data_length,
-                                                                              timestamp_end=timestamp_end,
-                                                                              loop=mock_loop)
-        assert mock_is_n_cr_timeout_reached.call_count == 2
-        self.mock_can_transport_interface.async_receive_packet.assert_called_once_with(
-            timeout=self.mock_min.return_value,
-            loop=mock_loop)
-        self.mock_can_transport_interface._async_message_receive_start.assert_not_called()
-        self.mock_warn.assert_not_called()
-
-    @pytest.mark.parametrize("sequence_number, block_size, remaining_data_length, timestamp_end", [
-        (Mock(), Mock(), 1, MagicMock(__sub__=lambda this, other: this,
-                                      __mul__=lambda this, other: this,
-                                      __le__=Mock(return_value=True))),
-        (Mock(), Mock(), 987, MagicMock(__sub__=lambda this, other: this,
-                                        __mul__=lambda this, other: this,
-                                        __le__=Mock(side_effect=(False, True)))),
-    ])
-    @pytest.mark.asyncio
-    async def test_async_receive_cf_packets_block__timeout__end(self, sequence_number, block_size,
-                                                                remaining_data_length, timestamp_end):
-        mock_loop = Mock()
-        self.mock_perf_counter.return_value = self.mock_can_transport_interface.n_cr_timeout = MagicMock(
-            __sub__=lambda this, other: this,
-            __add__=lambda this, other: this,
-            __mul__=lambda this, other: this,
-            __le__=Mock(return_value=False))
-        self.mock_can_packet_type_is_initial_packet_type.return_value = False
-        with pytest.raises(TimeoutError):
-            await PythonCanTransportInterface._async_receive_cf_packets_block(self.mock_can_transport_interface,
-                                                                              sequence_number=sequence_number,
-                                                                              block_size=block_size,
-                                                                              remaining_data_length=remaining_data_length,
-                                                                              timestamp_end=timestamp_end,
-                                                                              loop=mock_loop)
-        self.mock_can_transport_interface._async_message_receive_start.assert_not_called()
-        self.mock_warn.assert_not_called()
-
-    @pytest.mark.parametrize("sequence_number, block_size, remaining_data_length, timestamp_end", [
-        (Mock(), Mock(), 1, MagicMock(__sub__=lambda this, other: this,
-                                      __mul__=lambda this, other: this,
-                                      __le__=Mock(return_value=False))),
-        (Mock(), Mock(), 987, None),
-    ])
-    @pytest.mark.asyncio
-    async def test_async_receive_cf_packets_block__initial_packet(self, sequence_number, block_size,
-                                                                  remaining_data_length, timestamp_end):
-        mock_loop = Mock()
-        self.mock_perf_counter.return_value = self.mock_can_transport_interface.n_cr_timeout = MagicMock(
-            __sub__=lambda this, other: this,
-            __add__=lambda this, other: this,
-            __mul__=lambda this, other: this,
-            __le__=Mock(return_value=False))
-        self.mock_can_packet_type_is_initial_packet_type.return_value = True
-        assert (await PythonCanTransportInterface._async_receive_cf_packets_block(
-            self.mock_can_transport_interface,
-            sequence_number=sequence_number,
-            block_size=block_size,
-            remaining_data_length=remaining_data_length,
-            timestamp_end=timestamp_end,
-            loop=mock_loop)
-                == self.mock_can_transport_interface._async_message_receive_start.return_value)
-        self.mock_can_transport_interface.async_receive_packet.assert_called_once_with(
-            timeout=self.mock_min.return_value,
-            loop=mock_loop)
-        self.mock_can_packet_type_is_initial_packet_type.assert_called_once_with(
-            self.mock_can_transport_interface.async_receive_packet.return_value.packet_type)
-        self.mock_can_transport_interface._async_message_receive_start.assert_called_once_with(
-            initial_packet=self.mock_can_transport_interface.async_receive_packet.return_value,
-            timestamp_end=timestamp_end,
-            loop=mock_loop)
-        self.mock_warn.assert_called_once()
-
-    @pytest.mark.parametrize("sequence_number, block_size, remaining_data_length, timestamp_end", [
-        (1, 1, 1, MagicMock(__sub__=lambda this, other: this,
-                            __mul__=lambda this, other: this,
-                            __le__=Mock(return_value=False))),
-        (13, 5, 987, None),
-    ])
-    @pytest.mark.asyncio
-    async def test_async_receive_cf_packets_block__cf_block(self, sequence_number, block_size,
-                                                            remaining_data_length, timestamp_end):
-        mock_loop = Mock()
-        self.mock_perf_counter.return_value = self.mock_can_transport_interface.n_cr_timeout = MagicMock(
-            __sub__=lambda this, other: this,
-            __add__=lambda this, other: this,
-            __mul__=lambda this, other: this,
-            __le__=Mock(return_value=False))
-        self.mock_can_packet_type_is_initial_packet_type.return_value = False
-        packet_sequence = [
-            Mock(spec=CanPacketRecord,
-                 packet_type=CanPacketType.CONSECUTIVE_FRAME,
-                 sequence_number=(sequence_number + i) & 0xF,
-                 payload=[])
-            for i in range(block_size)
-        ]
-        self.mock_can_transport_interface.async_receive_packet.side_effect = packet_sequence[:]
-        assert (await PythonCanTransportInterface._async_receive_cf_packets_block(
-            self.mock_can_transport_interface,
-            sequence_number=sequence_number,
-            block_size=block_size,
-            remaining_data_length=remaining_data_length,
-            timestamp_end=timestamp_end,
-            loop=mock_loop) == tuple(packet_sequence))
-        self.mock_can_transport_interface.async_receive_packet.assert_has_calls(
-            [call(timeout=self.mock_min.return_value,
-                  loop=mock_loop)] * block_size)
-        self.mock_can_packet_type_is_initial_packet_type.assert_has_calls([call(packet.packet_type)
-                                                                           for packet in packet_sequence])
-        self.mock_can_transport_interface._async_message_receive_start.assert_not_called()
-        self.mock_warn.assert_not_called()
-
-    @pytest.mark.parametrize("sequence_number, remaining_data_length, payload, timestamp_end", [
-        (1, 1, [0x12], MagicMock(__sub__=lambda this, other: this,
-                                 __mul__=lambda this, other: this,
-                                 __le__=Mock(return_value=False))),
-        (13, 987, [*range(100, 162)], None),
-    ])
-    @pytest.mark.asyncio
-    async def test_async_receive_cf_packets_block__remaining_payload(self, sequence_number, remaining_data_length,
-                                                                     payload, timestamp_end):
-        mock_loop = Mock()
-        self.mock_perf_counter.return_value = self.mock_can_transport_interface.n_cr_timeout = MagicMock(
-            __sub__=lambda this, other: this,
-            __add__=lambda this, other: this,
-            __mul__=lambda this, other: this,
-            __le__=Mock(return_value=False))
-        self.mock_can_packet_type_is_initial_packet_type.return_value = False
-        packet_sequence = [
-            Mock(spec=CanPacketRecord,
-                 packet_type=CanPacketType.CONSECUTIVE_FRAME,
-                 sequence_number=(sequence_number + i) & 0xF,
-                 payload=payload)
-            for i in range(remaining_data_length // len(payload) + bool(remaining_data_length % len(payload)))
-        ]
-        self.mock_can_transport_interface.async_receive_packet.side_effect = packet_sequence[:]
-        assert (await PythonCanTransportInterface._async_receive_cf_packets_block(
-            self.mock_can_transport_interface,
-            sequence_number=sequence_number,
-            block_size=0,
-            remaining_data_length=remaining_data_length,
-            timestamp_end=timestamp_end,
-            loop=mock_loop) == tuple(packet_sequence))
-        self.mock_can_transport_interface.async_receive_packet.assert_has_calls(
-            [call(timeout=self.mock_min.return_value,
-                  loop=mock_loop)] * len(packet_sequence))
-        self.mock_can_packet_type_is_initial_packet_type.assert_has_calls([call(packet.packet_type)
-                                                                           for packet in packet_sequence])
-        self.mock_can_transport_interface._async_message_receive_start.assert_not_called()
-        self.mock_warn.assert_not_called()
-
-    # _receive_consecutive_frames
-
-    def test_receive_consecutive_frames__timeout(self):
-        mock_is_timeout_reached = Mock(return_value=True)
-        mock_timestamp_end = MagicMock(__sub__=lambda this, other: this,
-                                       __mul__=lambda this, other: this,
-                                       __lt__=mock_is_timeout_reached)
-        mock_first_frame = Mock(spec=CanPacketRecord,
-                                packet_type=CanPacketType.FIRST_FRAME,
-                                payload=[],
-                                transmission_time=Mock(timestamp=MagicMock()))
-        with pytest.raises(TimeoutError):
-            PythonCanTransportInterface._receive_consecutive_frames(self.mock_can_transport_interface,
-                                                                    first_frame=mock_first_frame,
-                                                                    timestamp_end=mock_timestamp_end)
-        self.mock_can_transport_interface.receive_packet.assert_not_called()
-        self.mock_can_transport_interface.send_packet.assert_not_called()
-
-    @pytest.mark.parametrize("timestamp_end", [MagicMock(__sub__=lambda this, other: this,
-                                                         __mul__=lambda this, other: this,
-                                                         __lt__=Mock(return_value=False)),
-                                               None])
-    def test_receive_consecutive_frames__new_message_interrupted(self, timestamp_end):
-        mock_first_frame = Mock(spec=CanPacketRecord,
-                                packet_type=CanPacketType.FIRST_FRAME,
-                                payload=[],
-                                transmission_time=Mock(timestamp=MagicMock()))
-        self.mock_can_packet_type_is_initial_packet_type.return_value = True
-        self.mock_can_transport_interface.n_br = MagicMock(__sub__=lambda this, other: this,
-                                                           __gt__=Mock(return_value=True))
-        assert (PythonCanTransportInterface._receive_consecutive_frames(self=self.mock_can_transport_interface,
-                                                                        first_frame=mock_first_frame,
-                                                                        timestamp_end=timestamp_end)
-                == self.mock_can_transport_interface._message_receive_start.return_value)
-        self.mock_can_transport_interface._message_receive_start.assert_called_once_with(
-            initial_packet=self.mock_can_transport_interface.receive_packet.return_value,
-            timestamp_end=timestamp_end)
-        self.mock_can_transport_interface.receive_packet.assert_called_once()
-        self.mock_can_transport_interface.send_packet.assert_not_called()
-        self.mock_warn.assert_called_once()
-
-    @pytest.mark.parametrize("timestamp_end", [MagicMock(__sub__=lambda this, other: this,
-                                                         __mul__=lambda this, other: this,
-                                                         __lt__=Mock(return_value=False)),
-                                               None])
-    def test_receive_consecutive_frames__overflow(self, timestamp_end):
-        mock_first_frame = Mock(spec=CanPacketRecord,
-                                packet_type=CanPacketType.FIRST_FRAME,
-                                payload=[],
-                                transmission_time=Mock(timestamp=MagicMock()))
-        self.mock_can_transport_interface.flow_control_parameters_generator = [(CanFlowStatus.Overflow, None, None)]
-        self.mock_can_transport_interface.n_br = MagicMock(__sub__=lambda this, other: this,
-                                                           __gt__=Mock(return_value=False))
-        with pytest.raises(OverflowError):
-            PythonCanTransportInterface._receive_consecutive_frames(self=self.mock_can_transport_interface,
-                                                                    first_frame=mock_first_frame,
-                                                                    timestamp_end=timestamp_end)
-        self.mock_can_transport_interface.receive_packet.assert_not_called()
-        self.mock_can_transport_interface.segmenter.get_flow_control_packet.assert_called_once_with(
-            flow_status=CanFlowStatus.Overflow,
-            block_size=None,
-            st_min=None)
-        self.mock_can_transport_interface.send_packet.assert_called_once_with(
-            self.mock_can_transport_interface.segmenter.get_flow_control_packet.return_value)
-        self.mock_warn.assert_not_called()
-
-    @pytest.mark.parametrize("block_size, st_min, timestamp_end", [
-        (0, 127, None),
-        (Mock(), Mock(), MagicMock(__sub__=lambda this, other: this,
-                                   __mul__=lambda this, other: this,
-                                   __lt__=Mock(return_value=False)))
-    ])
-    @patch(f"{SCRIPT_LOCATION}.isinstance")
-    def test_receive_consecutive_frames__wait_then_receive_message(self, mock_isinstance, block_size, st_min,
-                                                                   timestamp_end):
-        mock_isinstance.return_value = True
-        mock_first_frame = Mock(spec=CanPacketRecord,
-                                packet_type=CanPacketType.FIRST_FRAME,
-                                payload=[],
-                                data_length=MagicMock())
-        self.mock_can_transport_interface.flow_control_parameters_generator = [
-            (CanFlowStatus.Wait, None, None),
-            (CanFlowStatus.ContinueToSend, block_size, st_min)]
-        self.mock_can_transport_interface.receive_packet.side_effect = TimeoutError
-        self.mock_can_transport_interface.n_br = MagicMock(__sub__=lambda this, other: this,
-                                                           __gt__=Mock(return_value=True))
-        assert (PythonCanTransportInterface._receive_consecutive_frames(self.mock_can_transport_interface,
-                                                                        first_frame=mock_first_frame,
-                                                                        timestamp_end=timestamp_end)
-                == self.mock_can_transport_interface._receive_cf_packets_block.return_value)
-        assert self.mock_can_transport_interface.receive_packet.call_count == 2
-        self.mock_can_transport_interface.segmenter.get_flow_control_packet.assert_has_calls(
-            [call(flow_status=CanFlowStatus.Wait, block_size=None, st_min=None),
-             call(flow_status=CanFlowStatus.ContinueToSend, block_size=block_size, st_min=st_min)])
-        self.mock_can_transport_interface.send_packet.assert_has_calls(
-            [call(self.mock_can_transport_interface.segmenter.get_flow_control_packet.return_value),
-             call(self.mock_can_transport_interface.segmenter.get_flow_control_packet.return_value)],
-            any_order=True)
-        self.mock_can_transport_interface._receive_cf_packets_block.assert_called_once()
-        mock_isinstance.assert_called_once_with(
-            self.mock_can_transport_interface._receive_cf_packets_block.return_value,
-            self.mock_uds_message_record)
-        self.mock_warn.assert_not_called()
-
-    @pytest.mark.parametrize(
-        "data_length, ff_payload, cf_blocks, sequence_numbers, remaining_data_lengths, timestamp_end", [
-            (8, [0x12, 0x34], [[Mock(spec=CanPacketRecord, payload=[0x56, 0x78, 0x90, 0xAB, 0xCD, 0xEF])]], [1], [6],
-             None),
-            (68, [0x98],
-             [[Mock(spec=CanPacketRecord, payload=list(range(60, 67)), sequence_number=2 * i + j + (i % 3 == 0))
-               for j in range(1 + i)] for i in range(4)], [1, 2, 4, 7], [67, 60, 46, 25],
-             MagicMock(__sub__=lambda this, other: this,
-                       __mul__=lambda this, other: this,
-                       __lt__=Mock(return_value=False))),
-        ])
-    @patch(f"{SCRIPT_LOCATION}.isinstance")
-    def test_receive_consecutive_frames__cf_received(self, mock_isinstance,
-                                                     data_length, ff_payload, cf_blocks,
-                                                     sequence_numbers, remaining_data_lengths, timestamp_end):
-        mock_st_min = Mock()
-        mock_first_frame = Mock(spec=CanPacketRecord,
-                                packet_type=CanPacketType.FIRST_FRAME,
-                                payload=ff_payload,
-                                data_length=data_length)
-        mock_isinstance.return_value = False
-        self.mock_can_packet_type_is_initial_packet_type.return_value = False
-        self.mock_can_transport_interface.n_br = MagicMock(__sub__=lambda this, other: this,
-                                                           __gt__=Mock(return_value=True))
-        self.mock_can_transport_interface.flow_control_parameters_generator = [
-            (CanFlowStatus.ContinueToSend, len(cf_block), mock_st_min) for cf_block in cf_blocks]
-        self.mock_can_transport_interface._receive_cf_packets_block.side_effect = cf_blocks
-        assert (PythonCanTransportInterface._receive_consecutive_frames(self=self.mock_can_transport_interface,
-                                                                        first_frame=mock_first_frame,
-                                                                        timestamp_end=timestamp_end)
-                == self.mock_uds_message_record.return_value)
-        assert self.mock_can_transport_interface.receive_packet.call_count == len(cf_blocks)
-        self.mock_can_transport_interface._receive_cf_packets_block.assert_has_calls(
-            [call(sequence_number=sequence_numbers[i],
-                  block_size=len(cf_block),
-                  remaining_data_length=remaining_data_lengths[i],
-                  timestamp_end=timestamp_end)
-             for i, cf_block in enumerate(cf_blocks)])
-        all_packets = [mock_first_frame]
-        for cf_block in cf_blocks:
-            all_packets.append(self.mock_can_transport_interface.send_packet.return_value)
-            all_packets.extend(cf_block)
-        self.mock_uds_message_record.assert_called_once_with(all_packets)
-        mock_isinstance.assert_called()
-        self.mock_warn.assert_not_called()
-
-    # _async_receive_consecutive_frames
-
-    @pytest.mark.asyncio
-    async def test_async_receive_consecutive_frames__timeout(self):
-        mock_loop = Mock()
-        mock_is_timeout_reached = Mock(return_value=True)
-        mock_timestamp_end = MagicMock(__sub__=lambda this, other: this,
-                                       __mul__=lambda this, other: this,
-                                       __lt__=mock_is_timeout_reached)
-        mock_first_frame = Mock(spec=CanPacketRecord,
-                                packet_type=CanPacketType.FIRST_FRAME,
-                                payload=[],
-                                transmission_time=Mock(timestamp=MagicMock()))
-        with pytest.raises(TimeoutError):
-            await PythonCanTransportInterface._async_receive_consecutive_frames(self.mock_can_transport_interface,
-                                                                                first_frame=mock_first_frame,
-                                                                                timestamp_end=mock_timestamp_end,
-                                                                                loop=mock_loop)
-        self.mock_can_transport_interface.async_receive_packet.assert_not_called()
-        self.mock_can_transport_interface.async_send_packet.assert_not_called()
-
-    @pytest.mark.parametrize("timestamp_end", [MagicMock(__sub__=lambda this, other: this,
-                                                         __mul__=lambda this, other: this,
-                                                         __lt__=Mock(return_value=False)),
-                                               None])
-    @pytest.mark.asyncio
-    async def test_async_receive_consecutive_frames__new_message_interrupted(self, timestamp_end):
-        mock_loop = Mock()
-        mock_first_frame = Mock(spec=CanPacketRecord,
-                                packet_type=CanPacketType.FIRST_FRAME,
-                                payload=[],
-                                transmission_time=Mock(timestamp=MagicMock()))
-        self.mock_can_packet_type_is_initial_packet_type.return_value = True
-        self.mock_can_transport_interface.n_br = MagicMock(__sub__=lambda this, other: this,
-                                                           __gt__=Mock(return_value=True))
-        assert (await PythonCanTransportInterface._async_receive_consecutive_frames(self=self.mock_can_transport_interface,
-                                                                                    first_frame=mock_first_frame,
-                                                                                    timestamp_end=timestamp_end,
-                                                                                    loop=mock_loop)
-                == self.mock_can_transport_interface._async_message_receive_start.return_value)
-        self.mock_can_transport_interface._async_message_receive_start.assert_called_once_with(
-            initial_packet=self.mock_can_transport_interface.async_receive_packet.return_value,
-            timestamp_end=timestamp_end,
-            loop=mock_loop)
-        self.mock_can_transport_interface.async_receive_packet.assert_called_once()
-        self.mock_can_transport_interface.async_send_packet.assert_not_called()
-        self.mock_warn.assert_called_once()
-
-    @pytest.mark.parametrize("timestamp_end", [MagicMock(__sub__=lambda this, other: this,
-                                                         __mul__=lambda this, other: this,
-                                                         __lt__=Mock(return_value=False)),
-                                               None])
-    @pytest.mark.asyncio
-    async def test_async_receive_consecutive_frames__overflow(self, timestamp_end):
-        mock_loop = Mock()
-        mock_first_frame = Mock(spec=CanPacketRecord,
-                                packet_type=CanPacketType.FIRST_FRAME,
-                                payload=[],
-                                transmission_time=Mock(timestamp=MagicMock()))
-        self.mock_can_transport_interface.flow_control_parameters_generator = [(CanFlowStatus.Overflow, None, None)]
-        self.mock_can_transport_interface.n_br = MagicMock(__sub__=lambda this, other: this,
-                                                           __gt__=Mock(return_value=False))
-        with pytest.raises(OverflowError):
-            await PythonCanTransportInterface._async_receive_consecutive_frames(self=self.mock_can_transport_interface,
-                                                                                first_frame=mock_first_frame,
-                                                                                timestamp_end=timestamp_end,
-                                                                                loop=mock_loop)
-        self.mock_can_transport_interface.async_receive_packet.assert_not_called()
-        self.mock_can_transport_interface.segmenter.get_flow_control_packet.assert_called_once_with(
-            flow_status=CanFlowStatus.Overflow,
-            block_size=None,
-            st_min=None)
-        self.mock_can_transport_interface.async_send_packet.assert_called_once_with(
-            self.mock_can_transport_interface.segmenter.get_flow_control_packet.return_value,
-            loop=mock_loop)
-        self.mock_warn.assert_not_called()
-
-    @pytest.mark.parametrize("block_size, st_min, timestamp_end", [
-        (0, 127, None),
-        (Mock(), Mock(), MagicMock(__sub__=lambda this, other: this,
-                                   __mul__=lambda this, other: this,
-                                   __lt__=Mock(return_value=False)))
-    ])
-    @patch(f"{SCRIPT_LOCATION}.isinstance")
-    @pytest.mark.asyncio
-    async def test_async_receive_consecutive_frames__wait_then_receive_message(self, mock_isinstance,
-                                                                               block_size, st_min, timestamp_end):
-        mock_loop = Mock()
-        mock_isinstance.return_value = True
-        mock_first_frame = Mock(spec=CanPacketRecord,
-                                packet_type=CanPacketType.FIRST_FRAME,
-                                payload=[],
-                                data_length=MagicMock())
-        self.mock_can_transport_interface.flow_control_parameters_generator = [
-            (CanFlowStatus.Wait, None, None),
-            (CanFlowStatus.ContinueToSend, block_size, st_min)]
-        self.mock_can_transport_interface.async_receive_packet.side_effect = TimeoutError
-        self.mock_can_transport_interface.n_br = MagicMock(__sub__=lambda this, other: this,
-                                                           __gt__=Mock(return_value=True))
-        assert (await PythonCanTransportInterface._async_receive_consecutive_frames(self=self.mock_can_transport_interface,
-                                                                                    first_frame=mock_first_frame,
-                                                                                    timestamp_end=timestamp_end,
-                                                                                    loop=mock_loop)
-                == self.mock_can_transport_interface._async_receive_cf_packets_block.return_value)
-        assert self.mock_can_transport_interface.async_receive_packet.call_count == 2
-        self.mock_can_transport_interface.segmenter.get_flow_control_packet.assert_has_calls(
-            [call(flow_status=CanFlowStatus.Wait, block_size=None, st_min=None),
-             call(flow_status=CanFlowStatus.ContinueToSend, block_size=block_size, st_min=st_min)])
-        self.mock_can_transport_interface.async_send_packet.assert_has_calls(
-            [call(self.mock_can_transport_interface.segmenter.get_flow_control_packet.return_value, loop=mock_loop),
-             call(self.mock_can_transport_interface.segmenter.get_flow_control_packet.return_value, loop=mock_loop)],
-            any_order=True)
-        self.mock_can_transport_interface._async_receive_cf_packets_block.assert_called_once()
-        mock_isinstance.assert_called_once_with(
-            self.mock_can_transport_interface._async_receive_cf_packets_block.return_value,
-            self.mock_uds_message_record)
-        self.mock_warn.assert_not_called()
-
-    @pytest.mark.parametrize(
-        "data_length, ff_payload, cf_blocks, sequence_numbers, remaining_data_lengths, timestamp_end", [
-            (8, [0x12, 0x34], [[Mock(spec=CanPacketRecord, payload=[0x56, 0x78, 0x90, 0xAB, 0xCD, 0xEF])]], [1], [6],
-             None),
-            (68, [0x98],
-             [[Mock(spec=CanPacketRecord, payload=list(range(60, 67)), sequence_number=2 * i + j + (i % 3 == 0))
-               for j in range(1 + i)] for i in range(4)], [1, 2, 4, 7], [67, 60, 46, 25],
-             MagicMock(__sub__=lambda this, other: this,
-                       __mul__=lambda this, other: this,
-                       __lt__=Mock(return_value=False))),
-        ])
-    @patch(f"{SCRIPT_LOCATION}.isinstance")
-    @pytest.mark.asyncio
-    async def test_async_receive_consecutive_frames__cf_received(self, mock_isinstance,
-                                                                 data_length, ff_payload, cf_blocks,
-                                                                 sequence_numbers, remaining_data_lengths,
-                                                                 timestamp_end):
-        mock_loop = Mock()
-        mock_st_min = Mock()
-        mock_first_frame = Mock(spec=CanPacketRecord,
-                                packet_type=CanPacketType.FIRST_FRAME,
-                                payload=ff_payload,
-                                data_length=data_length)
-        mock_isinstance.return_value = False
-        self.mock_can_packet_type_is_initial_packet_type.return_value = False
-        self.mock_can_transport_interface.n_br = MagicMock(__sub__=lambda this, other: this,
-                                                           __gt__=Mock(return_value=True))
-        self.mock_can_transport_interface.flow_control_parameters_generator = [
-            (CanFlowStatus.ContinueToSend, len(cf_block), mock_st_min) for cf_block in cf_blocks]
-        self.mock_can_transport_interface._async_receive_cf_packets_block.side_effect = cf_blocks
-        assert (await PythonCanTransportInterface._async_receive_consecutive_frames(self=self.mock_can_transport_interface,
-                                                                                    first_frame=mock_first_frame,
-                                                                                    timestamp_end=timestamp_end,
-                                                                                    loop=mock_loop)
-                == self.mock_uds_message_record.return_value)
-        assert self.mock_can_transport_interface.async_receive_packet.call_count == len(cf_blocks)
-        self.mock_can_transport_interface._async_receive_cf_packets_block.assert_has_calls(
-            [call(sequence_number=sequence_numbers[i],
-                  block_size=len(cf_block),
-                  remaining_data_length=remaining_data_lengths[i],
-                  timestamp_end=timestamp_end,
-                  loop=mock_loop) for i, cf_block in enumerate(cf_blocks)])
-        all_packets = [mock_first_frame]
-        for cf_block in cf_blocks:
-            all_packets.append(self.mock_can_transport_interface.async_send_packet.return_value)
-            all_packets.extend(cf_block)
-        self.mock_uds_message_record.assert_called_once_with(all_packets)
-        mock_isinstance.assert_called()
-        self.mock_warn.assert_not_called()
-
-    # _message_receive_start
-
-    def test_message_receive_start__sf(self):
-        mock_packet = Mock(spec=CanPacketRecord, packet_type=CanPacketType.SINGLE_FRAME)
-        assert (PythonCanTransportInterface._message_receive_start(self.mock_can_transport_interface,
-                                                                   initial_packet=mock_packet,
-                                                                   timestamp_end=Mock())
-                == self.mock_uds_message_record.return_value)
-        self.mock_uds_message_record.assert_called_once_with([mock_packet])
-
-    def test_message_receive_start__ff(self):
-        mock_timestamp_end = Mock()
-        mock_packet = Mock(spec=CanPacketRecord, packet_type=CanPacketType.FIRST_FRAME)
-        assert (PythonCanTransportInterface._message_receive_start(self.mock_can_transport_interface,
-                                                                   initial_packet=mock_packet,
-                                                                   timestamp_end=mock_timestamp_end)
-                == self.mock_can_transport_interface._receive_consecutive_frames.return_value)
-        self.mock_can_transport_interface._receive_consecutive_frames.assert_called_once_with(
-            first_frame=mock_packet,
-            timestamp_end=mock_timestamp_end)
-
-    @pytest.mark.parametrize("packet_type", [CanPacketType.CONSECUTIVE_FRAME, None])
-    def test_message_receive_start__other(self, packet_type):
-        mock_packet = Mock(spec=CanPacketRecord, packet_type=packet_type)
-        with pytest.raises(NotImplementedError):
-            PythonCanTransportInterface._message_receive_start(self.mock_can_transport_interface,
-                                                               initial_packet=mock_packet,
-                                                               timestamp_end=Mock())
-
-    # _async_message_receive_start
-
-    @pytest.mark.asyncio
-    async def test_async_message_receive_start__sf(self):
-        mock_packet = Mock(spec=CanPacketRecord, packet_type=CanPacketType.SINGLE_FRAME)
-        assert (await PythonCanTransportInterface._async_message_receive_start(self.mock_can_transport_interface,
-                                                                               initial_packet=mock_packet,
-                                                                               timestamp_end=Mock(),
-                                                                               loop=Mock())
-                == self.mock_uds_message_record.return_value)
-        self.mock_uds_message_record.assert_called_once_with([mock_packet])
-
-    @pytest.mark.asyncio
-    async def test_async_message_receive_start__ff(self):
-        mock_loop = Mock()
-        mock_timestamp_end = Mock()
-        mock_packet = Mock(spec=CanPacketRecord, packet_type=CanPacketType.FIRST_FRAME)
-        assert (await PythonCanTransportInterface._async_message_receive_start(self.mock_can_transport_interface,
-                                                                               initial_packet=mock_packet,
-                                                                               timestamp_end=mock_timestamp_end,
-                                                                               loop=mock_loop)
-                == self.mock_can_transport_interface._async_receive_consecutive_frames.return_value)
-        self.mock_can_transport_interface._async_receive_consecutive_frames.assert_called_once_with(
-            first_frame=mock_packet,
-            timestamp_end=mock_timestamp_end,
-            loop=mock_loop)
-
-    @pytest.mark.parametrize("packet_type", [CanPacketType.CONSECUTIVE_FRAME, None])
-    @pytest.mark.asyncio
-    async def test_async_message_receive_start__other(self, packet_type):
-        mock_packet = Mock(spec=CanPacketRecord, packet_type=packet_type)
-        with pytest.raises(NotImplementedError):
-            await PythonCanTransportInterface._async_message_receive_start(self.mock_can_transport_interface,
-                                                                           initial_packet=mock_packet,
-                                                                           timestamp_end=Mock(),
-                                                                           loop=Mock())
 
     # clear_rx_frames_buffers
 
