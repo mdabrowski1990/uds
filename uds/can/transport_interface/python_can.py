@@ -564,7 +564,7 @@ class PythonCanTransportInterface(AbstractCanTransportInterface):
                                             is_remote_frame=False,
                                             timestamp=self.time_sync.perf_counter_to_time(timestamp_end))
         else:
-            transmission_timestamp = self.time_sync.time_to_perf_counter(sent_can_frame.timestamp)
+            transmission_timestamp = perf_counter()
         if is_flow_control_packet:
             self._update_n_ar_measured((timestamp_end - timestamp_start) * 1000.)
         else:
@@ -573,8 +573,12 @@ class PythonCanTransportInterface(AbstractCanTransportInterface):
                                direction=TransmissionDirection.TRANSMITTED,
                                addressing_type=packet.addressing_type,
                                addressing_format=packet.addressing_format,
-                               transmission_time=datetime.fromtimestamp(sent_can_frame.timestamp),
-                               transmission_timestamp=transmission_timestamp)
+                               transmission_time=datetime.fromtimestamp(
+                                   sent_can_frame.timestamp
+                                   if self.backend in self._INTERFACES_USING_WALL_TIME_TIMESTAMPS else
+                                   self.time_sync.perf_counter_to_time(transmission_timestamp)),
+                               transmission_timestamp=transmission_timestamp,
+                               transmission_native_timestamp=sent_can_frame.timestamp)
 
     async def async_send_packet(self,
                                 packet: CanPacket,  # type: ignore
@@ -625,7 +629,7 @@ class PythonCanTransportInterface(AbstractCanTransportInterface):
                                             is_remote_frame=False,
                                             timestamp=self.time_sync.perf_counter_to_time(timestamp_end))
         else:
-            transmission_timestamp = self.time_sync.time_to_perf_counter(sent_can_frame.timestamp)
+            transmission_timestamp = perf_counter()
         if is_flow_control_packet:
             self._update_n_ar_measured((timestamp_end - timestamp_start) * 1000.)
         else:
@@ -634,8 +638,12 @@ class PythonCanTransportInterface(AbstractCanTransportInterface):
                                direction=TransmissionDirection.TRANSMITTED,
                                addressing_type=packet.addressing_type,
                                addressing_format=packet.addressing_format,
-                               transmission_time=datetime.fromtimestamp(sent_can_frame.timestamp),
-                               transmission_timestamp=transmission_timestamp)
+                               transmission_time=datetime.fromtimestamp(
+                                   sent_can_frame.timestamp
+                                   if self.backend in self._INTERFACES_USING_WALL_TIME_TIMESTAMPS else
+                                   self.time_sync.perf_counter_to_time(transmission_timestamp)),
+                               transmission_timestamp=transmission_timestamp,
+                               transmission_native_timestamp=sent_can_frame.timestamp)
 
     def receive_packet(self, timeout: TimeMillisecondsAlias | None = None) -> CanPacketRecord:
         """
