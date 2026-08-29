@@ -14,7 +14,7 @@ from ..client import (
 )
 
 
-class PythonCanKvaserConfig(AbstractClientTests):
+class PythonCanVectorConfig(AbstractClientTests):
     """Client tests for UDS over CAN with python-can package as network manager."""
 
     transport_interface_1: PythonCanTransportInterface
@@ -27,12 +27,16 @@ class PythonCanKvaserConfig(AbstractClientTests):
         """Configure Transport Interfaces."""
         can_addressing_format: CanAddressingFormat = choice(list(CanAddressingFormat))
         addressing_information = make_can_addressing_information(can_addressing_format)
-        self.can_interface_1 = Bus(interface="kvaser",
+        self.can_interface_1 = Bus(interface="vector",
+                                   app_name="python-can",
                                    channel=0,
-                                   fd=True)
-        self.can_interface_2 = Bus(interface="kvaser",
+                                   fd=True,
+                                   receive_own_messages=True)
+        self.can_interface_2 = Bus(interface="vector",
+                                   app_name="python-can",
                                    channel=1,
-                                   fd=True)
+                                   fd=True,
+                                   receive_own_messages=True)
         transport_interface_1 = PythonCanTransportInterface(
             network_manager=self.can_interface_1,
             addressing_information=addressing_information)
@@ -57,13 +61,13 @@ class PythonCanKvaserConfig(AbstractClientTests):
             st_min=127)
 
 
-class TestBaseClientFunctionalityTests(AbstractBaseClientFunctionalityTests, PythonCanKvaserConfig):
-    """Base Client tests related to Client Functionalities for python-can Transport Interface with Kvaser interface."""
+class TestBaseClientFunctionalityTests(AbstractBaseClientFunctionalityTests, PythonCanVectorConfig):
+    """Base Client tests related to Client Functionalities for python-can Transport Interface with Vector interface."""
 
 
-class TestClientTimeoutsTests(AbstractClientTimeoutsTests, PythonCanKvaserConfig):
-    """Client tests related to timeout for python-can Transport Interface with Kvaser interface."""
+class TestClientTimeoutsTests(AbstractClientTimeoutsTests, PythonCanVectorConfig):
+    """Client tests related to timeout for python-can Transport Interface with Vector interface."""
 
 
-class TestClientErrorGuessing(AbstractClientErrorGuessing, PythonCanKvaserConfig):
+class TestClientErrorGuessing(AbstractClientErrorGuessing, PythonCanVectorConfig):
     """Error-guessing tests for Client."""
