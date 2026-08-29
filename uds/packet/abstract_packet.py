@@ -67,7 +67,7 @@ class AbstractPacketRecord(AbstractPacketContainer, ABC):
                  direction: TransmissionDirection,
                  transmission_time: datetime,
                  transmission_timestamp: float,
-                 transmission_native_timestamp: float) -> None:
+                 transmission_native_timestamp: float | None) -> None:
         """
         Create a record of historic information about a packet.
 
@@ -93,7 +93,7 @@ class AbstractPacketRecord(AbstractPacketContainer, ABC):
                 f"payload={None if self.payload is None else bytes_to_hex(self.payload)}, "
                 f"packet_type={self.packet_type}, "
                 f"transmission_time={self.transmission_time}, "
-                f"transmission_timestamp={self.transmission_timestamp},"
+                f"transmission_timestamp={self.transmission_timestamp}, "
                 f"transmission_native_timestamp={self.transmission_native_timestamp})")
 
     @property
@@ -201,7 +201,7 @@ class AbstractPacketRecord(AbstractPacketContainer, ABC):
         self.__transmission_timestamp = value
 
     @property
-    def transmission_native_timestamp(self) -> float:
+    def transmission_native_timestamp(self) -> float | None:
         """
         Get the timestamp provided by the underlying Transport Interface.
 
@@ -212,16 +212,16 @@ class AbstractPacketRecord(AbstractPacketContainer, ABC):
         return self.__transmission_native_timestamp
 
     @transmission_native_timestamp.setter
-    def transmission_native_timestamp(self, value: float) -> None:
+    def transmission_native_timestamp(self, value: float | None) -> None:
         """
         Set the timestamp provided by the underlying Transport Interface.
 
         :param value: Native timestamp provided by the network manager.
-        :raise TypeError: Provided value is not float type.
+        :raise TypeError: Provided value is not float or None type.
         :raise ReassignmentError: An attempt to change the value after it has been set.
         """
-        if not isinstance(value, float):
-            raise TypeError(f"Provided value is not float type. Actual type: {type(value)}.")
+        if value is not None and not isinstance(value, float):
+            raise TypeError(f"Provided value is not float or None type. Actual type: {type(value)}.")
         if hasattr(self, "_AbstractPacketRecord__transmission_native_timestamp"):
             raise ReassignmentError("Value of 'transmission_native_timestamp' attribute cannot be changed once set.")
         self.__transmission_native_timestamp = value

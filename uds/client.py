@@ -135,7 +135,7 @@ class Client:
         :param value: Value to set.
 
         :raise TypeError: Provided value is not an instance of AbstractTransportInterface class.
-        raise ReassignmentError("Value of 'frame' attribute cannot be changed once set.")
+        :raise ReassignmentError: An attempt to change the value after object creation.
         """
         if not isinstance(value, AbstractTransportInterface):
             raise TypeError("Provided value is not an instance of AbstractTransportInterface class. "
@@ -358,7 +358,7 @@ class Client:
             records.append(self.__last_functional_request)
         if len(records) == 0:
             return None
-        return max(records, key=lambda record: record.transmission_end_native_timestamp)
+        return max(records, key=lambda record: record.transmission_end_timestamp)
 
     @property  # noqa: vulture
     def last_received_response(self) -> UdsMessageRecord | None:
@@ -376,7 +376,7 @@ class Client:
             records.append(self.__last_functional_response)
         if len(records) == 0:
             return None
-        return max(records, key=lambda record: record.transmission_end_native_timestamp)
+        return max(records, key=lambda record: record.transmission_end_timestamp)
 
     @property
     def is_background_receiving(self) -> bool:
@@ -542,22 +542,41 @@ class Client:
         :param request_record: Record of the last transmitted request message.
         :param response_records: Records of received responses to provided message.
         """
-        p2_measured = (response_records[0].transmission_start_native_timestamp
-                       - request_record.transmission_end_native_timestamp)
+        if (response_records[0].transmission_start_native_timestamp is not None
+                and request_record.transmission_end_native_timestamp is not None):
+            p2_measured = (response_records[0].transmission_start_native_timestamp
+                           - request_record.transmission_end_native_timestamp)
+        else:
+            p2_measured = response_records[0].transmission_start_timestamp - request_record.transmission_end_timestamp
         self.__update_p2_client_measured(round(p2_measured * 1000., 3))
         if len(response_records) > 1:
             p2_ext_measured_list = []
             for i, response_record in enumerate(response_records[1:]):
-                _p2_ext_measured = (response_record.transmission_end_native_timestamp
-                                    - response_records[i].transmission_end_native_timestamp)
+                if (response_record.transmission_end_native_timestamp is not None
+                        and response_records[i].transmission_end_native_timestamp is not None):
+                    _p2_ext_measured = (response_record.transmission_end_native_timestamp
+                                        - response_records[i].transmission_end_native_timestamp)
+                else:
+                    _p2_ext_measured = (response_record.transmission_end_timestamp
+                                        - response_records[i].transmission_end_timestamp)
                 p2_ext_measured_list.append(round(_p2_ext_measured * 1000., 3))
-            p6_ext_measured = (response_records[-1].transmission_end_native_timestamp
-                               - request_record.transmission_end_native_timestamp)
+            if (response_records[-1].transmission_end_native_timestamp is not None
+                    and request_record.transmission_end_native_timestamp is not None):
+                p6_ext_measured = (response_records[-1].transmission_end_native_timestamp
+                                   - request_record.transmission_end_native_timestamp)
+            else:
+                p6_ext_measured = (response_records[-1].transmission_end_timestamp
+                                   - request_record.transmission_end_timestamp)
             self.__update_p2_ext_client_measured(*p2_ext_measured_list)
             self.__update_p6_ext_client_measured(round(p6_ext_measured * 1000., 3))
         else:
-            p6_measured = (response_records[-1].transmission_end_native_timestamp
-                           - request_record.transmission_end_native_timestamp)
+            if (response_records[-1].transmission_end_native_timestamp is not None
+                    and request_record.transmission_end_native_timestamp is not None):
+                p6_measured = (response_records[-1].transmission_end_native_timestamp
+                               - request_record.transmission_end_native_timestamp)
+            else:
+                p6_measured = (response_records[-1].transmission_end_timestamp
+                               - request_record.transmission_end_timestamp)
             self.__update_p6_client_measured(round(p6_measured * 1000., 3))
 
     def _send_request(self, request: UdsMessage) -> UdsMessageRecord:

@@ -64,7 +64,7 @@ class AbstractAddressingInformation(ABC):
 
         :param addressing_params: Addressing parameters to set.
 
-        raise ReassignmentError("Value of 'frame' attribute cannot be changed once set.")
+        :raise ReassignmentError: An attempt to change the value after object creation.
         """
         if hasattr(self, "_AbstractAddressingInformation__rx_physical_params"):
             raise ReassignmentError("Value of 'rx_physical_params' attribute cannot be changed once set.")
@@ -85,7 +85,7 @@ class AbstractAddressingInformation(ABC):
 
         :param addressing_params: Addressing parameters to set.
 
-        raise ReassignmentError("Value of 'frame' attribute cannot be changed once set.")
+        :raise ReassignmentError: An attempt to change the value after object creation.
         """
         if hasattr(self, "_AbstractAddressingInformation__tx_physical_params"):
             raise ReassignmentError("Value of 'tx_physical_params' attribute cannot be changed once set.")
@@ -106,7 +106,7 @@ class AbstractAddressingInformation(ABC):
 
         :param addressing_params: Addressing parameters to set.
 
-        raise ReassignmentError("Value of 'frame' attribute cannot be changed once set.")
+        :raise ReassignmentError: An attempt to change the value after object creation.
         """
         if hasattr(self, "_AbstractAddressingInformation__rx_functional_params"):
             raise ReassignmentError("Value of 'rx_functional_params' attribute cannot be changed once set.")
@@ -127,7 +127,7 @@ class AbstractAddressingInformation(ABC):
 
         :param addressing_params: Addressing parameters to set.
 
-        raise ReassignmentError("Value of 'frame' attribute cannot be changed once set.")
+        :raise ReassignmentError: An attempt to change the value after object creation.
         """
         if hasattr(self, "_AbstractAddressingInformation__tx_functional_params"):
             raise ReassignmentError("Value of 'tx_functional_params' attribute cannot be changed once set.")

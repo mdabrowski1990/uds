@@ -235,7 +235,7 @@ class AbstractDataRecord(ABC):
 
         :raise TypeError: Provided value is not int type.
         :raise ValueError: Provided value is negative number.
-        raise ReassignmentError("Value of 'frame' attribute cannot be changed once set.")
+        :raise ReassignmentError: An attempt to change the value after object creation.
         """
         if not isinstance(value, int):
             raise TypeError(f"Minimal occurrence number must be int type. Actual type: {type(value)}.")
@@ -263,7 +263,7 @@ class AbstractDataRecord(ABC):
 
         :raise TypeError: Provided value is not int type.
         :raise ValueError: Maximal occurrences number must be greater or equal minimal occurrences number.
-        raise ReassignmentError("Value of 'frame' attribute cannot be changed once set.")
+        :raise ReassignmentError: An attempt to change the value after object creation.
         """
         if value is not None:
             if not isinstance(value, int):

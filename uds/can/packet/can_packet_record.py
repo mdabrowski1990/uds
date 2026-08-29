@@ -33,7 +33,7 @@ class CanPacketRecord(AbstractCanPacketContainer, AbstractPacketRecord):
                  direction: TransmissionDirection,
                  transmission_time: datetime,
                  transmission_timestamp: float,
-                 transmission_native_timestamp: float) -> None:
+                 transmission_native_timestamp: float | None) -> None:
         """
         Create a record of historic information about a CAN packet that was either received or transmitted.
 
@@ -62,9 +62,9 @@ class CanPacketRecord(AbstractCanPacketContainer, AbstractPacketRecord):
                 f"addressing_type={self.addressing_type}, "
                 f"direction={self.direction}, "
                 f"packet_type={self.packet_type}, "
-                f"payload={None if self.payload is None else bytes_to_hex(self.payload)},"
+                f"payload={None if self.payload is None else bytes_to_hex(self.payload)}, "
                 f"transmission_time={self.transmission_time}, "
-                f"transmission_timestamp={self.transmission_timestamp},"
+                f"transmission_timestamp={self.transmission_timestamp}, "
                 f"transmission_native_timestamp={self.transmission_native_timestamp})")
 
     @property
@@ -103,7 +103,7 @@ class CanPacketRecord(AbstractCanPacketContainer, AbstractPacketRecord):
 
         :param value: Value of CAN Addressing Format.
 
-        raise ReassignmentError("Value of 'frame' attribute cannot be changed once set.")
+        :raise ReassignmentError: An attempt to change the value after object creation.
         """
         if hasattr(self, "_CanPacketRecord__addressing_format"):
             raise ReassignmentError("Value of 'addressing_format' attribute cannot be changed once set.")

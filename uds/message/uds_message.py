@@ -156,7 +156,9 @@ class UdsMessageRecord(AbstractUdsMessageContainer):
                 f"transmission_start_time={self.transmission_start_time}, "
                 f"transmission_start_timestamp={self.transmission_start_timestamp}, "
                 f"transmission_end_time={self.transmission_end_time}, "
-                f"transmission_end_timestamp={self.transmission_end_timestamp})")
+                f"transmission_end_timestamp={self.transmission_end_timestamp}, "
+                f"transmission_start_native_timestamp={self.transmission_start_native_timestamp}, "
+                f"transmission_end_native_timestamp={self.transmission_end_native_timestamp})")
 
     @staticmethod
     def __validate_packets_records(value: PacketsRecordsSequenceAlias) -> None:
@@ -196,7 +198,7 @@ class UdsMessageRecord(AbstractUdsMessageContainer):
 
         :param value: Sequence of Packet Records to set.
 
-        raise ReassignmentError("Value of 'frame' attribute cannot be changed once set.")
+        :raise ReassignmentError: An attempt to change the value after object creation.
         """
         if hasattr(self, "_UdsMessageRecord__packets_records"):
             raise ReassignmentError("Value of 'packets_records' attribute cannot be changed once set.")
@@ -268,7 +270,7 @@ class UdsMessageRecord(AbstractUdsMessageContainer):
         return self.packets_records[-1].transmission_timestamp
 
     @property
-    def transmission_start_native_timestamp(self) -> float:
+    def transmission_start_native_timestamp(self) -> float | None:
         """
         Get the native timestamp at the start of this message transmission.
 
@@ -277,7 +279,7 @@ class UdsMessageRecord(AbstractUdsMessageContainer):
         return self.packets_records[0].transmission_native_timestamp
 
     @property
-    def transmission_end_native_timestamp(self) -> float:
+    def transmission_end_native_timestamp(self) -> float | None:
         """
         Get the native timestamp at the end of this message transmission.
 

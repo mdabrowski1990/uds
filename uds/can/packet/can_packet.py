@@ -93,7 +93,7 @@ class CanPacket(AbstractCanPacketContainer, AbstractPacket):
     def __str__(self) -> str:
         """Present object in string format."""
         return (f"{self.__class__.__name__}("
-                f"payload={None if self.payload is None else bytes_to_hex(self.payload)},"
+                f"payload={None if self.payload is None else bytes_to_hex(self.payload)}, "
                 f"addressing_type={self.addressing_type}, "
                 f"addressing_format={self.addressing_format}, "
                 f"packet_type={self.packet_type}, "
@@ -122,7 +122,7 @@ class CanPacket(AbstractCanPacketContainer, AbstractPacket):
 
         :param value: Value of CAN Addressing Format.
 
-        raise ReassignmentError("Value of 'frame' attribute cannot be changed once set.")
+        :raise ReassignmentError: An attempt to change the value after object creation.
         """
         if hasattr(self, "_CanPacket__addressing_format"):
             raise ReassignmentError("Value of 'addressing_format' attribute cannot be changed once set.")

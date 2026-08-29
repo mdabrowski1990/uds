@@ -309,19 +309,19 @@ class TestPythonCanTransportInterface:
     # is_sync_active
 
     def test_is_sync_active__get__true(self):
-        mock_bus = Mock()
         mock_rx_buffer = Mock(is_stopped=False)
         mock_tx_buffer = Mock(is_stopped=False)
         mock_fc_buffer = Mock(is_stopped=False)
+        mock_notifier_configured = Mock(return_value=True)
+        mock_notifier = Mock(stopped=False,
+                             find_instances=Mock(return_value=MagicMock(__contains__=mock_notifier_configured)),
+                             listeners=[mock_rx_buffer, mock_tx_buffer, mock_fc_buffer])
         self.mock_can_transport_interface._PythonCanTransportInterface__rx_frames_buffer = mock_rx_buffer
         self.mock_can_transport_interface._PythonCanTransportInterface__tx_frames_buffer = mock_tx_buffer
         self.mock_can_transport_interface._PythonCanTransportInterface__fc_frames_buffer = mock_fc_buffer
-        self.mock_can_transport_interface.network_manager = mock_bus
-        self.mock_can_transport_interface.notifier = Mock(
-            stopped=False,
-            _bus_list=[mock_bus],
-            listeners=[mock_rx_buffer, mock_tx_buffer, mock_fc_buffer])
+        self.mock_can_transport_interface.notifier = mock_notifier
         assert PythonCanTransportInterface.is_sync_active.fget(self.mock_can_transport_interface) is True
+        mock_notifier_configured.assert_called_once_with(self.mock_can_transport_interface.notifier)
 
     def test_is_sync_active__get__false__no_notifier(self):
         self.mock_can_transport_interface.notifier = None
@@ -331,14 +331,16 @@ class TestPythonCanTransportInterface:
         mock_rx_buffer = Mock(is_stopped=False)
         mock_tx_buffer = Mock(is_stopped=False)
         mock_fc_buffer = Mock(is_stopped=False)
+        mock_notifier_configured = Mock(return_value=False)
+        mock_notifier = Mock(stopped=False,
+                             find_instances=Mock(return_value=MagicMock(__contains__=mock_notifier_configured)),
+                             listeners=[mock_rx_buffer, mock_tx_buffer, mock_fc_buffer])
         self.mock_can_transport_interface._PythonCanTransportInterface__rx_frames_buffer = mock_rx_buffer
         self.mock_can_transport_interface._PythonCanTransportInterface__tx_frames_buffer = mock_tx_buffer
         self.mock_can_transport_interface._PythonCanTransportInterface__fc_frames_buffer = mock_fc_buffer
-        self.mock_can_transport_interface.notifier = Mock(
-            stopped=False,
-            _bus_list=[Mock()],
-            listeners=[mock_rx_buffer, mock_tx_buffer, mock_fc_buffer])
+        self.mock_can_transport_interface.notifier = mock_notifier
         assert PythonCanTransportInterface.is_sync_active.fget(self.mock_can_transport_interface) is False
+        mock_notifier_configured.assert_called_once_with(self.mock_can_transport_interface.notifier)
 
     @pytest.mark.parametrize("notifier, rx_buffer, tx_buffer, fc_buffer", [
         (Mock(stopped=True), Mock(is_stopped=False), Mock(is_stopped=False), Mock(is_stopped=False)),
@@ -347,30 +349,31 @@ class TestPythonCanTransportInterface:
         (Mock(stopped=False), Mock(is_stopped=False), Mock(is_stopped=False), Mock(is_stopped=True)),
     ])
     def test_is_sync_active__get__false__stopped(self, notifier, rx_buffer, tx_buffer, fc_buffer):
-        notifier._bus_list = [self.mock_can_transport_interface.network_manager, Mock()]
+        mock_notifier_configured = Mock(return_value=True)
+        notifier.find_instances = Mock(return_value=MagicMock(__contains__=mock_notifier_configured))
         notifier.listeners = [rx_buffer, tx_buffer, fc_buffer]
-        self.mock_can_transport_interface.notifier = notifier
         self.mock_can_transport_interface._PythonCanTransportInterface__rx_frames_buffer = rx_buffer
         self.mock_can_transport_interface._PythonCanTransportInterface__tx_frames_buffer = tx_buffer
         self.mock_can_transport_interface._PythonCanTransportInterface__fc_frames_buffer = fc_buffer
+        self.mock_can_transport_interface.notifier = notifier
         assert PythonCanTransportInterface.is_sync_active.fget(self.mock_can_transport_interface) is False
 
     # is_async_active
 
     def test_is_async_active__get__true(self):
-        mock_bus = Mock()
         mock_rx_buffer = Mock(is_stopped=False)
         mock_tx_buffer = Mock(is_stopped=False)
         mock_fc_buffer = Mock(is_stopped=False)
+        mock_notifier_configured = Mock(return_value=True)
+        mock_notifier = Mock(stopped=False,
+                             find_instances=Mock(return_value=MagicMock(__contains__=mock_notifier_configured)),
+                             listeners=[mock_rx_buffer, mock_tx_buffer, mock_fc_buffer])
         self.mock_can_transport_interface._PythonCanTransportInterface__async_rx_frames_buffer = mock_rx_buffer
         self.mock_can_transport_interface._PythonCanTransportInterface__async_tx_frames_buffer = mock_tx_buffer
         self.mock_can_transport_interface._PythonCanTransportInterface__async_fc_frames_buffer = mock_fc_buffer
-        self.mock_can_transport_interface.network_manager = mock_bus
-        self.mock_can_transport_interface.async_notifier = Mock(
-            stopped=False,
-            _bus_list=[mock_bus],
-            listeners=[mock_rx_buffer, mock_tx_buffer, mock_fc_buffer])
+        self.mock_can_transport_interface.async_notifier = mock_notifier
         assert PythonCanTransportInterface.is_async_active.fget(self.mock_can_transport_interface) is True
+        mock_notifier_configured.assert_called_once_with(self.mock_can_transport_interface.async_notifier)
 
     def test_is_async_active__get__false__no_notifier(self):
         self.mock_can_transport_interface.notifier = None
@@ -380,14 +383,16 @@ class TestPythonCanTransportInterface:
         mock_rx_buffer = Mock(is_stopped=False)
         mock_tx_buffer = Mock(is_stopped=False)
         mock_fc_buffer = Mock(is_stopped=False)
+        mock_notifier_configured = Mock(return_value=False)
+        mock_notifier = Mock(stopped=False,
+                             find_instances=Mock(return_value=MagicMock(__contains__=mock_notifier_configured)),
+                             listeners=[mock_rx_buffer, mock_tx_buffer, mock_fc_buffer])
         self.mock_can_transport_interface._PythonCanTransportInterface__async_rx_frames_buffer = mock_rx_buffer
         self.mock_can_transport_interface._PythonCanTransportInterface__async_tx_frames_buffer = mock_tx_buffer
         self.mock_can_transport_interface._PythonCanTransportInterface__async_fc_frames_buffer = mock_fc_buffer
-        self.mock_can_transport_interface.async_notifier = Mock(
-            stopped=False,
-            _bus_list=[Mock()],
-            listeners=[mock_rx_buffer, mock_tx_buffer, mock_fc_buffer])
+        self.mock_can_transport_interface.async_notifier = mock_notifier
         assert PythonCanTransportInterface.is_async_active.fget(self.mock_can_transport_interface) is False
+        mock_notifier_configured.assert_called_once_with(self.mock_can_transport_interface.async_notifier)
 
     @pytest.mark.parametrize("notifier, rx_buffer, tx_buffer, fc_buffer", [
         (Mock(stopped=True), Mock(is_stopped=False), Mock(is_stopped=False), Mock(is_stopped=False)),
@@ -396,12 +401,13 @@ class TestPythonCanTransportInterface:
         (Mock(stopped=False), Mock(is_stopped=False), Mock(is_stopped=False), Mock(is_stopped=True)),
     ])
     def test_is_async_active__get__false__stopped(self, notifier, rx_buffer, tx_buffer, fc_buffer):
-        notifier._bus_list = [self.mock_can_transport_interface.network_manager, Mock()]
+        mock_notifier_configured = Mock(return_value=True)
+        notifier.find_instances = Mock(return_value=MagicMock(__contains__=mock_notifier_configured))
         notifier.listeners = [rx_buffer, tx_buffer, fc_buffer]
-        self.mock_can_transport_interface.async_notifier = notifier
         self.mock_can_transport_interface._PythonCanTransportInterface__async_rx_frames_buffer = rx_buffer
         self.mock_can_transport_interface._PythonCanTransportInterface__async_tx_frames_buffer = tx_buffer
         self.mock_can_transport_interface._PythonCanTransportInterface__async_fc_frames_buffer = fc_buffer
+        self.mock_can_transport_interface.async_notifier = notifier
         assert PythonCanTransportInterface.is_async_active.fget(self.mock_can_transport_interface) is False
 
     # setup_sync
@@ -1180,8 +1186,7 @@ class TestPythonCanTransportInterface:
                  is_fd=self.mock_python_can_frame.return_value.is_fd,
                  is_rx=False,
                  is_error_frame=False,
-                 is_remote_frame=False,
-                 timestamp=self.mock_can_transport_interface.time_sync.perf_counter_to_time.return_value)],
+                 is_remote_frame=False)],
             any_order=False)
         self.mock_can_transport_interface.network_manager.send.assert_called_once_with(
             msg=self.mock_python_can_frame.return_value,
@@ -1195,7 +1200,7 @@ class TestPythonCanTransportInterface:
             addressing_format=packet.addressing_format,
             transmission_time=self.mock_datetime.fromtimestamp.return_value,
             transmission_timestamp=self.mock_perf_counter.return_value,
-            transmission_native_timestamp=sent_can_frame.timestamp)
+            transmission_native_timestamp=None)
         if packet.packet_type == CanPacketType.FLOW_CONTROL:
             self.mock_can_transport_interface._update_n_ar_measured.assert_called_once()
             self.mock_can_transport_interface._update_n_as_measured.assert_not_called()
@@ -1305,8 +1310,7 @@ class TestPythonCanTransportInterface:
                  is_fd=self.mock_python_can_frame.return_value.is_fd,
                  is_rx=False,
                  is_error_frame=False,
-                 is_remote_frame=False,
-                 timestamp=self.mock_can_transport_interface.time_sync.perf_counter_to_time.return_value)],
+                 is_remote_frame=False)],
             any_order=False)
         self.mock_can_transport_interface.network_manager.send.assert_called_once_with(
             msg=self.mock_python_can_frame.return_value,
@@ -1320,7 +1324,7 @@ class TestPythonCanTransportInterface:
             addressing_format=packet.addressing_format,
             transmission_time=self.mock_datetime.fromtimestamp.return_value,
             transmission_timestamp=self.mock_perf_counter.return_value,
-            transmission_native_timestamp=sent_can_frame.timestamp)
+            transmission_native_timestamp=None)
         if packet.packet_type == CanPacketType.FLOW_CONTROL:
             self.mock_can_transport_interface._update_n_ar_measured.assert_called_once()
             self.mock_can_transport_interface._update_n_as_measured.assert_not_called()

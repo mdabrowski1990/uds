@@ -17,12 +17,10 @@ def validate_time(value: TimeMillisecondsAlias, accept_zero: bool = True) -> Non
     """
     if not isinstance(value, (int, float)):
         raise TypeError(f"Time value must be int or float type. Actual type: {type(value)}.")
-    if accept_zero:
-        if value < 0:
-            raise ValueError(f"Provided time value is less than 0. Actual value: {value}")
-    else:
-        if value <= 0:
-            raise ValueError(f"Provided time value is less or equal to 0. Actual value: {value}")
+    if accept_zero and value < 0:
+        raise ValueError(f"Provided time value is less than 0. Actual value: {value}")
+    if not accept_zero and value <= 0:
+        raise ValueError(f"Provided time value is less or equal to 0. Actual value: {value}")
 
 
 def validate_timeout(value: TimeMillisecondsAlias | None) -> None:

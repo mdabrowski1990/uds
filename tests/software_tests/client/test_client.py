@@ -533,10 +533,10 @@ class TestClient:
 
     @pytest.mark.parametrize("last_physical, last_functional, last_sent_request", [
         (None, None, None),
-        (Mock(transmission_end_native_timestamp=1), None, "last_physical"),
-        (None, Mock(transmission_end_native_timestamp=2), "last_functional"),
-        (Mock(transmission_end_native_timestamp=3.5), Mock(transmission_end_native_timestamp=3.6), "last_functional"),
-        (Mock(transmission_end_native_timestamp=3.8), Mock(transmission_end_native_timestamp=3.7), "last_physical"),
+        (Mock(transmission_end_timestamp=1), None, "last_physical"),
+        (None, Mock(transmission_end_timestamp=2), "last_functional"),
+        (Mock(transmission_end_timestamp=3.5), Mock(transmission_end_timestamp=3.6), "last_functional"),
+        (Mock(transmission_end_timestamp=3.8), Mock(transmission_end_timestamp=3.7), "last_physical"),
     ])
     def test_last_sent_request(self, last_physical, last_functional, last_sent_request):
         self.mock_client._Client__last_physical_request = last_physical
@@ -554,10 +554,10 @@ class TestClient:
 
     @pytest.mark.parametrize("last_physical, last_functional, last_received_response", [
         (None, None, None),
-        (Mock(transmission_end_native_timestamp=1), None, "last_physical"),
-        (None, Mock(transmission_end_native_timestamp=2), "last_functional"),
-        (Mock(transmission_end_native_timestamp=3.5), Mock(transmission_end_native_timestamp=3.6), "last_functional"),
-        (Mock(transmission_end_native_timestamp=3.8), Mock(transmission_end_native_timestamp=3.7), "last_physical"),
+        (Mock(transmission_end_timestamp=1), None, "last_physical"),
+        (None, Mock(transmission_end_timestamp=2), "last_functional"),
+        (Mock(transmission_end_timestamp=3.5), Mock(transmission_end_timestamp=3.6), "last_functional"),
+        (Mock(transmission_end_timestamp=3.8), Mock(transmission_end_timestamp=3.7), "last_physical"),
     ])
     def test_last_received_response(self, last_physical, last_functional, last_received_response):
         self.mock_client._Client__last_physical_response = last_physical
@@ -966,6 +966,8 @@ class TestClient:
         assert self.mock_client._Client__last_functional_response is response_record
 
     # _update_measured_client_values
+
+    # TODO: update
 
     @pytest.mark.parametrize("request_message, response_messages, p2_client, p6_client", [
         (Mock(spec=UdsMessageRecord,

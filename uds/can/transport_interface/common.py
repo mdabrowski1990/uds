@@ -526,8 +526,13 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
             n_bs_measured = []
             for i, packet_record in enumerate(message_record.packets_records[1:]):
                 if packet_record.packet_type == CanPacketType.FLOW_CONTROL:
-                    n_bs = (packet_record.transmission_native_timestamp
-                            - message_record.packets_records[i].transmission_native_timestamp)
+                    previous_packet_record = message_record.packets_records[i]
+                    if (packet_record.transmission_native_timestamp is not None
+                            and previous_packet_record.transmission_native_timestamp is not None):
+                        n_bs = (packet_record.transmission_native_timestamp
+                                - previous_packet_record.transmission_native_timestamp)
+                    else:
+                        n_bs = packet_record.transmission_timestamp - previous_packet_record.transmission_timestamp
                     n_bs_measured.append(round(n_bs * 1000, 3))
             self.__n_bs_measured = tuple(n_bs_measured)
 
@@ -550,8 +555,13 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
             n_cr_measured = []
             for i, packet_record in enumerate(message_record.packets_records[1:]):
                 if packet_record.packet_type == CanPacketType.CONSECUTIVE_FRAME:
-                    n_cr = (packet_record.transmission_native_timestamp
-                            - message_record.packets_records[i].transmission_native_timestamp)
+                    previous_packet_record = message_record.packets_records[i]
+                    if (packet_record.transmission_native_timestamp is not None
+                            and previous_packet_record.transmission_native_timestamp is not None):
+                        n_cr = (packet_record.transmission_native_timestamp
+                                - previous_packet_record.transmission_native_timestamp)
+                    else:
+                        n_cr = packet_record.transmission_timestamp - previous_packet_record.transmission_timestamp
                     n_cr_measured.append(round(n_cr * 1000, 3))
             self.__n_cr_measured = tuple(n_cr_measured)
 
@@ -750,7 +760,9 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
         sequence_number: int = 1
         flow_control_iterator = iter(self.flow_control_parameters_generator)
         while True:
-            if timestamp_end is not None:
+            if timestamp_end is None:
+                remaining_end_timeout_ms = float("inf")
+            else:
                 remaining_end_timeout_ms = (timestamp_end - perf_counter()) * 1000.
                 if remaining_end_timeout_ms < 0:
                     raise TimeoutError("Total message reception timeout was reached.")
@@ -758,7 +770,8 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
             remaining_n_br_timeout_ms = self.n_br - time_elapsed_ms
             if remaining_n_br_timeout_ms > 0:
                 try:
-                    received_packet = self.receive_packet(timeout=remaining_n_br_timeout_ms)
+                    received_packet = self.receive_packet(timeout=min(remaining_n_br_timeout_ms,
+                                                                      remaining_end_timeout_ms))
                 except TimeoutError:
                     pass
                 else:
@@ -815,7 +828,9 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
         sequence_number: int = 1
         flow_control_iterator = iter(self.flow_control_parameters_generator)
         while True:
-            if timestamp_end is not None:
+            if timestamp_end is None:
+                remaining_end_timeout_ms = float("inf")
+            else:
                 remaining_end_timeout_ms = (timestamp_end - perf_counter()) * 1000.
                 if remaining_end_timeout_ms < 0:
                     raise TimeoutError("Total message reception timeout was reached.")
@@ -823,7 +838,9 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
             remaining_n_br_timeout_ms = self.n_br - time_elapsed_ms
             if remaining_n_br_timeout_ms > 0:
                 try:
-                    received_packet = await self.async_receive_packet(timeout=remaining_n_br_timeout_ms, loop=loop)
+                    received_packet = await self.async_receive_packet(loop=loop,
+                                                                      timeout=min(remaining_n_br_timeout_ms,
+                                                                                  remaining_end_timeout_ms))
                 except (TimeoutError, AsyncioTimeoutError):
                     pass
                 else:
