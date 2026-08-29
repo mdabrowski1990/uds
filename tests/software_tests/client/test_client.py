@@ -533,10 +533,10 @@ class TestClient:
 
     @pytest.mark.parametrize("last_physical, last_functional, last_sent_request", [
         (None, None, None),
-        (Mock(transmission_end_timestamp=1), None, "last_physical"),
-        (None, Mock(transmission_end_timestamp=2), "last_functional"),
-        (Mock(transmission_end_timestamp=3.5), Mock(transmission_end_timestamp=3.6), "last_functional"),
-        (Mock(transmission_end_timestamp=3.8), Mock(transmission_end_timestamp=3.7), "last_physical"),
+        (Mock(transmission_end_native_timestamp=1), None, "last_physical"),
+        (None, Mock(transmission_end_native_timestamp=2), "last_functional"),
+        (Mock(transmission_end_native_timestamp=3.5), Mock(transmission_end_native_timestamp=3.6), "last_functional"),
+        (Mock(transmission_end_native_timestamp=3.8), Mock(transmission_end_native_timestamp=3.7), "last_physical"),
     ])
     def test_last_sent_request(self, last_physical, last_functional, last_sent_request):
         self.mock_client._Client__last_physical_request = last_physical
@@ -554,10 +554,10 @@ class TestClient:
 
     @pytest.mark.parametrize("last_physical, last_functional, last_received_response", [
         (None, None, None),
-        (Mock(transmission_end_timestamp=1), None, "last_physical"),
-        (None, Mock(transmission_end_timestamp=2), "last_functional"),
-        (Mock(transmission_end_timestamp=3.5), Mock(transmission_end_timestamp=3.6), "last_functional"),
-        (Mock(transmission_end_timestamp=3.8), Mock(transmission_end_timestamp=3.7), "last_physical"),
+        (Mock(transmission_end_native_timestamp=1), None, "last_physical"),
+        (None, Mock(transmission_end_native_timestamp=2), "last_functional"),
+        (Mock(transmission_end_native_timestamp=3.5), Mock(transmission_end_native_timestamp=3.6), "last_functional"),
+        (Mock(transmission_end_native_timestamp=3.8), Mock(transmission_end_native_timestamp=3.7), "last_physical"),
     ])
     def test_last_received_response(self, last_physical, last_functional, last_received_response):
         self.mock_client._Client__last_physical_response = last_physical
@@ -1444,10 +1444,10 @@ class TestClient:
         mock_isinstance.assert_called_with(mock_message, (UdsMessage, UdsMessageRecord))
 
     @pytest.mark.parametrize("response_message, request_message", [
-        (Mock(spec=UdsMessageRecord, transmission_start_timestamp=1.234),
-         Mock(spec=UdsMessageRecord, transmission_end_timestamp=1.235),),
-        (Mock(spec=UdsMessageRecord, transmission_start_timestamp=54.987),
-         Mock(spec=UdsMessageRecord, transmission_end_timestamp=69.666),),
+        (Mock(spec=UdsMessageRecord, transmission_start_native_timestamp=1.234),
+         Mock(spec=UdsMessageRecord, transmission_end_native_timestamp=1.235),),
+        (Mock(spec=UdsMessageRecord, transmission_start_native_timestamp=54.987),
+         Mock(spec=UdsMessageRecord, transmission_end_native_timestamp=69.666),),
     ])
     def test_is_response_to_request__false__too_early_response(self, response_message, request_message):
         assert Client.is_response_to_request(self.mock_client,
@@ -1463,11 +1463,11 @@ class TestClient:
               payload=[0x3E, 0x00],
               addressing_type=AddressingType.PHYSICAL),),
         (Mock(spec=UdsMessageRecord,
-              transmission_start_timestamp=1.234,
+              transmission_start_native_timestamp=1.234,
               payload=[0x62, 0x10, 0x13, 0xB4],
               addressing_type=AddressingType.FUNCTIONAL),
          Mock(spec=UdsMessageRecord,
-              transmission_end_timestamp=1.234,
+              transmission_end_native_timestamp=1.234,
               payload=[0x22, 0x10, 0x13],
               addressing_type=AddressingType.FUNCTIONAL),),
     ])
@@ -1498,21 +1498,21 @@ class TestClient:
               payload=[0x3E, 0x00],
               addressing_type=AddressingType.PHYSICAL),),
         (Mock(spec=UdsMessageRecord,
-              transmission_start_timestamp=1.234,
+              transmission_start_native_timestamp=1.234,
               payload=[0x62, 0x10, 0x13, 0xB4],
               addressing_type=AddressingType.FUNCTIONAL),
          Mock(spec=UdsMessageRecord,
-              transmission_end_timestamp=1.234,
+              transmission_end_native_timestamp=1.234,
               payload=[0x22, 0x10, 0x13],
               addressing_type=AddressingType.FUNCTIONAL),),
         (Mock(spec=UdsMessageRecord,
               payload=[0x7F, 0x10, 0x78],
               addressing_type=AddressingType.PHYSICAL,
-              transmission_start_timestamp=69.666),
+              transmission_start_native_timestamp=69.666),
          Mock(spec=UdsMessageRecord,
               payload=[0x10, 0x03],
               addressing_type=AddressingType.FUNCTIONAL,
-              transmission_end_timestamp=54.987),),
+              transmission_end_native_timestamp=54.987),),
     ])
     def test_is_response_to_request__true(self, response_message, request_message):
         self.mock_validate_request_sid.side_effect = RequestSID
@@ -1537,21 +1537,21 @@ class TestClient:
               payload=[0x3E, 0x00],
               addressing_type=AddressingType.PHYSICAL),),
         (Mock(spec=UdsMessageRecord,
-              transmission_start_timestamp=1.234,
+              transmission_start_native_timestamp=1.234,
               payload=[0x6A, 0x10, 0x13, 0xB4],
               addressing_type=AddressingType.FUNCTIONAL),
          Mock(spec=UdsMessageRecord,
-              transmission_end_timestamp=1.234,
+              transmission_end_native_timestamp=1.234,
               payload=[0x22, 0x10, 0x13],
               addressing_type=AddressingType.FUNCTIONAL),),
         (Mock(spec=UdsMessageRecord,
               payload=[0x7F, 0x11, 0x78],
               addressing_type=AddressingType.PHYSICAL,
-              transmission_start_timestamp=69.666),
+              transmission_start_native_timestamp=69.666),
          Mock(spec=UdsMessageRecord,
               payload=[0x10, 0x03],
               addressing_type=AddressingType.FUNCTIONAL,
-              transmission_end_timestamp=54.987),),
+              transmission_end_native_timestamp=54.987),),
     ])
     def test_is_response_to_request__false(self, response_message, request_message):
         self.mock_validate_request_sid.side_effect = RequestSID
