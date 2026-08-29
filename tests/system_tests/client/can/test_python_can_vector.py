@@ -37,10 +37,9 @@ class PythonCanVectorConfig(AbstractClientTests):
                                    channel=1,
                                    fd=True,
                                    receive_own_messages=True)
-        transport_interface_1 = PythonCanTransportInterface(
+        self.transport_interface_1 = PythonCanTransportInterface(
             network_manager=self.can_interface_1,
             addressing_information=addressing_information)
-        self.transport_interface_1 = self.transport_logger(transport_interface_1)
         self.transport_interface_2 = PythonCanTransportInterface(
             network_manager=self.can_interface_2,
             addressing_information=addressing_information.get_other_end())
@@ -49,10 +48,16 @@ class PythonCanVectorConfig(AbstractClientTests):
         """Clean up all tasks that were opened during test and close all connections."""
         self.can_interface_1.flush_tx_buffer()
         self.can_interface_2.flush_tx_buffer()
+        self.transport_interface_1.teardown_sync(True)
+        self.transport_interface_1.teardown_async(True)
         super().teardown_method()
         self.can_interface_1.shutdown()
         self.can_interface_2.shutdown()
         sleep(self.SHUTDOWN_TIME / 1000.)
+        del self.transport_interface_1
+        del self.transport_interface_2
+        del self.can_interface_1
+        del self.can_interface_2
 
     def configure_slow_message_reception(self):
         """Change configuration of Transport Interfaces to reach timeouts easily."""

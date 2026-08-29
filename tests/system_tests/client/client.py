@@ -65,17 +65,6 @@ class AbstractClientTests(BaseSystemTests, ABC):
         self._define_transport_interfaces()
         super().setup_method()
 
-    def teardown_method(self):
-        """
-        Clean after tests:
-        - stop all initiated transmissions
-        - kill all started tasks
-        - disconnect Transport Interfaces
-        """
-        super().teardown_method()
-        del self.transport_interface_1
-        del self.transport_interface_2
-
 
 class AbstractBaseClientFunctionalityTests(AbstractClientTests, ABC):
     """Common implementation of basic system tests related to Client Functionalities."""
