@@ -562,13 +562,13 @@ class PythonCanTransportInterface(AbstractCanTransportInterface):
                                             is_rx=False,
                                             is_error_frame=False,
                                             is_remote_frame=False,
-                                            timestamp=self.time_sync.perf_counter_to_time(timestamp_end))
+                                            timestamp=self.time_sync.perf_counter_to_time(transmission_timestamp))
         else:
             transmission_timestamp = perf_counter()
         if is_flow_control_packet:
-            self._update_n_ar_measured((timestamp_end - timestamp_start) * 1000.)
+            self._update_n_ar_measured((transmission_timestamp - timestamp_start) * 1000.)
         else:
-            self._update_n_as_measured((timestamp_end - timestamp_start) * 1000.)
+            self._update_n_as_measured((transmission_timestamp - timestamp_start) * 1000.)
         return CanPacketRecord(frame=sent_can_frame,
                                direction=TransmissionDirection.TRANSMITTED,
                                addressing_type=packet.addressing_type,
@@ -627,13 +627,13 @@ class PythonCanTransportInterface(AbstractCanTransportInterface):
                                             is_rx=False,
                                             is_error_frame=False,
                                             is_remote_frame=False,
-                                            timestamp=self.time_sync.perf_counter_to_time(timestamp_end))
+                                            timestamp=self.time_sync.perf_counter_to_time(transmission_timestamp))
         else:
             transmission_timestamp = perf_counter()
         if is_flow_control_packet:
-            self._update_n_ar_measured((timestamp_end - timestamp_start) * 1000.)
+            self._update_n_ar_measured((transmission_timestamp - timestamp_start) * 1000.)
         else:
-            self._update_n_as_measured((timestamp_end - timestamp_start) * 1000.)
+            self._update_n_as_measured((transmission_timestamp - timestamp_start) * 1000.)
         return CanPacketRecord(frame=sent_can_frame,
                                direction=TransmissionDirection.TRANSMITTED,
                                addressing_type=packet.addressing_type,

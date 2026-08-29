@@ -1105,6 +1105,9 @@ class TestPythonCanTransportInterface:
         else:
             timeout = self.mock_can_transport_interface.n_as_timeout / 1000.
         sent_can_frame = self.mock_can_transport_interface._wait_for_tx_frame.return_value
+        mock_is_wall_time_used = Mock(return_value=True)
+        self.mock_can_transport_interface._INTERFACES_USING_WALL_TIME_TIMESTAMPS = MagicMock(
+            __contains__=mock_is_wall_time_used)
         assert (PythonCanTransportInterface.send_packet(self.mock_can_transport_interface, packet)
                 == self.mock_can_packet_record.return_value)
         self.mock_can_transport_interface.clear_transmitted_frame_buffers.assert_called_once_with()
@@ -1123,6 +1126,7 @@ class TestPythonCanTransportInterface:
         self.mock_can_transport_interface.network_manager.send.assert_called_once_with(
             msg=self.mock_python_can_frame.return_value,
             timeout=timeout)
+        mock_is_wall_time_used.assert_called_once_with(self.mock_can_transport_interface.backend)
         self.mock_datetime.fromtimestamp.assert_called_once_with(sent_can_frame.timestamp)
         self.mock_can_packet_record.assert_called_once_with(
             frame=sent_can_frame,
@@ -1130,9 +1134,8 @@ class TestPythonCanTransportInterface:
             addressing_type=packet.addressing_type,
             addressing_format=packet.addressing_format,
             transmission_time=self.mock_datetime.fromtimestamp.return_value,
-            transmission_timestamp=self.mock_can_transport_interface.time_sync.time_to_perf_counter.return_value)
-        self.mock_can_transport_interface.time_sync.time_to_perf_counter.assert_called_once_with(
-            sent_can_frame.timestamp)
+            transmission_timestamp=self.mock_perf_counter.return_value,
+            transmission_native_timestamp=sent_can_frame.timestamp)
         if packet.packet_type == CanPacketType.FLOW_CONTROL:
             self.mock_can_transport_interface._update_n_ar_measured.assert_called_once()
             self.mock_can_transport_interface._update_n_as_measured.assert_not_called()
@@ -1152,6 +1155,9 @@ class TestPythonCanTransportInterface:
         else:
             timeout = self.mock_can_transport_interface.n_as_timeout / 1000.
         sent_can_frame = self.mock_python_can_frame.return_value
+        mock_is_wall_time_used = Mock(return_value=False)
+        self.mock_can_transport_interface._INTERFACES_USING_WALL_TIME_TIMESTAMPS = MagicMock(
+            __contains__=mock_is_wall_time_used)
         assert (PythonCanTransportInterface.send_packet(self.mock_can_transport_interface, packet)
                 == self.mock_can_packet_record.return_value)
         self.mock_can_transport_interface.clear_transmitted_frame_buffers.assert_called_once_with()
@@ -1180,14 +1186,16 @@ class TestPythonCanTransportInterface:
         self.mock_can_transport_interface.network_manager.send.assert_called_once_with(
             msg=self.mock_python_can_frame.return_value,
             timeout=timeout)
-        self.mock_datetime.fromtimestamp.assert_called_once_with(sent_can_frame.timestamp)
+        self.mock_datetime.fromtimestamp.assert_called_once_with(
+            self.mock_can_transport_interface.time_sync.perf_counter_to_time.return_value)
         self.mock_can_packet_record.assert_called_once_with(
             frame=sent_can_frame,
             direction=TransmissionDirection.TRANSMITTED,
             addressing_type=packet.addressing_type,
             addressing_format=packet.addressing_format,
             transmission_time=self.mock_datetime.fromtimestamp.return_value,
-            transmission_timestamp=self.mock_perf_counter.return_value)
+            transmission_timestamp=self.mock_perf_counter.return_value,
+            transmission_native_timestamp=sent_can_frame.timestamp)
         if packet.packet_type == CanPacketType.FLOW_CONTROL:
             self.mock_can_transport_interface._update_n_ar_measured.assert_called_once()
             self.mock_can_transport_interface._update_n_as_measured.assert_not_called()
@@ -1218,6 +1226,9 @@ class TestPythonCanTransportInterface:
         else:
             timeout = self.mock_can_transport_interface.n_as_timeout / 1000.
         sent_can_frame = self.mock_can_transport_interface._async_wait_for_tx_frame.return_value
+        mock_is_wall_time_used = Mock(return_value=True)
+        self.mock_can_transport_interface._INTERFACES_USING_WALL_TIME_TIMESTAMPS = MagicMock(
+            __contains__=mock_is_wall_time_used)
         assert (await PythonCanTransportInterface.async_send_packet(self.mock_can_transport_interface, packet)
                 == self.mock_can_packet_record.return_value)
         self.mock_can_transport_interface.clear_transmitted_frame_buffers.assert_called_once_with()
@@ -1237,6 +1248,7 @@ class TestPythonCanTransportInterface:
         self.mock_can_transport_interface.network_manager.send.assert_called_once_with(
             msg=self.mock_python_can_frame.return_value,
             timeout=timeout)
+        mock_is_wall_time_used.assert_called_once_with(self.mock_can_transport_interface.backend)
         self.mock_datetime.fromtimestamp.assert_called_once_with(sent_can_frame.timestamp)
         self.mock_can_packet_record.assert_called_once_with(
             frame=sent_can_frame,
@@ -1244,9 +1256,8 @@ class TestPythonCanTransportInterface:
             addressing_type=packet.addressing_type,
             addressing_format=packet.addressing_format,
             transmission_time=self.mock_datetime.fromtimestamp.return_value,
-            transmission_timestamp=self.mock_can_transport_interface.time_sync.time_to_perf_counter.return_value)
-        self.mock_can_transport_interface.time_sync.time_to_perf_counter.assert_called_once_with(
-            sent_can_frame.timestamp)
+            transmission_timestamp=self.mock_perf_counter.return_value,
+            transmission_native_timestamp=sent_can_frame.timestamp)
         if packet.packet_type == CanPacketType.FLOW_CONTROL:
             self.mock_can_transport_interface._update_n_ar_measured.assert_called_once()
             self.mock_can_transport_interface._update_n_as_measured.assert_not_called()
@@ -1268,6 +1279,9 @@ class TestPythonCanTransportInterface:
         else:
             timeout = self.mock_can_transport_interface.n_as_timeout / 1000.
         sent_can_frame = self.mock_python_can_frame.return_value
+        mock_is_wall_time_used = Mock(return_value=False)
+        self.mock_can_transport_interface._INTERFACES_USING_WALL_TIME_TIMESTAMPS = MagicMock(
+            __contains__=mock_is_wall_time_used)
         assert (await PythonCanTransportInterface.async_send_packet(self.mock_can_transport_interface, packet, loop=mock_loop)
                 == self.mock_can_packet_record.return_value)
         self.mock_can_transport_interface.clear_transmitted_frame_buffers.assert_called_once_with()
@@ -1297,14 +1311,16 @@ class TestPythonCanTransportInterface:
         self.mock_can_transport_interface.network_manager.send.assert_called_once_with(
             msg=self.mock_python_can_frame.return_value,
             timeout=timeout)
-        self.mock_datetime.fromtimestamp.assert_called_once_with(sent_can_frame.timestamp)
+        self.mock_datetime.fromtimestamp.assert_called_once_with(
+            self.mock_can_transport_interface.time_sync.perf_counter_to_time.return_value)
         self.mock_can_packet_record.assert_called_once_with(
             frame=sent_can_frame,
             direction=TransmissionDirection.TRANSMITTED,
             addressing_type=packet.addressing_type,
             addressing_format=packet.addressing_format,
             transmission_time=self.mock_datetime.fromtimestamp.return_value,
-            transmission_timestamp=self.mock_perf_counter.return_value)
+            transmission_timestamp=self.mock_perf_counter.return_value,
+            transmission_native_timestamp=sent_can_frame.timestamp)
         if packet.packet_type == CanPacketType.FLOW_CONTROL:
             self.mock_can_transport_interface._update_n_ar_measured.assert_called_once()
             self.mock_can_transport_interface._update_n_as_measured.assert_not_called()
