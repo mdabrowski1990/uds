@@ -1,6 +1,4 @@
-"""Send asynchronously a message using Diagnostic on CAN protocol (ISO 15765)."""
-
-import asyncio
+"""Send a packet defined by Diagnostic on CAN protocol (ISO 15765)."""
 
 from can import Bus
 from uds.addressing import AddressingType
@@ -8,16 +6,18 @@ from uds.can import CanAddressingFormat, CanAddressingInformation, CanVersion, P
 from uds.message import UdsMessage
 
 
-async def main():
+def main():
     # configure CAN interface - https://python-can.readthedocs.io/en/stable/interfaces.html
     can_interface = Bus(
         # provide configuration for your CAN interface
-        interface="kvaser",
+        interface="vector",
+        app_name="python-can",  # name of the Application in Vector Hardware Config
         channel=0,
         receive_own_messages=True,  # recommended
         # configure your CAN bus
         bitrate=500_000,
-        fd=False)
+        fd=True,
+        data_bitrate=4_000_000)
 
     # configure addresses for Diagnostics on CAN communication
     # CAN Addressing Formats explanation:
@@ -34,14 +34,16 @@ async def main():
         addressing_information=addressing_information,
         can_version=CanVersion.CLASSIC_CAN)  # send all diagnostic packets as Classic CAN frames
 
-    # define UDS Messages to send
+    # define UDS Message
     message = UdsMessage(addressing_type=AddressingType.PHYSICAL, payload=[0x10, 0x03])
+    # pick one CAN packet from UDS Message segmentation
+    packet = can_ti.segmenter.segmentation(message)[0]
 
-    # send UDS Message
-    sent_message_record = await can_ti.async_send_message(message)
+    # send CAN Packet
+    sent_packet_record = can_ti.send_packet(packet)
 
-    # show sent message
-    print(sent_message_record)
+    # show sent packet
+    print(sent_packet_record)
 
     # close connections with CAN interface
     del can_ti
@@ -49,4 +51,4 @@ async def main():
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    main()

@@ -1,7 +1,4 @@
-"""Send (on one interface) and received (on the second) a message using Diagnostic on CAN protocol (ISO 15765)."""
-
-from threading import Timer
-from time import sleep
+"""Send (on one interface) and received (on the second) a packet defined by Diagnostic on CAN protocol (ISO 15765)."""
 
 from can import Bus
 from uds.addressing import AddressingType
@@ -13,7 +10,8 @@ def main():
     # configure CAN interface - https://python-can.readthedocs.io/en/stable/interfaces.html
     can_interface_1 = Bus(
         # provide configuration for your CAN interface
-        interface="kvaser",
+        interface="vector",
+        app_name="python-can",  # name of the Application in Vector Hardware Config
         channel=0,
         receive_own_messages=True,  # recommended
         # configure your CAN bus
@@ -23,7 +21,8 @@ def main():
     # configure CAN interface - https://python-can.readthedocs.io/en/stable/interfaces.html
     can_interface_2 = Bus(
         # provide configuration for your CAN interface
-        interface="kvaser",
+        interface="vector",
+        app_name="python-can",  # name of the Application in Vector Hardware Config
         channel=1,
         receive_own_messages=True,  # recommended
         # configure your CAN bus
@@ -50,28 +49,18 @@ def main():
         network_manager=can_interface_2,
         addressing_information=ai_receive)
 
-    # define UDS Message to send
-    message = UdsMessage(addressing_type=AddressingType.PHYSICAL, payload=[0x62, 0x10, 0x00, *range(100)])
+    # define UDS Message
+    message = UdsMessage(addressing_type=AddressingType.PHYSICAL, payload=[0x10, 0x03])
+    # pick one CAN packet from UDS Message segmentation
+    packet = can_ti_1.segmenter.segmentation(message)[0]
 
-    # prepare code for scheduling transmission
-    sent_message_record = None
-    def _send_message():
-        nonlocal sent_message_record
-        sent_message_record = can_ti_1.send_message(message)
-    timer = Timer(interval=0.01,  # delay after which message will be sent, now 0.01 [s]
-                  function=_send_message)
-
-    # send and receive message
-    timer.start()
-    received_message_record = can_ti_2.receive_message(start_timeout=1000)  # timeout=1000 [ms]
-
-    # wait till message is received
-    while not timer.finished.is_set():
-        sleep(0.01)
+    # send and receive packet CAN packet
+    sent_packet_record = can_ti_1.send_packet(packet)
+    received_packet_record = can_ti_2.receive_packet(timeout=100)
 
     # show results
-    print(sent_message_record)
-    print(received_message_record)
+    print(sent_packet_record)
+    print(received_packet_record)
 
     # close connections with CAN interfaces
     del can_ti_1

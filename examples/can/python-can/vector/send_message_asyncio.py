@@ -12,7 +12,8 @@ async def main():
     # configure CAN interface - https://python-can.readthedocs.io/en/stable/interfaces.html
     can_interface = Bus(
         # provide configuration for your CAN interface
-        interface="kvaser",
+        interface="vector",
+        app_name="python-can",  # name of the Application in Vector Hardware Config
         channel=0,
         receive_own_messages=True,  # recommended
         # configure your CAN bus
