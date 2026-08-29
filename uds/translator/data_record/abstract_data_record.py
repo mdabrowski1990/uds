@@ -153,7 +153,7 @@ class AbstractDataRecord(ABC):
 
         :raise TypeError: Provided value is not str type.
         :raise ValueError: Provided value empty.
-        raise ReassignmentError("Value of 'frame' attribute cannot be changed once set.")
+        :raise ReassignmentError: An attempt to change the value after it has been set.
         """
         if not isinstance(value, str):
             raise TypeError(f"Provided name is not str type. Actual type: {type(value)}.")
@@ -178,7 +178,7 @@ class AbstractDataRecord(ABC):
 
         :raise TypeError: Provided value is not int type.
         :raise ValueError: Provided value is not positive integer.
-        raise ReassignmentError("Value of 'frame' attribute cannot be changed once set.")
+        :raise ReassignmentError: An attempt to change the value after it has been set.
         """
         if not isinstance(value, int):
             raise TypeError(f"Length must be an integer. Actual type: {type(value)}.")

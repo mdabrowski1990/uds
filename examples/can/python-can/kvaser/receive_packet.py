@@ -37,7 +37,8 @@ def main():
     print(received_packet_record)
 
     # close connections with CAN interface
-    del can_ti
+    can_ti.teardown_sync(True)
+    can_ti.teardown_async(True)
     can_interface.shutdown()
 
 

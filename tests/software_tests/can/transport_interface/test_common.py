@@ -1955,6 +1955,7 @@ class TestAbstractCanTransportInterface:
         mock_is_timeout_reached.assert_called_once()
         self.mock_can_transport_interface.setup_sync.assert_called_once_with()
         self.mock_can_transport_interface.receive_packet.assert_not_called()
+        self.mock_can_transport_interface._update_n_cr_measured.assert_not_called()
 
     @pytest.mark.parametrize("start_timeout", [0.001, 123.456])
     def test_receive_message__timeout_error__no_packet(self, start_timeout):
@@ -1973,6 +1974,7 @@ class TestAbstractCanTransportInterface:
         mock_is_timeout_reached.assert_called_once()
         self.mock_can_transport_interface.setup_sync.assert_called_once_with()
         self.mock_can_transport_interface.receive_packet.assert_called_once()
+        self.mock_can_transport_interface._update_n_cr_measured.assert_not_called()
 
     @pytest.mark.parametrize("start_timeout, end_timeout", [
         (None, 123.456),
@@ -1999,6 +2001,8 @@ class TestAbstractCanTransportInterface:
         self.mock_can_transport_interface.receive_packet.assert_called_once()
         self.mock_can_transport_interface.setup_sync.assert_called_once_with()
         self.mock_warn.assert_not_called()
+        self.mock_can_transport_interface._update_n_cr_measured.assert_called_once_with(
+            self.mock_can_transport_interface._message_receive_start.return_value)
 
     @pytest.mark.parametrize("start_timeout, end_timeout", [
         (None, 123.456),
@@ -2028,6 +2032,8 @@ class TestAbstractCanTransportInterface:
         )
         self.mock_can_transport_interface.setup_sync.assert_called_once_with()
         self.mock_warn.assert_called_once()
+        self.mock_can_transport_interface._update_n_cr_measured.assert_called_once_with(
+            self.mock_can_transport_interface._message_receive_start.return_value)
 
     # async_receive_message
 
@@ -2051,6 +2057,7 @@ class TestAbstractCanTransportInterface:
         self.mock_can_transport_interface.setup_async.assert_called_once_with(
             loop=mock_loop)
         self.mock_can_transport_interface.async_receive_packet.assert_not_called()
+        self.mock_can_transport_interface._update_n_cr_measured.assert_not_called()
 
     @pytest.mark.parametrize("start_timeout", [0.001, 123.456])
     @pytest.mark.asyncio
@@ -2073,6 +2080,7 @@ class TestAbstractCanTransportInterface:
         self.mock_can_transport_interface.setup_async.assert_called_once_with(
             loop=mock_loop)
         self.mock_can_transport_interface.async_receive_packet.assert_called_once()
+        self.mock_can_transport_interface._update_n_cr_measured.assert_not_called()
 
     @pytest.mark.parametrize("start_timeout, end_timeout", [
         (None, 123.456),
@@ -2104,6 +2112,8 @@ class TestAbstractCanTransportInterface:
             loop=mock_loop)
         self.mock_can_transport_interface.async_receive_packet.assert_called_once()
         self.mock_warn.assert_not_called()
+        self.mock_can_transport_interface._update_n_cr_measured.assert_called_once_with(
+            self.mock_can_transport_interface._async_message_receive_start.return_value)
 
     @pytest.mark.parametrize("start_timeout, end_timeout", [
         (None, 123.456),
@@ -2137,6 +2147,8 @@ class TestAbstractCanTransportInterface:
                         loop=self.mock_get_running_loop.return_value)]
         )
         self.mock_warn.assert_called_once()
+        self.mock_can_transport_interface._update_n_cr_measured.assert_called_once_with(
+            self.mock_can_transport_interface._async_message_receive_start.return_value)
 
 
 @pytest.mark.performance

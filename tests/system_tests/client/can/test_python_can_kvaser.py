@@ -46,6 +46,8 @@ class PythonCanKvaserConfig(AbstractClientTests):
         self.can_interface_2.flush_tx_buffer()
         self.transport_interface_1.teardown_sync(True)
         self.transport_interface_1.teardown_async(True)
+        self.transport_interface_2.teardown_sync(True)
+        self.transport_interface_2.teardown_async(True)
         super().teardown_method()
         self.can_interface_1.shutdown()
         self.can_interface_2.shutdown()

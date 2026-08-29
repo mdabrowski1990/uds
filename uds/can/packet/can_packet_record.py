@@ -41,7 +41,9 @@ class CanPacketRecord(AbstractCanPacketContainer, AbstractPacketRecord):
         :param addressing_format: CAN Addressing Format used.
         :param addressing_type: Addressing type for which this CAN packet is relevant.
         :param direction: Information whether this packet was transmitted or received.
-        :param transmission_time: Time stamp when this packet was fully transmitted on a CAN bus.
+        :param transmission_time: Wall-clock time at which the packet was transmitted or received
+        :param transmission_timestamp: Monotonic timestamp associated with the packet transmission or reception.
+        :param transmission_native_timestamp: Timestamp provided by the underlying network manager.
         """
         self.addressing_format = addressing_format
         self.addressing_type = addressing_type
@@ -62,7 +64,8 @@ class CanPacketRecord(AbstractCanPacketContainer, AbstractPacketRecord):
                 f"packet_type={self.packet_type}, "
                 f"payload={None if self.payload is None else bytes_to_hex(self.payload)},"
                 f"transmission_time={self.transmission_time}, "
-                f"transmission_timestamp={self.transmission_timestamp})")
+                f"transmission_timestamp={self.transmission_timestamp},"
+                f"transmission_native_timestamp={self.transmission_native_timestamp})")
 
     @property
     def can_id(self) -> int:

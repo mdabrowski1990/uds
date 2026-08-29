@@ -651,7 +651,7 @@ class TestClient:
         self.mock_client.p2_client_timeout = p2_client_timeout
         assert Client._Client__update_p2_client_measured(self.mock_client, p2_client_measured) is None
         assert self.mock_client._Client__p2_client_measured == p2_client_measured
-        self.mock_validate_time.assert_called_once_with(p2_client_measured, accept_zero=False)
+        self.mock_validate_time.assert_called_once_with(p2_client_measured, accept_zero=True)
         self.mock_warn.assert_called_once()
 
     @pytest.mark.parametrize("p2_client_measured, p2_client_timeout", [
@@ -662,7 +662,7 @@ class TestClient:
         self.mock_client.p2_client_timeout = p2_client_timeout
         assert Client._Client__update_p2_client_measured(self.mock_client, p2_client_measured) is None
         assert self.mock_client._Client__p2_client_measured == p2_client_measured
-        self.mock_validate_time.assert_called_once_with(p2_client_measured, accept_zero=False)
+        self.mock_validate_time.assert_called_once_with(p2_client_measured, accept_zero=True)
         self.mock_warn.assert_not_called()
 
     # __update_p2_ext_client_measured
@@ -680,7 +680,7 @@ class TestClient:
         self.mock_client.p2_ext_client_timeout = p2_ext_client_timeout
         assert Client._Client__update_p2_ext_client_measured(self.mock_client, *p2_ext_client_measured_list) is None
         assert self.mock_client._Client__p2_ext_client_measured == tuple(p2_ext_client_measured_list)
-        self.mock_validate_time.assert_has_calls([call(p2_ext_client_measured, accept_zero=False)
+        self.mock_validate_time.assert_has_calls([call(p2_ext_client_measured, accept_zero=True)
                                                   for p2_ext_client_measured in p2_ext_client_measured_list])
         self.mock_warn.assert_called_once()
 
@@ -693,7 +693,7 @@ class TestClient:
         self.mock_client.p2_ext_client_timeout = p2_ext_client_timeout
         assert Client._Client__update_p2_ext_client_measured(self.mock_client, *p2_ext_client_measured_list) is None
         assert self.mock_client._Client__p2_ext_client_measured == tuple(p2_ext_client_measured_list)
-        self.mock_validate_time.assert_has_calls([call(p2_ext_client_measured, accept_zero=False)
+        self.mock_validate_time.assert_has_calls([call(p2_ext_client_measured, accept_zero=True)
                                                   for p2_ext_client_measured in p2_ext_client_measured_list])
         self.mock_warn.assert_not_called()
 
@@ -707,7 +707,7 @@ class TestClient:
         self.mock_client.p6_client_timeout = p6_client_timeout
         assert Client._Client__update_p6_client_measured(self.mock_client, p6_client_measured) is None
         assert self.mock_client._Client__p6_client_measured == p6_client_measured
-        self.mock_validate_time.assert_called_once_with(p6_client_measured, accept_zero=False)
+        self.mock_validate_time.assert_called_once_with(p6_client_measured, accept_zero=True)
         self.mock_warn.assert_called_once()
 
     @pytest.mark.parametrize("p6_client_measured, p6_client_timeout", [
@@ -718,7 +718,7 @@ class TestClient:
         self.mock_client.p6_client_timeout = p6_client_timeout
         assert Client._Client__update_p6_client_measured(self.mock_client, p6_client_measured) is None
         assert self.mock_client._Client__p6_client_measured == p6_client_measured
-        self.mock_validate_time.assert_called_once_with(p6_client_measured, accept_zero=False)
+        self.mock_validate_time.assert_called_once_with(p6_client_measured, accept_zero=True)
         self.mock_warn.assert_not_called()
 
     # __update_p6_ext_client_measured
@@ -731,7 +731,7 @@ class TestClient:
         self.mock_client.p6_ext_client_timeout = p6_ext_client_timeout
         assert Client._Client__update_p6_ext_client_measured(self.mock_client, p6_ext_client_measured) is None
         assert self.mock_client._Client__p6_ext_client_measured == p6_ext_client_measured
-        self.mock_validate_time.assert_called_once_with(p6_ext_client_measured, accept_zero=False)
+        self.mock_validate_time.assert_called_once_with(p6_ext_client_measured, accept_zero=True)
         self.mock_warn.assert_called_once()
 
     @pytest.mark.parametrize("p6_ext_client_measured, p6_ext_client_timeout", [
@@ -742,7 +742,7 @@ class TestClient:
         self.mock_client.p6_ext_client_timeout = p6_ext_client_timeout
         assert Client._Client__update_p6_ext_client_measured(self.mock_client, p6_ext_client_measured) is None
         assert self.mock_client._Client__p6_ext_client_measured == p6_ext_client_measured
-        self.mock_validate_time.assert_called_once_with(p6_ext_client_measured, accept_zero=False)
+        self.mock_validate_time.assert_called_once_with(p6_ext_client_measured, accept_zero=True)
         self.mock_warn.assert_not_called()
 
     # __receiving_task

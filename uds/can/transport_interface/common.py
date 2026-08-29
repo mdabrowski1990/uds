@@ -387,6 +387,8 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
         Set the value of :ref:`N_Br <knowledge-base-can-n-br>` time parameter to use.
 
         :param value: The value to set.
+
+        :raise ValueError: Provided value is greater than N_Br max.
         """
         validate_time(value, accept_zero=True)
         if value >= self.n_br_max:
@@ -427,6 +429,8 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
                 :ref:`Flow Control CAN packet <knowledge-base-can-flow-control>`
             - int/float type - timing value to be used regardless of a received
                 :ref:`STmin <knowledge-base-can-st-min>` value
+
+        :raise ValueError: Provided value is greater than N_Cs max.
         """
         if value is not None:
             validate_time(value, accept_zero=True)
@@ -780,7 +784,8 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
                 if isinstance(cf_block, UdsMessageRecord):  # in case another message interrupted
                     return cf_block
                 packets_records.extend(cf_block)
-                received_data_length += len(cf_block[0].payload) * len(cf_block)  # type: ignore
+                for cf in cf_block:
+                    received_data_length += len(cf.payload)
                 if received_data_length >= message_data_length:
                     break
                 sequence_number = (cf_block[-1].sequence_number + 1) & 0xF  # type: ignore
@@ -846,7 +851,8 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
                 if isinstance(cf_block, UdsMessageRecord):  # in case another message interrupted
                     return cf_block
                 packets_records.extend(cf_block)
-                received_data_length += len(cf_block[0].payload) * len(cf_block)  # type: ignore
+                for cf in cf_block:
+                    received_data_length += len(cf.payload)
                 if received_data_length >= message_data_length:
                     break
                 sequence_number = (cf_block[-1].sequence_number + 1) & 0xF  # type: ignore
@@ -995,7 +1001,6 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
         :param message: A message to send.
 
         :raise OverflowError: Flow Control packet with Flow Status equal to OVERFLOW was received.
-        :raise TransmissionInterruptionError: A new UDS message transmission was started while sending this message.
         :raise NotImplementedError: Flow Control CAN packet with unknown Flow Status was received.
 
         :return: Record with historic information about transmitted UDS message.
@@ -1039,7 +1044,6 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
         :param loop: An asyncio event loop to use for scheduling this task.
 
         :raise OverflowError: Flow Control packet with Flow Status equal to OVERFLOW was received.
-        :raise TransmissionInterruptionError: A new UDS message transmission was started while sending this message.
         :raise NotImplementedError: Flow Control CAN packet with unknown Flow Status was received.
 
         :return: Record with historic information about transmitted UDS message.
@@ -1120,8 +1124,10 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
                     from exception
             # handle received packet
             if CanPacketType.is_initial_packet_type(received_packet.packet_type):
-                return self._message_receive_start(initial_packet=received_packet,
-                                                   timestamp_end=timestamp_end_timeout)
+                message_record = self._message_receive_start(initial_packet=received_packet,
+                                                             timestamp_end=timestamp_end_timeout)
+                self._update_n_cr_measured(message_record)
+                return message_record
             warn(message="A CAN packet that does not start UDS message transmission was received.",
                  category=UnexpectedPacketReceptionWarning)
 
@@ -1173,8 +1179,10 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
                     from exception
             # handle received packet
             if CanPacketType.is_initial_packet_type(received_packet.packet_type):
-                return await self._async_message_receive_start(initial_packet=received_packet,
-                                                               timestamp_end=timestamp_end_timeout,
-                                                               loop=loop)
+                message_record = await self._async_message_receive_start(initial_packet=received_packet,
+                                                                         timestamp_end=timestamp_end_timeout,
+                                                                         loop=loop)
+                self._update_n_cr_measured(message_record)
+                return message_record
             warn(message="A CAN packet that does not start UDS message transmission was received.",
                  category=UnexpectedPacketReceptionWarning)

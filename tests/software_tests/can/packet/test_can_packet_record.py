@@ -86,6 +86,7 @@ class TestCanPacketRecord:
         assert "can_id=" in output_str
         assert "direction=" in output_str
         assert "transmission_time=" in output_str
+        assert "transmission_native_timestamp=" in output_str
 
     # can_id
 
@@ -238,6 +239,7 @@ class TestCanPacketRecordIntegration:
         assert packet_record.frame == kwargs["frame"]
         assert packet_record.transmission_time == kwargs["transmission_time"]
         assert packet_record.transmission_timestamp == kwargs["transmission_timestamp"]
+        assert packet_record.transmission_native_timestamp == kwargs["transmission_native_timestamp"]
 
     @pytest.mark.parametrize("kwargs", [
         {"frame": PythonCanFrame(arbitration_id=0x68A,

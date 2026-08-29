@@ -184,7 +184,7 @@ class PythonCanTransportInterface(AbstractCanTransportInterface):
         """Get flag indicating whether CAN synchronous communication is active."""
         if self.notifier is None or self.notifier.stopped:
             return False
-        if self.network_manager not in self.notifier._bus_list:
+        if self.network_manager not in self.notifier.find_instances(self.network_manager):
             return False
         if self.__rx_frames_buffer.is_stopped or self.__rx_frames_buffer not in self.notifier.listeners:
             return False
@@ -199,7 +199,7 @@ class PythonCanTransportInterface(AbstractCanTransportInterface):
         """Get flag indicating whether CAN asynchronous communication is active."""
         if self.async_notifier is None or self.async_notifier.stopped:
             return False
-        if self.network_manager not in self.async_notifier._bus_list:
+        if self.network_manager not in self.async_notifier.find_instances(self.network_manager):
             return False
         if (self.__async_rx_frames_buffer.is_stopped
                 or self.__async_rx_frames_buffer not in self.async_notifier.listeners):
@@ -296,7 +296,6 @@ class PythonCanTransportInterface(AbstractCanTransportInterface):
             if not suppress_warning:
                 warn(message="Notifier (python-can) for asynchronous communication was stopped.",
                      category=RuntimeWarning)
-
 
     def _wait_for_flow_control(self, timeout_timestamp: float) -> CanPacketRecord:
         """
@@ -561,8 +560,7 @@ class PythonCanTransportInterface(AbstractCanTransportInterface):
                                             bitrate_switch=can_frame.bitrate_switch,
                                             is_rx=False,
                                             is_error_frame=False,
-                                            is_remote_frame=False,
-                                            timestamp=self.time_sync.perf_counter_to_time(transmission_timestamp))
+                                            is_remote_frame=False)  # TODO: timestamp
         else:
             transmission_timestamp = perf_counter()
         if is_flow_control_packet:
@@ -626,8 +624,7 @@ class PythonCanTransportInterface(AbstractCanTransportInterface):
                                             bitrate_switch=can_frame.bitrate_switch,
                                             is_rx=False,
                                             is_error_frame=False,
-                                            is_remote_frame=False,
-                                            timestamp=self.time_sync.perf_counter_to_time(transmission_timestamp))
+                                            is_remote_frame=False)  # TODO: timestamp
         else:
             transmission_timestamp = perf_counter()
         if is_flow_control_packet:

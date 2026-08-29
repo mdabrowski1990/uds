@@ -422,7 +422,7 @@ class Client:
 
         :param value: Value to set.
         """
-        validate_time(value, accept_zero=False)
+        validate_time(value, accept_zero=True)
         if value > self.p2_client_timeout:
             warn("Measured value of P2Client was greater than P2Client timeout.",
                  category=ValueWarning)
@@ -439,7 +439,7 @@ class Client:
         if len(values) == 0:
             raise RuntimeError("At least one P2*Client value must be provided.")
         for value in values:
-            validate_time(value, accept_zero=False)
+            validate_time(value, accept_zero=True)
             if value > self.p2_ext_client_timeout:
                 warn("Measured value of P2*Client was greater than P2*Client timeout.",
                      category=ValueWarning)
@@ -451,7 +451,7 @@ class Client:
 
         :param value: Value to set.
         """
-        validate_time(value, accept_zero=False)
+        validate_time(value, accept_zero=True)
         if value > self.p6_client_timeout:
             warn("Measured value of P6Client was greater than P6Client timeout.",
                  category=ValueWarning)
@@ -463,7 +463,7 @@ class Client:
 
         :param value: Value to set.
         """
-        validate_time(value, accept_zero=False)
+        validate_time(value, accept_zero=True)
         if value > self.p6_ext_client_timeout:
             warn("Measured value of P6*Client was greater than P6*Client timeout.",
                  category=ValueWarning)

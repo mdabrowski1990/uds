@@ -1372,7 +1372,7 @@ class AbstractClientErrorGuessing(AbstractClientTests, ABC):
             assert record.payload[1] == (0x80 if sprmib else 0x00)
             if i != 0:
                 delay_between_tp_ms = (record.transmission_end_native_timestamp
-                                       - sent_records[i-i].transmission_end_native_timestamp) * 1000.
+                                       - sent_records[i-1].transmission_end_native_timestamp) * 1000.
                 assert (s3_client - self.TASK_TIMING_TOLERANCE
                         <= delay_between_tp_ms
                         <= s3_client + self.TASK_TIMING_TOLERANCE)

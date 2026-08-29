@@ -1,3 +1,5 @@
+"""Module with helper method reused within the package."""
+
 __all__ = ["validate_time", "validate_timeout"]
 
 from .common_types import TimeMillisecondsAlias
