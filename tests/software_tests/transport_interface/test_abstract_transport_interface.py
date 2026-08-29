@@ -35,10 +35,15 @@ class TestAbstractTransportInterface:
 
     # __del__
 
-    def test_del(self):
+    def test_del__valid(self):
         assert AbstractTransportInterface.__del__(self.mock_transport_interface) is None
         self.mock_transport_interface.teardown_sync.assert_called_once_with(suppress_warning=True)
         self.mock_transport_interface.teardown_async.assert_called_once_with(suppress_warning=True)
+
+    def test_del__attribute_error(self):
+        self.mock_transport_interface.teardown_sync.side_effect = AttributeError
+        self.mock_transport_interface.teardown_async.side_effect = AttributeError
+        assert AbstractTransportInterface.__del__(self.mock_transport_interface) is None
 
     # time_sync
 

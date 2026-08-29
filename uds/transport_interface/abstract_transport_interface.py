@@ -28,13 +28,16 @@ class AbstractTransportInterface(ABC):
 
         :param network_manager: An object that handles the network (Physical and Data layers of OSI Model).
         """
-        self.network_manager = network_manager
         self.__time_sync: TimeSync = TimeSync()
+        self.network_manager = network_manager
 
     def __del__(self) -> None:
         """Safely close all threads opened by this object."""
-        self.teardown_sync(suppress_warning=True)
-        self.teardown_async(suppress_warning=True)
+        try:
+            self.teardown_sync(suppress_warning=True)
+            self.teardown_async(suppress_warning=True)
+        except AttributeError:
+            pass
 
     @property
     def time_sync(self) -> TimeSync:
