@@ -250,9 +250,15 @@ class PythonCanTransportInterface(AbstractCanTransportInterface):
         self.__async_rx_frames_buffer._is_stopped = False  # noqa
         self.__async_tx_frames_buffer._is_stopped = False  # noqa
         self.__async_fc_frames_buffer._is_stopped = False  # noqa
-        if (self.async_notifier is None
-                or self.async_notifier.stopped
-                or self.async_notifier._loop != loop):  # pylint: disable=protected-access
+        if self.async_notifier is None or self.async_notifier.stopped:
+            self.async_notifier = Notifier(bus=self.network_manager,
+                                           listeners=[self.__async_rx_frames_buffer,
+                                                      self.__async_tx_frames_buffer,
+                                                      self.__async_fc_frames_buffer],
+                                           timeout=self._MIN_NOTIFIER_TIMEOUT,
+                                           loop=loop)
+        if self.async_notifier._loop != loop:  # pylint: disable=protected-access
+            self.async_notifier.stop()
             self.async_notifier = Notifier(bus=self.network_manager,
                                            listeners=[self.__async_rx_frames_buffer,
                                                       self.__async_tx_frames_buffer,
