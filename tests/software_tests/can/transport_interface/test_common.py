@@ -2058,6 +2058,7 @@ class TestAbstractCanTransportInterface:
             self.mock_can_transport_interface._message_receive_start.return_value)
 
     @pytest.mark.parametrize("start_timeout, end_timeout", [
+        (None, None),
         (None, 123.456),
         (65.201, None),
         (987, 654),
@@ -2080,8 +2081,8 @@ class TestAbstractCanTransportInterface:
             initial_packet=self.mock_can_transport_interface.receive_packet.return_value,
             timestamp_end=None if end_timeout is None else self.mock_perf_counter.return_value)
         self.mock_can_transport_interface.receive_packet.assert_has_calls(
-            calls=[call(timeout=None if start_timeout is None else self.mock_perf_counter.return_value),
-                   call(timeout=None if start_timeout is None else self.mock_perf_counter.return_value)]
+            calls=[call(timeout=None if start_timeout is None and end_timeout is None else self.mock_perf_counter.return_value),
+                   call(timeout=None if start_timeout is None and end_timeout is None else self.mock_perf_counter.return_value)]
         )
         self.mock_can_transport_interface.setup_sync.assert_called_once_with()
         self.mock_warn.assert_called_once()
@@ -2136,6 +2137,7 @@ class TestAbstractCanTransportInterface:
         self.mock_can_transport_interface._update_n_cr_measured.assert_not_called()
 
     @pytest.mark.parametrize("start_timeout, end_timeout", [
+        (None, None),
         (None, 123.456),
         (65.201, None),
         (987, 654),
@@ -2194,9 +2196,9 @@ class TestAbstractCanTransportInterface:
             timestamp_end=None if end_timeout is None else self.mock_perf_counter.return_value,
             loop=self.mock_get_running_loop.return_value)
         self.mock_can_transport_interface.async_receive_packet.assert_has_calls(
-            calls=[call(timeout=None if start_timeout is None else self.mock_perf_counter.return_value,
+            calls=[call(timeout=None if start_timeout is None and end_timeout is None else self.mock_perf_counter.return_value,
                         loop=self.mock_get_running_loop.return_value),
-                   call(timeout=None if start_timeout is None else self.mock_perf_counter.return_value,
+                   call(timeout=None if start_timeout is None and end_timeout is None else self.mock_perf_counter.return_value,
                         loop=self.mock_get_running_loop.return_value)]
         )
         self.mock_warn.assert_called_once()

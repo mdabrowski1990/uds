@@ -759,10 +759,9 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
         received_data_length: int = len(first_frame.payload)  # type: ignore
         sequence_number: int = 1
         flow_control_iterator = iter(self.flow_control_parameters_generator)
+        remaining_end_timeout_ms = float("inf")
         while True:
-            if timestamp_end is None:
-                remaining_end_timeout_ms = float("inf")
-            else:
+            if timestamp_end is not None:
                 remaining_end_timeout_ms = (timestamp_end - perf_counter()) * 1000.
                 if remaining_end_timeout_ms < 0:
                     raise TimeoutError("Total message reception timeout was reached.")
@@ -798,7 +797,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
                     return cf_block
                 packets_records.extend(cf_block)
                 for cf in cf_block:
-                    received_data_length += len(cf.payload)
+                    received_data_length += len(cf.payload)  # type: ignore
                 if received_data_length >= message_data_length:
                     break
                 sequence_number = (cf_block[-1].sequence_number + 1) & 0xF  # type: ignore
@@ -827,10 +826,9 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
         received_data_length: int = len(first_frame.payload)  # type: ignore
         sequence_number: int = 1
         flow_control_iterator = iter(self.flow_control_parameters_generator)
+        remaining_end_timeout_ms = float("inf")
         while True:
-            if timestamp_end is None:
-                remaining_end_timeout_ms = float("inf")
-            else:
+            if timestamp_end is not None:
                 remaining_end_timeout_ms = (timestamp_end - perf_counter()) * 1000.
                 if remaining_end_timeout_ms < 0:
                     raise TimeoutError("Total message reception timeout was reached.")
@@ -869,7 +867,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
                     return cf_block
                 packets_records.extend(cf_block)
                 for cf in cf_block:
-                    received_data_length += len(cf.payload)
+                    received_data_length += len(cf.payload)  # type: ignore
                 if received_data_length >= message_data_length:
                     break
                 sequence_number = (cf_block[-1].sequence_number + 1) & 0xF  # type: ignore
@@ -1115,20 +1113,18 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
         timestamp_now = perf_counter()
         validate_timeout(start_timeout)
         validate_timeout(end_timeout)
-        if start_timeout is not None:
-            if end_timeout is not None and end_timeout < start_timeout:
-                timestamp_start_timeout = timestamp_now + end_timeout / 1000.
-            else:
-                timestamp_start_timeout = timestamp_now + start_timeout / 1000.
         remaining_timeout_ms = None
         if end_timeout is not None:
-            timestamp_end_timeout = timestamp_now + end_timeout / 1000.
+            timestamp_end_timeout: float | None = timestamp_now + end_timeout / 1000.
         else:
             timestamp_end_timeout = None
+        if start_timeout is not None:
+            timestamp_start_timeout: float | None = timestamp_now + start_timeout / 1000.
+        else:
+            timestamp_start_timeout = timestamp_end_timeout
         self.setup_sync()
         while True:
-            # calculate remaining timeout
-            if start_timeout is not None:
+            if timestamp_start_timeout is not None:
                 timestamp_now = perf_counter()
                 if timestamp_start_timeout <= timestamp_now:
                     raise MessageTransmissionNotStartedError("Timeout was reached before a UDS message was received.")
@@ -1169,21 +1165,20 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
         timestamp_now = perf_counter()
         validate_timeout(start_timeout)
         validate_timeout(end_timeout)
-        if start_timeout is not None:
-            if end_timeout is not None and end_timeout < start_timeout:
-                timestamp_start_timeout = timestamp_now + end_timeout / 1000.
-            else:
-                timestamp_start_timeout = timestamp_now + start_timeout / 1000.
         remaining_timeout_ms = None
         if end_timeout is not None:
-            timestamp_end_timeout = timestamp_now + end_timeout / 1000.
+            timestamp_end_timeout: float | None = timestamp_now + end_timeout / 1000.
         else:
             timestamp_end_timeout = None
+        if start_timeout is not None:
+            timestamp_start_timeout: float | None = timestamp_now + start_timeout / 1000.
+        else:
+            timestamp_start_timeout = timestamp_end_timeout
         loop = get_running_loop() if loop is None else loop
         self.setup_async(loop=loop)
         while True:
             # calculate remaining timeout
-            if start_timeout is not None:
+            if timestamp_start_timeout is not None:
                 timestamp_now = perf_counter()
                 if timestamp_start_timeout <= timestamp_now:
                     raise MessageTransmissionNotStartedError("Timeout was reached before a UDS message was received.")

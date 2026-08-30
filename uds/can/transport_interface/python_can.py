@@ -111,7 +111,7 @@ class PythonCanTransportInterface(AbstractCanTransportInterface):
     @property
     def network_manager(self) -> BusABC:
         """Get python-can Bus object used by this Transport Interface for CAN communication."""
-        return super().network_manager
+        return super().network_manager  # type: ignore
 
     @network_manager.setter
     def network_manager(self, value: BusABC) -> None:
