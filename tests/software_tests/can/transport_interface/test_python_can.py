@@ -7,7 +7,9 @@ from unittest.mock import AsyncMock, MagicMock, Mock, call, patch
 import pytest
 
 from can import Bus
+from can.interfaces.kvaser import KvaserBus
 from can.interfaces.serial import SerialBus
+from can.interfaces.vector import VectorBus
 from can.interfaces.virtual import VirtualBus
 from uds.addressing import AddressingType
 from uds.can import DEFAULT_FILLER_BYTE, CanAddressingInformation, DefaultFlowControlParametersGenerator
@@ -220,10 +222,14 @@ class TestPythonCanTransportInterface:
 
     @pytest.mark.parametrize("cls, name", [
         (VirtualBus, "virtual"),
+        (KvaserBus, "kvaser"),
+        (VectorBus, "vector"),
         (SerialBus, "serial"),
     ])
     def test_backed__get__valid(self, cls, name):
-        self.mock_can_transport_interface.network_manager = Mock(spec=cls)
+        self.mock_can_transport_interface.network_manager = MagicMock(
+            spec=BusABC,
+            __class__=Mock(__name__=cls.__name__, __module__=cls.__module__))
         assert PythonCanTransportInterface.backend.__get__(self.mock_can_transport_interface) == name
 
     # notifier
@@ -1071,9 +1077,18 @@ class TestPythonCanTransportInterface:
     def test_is_supported_network_manager__false(self, value):
         assert PythonCanTransportInterface.is_supported_network_manager(value) is False
 
-    @pytest.mark.parametrize("value", [Mock(spec=SerialBus), Mock(spec=VirtualBus)])
-    def test_is_supported_network_manager__true(self, value):
+    @pytest.mark.parametrize("bus_cls", [
+        VirtualBus,
+        KvaserBus,
+        VectorBus,
+        SerialBus,
+    ])
+    @patch(f"{SCRIPT_LOCATION}.isinstance")
+    def test_is_supported_network_manager__true(self, mock_isinstance, bus_cls):
+        mock_isinstance.return_value = True
+        value = MagicMock(__class__=Mock(__name__=bus_cls.__name__, __module__=bus_cls.__module__))
         assert PythonCanTransportInterface.is_supported_network_manager(value) is True
+        mock_isinstance.assert_called_once_with(value, BusABC)
 
     # send_packet
 
