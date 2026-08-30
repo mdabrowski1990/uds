@@ -39,7 +39,7 @@ class AbstractPythonCanTests(BaseSystemTests, ABC):
     sent_packets: list[CanPacketRecord]
 
     @abstractmethod
-    def _define_interfaces(self):
+    def _define_interfaces(self) -> None:
         """Define python-can interfaces"""
 
     def setup_method(self):

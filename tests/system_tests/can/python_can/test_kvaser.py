@@ -17,7 +17,7 @@ class KvaserConfig(AbstractPythonCanTests):
 
     MAKE_TIMING_CHECKS = True
 
-    def _define_interfaces(self):
+    def _define_interfaces(self) -> None:
         """Configure CAN bus objects that manage CAN interfaces."""
         self.can_interface_1 = Bus(interface="kvaser",
                                    channel=0,

@@ -18,7 +18,7 @@ class VectorConfig(AbstractPythonCanTests):
 
     MAKE_TIMING_CHECKS: bool = True
 
-    def _define_interfaces(self):
+    def _define_interfaces(self) -> None:
         """Configure CAN bus objects that manage CAN interfaces."""
         self.can_interface_1 = Bus(interface="vector",
                                    app_name="python-can",
