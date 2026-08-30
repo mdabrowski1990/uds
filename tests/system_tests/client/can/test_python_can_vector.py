@@ -40,7 +40,7 @@ class PythonCanVectorConfig(AbstractClientTests):
         transport_interface_1 = PythonCanTransportInterface(
             network_manager=self.can_interface_1,
             addressing_information=addressing_information)
-        self.transport_logger(transport_interface_1)
+        self.transport_interface_1 = self.transport_logger(transport_interface_1)
         self.transport_interface_2 = PythonCanTransportInterface(
             network_manager=self.can_interface_2,
             addressing_information=addressing_information.get_other_end())
