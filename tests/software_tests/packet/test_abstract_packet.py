@@ -1,7 +1,6 @@
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, Mock, patch
 
 import pytest
-from mock import Mock, patch
 
 from uds.packet.abstract_packet import (
     AbstractPacketContainer,
@@ -148,7 +147,7 @@ class TestAbstractPacketRecord:
         assert (self.mock_packet_record._AbstractPacketRecord__transmission_time
                 == self.mock_datetime.now.return_value)
         self.mock_datetime.now.assert_called_once()
-        mock_is_future.assert_called_once_with(value, self.mock_datetime.now.return_value)
+        mock_is_future.assert_called_once_with(self.mock_datetime.now.return_value)
         self.mock_warn.assert_called_once()
         mock_isinstance.assert_called_once_with(value, self.mock_datetime)
 
@@ -161,7 +160,7 @@ class TestAbstractPacketRecord:
         assert (self.mock_packet_record._AbstractPacketRecord__transmission_time
                 == value)
         self.mock_datetime.now.assert_called_once()
-        mock_is_future.assert_called_once_with(value, self.mock_datetime.now.return_value)
+        mock_is_future.assert_called_once_with(self.mock_datetime.now.return_value)
         self.mock_warn.assert_not_called()
         mock_isinstance.assert_called_once_with(value, self.mock_datetime)
 
@@ -195,7 +194,7 @@ class TestAbstractPacketRecord:
         assert (self.mock_packet_record._AbstractPacketRecord__transmission_timestamp
                 == self.mock_perf_counter.return_value)
         self.mock_perf_counter.assert_called_once()
-        mock_is_future.assert_called_once_with(value, self.mock_perf_counter.return_value)
+        mock_is_future.assert_called_once_with(self.mock_perf_counter.return_value)
         self.mock_warn.assert_called_once()
 
     def test_transmission_timestamp__set__without_warning(self):
@@ -205,7 +204,7 @@ class TestAbstractPacketRecord:
         assert (self.mock_packet_record._AbstractPacketRecord__transmission_timestamp
                 == value)
         self.mock_perf_counter.assert_called_once()
-        mock_is_future.assert_called_once_with(value, self.mock_perf_counter.return_value)
+        mock_is_future.assert_called_once_with(self.mock_perf_counter.return_value)
         self.mock_warn.assert_not_called()
 
     @pytest.mark.parametrize("value", [Mock(), "not a timestamp"])

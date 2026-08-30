@@ -98,12 +98,15 @@ class PythonCanTransportInterface(AbstractCanTransportInterface):
     def __del__(self) -> None:
         """Safely close all threads opened by this object."""
         super().__del__()
-        self.__rx_frames_buffer.stop()
-        self.__tx_frames_buffer.stop()
-        self.__fc_frames_buffer.stop()
-        self.__async_rx_frames_buffer.stop()
-        self.__async_tx_frames_buffer.stop()
-        self.__async_fc_frames_buffer.stop()
+        try:
+            self.__rx_frames_buffer.stop()
+            self.__tx_frames_buffer.stop()
+            self.__fc_frames_buffer.stop()
+            self.__async_rx_frames_buffer.stop()
+            self.__async_tx_frames_buffer.stop()
+            self.__async_fc_frames_buffer.stop()
+        except AttributeError:
+            pass
 
     @property
     def network_manager(self) -> BusABC:
@@ -201,13 +204,13 @@ class PythonCanTransportInterface(AbstractCanTransportInterface):
             return False
         if self.async_notifier not in self.async_notifier.find_instances(self.network_manager):
             return False
-        if (self.__async_rx_frames_buffer.is_stopped
+        if (self.__async_rx_frames_buffer._is_stopped  # pylint: disable=protected-access
                 or self.__async_rx_frames_buffer not in self.async_notifier.listeners):
             return False
-        if (self.__async_tx_frames_buffer.is_stopped
+        if (self.__async_tx_frames_buffer._is_stopped  # pylint: disable=protected-access
                 or self.__async_tx_frames_buffer not in self.async_notifier.listeners):
             return False
-        if (self.__async_fc_frames_buffer.is_stopped
+        if (self.__async_fc_frames_buffer._is_stopped  # pylint: disable=protected-access
                 or self.__async_fc_frames_buffer not in self.async_notifier.listeners):
             return False
         return True
@@ -228,7 +231,7 @@ class PythonCanTransportInterface(AbstractCanTransportInterface):
                                                 self.__tx_frames_buffer,
                                                 self.__fc_frames_buffer],
                                      timeout=self._MIN_NOTIFIER_TIMEOUT)
-        if self.network_manager not in self.notifier._bus_list:
+        if self.notifier not in self.notifier.find_instances(self.network_manager):
             self.notifier.add_bus(self.network_manager)
         if self.__rx_frames_buffer not in self.notifier.listeners:
             self.notifier.add_listener(self.__rx_frames_buffer)
@@ -244,23 +247,19 @@ class PythonCanTransportInterface(AbstractCanTransportInterface):
         :param loop: An :mod:`asyncio` event loop to use.
         """
         self.teardown_sync()
+        self.__async_rx_frames_buffer._is_stopped = False  # noqa
+        self.__async_tx_frames_buffer._is_stopped = False  # noqa
+        self.__async_fc_frames_buffer._is_stopped = False  # noqa
         if (self.async_notifier is None
                 or self.async_notifier.stopped
-                or self.async_notifier._loop != loop):  # pylint: disable= protected-access
-            self.__async_rx_frames_buffer = AsyncBufferedReader(loop=loop)
-            self.__async_tx_frames_buffer = AsyncBufferedReader(loop=loop)
-            self.__async_fc_frames_buffer = AsyncBufferedReader(loop=loop)
+                or self.async_notifier._loop != loop):  # pylint: disable=protected-access
             self.async_notifier = Notifier(bus=self.network_manager,
                                            listeners=[self.__async_rx_frames_buffer,
                                                       self.__async_tx_frames_buffer,
                                                       self.__async_fc_frames_buffer],
                                            timeout=self._MIN_NOTIFIER_TIMEOUT,
                                            loop=loop)
-        else:
-            self.__async_rx_frames_buffer.is_stopped = False  # noqa: vulture
-            self.__async_tx_frames_buffer.is_stopped = False  # noqa: vulture
-            self.__async_fc_frames_buffer.is_stopped = False  # noqa: vulture
-        if self.network_manager not in self.async_notifier._bus_list:
+        if self.async_notifier not in self.async_notifier.find_instances(self.network_manager):
             self.async_notifier.add_bus(self.network_manager)
         if self.__async_rx_frames_buffer not in self.async_notifier.listeners:
             self.async_notifier.add_listener(self.__async_rx_frames_buffer)
@@ -561,23 +560,27 @@ class PythonCanTransportInterface(AbstractCanTransportInterface):
                                             is_rx=False,
                                             is_error_frame=False,
                                             is_remote_frame=False)
-            sent_can_frame.timestamp = None
         else:
             transmission_timestamp = perf_counter()
         if is_flow_control_packet:
             self._update_n_ar_measured((transmission_timestamp - timestamp_start) * 1000.)
         else:
             self._update_n_as_measured((transmission_timestamp - timestamp_start) * 1000.)
+        if sent_can_frame.timestamp == 0:
+            native_timestamp = None
+        else:
+            native_timestamp = sent_can_frame.timestamp
+        if native_timestamp is not None and self.backend in self._INTERFACES_USING_WALL_TIME_TIMESTAMPS:
+            transmission_time = datetime.fromtimestamp(native_timestamp)
+        else:
+            transmission_time = datetime.fromtimestamp(self.time_sync.perf_counter_to_time(transmission_timestamp))
         return CanPacketRecord(frame=sent_can_frame,
                                direction=TransmissionDirection.TRANSMITTED,
                                addressing_type=packet.addressing_type,
                                addressing_format=packet.addressing_format,
-                               transmission_time=datetime.fromtimestamp(
-                                   sent_can_frame.timestamp
-                                   if self.backend in self._INTERFACES_USING_WALL_TIME_TIMESTAMPS else
-                                   self.time_sync.perf_counter_to_time(transmission_timestamp)),
+                               transmission_time=transmission_time,
                                transmission_timestamp=transmission_timestamp,
-                               transmission_native_timestamp=sent_can_frame.timestamp)
+                               transmission_native_timestamp=native_timestamp)
 
     async def async_send_packet(self,
                                 packet: CanPacket,  # type: ignore
@@ -626,23 +629,27 @@ class PythonCanTransportInterface(AbstractCanTransportInterface):
                                             is_rx=False,
                                             is_error_frame=False,
                                             is_remote_frame=False)
-            sent_can_frame.timestamp = None
         else:
             transmission_timestamp = perf_counter()
         if is_flow_control_packet:
             self._update_n_ar_measured((transmission_timestamp - timestamp_start) * 1000.)
         else:
             self._update_n_as_measured((transmission_timestamp - timestamp_start) * 1000.)
+        if sent_can_frame.timestamp == 0:
+            native_timestamp = None
+        else:
+            native_timestamp = sent_can_frame.timestamp
+        if native_timestamp is not None and self.backend in self._INTERFACES_USING_WALL_TIME_TIMESTAMPS:
+            transmission_time = datetime.fromtimestamp(native_timestamp)
+        else:
+            transmission_time = datetime.fromtimestamp(self.time_sync.perf_counter_to_time(transmission_timestamp))
         return CanPacketRecord(frame=sent_can_frame,
                                direction=TransmissionDirection.TRANSMITTED,
                                addressing_type=packet.addressing_type,
                                addressing_format=packet.addressing_format,
-                               transmission_time=datetime.fromtimestamp(
-                                   sent_can_frame.timestamp
-                                   if self.backend in self._INTERFACES_USING_WALL_TIME_TIMESTAMPS else
-                                   self.time_sync.perf_counter_to_time(transmission_timestamp)),
+                               transmission_time=transmission_time,
                                transmission_timestamp=transmission_timestamp,
-                               transmission_native_timestamp=sent_can_frame.timestamp)
+                               transmission_native_timestamp=native_timestamp)
 
     def receive_packet(self, timeout: TimeMillisecondsAlias | None = None) -> CanPacketRecord:
         """

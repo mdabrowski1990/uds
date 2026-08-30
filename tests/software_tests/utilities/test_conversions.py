@@ -1,7 +1,7 @@
 from time import perf_counter, time
+from unittest.mock import MagicMock, Mock, patch
 
 import pytest
-from mock import MagicMock, Mock, patch
 
 from uds.utilities.conversions import (
     MAX_DTC_VALUE,

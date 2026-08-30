@@ -1,4 +1,4 @@
-"""Send (on one interface) and received (on the second) asynchronously a message using Diagnostic on CAN protocol (ISO 15765)."""
+"""Send (on one interface) and receive (on the second) asynchronously a message using Diagnostic on CAN protocol (ISO 15765)."""
 
 import asyncio
 
@@ -62,10 +62,8 @@ async def main():
     print(received_message_record)
 
     # close connections with CAN interfaces
-    can_ti_1.teardown_sync(True)
-    can_ti_1.teardown_async(True)
-    can_ti_2.teardown_sync(True)
-    can_ti_2.teardown_async(True)
+    can_ti_1.teardown_async(suppress_warning=True)
+    can_ti_2.teardown_async(suppress_warning=True)
     can_interface_1.shutdown()
     can_interface_2.shutdown()
 

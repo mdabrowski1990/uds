@@ -552,13 +552,14 @@ class Client:
         if len(response_records) > 1:
             p2_ext_measured_list = []
             for i, response_record in enumerate(response_records[1:]):
+                previous_response = response_records[i]
                 if (response_record.transmission_end_native_timestamp is not None
-                        and response_records[i].transmission_end_native_timestamp is not None):
+                        and previous_response.transmission_end_native_timestamp is not None):
                     _p2_ext_measured = (response_record.transmission_end_native_timestamp
-                                        - response_records[i].transmission_end_native_timestamp)
+                                        - previous_response.transmission_end_native_timestamp)
                 else:
                     _p2_ext_measured = (response_record.transmission_end_timestamp
-                                        - response_records[i].transmission_end_timestamp)
+                                        - previous_response.transmission_end_timestamp)
                 p2_ext_measured_list.append(round(_p2_ext_measured * 1000., 3))
             if (response_records[-1].transmission_end_native_timestamp is not None
                     and request_record.transmission_end_native_timestamp is not None):
@@ -759,8 +760,14 @@ class Client:
             raise TypeError("Provided request message value is not an instance of UdsMessageRecord class. "
                             f"Actual type: {type(response_message)}.")
         if isinstance(request_message, UdsMessageRecord) and isinstance(response_message, UdsMessageRecord):
-            if response_message.transmission_start_native_timestamp < request_message.transmission_end_native_timestamp:
-                return False
+            if (response_message.transmission_start_native_timestamp is not None
+                    and request_message.transmission_end_native_timestamp is not None):
+                if (response_message.transmission_start_native_timestamp
+                        < request_message.transmission_end_native_timestamp):
+                    return False
+            else:
+                if response_message.transmission_start_timestamp < request_message.transmission_end_timestamp:
+                    return False
         if request_message.addressing_type != response_message.addressing_type:
             rx_physical_params = dict(self.transport_interface.addressing_information.rx_physical_params)
             rx_physical_params.pop("addressing_type")

@@ -1,4 +1,4 @@
-"""Send (on one interface) and received (on the second) a packet defined by Diagnostic on CAN protocol (ISO 15765)."""
+"""Send (on one interface) and receive (on the second) a packet defined by Diagnostic on CAN protocol (ISO 15765)."""
 
 from can import Bus
 from uds.addressing import AddressingType
@@ -61,10 +61,8 @@ def main():
     print(received_packet_record)
 
     # close connections with CAN interfaces
-    can_ti_1.teardown_sync(True)
-    can_ti_1.teardown_async(True)
-    can_ti_2.teardown_sync(True)
-    can_ti_2.teardown_async(True)
+    can_ti_1.teardown_sync(suppress_warning=True)
+    can_ti_2.teardown_sync(suppress_warning=True)
     can_interface_1.shutdown()
     can_interface_2.shutdown()
 

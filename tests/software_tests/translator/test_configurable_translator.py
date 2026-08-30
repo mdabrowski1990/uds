@@ -1,5 +1,6 @@
+from unittest.mock import MagicMock, Mock, call, patch
+
 import pytest
-from mock import MagicMock, Mock, call, patch
 
 from uds.translator import (
     AUTHENTICATION,

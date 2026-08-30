@@ -1,5 +1,6 @@
+from unittest.mock import Mock, patch
+
 import pytest
-from mock import Mock, patch
 
 from uds.can import DEFAULT_FILLER_BYTE, CanFlowStatus
 from uds.can.packet.can_packet import AddressingType, CanAddressingFormat, CanPacket, CanPacketType, ReassignmentError

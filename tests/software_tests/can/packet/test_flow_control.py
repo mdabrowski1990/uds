@@ -1,5 +1,6 @@
+from unittest.mock import MagicMock, Mock, call, patch
+
 import pytest
-from mock import MagicMock, Mock, call, patch
 
 from uds.can.packet.flow_control import (
     BS_BYTE_POSITION,
