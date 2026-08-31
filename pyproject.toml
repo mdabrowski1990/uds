@@ -82,7 +82,7 @@ dependency-scan = [
     "pip-audit == 2.10.1",
 ]
 sorting-imports = [
-    "isort == 8.0.1"
+    "isort == 9.0.1"
 ]
 docs = [
     "sphinx",
