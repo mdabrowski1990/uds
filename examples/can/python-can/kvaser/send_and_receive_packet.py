@@ -1,4 +1,4 @@
-"""Send (on one interface) and received (on the second) a packet defined by Diagnostic on CAN protocol (ISO 15765)."""
+"""Send (on one interface) and receive (on the second) a packet defined by Diagnostic on CAN protocol (ISO 15765)."""
 
 from can import Bus
 from uds.addressing import AddressingType
@@ -10,9 +10,9 @@ def main():
     # configure CAN interface - https://python-can.readthedocs.io/en/stable/interfaces.html
     can_interface_1 = Bus(
         # provide configuration for your CAN interface
-        interface="kvaser",  # replace with your CAN interface name
+        interface="kvaser",
         channel=0,
-        receive_own_messages=True,  # mandatory setting if you use Kvaser
+        receive_own_messages=True,  # recommended
         # configure your CAN bus
         bitrate=500_000,
         fd=True,
@@ -20,9 +20,9 @@ def main():
     # configure CAN interface - https://python-can.readthedocs.io/en/stable/interfaces.html
     can_interface_2 = Bus(
         # provide configuration for your CAN interface
-        interface="kvaser",  # replace with your CAN interface name
+        interface="kvaser",
         channel=1,
-        receive_own_messages=True,  # mandatory setting if you use Kvaser
+        receive_own_messages=True,  # recommended
         # configure your CAN bus
         bitrate=500_000,
         fd=True,
@@ -61,8 +61,8 @@ def main():
     print(received_packet_record)
 
     # close connections with CAN interfaces
-    del can_ti_1
-    del can_ti_2
+    can_ti_1.teardown_sync(suppress_warning=True)
+    can_ti_2.teardown_sync(suppress_warning=True)
     can_interface_1.shutdown()
     can_interface_2.shutdown()
 

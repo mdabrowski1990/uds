@@ -1,4 +1,4 @@
-from mock import Mock, patch
+from unittest.mock import Mock, patch
 
 from uds.translator.data_record_definitions.conditional import (
     INPUT_OUTPUT_CONTROL_PARAMETER,

@@ -1,5 +1,6 @@
+from unittest.mock import MagicMock, Mock, patch
+
 import pytest
-from mock import MagicMock, Mock, patch
 
 from uds.translator.data_record.text_data_record import (
     MAX_DTC_VALUE,

@@ -1,0 +1,74 @@
+"""Send (on one interface) and receive (on the second) asynchronously a message using Diagnostic on CAN protocol (ISO 15765)."""
+
+import asyncio
+
+from can import Bus
+from uds.addressing import AddressingType
+from uds.can import CanAddressingFormat, CanAddressingInformation, CanVersion, PythonCanTransportInterface
+from uds.message import UdsMessage
+
+
+async def main():
+    # configure CAN interface - https://python-can.readthedocs.io/en/stable/interfaces.html
+    can_interface_1 = Bus(
+        # provide configuration for your CAN interface
+        interface="vector",
+        app_name="python-can",  # name of the Application in Vector Hardware Config
+        channel=0,
+        receive_own_messages=True,  # recommended
+        # configure your CAN bus
+        bitrate=500_000,
+        fd=True,
+        data_bitrate=4_000_000)
+    # configure CAN interface - https://python-can.readthedocs.io/en/stable/interfaces.html
+    can_interface_2 = Bus(
+        # provide configuration for your CAN interface
+        interface="vector",
+        app_name="python-can",  # name of the Application in Vector Hardware Config
+        channel=1,
+        receive_own_messages=True,  # recommended
+        # configure your CAN bus
+        bitrate=500_000,
+        fd=True,
+        data_bitrate=4_000_000)
+
+    # configure addresses for Diagnostics on CAN communication
+    # CAN Addressing Formats explanation:
+    # https://uds.readthedocs.io/en/stable/pages/knowledge_base/packet.html#can-packet-addressing-formats
+    ai_send = CanAddressingInformation(addressing_format=CanAddressingFormat.NORMAL_ADDRESSING,
+                                          tx_physical_params={"can_id": 0x611},
+                                          rx_physical_params={"can_id": 0x612},
+                                          tx_functional_params={"can_id": 0x6FF},
+                                          rx_functional_params={"can_id": 0x6FE})
+    ai_receive = ai_send.get_other_end()
+
+    # create Transport Interface object for Diagnostics on CAN communication
+    can_ti_1 = PythonCanTransportInterface(
+        network_manager=can_interface_1,
+        addressing_information=ai_send,
+        can_version=CanVersion.CAN_FD)  # send all diagnostic packets as CAN FD frames
+    can_ti_2 = PythonCanTransportInterface(
+        network_manager=can_interface_2,
+        addressing_information=ai_receive)
+
+    # define UDS Message to send
+    message = UdsMessage(addressing_type=AddressingType.PHYSICAL, payload=[0x62, 0x10, 0x00, *range(100)])
+
+    # send and receive message
+    receive_message_task = asyncio.create_task(can_ti_2.async_receive_message(start_timeout=1000))  # timeout=1000 ms
+    sent_message_record = await can_ti_1.async_send_message(message)
+    received_message_record = await receive_message_task
+
+    # show results
+    print(sent_message_record)
+    print(received_message_record)
+
+    # close connections with CAN interfaces
+    can_ti_1.teardown_async(suppress_warning=True)
+    can_ti_2.teardown_async(suppress_warning=True)
+    can_interface_1.shutdown()
+    can_interface_2.shutdown()
+
+
+if __name__ == "__main__":
+    asyncio.run(main())

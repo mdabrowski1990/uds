@@ -1,5 +1,6 @@
+from unittest.mock import AsyncMock, MagicMock, Mock, call, patch
+
 import pytest
-from mock import AsyncMock, MagicMock, Mock, call, patch
 
 from uds.transport_interface.logger import (
     INFO,

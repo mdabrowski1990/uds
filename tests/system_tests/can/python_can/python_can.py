@@ -32,13 +32,14 @@ class AbstractPythonCanTests(BaseSystemTests, ABC):
     """
 
     TIMESTAMP_TOLERANCE: TimeMillisecondsAlias = 2  # python-can has low accuracy
+    SHUTDOWN_TIME: TimeMillisecondsAlias = 300  # python-can has issues with tasks closing (Notifier feature)
 
     can_interface_1: Bus
     can_interface_2: Bus
     sent_packets: list[CanPacketRecord]
 
     @abstractmethod
-    def _define_interfaces(self):
+    def _define_interfaces(self) -> None:
         """Define python-can interfaces"""
 
     def setup_method(self):
@@ -62,6 +63,7 @@ class AbstractPythonCanTests(BaseSystemTests, ABC):
         super().teardown_method()
         self.can_interface_1.shutdown()
         self.can_interface_2.shutdown()
+        sleep(self.SHUTDOWN_TIME / 1000.)
 
     def send_frame(self,
                    can_interface: Bus,

@@ -78,7 +78,7 @@ class EcuDiagnosticConfiguration:
         :param states: ECU states relevant for diagnostic communication.
         """
         if hasattr(self, "_EcuDiagnosticConfiguration__states"):
-            raise ReassignmentError("Value of 'states' attribute cannot be changed once assigned. "
+            raise ReassignmentError("Value of 'states' attribute cannot be changed once set. "
                                     "Create a new object instead.")
         self.__states = set(states)
         self.__states_names = {state.name for state in self.__states}

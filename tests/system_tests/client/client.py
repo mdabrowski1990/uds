@@ -65,17 +65,6 @@ class AbstractClientTests(BaseSystemTests, ABC):
         self._define_transport_interfaces()
         super().setup_method()
 
-    def teardown_method(self):
-        """
-        Clean after tests:
-        - stop all initiated transmissions
-        - kill all started tasks
-        - disconnect Transport Interfaces
-        """
-        super().teardown_method()
-        del self.transport_interface_1
-        del self.transport_interface_2
-
 
 class AbstractBaseClientFunctionalityTests(AbstractClientTests, ABC):
     """Common implementation of basic system tests related to Client Functionalities."""
@@ -250,14 +239,14 @@ class AbstractBaseClientFunctionalityTests(AbstractClientTests, ABC):
         for tp_record in tp_messages_records_1 + tp_messages_records_2:
             assert tp_record.payload == tp_payload
         for i, tp_record in enumerate(tp_messages_records_1[1:]):
-            tp_delay_ms = (tp_record.transmission_end_timestamp
-                        - tp_messages_records_1[i].transmission_end_timestamp) * 1000
+            tp_delay_ms = (tp_record.transmission_end_native_timestamp
+                        - tp_messages_records_1[i].transmission_end_native_timestamp) * 1000
             assert (s3_client - self.TASK_TIMING_TOLERANCE
                     <= tp_delay_ms
                     <= s3_client + self.TASK_TIMING_TOLERANCE)
         for i, tp_record in enumerate(tp_messages_records_2[1:]):
-            tp_delay_ms = (tp_record.transmission_end_timestamp
-                        - tp_messages_records_2[i].transmission_end_timestamp) * 1000
+            tp_delay_ms = (tp_record.transmission_end_native_timestamp
+                        - tp_messages_records_2[i].transmission_end_native_timestamp) * 1000
             assert (s3_client - self.TASK_TIMING_TOLERANCE
                     <= tp_delay_ms
                     <= s3_client + self.TASK_TIMING_TOLERANCE)
@@ -525,11 +514,11 @@ class AbstractBaseClientFunctionalityTests(AbstractClientTests, ABC):
         assert client.last_received_response is response_records[-1]
         # Validate timing parameters.
         assert (client.p2_client_measured
-                == round((response_record.transmission_start_timestamp
-                          - request_record.transmission_end_timestamp) * 1000., 3))
+                == round((response_record.transmission_start_native_timestamp
+                          - request_record.transmission_end_native_timestamp) * 1000., 3))
         assert (client.p6_client_measured
-                == round((response_record.transmission_end_timestamp
-                          - request_record.transmission_end_timestamp) * 1000., 3))
+                == round((response_record.transmission_end_native_timestamp
+                          - request_record.transmission_end_native_timestamp) * 1000., 3))
         assert client.p2_ext_client_measured is None
         assert client.p6_ext_client_measured is None
         if self.MAKE_TIMING_CHECKS:
@@ -653,17 +642,17 @@ class AbstractBaseClientFunctionalityTests(AbstractClientTests, ABC):
         assert client.last_received_response is response_records[-1]
         # Validate timing parameters.
         assert (client.p2_client_measured
-                == round((response_records[0].transmission_start_timestamp
-                          - request_record.transmission_end_timestamp) * 1000., 3))
+                == round((response_records[0].transmission_start_native_timestamp
+                          - request_record.transmission_end_native_timestamp) * 1000., 3))
         assert isinstance(client.p2_ext_client_measured, tuple)
         assert len(client.p2_ext_client_measured) == len(response_records) - 1
         for i, response_record in enumerate(response_records[1:]):
             assert (client.p2_ext_client_measured[i]
-                    == round((response_record.transmission_end_timestamp
-                              - response_records[i].transmission_end_timestamp) * 1000., 3))
+                    == round((response_record.transmission_end_native_timestamp
+                              - response_records[i].transmission_end_native_timestamp) * 1000., 3))
         assert (client.p6_ext_client_measured
-                == round((response_records[-1].transmission_end_timestamp
-                          - request_record.transmission_end_timestamp) * 1000., 3))
+                == round((response_records[-1].transmission_end_native_timestamp
+                          - request_record.transmission_end_native_timestamp) * 1000., 3))
         assert client.p6_client_measured is None
         if self.MAKE_TIMING_CHECKS:
             assert (timestamp_before
@@ -1157,8 +1146,8 @@ class AbstractClientTimeoutsTests(AbstractClientTests, ABC):
         assert client.last_sent_request is request_record_2
         assert client.last_received_response is None
         # Validate timing parameters.
-        transmission_diff_ms = (request_record_2.transmission_start_timestamp
-                                - request_record_1.transmission_end_timestamp) * 1000.
+        transmission_diff_ms = (request_record_2.transmission_start_native_timestamp
+                                - request_record_1.transmission_end_native_timestamp) * 1000.
         p3_client = p3_client_physical \
             if request_message_1.addressing_type == AddressingType.PHYSICAL \
             else p3_client_functional
@@ -1274,11 +1263,11 @@ class AbstractClientErrorGuessing(AbstractClientTests, ABC):
         assert other_response_record.addressing_type == other_message.addressing_type
         # Validate timing parameters.
         assert (client.p2_client_measured
-                == round((response_record.transmission_start_timestamp
-                          - request_record.transmission_end_timestamp) * 1000., 3))
+                == round((response_record.transmission_start_native_timestamp
+                          - request_record.transmission_end_native_timestamp) * 1000., 3))
         assert (client.p6_client_measured
-                == round((response_record.transmission_end_timestamp
-                          - request_record.transmission_end_timestamp) * 1000., 3))
+                == round((response_record.transmission_end_native_timestamp
+                          - request_record.transmission_end_native_timestamp) * 1000., 3))
         assert client.p2_ext_client_measured is None
         assert client.p6_ext_client_measured is None
         if self.MAKE_TIMING_CHECKS:
@@ -1382,8 +1371,8 @@ class AbstractClientErrorGuessing(AbstractClientTests, ABC):
             assert record.payload[0] == 0x3E
             assert record.payload[1] == (0x80 if sprmib else 0x00)
             if i != 0:
-                delay_between_tp_ms = (record.transmission_end_timestamp
-                                       - sent_records[i-i].transmission_end_timestamp) * 1000.
+                delay_between_tp_ms = (record.transmission_end_native_timestamp
+                                       - sent_records[i-1].transmission_end_native_timestamp) * 1000.
                 assert (s3_client - self.TASK_TIMING_TOLERANCE
                         <= delay_between_tp_ms
                         <= s3_client + self.TASK_TIMING_TOLERANCE)
@@ -1594,7 +1583,8 @@ class AbstractClientErrorGuessing(AbstractClientTests, ABC):
         assert len(client.last_sent_tester_present_requests) == 2
         for tester_present_record in client.last_sent_tester_present_requests:
             assert tester_present_record.payload == bytes(tp_payload)
-            assert tester_present_record.transmission_end_timestamp > response_records[-1].transmission_end_timestamp
+            assert (tester_present_record.transmission_end_native_timestamp
+                    > response_records[-1].transmission_end_native_timestamp)
         # wait till TP task closes
         sleep(s3_client / 1000.)
 

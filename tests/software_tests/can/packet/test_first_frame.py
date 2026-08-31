@@ -1,5 +1,6 @@
+from unittest.mock import Mock, patch
+
 import pytest
-from mock import Mock, patch
 
 from uds.can.packet.first_frame import (
     FIRST_FRAME_N_PCI,

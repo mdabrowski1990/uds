@@ -1,7 +1,6 @@
-from time import perf_counter, sleep
+from unittest.mock import MagicMock, Mock, call, patch
 
 import pytest
-from mock import MagicMock, Mock, call, patch
 
 from uds.addressing import AddressingType
 from uds.client import (
@@ -11,9 +10,7 @@ from uds.client import (
     Empty,
     Event,
     InconsistencyError,
-    Lock,
     MessageTransmissionNotStartedError,
-    Queue,
     ReassignmentError,
     RequestSID,
     ResponseSID,
@@ -67,6 +64,10 @@ class TestClient:
         self.mock_tester_present = self._patcher_tester_present.start()
         self._patcher_validate_request_sid = patch(f"{SCRIPT_LOCATION}.RequestSID.validate_member")
         self.mock_validate_request_sid = self._patcher_validate_request_sid.start()
+        self._patcher_validate_time = patch(f"{SCRIPT_LOCATION}.validate_time")
+        self.mock_validate_time = self._patcher_validate_time.start()
+        self._patcher_validate_timeout = patch(f"{SCRIPT_LOCATION}.validate_timeout")
+        self.mock_validate_timeout = self._patcher_validate_timeout.start()
 
     def teardown_method(self):
         self._patcher_sleep.stop()
@@ -79,6 +80,8 @@ class TestClient:
         self._patcher_queue.stop()
         self._patcher_tester_present.stop()
         self._patcher_validate_request_sid.stop()
+        self._patcher_validate_time.stop()
+        self._patcher_validate_timeout.stop()
 
     # __init__
 
@@ -241,19 +244,6 @@ class TestClient:
         self.mock_client._Client__p2_client_timeout = Mock()
         assert Client.p2_client_timeout.fget(self.mock_client) == self.mock_client._Client__p2_client_timeout
 
-    @pytest.mark.parametrize("p2_client_timeout", [Mock(), "Some time"])
-    @patch(f"{SCRIPT_LOCATION}.isinstance")
-    def test_p2_client_timeout__set__type_error(self, mock_isinstance, p2_client_timeout):
-        mock_isinstance.return_value = False
-        with pytest.raises(TypeError):
-            Client.p2_client_timeout.fset(self.mock_client, p2_client_timeout)
-        mock_isinstance.assert_called_once_with(p2_client_timeout, (int, float))
-
-    @pytest.mark.parametrize("p2_client_timeout", [0, -0.01])
-    def test_p2_client_timeout__set__value_error(self, p2_client_timeout):
-        with pytest.raises(ValueError):
-            Client.p2_client_timeout.fset(self.mock_client, p2_client_timeout)
-
     @pytest.mark.parametrize("p2_client_timeout", [Client.DEFAULT_P2_CLIENT_TIMEOUT, 1])
     def test_p2_client_timeout__set__valid__no_warning(self, p2_client_timeout):
         self.mock_client.p3_client_physical = p2_client_timeout
@@ -261,6 +251,7 @@ class TestClient:
         self.mock_client.p6_client_timeout = p2_client_timeout
         assert Client.p2_client_timeout.fset(self.mock_client, p2_client_timeout) is None
         assert self.mock_client._Client__p2_client_timeout == p2_client_timeout
+        self.mock_validate_time.assert_called_once_with(p2_client_timeout, accept_zero=False)
         self.mock_warn.assert_not_called()
 
     @pytest.mark.parametrize("p2_client_timeout", [Client.DEFAULT_P2_CLIENT_TIMEOUT, 1])
@@ -273,6 +264,7 @@ class TestClient:
         assert self.mock_client.p3_client_physical == p2_client_timeout
         assert self.mock_client.p3_client_functional > p2_client_timeout
         assert self.mock_client.p6_client_timeout > p2_client_timeout
+        self.mock_validate_time.assert_called_once_with(p2_client_timeout, accept_zero=False)
         self.mock_warn.assert_called_once()
 
     @pytest.mark.parametrize("p2_client_timeout", [Client.DEFAULT_P2_CLIENT_TIMEOUT, 1])
@@ -285,6 +277,7 @@ class TestClient:
         assert self.mock_client.p3_client_physical > p2_client_timeout
         assert self.mock_client.p3_client_functional == p2_client_timeout
         assert self.mock_client.p6_client_timeout > p2_client_timeout
+        self.mock_validate_time.assert_called_once_with(p2_client_timeout, accept_zero=False)
         self.mock_warn.assert_called_once()
 
     @pytest.mark.parametrize("p2_client_timeout", [Client.DEFAULT_P2_CLIENT_TIMEOUT, 1])
@@ -297,6 +290,7 @@ class TestClient:
         assert self.mock_client.p3_client_physical > p2_client_timeout
         assert self.mock_client.p3_client_functional > p2_client_timeout
         assert self.mock_client.p6_client_timeout == p2_client_timeout
+        self.mock_validate_time.assert_called_once_with(p2_client_timeout, accept_zero=False)
         self.mock_warn.assert_called_once()
 
     # p2_client_measured
@@ -311,24 +305,12 @@ class TestClient:
         self.mock_client._Client__p2_ext_client_timeout = Mock()
         assert Client.p2_ext_client_timeout.fget(self.mock_client) == self.mock_client._Client__p2_ext_client_timeout
 
-    @pytest.mark.parametrize("p2_ext_client_timeout", [Mock(), "Some time"])
-    @patch(f"{SCRIPT_LOCATION}.isinstance")
-    def test_p2_ext_client_timeout__set__type_error(self, mock_isinstance, p2_ext_client_timeout):
-        mock_isinstance.return_value = False
-        with pytest.raises(TypeError):
-            Client.p2_ext_client_timeout.fset(self.mock_client, p2_ext_client_timeout)
-        mock_isinstance.assert_called_once_with(p2_ext_client_timeout, (int, float))
-
-    @pytest.mark.parametrize("p2_ext_client_timeout", [0, -0.01])
-    def test_p2_ext_client_timeout__set__value_error(self, p2_ext_client_timeout):
-        with pytest.raises(ValueError):
-            Client.p2_ext_client_timeout.fset(self.mock_client, p2_ext_client_timeout)
-
     @pytest.mark.parametrize("p2_ext_client_timeout", [Client.DEFAULT_P2_CLIENT_TIMEOUT, 1])
     def test_p2_ext_client_timeout__set__valid__no_warning(self, p2_ext_client_timeout):
         self.mock_client.p6_ext_client_timeout = p2_ext_client_timeout
         assert Client.p2_ext_client_timeout.fset(self.mock_client, p2_ext_client_timeout) is None
         assert self.mock_client._Client__p2_ext_client_timeout == p2_ext_client_timeout
+        self.mock_validate_time.assert_called_once_with(p2_ext_client_timeout, accept_zero=False)
         self.mock_warn.assert_not_called()
 
     @pytest.mark.parametrize("p2_ext_client_timeout", [Client.DEFAULT_P2_CLIENT_TIMEOUT, 1])
@@ -337,6 +319,7 @@ class TestClient:
         assert Client.p2_ext_client_timeout.fset(self.mock_client, p2_ext_client_timeout) is None
         assert self.mock_client._Client__p2_ext_client_timeout == p2_ext_client_timeout
         assert self.mock_client.p6_ext_client_timeout == p2_ext_client_timeout
+        self.mock_validate_time.assert_called_once_with(p2_ext_client_timeout, accept_zero=False)
         self.mock_warn.assert_called_once()
 
     # p2_ext_client_measured
@@ -351,19 +334,6 @@ class TestClient:
         self.mock_client._Client__p3_client_physical = Mock()
         assert Client.p3_client_physical.fget(self.mock_client) == self.mock_client._Client__p3_client_physical
 
-    @pytest.mark.parametrize("p3_client_physical", [Mock(), "Some time"])
-    @patch(f"{SCRIPT_LOCATION}.isinstance")
-    def test_p3_client_physical__set__type_error(self, mock_isinstance, p3_client_physical):
-        mock_isinstance.return_value = False
-        with pytest.raises(TypeError):
-            Client.p3_client_physical.fset(self.mock_client, p3_client_physical)
-        mock_isinstance.assert_called_once_with(p3_client_physical, (int, float))
-
-    @pytest.mark.parametrize("p3_client_physical", [0, -0.01])
-    def test_p3_client_physical__set__value_error(self, p3_client_physical):
-        with pytest.raises(ValueError):
-            Client.p3_client_physical.fset(self.mock_client, p3_client_physical)
-
     @pytest.mark.parametrize("p3_client_physical, p2_client_timeout", [
         (Client.DEFAULT_P3_CLIENT, Client.DEFAULT_P3_CLIENT + 0.1),
         (49, 50),
@@ -372,6 +342,7 @@ class TestClient:
         self.mock_client.p2_client_timeout = p2_client_timeout
         with pytest.raises(InconsistencyError):
             Client.p3_client_physical.fset(self.mock_client, p3_client_physical)
+        self.mock_validate_time.assert_called_once_with(p3_client_physical, accept_zero=False)
 
     @pytest.mark.parametrize("p3_client_physical, p2_client_timeout", [
         (Client.DEFAULT_P3_CLIENT, Client.DEFAULT_P2_CLIENT_TIMEOUT),
@@ -382,6 +353,7 @@ class TestClient:
         self.mock_client.p2_client_timeout = p2_client_timeout
         assert Client.p3_client_physical.fset(self.mock_client, p3_client_physical) is None
         assert self.mock_client._Client__p3_client_physical == p3_client_physical
+        self.mock_validate_time.assert_called_once_with(p3_client_physical, accept_zero=False)
         self.mock_warn.assert_not_called()
 
     @pytest.mark.parametrize("p3_client_physical, p2_client_timeout", [
@@ -394,6 +366,7 @@ class TestClient:
         assert Client.p3_client_physical.fset(self.mock_client, p3_client_physical) is None
         assert self.mock_client._Client__p3_client_physical == p3_client_physical
         assert self.mock_client.s3_client == p3_client_physical
+        self.mock_validate_time.assert_called_once_with(p3_client_physical, accept_zero=False)
         self.mock_warn.assert_called_once()
 
     # p3_client_functional
@@ -401,19 +374,6 @@ class TestClient:
     def test_p3_client_functional__get(self):
         self.mock_client._Client__p3_client_functional = Mock()
         assert Client.p3_client_functional.fget(self.mock_client) == self.mock_client._Client__p3_client_functional
-
-    @pytest.mark.parametrize("p3_client_functional", [Mock(), "Some time"])
-    @patch(f"{SCRIPT_LOCATION}.isinstance")
-    def test_p3_client_functional__set__type_error(self, mock_isinstance, p3_client_functional):
-        mock_isinstance.return_value = False
-        with pytest.raises(TypeError):
-            Client.p3_client_functional.fset(self.mock_client, p3_client_functional)
-        mock_isinstance.assert_called_once_with(p3_client_functional, (int, float))
-
-    @pytest.mark.parametrize("p3_client_functional", [0, -0.01])
-    def test_p3_client_functional__set__value_error(self, p3_client_functional):
-        with pytest.raises(ValueError):
-            Client.p3_client_functional.fset(self.mock_client, p3_client_functional)
 
     @pytest.mark.parametrize("p3_client_functional, p2_client_timeout", [
         (Client.DEFAULT_P3_CLIENT, Client.DEFAULT_P3_CLIENT + 0.1),
@@ -423,6 +383,7 @@ class TestClient:
         self.mock_client.p2_client_timeout = p2_client_timeout
         with pytest.raises(InconsistencyError):
             Client.p3_client_functional.fset(self.mock_client, p3_client_functional)
+        self.mock_validate_time.assert_called_once_with(p3_client_functional, accept_zero=False)
 
     @pytest.mark.parametrize("p3_client_functional, p2_client_timeout", [
         (Client.DEFAULT_P3_CLIENT, Client.DEFAULT_P2_CLIENT_TIMEOUT),
@@ -433,6 +394,7 @@ class TestClient:
         self.mock_client.p2_client_timeout = p2_client_timeout
         assert Client.p3_client_functional.fset(self.mock_client, p3_client_functional) is None
         assert self.mock_client._Client__p3_client_functional == p3_client_functional
+        self.mock_validate_time.assert_called_once_with(p3_client_functional, accept_zero=False)
         self.mock_warn.assert_not_called()
 
     @pytest.mark.parametrize("p3_client_functional, p2_client_timeout", [
@@ -445,6 +407,7 @@ class TestClient:
         assert Client.p3_client_functional.fset(self.mock_client, p3_client_functional) is None
         assert self.mock_client._Client__p3_client_functional == p3_client_functional
         assert self.mock_client.s3_client == p3_client_functional
+        self.mock_validate_time.assert_called_once_with(p3_client_functional, accept_zero=False)
         self.mock_warn.assert_called_once()
 
     # p6_client_timeout
@@ -452,19 +415,6 @@ class TestClient:
     def test_p6_client_timeout__get(self):
         self.mock_client._Client__p6_client_timeout = Mock()
         assert Client.p6_client_timeout.fget(self.mock_client) == self.mock_client._Client__p6_client_timeout
-
-    @pytest.mark.parametrize("p6_client_timeout", [Mock(), "Some time"])
-    @patch(f"{SCRIPT_LOCATION}.isinstance")
-    def test_p6_client_timeout__set__type_error(self, mock_isinstance, p6_client_timeout):
-        mock_isinstance.return_value = False
-        with pytest.raises(TypeError):
-            Client.p6_client_timeout.fset(self.mock_client, p6_client_timeout)
-        mock_isinstance.assert_called_once_with(p6_client_timeout, (int, float))
-
-    @pytest.mark.parametrize("p6_client_timeout", [0, -0.01])
-    def test_p6_client_timeout__set__value_error(self, p6_client_timeout):
-        with pytest.raises(ValueError):
-            Client.p6_client_timeout.fset(self.mock_client, p6_client_timeout)
 
     @pytest.mark.parametrize("p6_client_timeout, p2_client_timeout", [
         (Client.DEFAULT_P6_CLIENT_TIMEOUT, Client.DEFAULT_P6_CLIENT_TIMEOUT + 0.1),
@@ -474,6 +424,7 @@ class TestClient:
         self.mock_client.p2_client_timeout = p2_client_timeout
         with pytest.raises(InconsistencyError):
             Client.p6_client_timeout.fset(self.mock_client, p6_client_timeout)
+        self.mock_validate_time.assert_called_once_with(p6_client_timeout, accept_zero=False)
 
     @pytest.mark.parametrize("p6_client_timeout, p2_client_timeout", [
         (Client.DEFAULT_P6_CLIENT_TIMEOUT, Client.DEFAULT_P6_CLIENT_TIMEOUT),
@@ -484,6 +435,7 @@ class TestClient:
         self.mock_client.p6_ext_client_timeout = p6_client_timeout
         assert Client.p6_client_timeout.fset(self.mock_client, p6_client_timeout) is None
         assert self.mock_client._Client__p6_client_timeout == p6_client_timeout
+        self.mock_validate_time.assert_called_once_with(p6_client_timeout, accept_zero=False)
         self.mock_warn.assert_not_called()
 
     @pytest.mark.parametrize("p6_client_timeout", [Client.DEFAULT_P6_CLIENT_TIMEOUT, 12345])
@@ -493,6 +445,7 @@ class TestClient:
         assert Client.p6_client_timeout.fset(self.mock_client, p6_client_timeout) is None
         assert self.mock_client._Client__p6_client_timeout == p6_client_timeout
         assert self.mock_client.p6_ext_client_timeout == p6_client_timeout
+        self.mock_validate_time.assert_called_once_with(p6_client_timeout, accept_zero=False)
         self.mock_warn.assert_called_once()
 
     # p6_client_measured
@@ -507,19 +460,6 @@ class TestClient:
         self.mock_client._Client__p6_ext_client_timeout = Mock()
         assert Client.p6_ext_client_timeout.fget(self.mock_client) == self.mock_client._Client__p6_ext_client_timeout
 
-    @pytest.mark.parametrize("p6_ext_client_timeout", [Mock(), "Some time"])
-    @patch(f"{SCRIPT_LOCATION}.isinstance")
-    def test_p6_ext_client_timeout__set__type_error(self, mock_isinstance, p6_ext_client_timeout):
-        mock_isinstance.return_value = False
-        with pytest.raises(TypeError):
-            Client.p6_ext_client_timeout.fset(self.mock_client, p6_ext_client_timeout)
-        mock_isinstance.assert_called_once_with(p6_ext_client_timeout, (int, float))
-
-    @pytest.mark.parametrize("p6_ext_client_timeout", [0, -0.01])
-    def test_p6_ext_client_timeout__set__value_error(self, p6_ext_client_timeout):
-        with pytest.raises(ValueError):
-            Client.p6_ext_client_timeout.fset(self.mock_client, p6_ext_client_timeout)
-
     @pytest.mark.parametrize("p6_ext_client_timeout, p2_ext_client_timeout, p6_client_timeout", [
         (Client.DEFAULT_P6_EXT_CLIENT_TIMEOUT, Client.DEFAULT_P6_EXT_CLIENT_TIMEOUT + 0.1,
          Client.DEFAULT_P6_EXT_CLIENT_TIMEOUT),
@@ -531,6 +471,7 @@ class TestClient:
         self.mock_client.p6_client_timeout = p6_client_timeout
         with pytest.raises(InconsistencyError):
             Client.p6_ext_client_timeout.fset(self.mock_client, p6_ext_client_timeout)
+        self.mock_validate_time.assert_called_once_with(p6_ext_client_timeout, accept_zero=False)
 
     @pytest.mark.parametrize("p6_ext_client_timeout, p2_ext_client_timeout, p6_client_timeout", [
         (Client.DEFAULT_P6_EXT_CLIENT_TIMEOUT, Client.DEFAULT_P2_EXT_CLIENT_TIMEOUT, Client.DEFAULT_P6_CLIENT_TIMEOUT),
@@ -543,6 +484,7 @@ class TestClient:
         self.mock_client.p6_client_timeout = p6_client_timeout
         assert Client.p6_ext_client_timeout.fset(self.mock_client, p6_ext_client_timeout) is None
         assert self.mock_client._Client__p6_ext_client_timeout == p6_ext_client_timeout
+        self.mock_validate_time.assert_called_once_with(p6_ext_client_timeout, accept_zero=False)
 
     # p6_ext_client_measured
 
@@ -556,19 +498,6 @@ class TestClient:
         self.mock_client._Client__s3_client = Mock()
         assert Client.s3_client.fget(self.mock_client) == self.mock_client._Client__s3_client
 
-    @pytest.mark.parametrize("s3_client", [Mock(), "Some time"])
-    @patch(f"{SCRIPT_LOCATION}.isinstance")
-    def test_s3_client__set__type_error(self, mock_isinstance, s3_client):
-        mock_isinstance.return_value = False
-        with pytest.raises(TypeError):
-            Client.s3_client.fset(self.mock_client, s3_client)
-        mock_isinstance.assert_called_once_with(s3_client, (int, float))
-
-    @pytest.mark.parametrize("s3_client", [0, -0.01])
-    def test_s3_client__set__value_error(self, s3_client):
-        with pytest.raises(ValueError):
-            Client.s3_client.fset(self.mock_client, s3_client)
-
     @pytest.mark.parametrize("s3_client, p3_client_physical, p3_client_functional", [
         (Client.DEFAULT_P3_CLIENT - 0.1, Client.DEFAULT_P3_CLIENT, Client.DEFAULT_P3_CLIENT),
         (249, 100, 250),
@@ -578,6 +507,7 @@ class TestClient:
         self.mock_client.p3_client_functional = p3_client_functional
         with pytest.raises(InconsistencyError):
             Client.s3_client.fset(self.mock_client, s3_client)
+        self.mock_validate_time.assert_called_once_with(s3_client, accept_zero=False)
 
     @pytest.mark.parametrize("s3_client, p3_client_physical, p3_client_functional", [
         (Client.DEFAULT_P3_CLIENT, Client.DEFAULT_P3_CLIENT, Client.DEFAULT_P3_CLIENT),
@@ -588,6 +518,7 @@ class TestClient:
         self.mock_client.p3_client_functional = p3_client_functional
         assert Client.s3_client.fset(self.mock_client, s3_client) is None
         assert self.mock_client._Client__s3_client == s3_client
+        self.mock_validate_time.assert_called_once_with(s3_client, accept_zero=False)
 
     # last_sent_tester_present_requests
 
@@ -713,19 +644,6 @@ class TestClient:
 
     # __update_p2_client_measured
 
-    @pytest.mark.parametrize("p2_client", [Mock(), "Some time"])
-    @patch(f"{SCRIPT_LOCATION}.isinstance")
-    def test_update_p2_client_measured__type_error(self, mock_isinstance, p2_client):
-        mock_isinstance.return_value = False
-        with pytest.raises(TypeError):
-            Client._Client__update_p2_client_measured(self.mock_client, p2_client)
-        mock_isinstance.assert_called_once_with(p2_client, (int, float))
-
-    @pytest.mark.parametrize("p2_client", [0, -0.01])
-    def test_update_p2_client_measured__value_error(self, p2_client):
-        with pytest.raises(ValueError):
-            Client._Client__update_p2_client_measured(self.mock_client, p2_client)
-
     @pytest.mark.parametrize("p2_client_measured, p2_client_timeout", [
         (1.001, 1),
         (100.1, 100),
@@ -734,6 +652,7 @@ class TestClient:
         self.mock_client.p2_client_timeout = p2_client_timeout
         assert Client._Client__update_p2_client_measured(self.mock_client, p2_client_measured) is None
         assert self.mock_client._Client__p2_client_measured == p2_client_measured
+        self.mock_validate_time.assert_called_once_with(p2_client_measured, accept_zero=True)
         self.mock_warn.assert_called_once()
 
     @pytest.mark.parametrize("p2_client_measured, p2_client_timeout", [
@@ -744,6 +663,7 @@ class TestClient:
         self.mock_client.p2_client_timeout = p2_client_timeout
         assert Client._Client__update_p2_client_measured(self.mock_client, p2_client_measured) is None
         assert self.mock_client._Client__p2_client_measured == p2_client_measured
+        self.mock_validate_time.assert_called_once_with(p2_client_measured, accept_zero=True)
         self.mock_warn.assert_not_called()
 
     # __update_p2_ext_client_measured
@@ -751,26 +671,6 @@ class TestClient:
     def test_update_p2_ext_client_measured__runtime_error(self):
         with pytest.raises(RuntimeError):
             Client._Client__update_p2_ext_client_measured(self.mock_client)
-
-    @pytest.mark.parametrize("p2_ext_client_measured_list", [
-        [Mock()],
-        [Client.DEFAULT_P2_EXT_CLIENT_TIMEOUT, "Some time", Client.DEFAULT_P2_EXT_CLIENT_TIMEOUT],
-    ])
-    @patch(f"{SCRIPT_LOCATION}.isinstance")
-    def test_update_p2_ext_client_measured__type_error(self, mock_isinstance, p2_ext_client_measured_list):
-        mock_isinstance.return_value = False
-        with pytest.raises(TypeError):
-            Client._Client__update_p2_ext_client_measured(self.mock_client, *p2_ext_client_measured_list)
-        mock_isinstance.assert_called_with(p2_ext_client_measured_list[0], (int, float))
-
-    @pytest.mark.parametrize("p2_ext_client_measured_list", [
-        [0],
-        [Client.DEFAULT_P2_EXT_CLIENT_TIMEOUT, -0.01, Client.DEFAULT_P2_EXT_CLIENT_TIMEOUT],
-    ])
-    def test_update_p2_ext_client_measured__value_error(self, p2_ext_client_measured_list):
-        self.mock_client.p2_ext_client_timeout = Client.DEFAULT_P2_EXT_CLIENT_TIMEOUT
-        with pytest.raises(ValueError):
-            Client._Client__update_p2_ext_client_measured(self.mock_client, *p2_ext_client_measured_list)
 
     @pytest.mark.parametrize("p2_ext_client_measured_list, p2_ext_client_timeout", [
         ([1.001], 1),
@@ -781,6 +681,8 @@ class TestClient:
         self.mock_client.p2_ext_client_timeout = p2_ext_client_timeout
         assert Client._Client__update_p2_ext_client_measured(self.mock_client, *p2_ext_client_measured_list) is None
         assert self.mock_client._Client__p2_ext_client_measured == tuple(p2_ext_client_measured_list)
+        self.mock_validate_time.assert_has_calls([call(p2_ext_client_measured, accept_zero=True)
+                                                  for p2_ext_client_measured in p2_ext_client_measured_list])
         self.mock_warn.assert_called_once()
 
     @pytest.mark.parametrize("p2_ext_client_measured_list, p2_ext_client_timeout", [
@@ -792,22 +694,11 @@ class TestClient:
         self.mock_client.p2_ext_client_timeout = p2_ext_client_timeout
         assert Client._Client__update_p2_ext_client_measured(self.mock_client, *p2_ext_client_measured_list) is None
         assert self.mock_client._Client__p2_ext_client_measured == tuple(p2_ext_client_measured_list)
+        self.mock_validate_time.assert_has_calls([call(p2_ext_client_measured, accept_zero=True)
+                                                  for p2_ext_client_measured in p2_ext_client_measured_list])
         self.mock_warn.assert_not_called()
 
     # __update_p6_client_measured
-
-    @pytest.mark.parametrize("p6_client", [Mock(), "Some time"])
-    @patch(f"{SCRIPT_LOCATION}.isinstance")
-    def test_update_p6_client_measured__type_error(self, mock_isinstance, p6_client):
-        mock_isinstance.return_value = False
-        with pytest.raises(TypeError):
-            Client._Client__update_p6_client_measured(self.mock_client, p6_client)
-        mock_isinstance.assert_called_once_with(p6_client, (int, float))
-
-    @pytest.mark.parametrize("p6_client", [0, -0.01])
-    def test_update_p6_client_measured__value_error(self, p6_client):
-        with pytest.raises(ValueError):
-            Client._Client__update_p6_client_measured(self.mock_client, p6_client)
 
     @pytest.mark.parametrize("p6_client_measured, p6_client_timeout", [
         (1.001, 1),
@@ -817,6 +708,7 @@ class TestClient:
         self.mock_client.p6_client_timeout = p6_client_timeout
         assert Client._Client__update_p6_client_measured(self.mock_client, p6_client_measured) is None
         assert self.mock_client._Client__p6_client_measured == p6_client_measured
+        self.mock_validate_time.assert_called_once_with(p6_client_measured, accept_zero=True)
         self.mock_warn.assert_called_once()
 
     @pytest.mark.parametrize("p6_client_measured, p6_client_timeout", [
@@ -827,22 +719,10 @@ class TestClient:
         self.mock_client.p6_client_timeout = p6_client_timeout
         assert Client._Client__update_p6_client_measured(self.mock_client, p6_client_measured) is None
         assert self.mock_client._Client__p6_client_measured == p6_client_measured
+        self.mock_validate_time.assert_called_once_with(p6_client_measured, accept_zero=True)
         self.mock_warn.assert_not_called()
 
     # __update_p6_ext_client_measured
-
-    @pytest.mark.parametrize("p6_ext_client", [Mock(), "Some time"])
-    @patch(f"{SCRIPT_LOCATION}.isinstance")
-    def test_update_p6_ext_client_measured__type_error(self, mock_isinstance, p6_ext_client):
-        mock_isinstance.return_value = False
-        with pytest.raises(TypeError):
-            Client._Client__update_p6_ext_client_measured(self.mock_client, p6_ext_client)
-        mock_isinstance.assert_called_once_with(p6_ext_client, (int, float))
-
-    @pytest.mark.parametrize("p6_ext_client", [0, -0.01])
-    def test_update_p6_ext_client_measured__value_error(self, p6_ext_client):
-        with pytest.raises(ValueError):
-            Client._Client__update_p6_ext_client_measured(self.mock_client, p6_ext_client)
 
     @pytest.mark.parametrize("p6_ext_client_measured, p6_ext_client_timeout", [
         (1.001, 1),
@@ -852,6 +732,7 @@ class TestClient:
         self.mock_client.p6_ext_client_timeout = p6_ext_client_timeout
         assert Client._Client__update_p6_ext_client_measured(self.mock_client, p6_ext_client_measured) is None
         assert self.mock_client._Client__p6_ext_client_measured == p6_ext_client_measured
+        self.mock_validate_time.assert_called_once_with(p6_ext_client_measured, accept_zero=True)
         self.mock_warn.assert_called_once()
 
     @pytest.mark.parametrize("p6_ext_client_measured, p6_ext_client_timeout", [
@@ -862,6 +743,7 @@ class TestClient:
         self.mock_client.p6_ext_client_timeout = p6_ext_client_timeout
         assert Client._Client__update_p6_ext_client_measured(self.mock_client, p6_ext_client_measured) is None
         assert self.mock_client._Client__p6_ext_client_measured == p6_ext_client_measured
+        self.mock_validate_time.assert_called_once_with(p6_ext_client_measured, accept_zero=True)
         self.mock_warn.assert_not_called()
 
     # __receiving_task
@@ -1088,19 +970,43 @@ class TestClient:
 
     @pytest.mark.parametrize("request_message, response_messages, p2_client, p6_client", [
         (Mock(spec=UdsMessageRecord,
-              transmission_start_timestamp=0,
-              transmission_end_timestamp=0.000500),
+              transmission_start_native_timestamp=0,
+              transmission_end_native_timestamp=0.000500),
          (Mock(spec=UdsMessageRecord,
-               transmission_start_timestamp=0.014000,
-               transmission_end_timestamp=0.015500), ),
+               transmission_start_native_timestamp=0.014000,
+               transmission_end_native_timestamp=0.015500), ),
          13.5,
          15),
         (Mock(spec=UdsMessageRecord,
+              transmission_start_timestamp=0,
+              transmission_start_native_timestamp=None,
+              transmission_end_timestamp=0.000500,
+              transmission_end_native_timestamp=None),
+         (Mock(spec=UdsMessageRecord,
+               transmission_start_timestamp=0.014000,
+               transmission_start_native_timestamp=None,
+               transmission_end_timestamp=0.015500,
+               transmission_end_native_timestamp=None),),
+         13.5,
+         15),
+        (Mock(spec=UdsMessageRecord,
+              transmission_start_native_timestamp=17.917304,
+              transmission_end_native_timestamp=17.919054),
+         (Mock(spec=UdsMessageRecord,
+               transmission_start_native_timestamp=18.017804,
+               transmission_end_native_timestamp=18.019054),),
+         98.75,
+         100),
+        (Mock(spec=UdsMessageRecord,
               transmission_start_timestamp=17.917304,
-              transmission_end_timestamp=17.919054),
+              transmission_start_native_timestamp=None,
+              transmission_end_timestamp=17.919054,
+              transmission_end_native_timestamp=654.321),
          (Mock(spec=UdsMessageRecord,
                transmission_start_timestamp=18.017804,
-               transmission_end_timestamp=18.019054),),
+               transmission_start_native_timestamp=None,
+               transmission_end_timestamp=18.019054,
+               transmission_end_native_timestamp=None),),
          98.75,
          100),
     ])
@@ -1117,29 +1023,70 @@ class TestClient:
 
     @pytest.mark.parametrize("request_message, response_messages, p2_client, p2_ext_client, p6_ext_client", [
         (Mock(spec=UdsMessageRecord,
-              transmission_start_timestamp=0,
-              transmission_end_timestamp=0.000500),
+              transmission_start_native_timestamp=0,
+              transmission_end_native_timestamp=0.000500),
          (Mock(spec=UdsMessageRecord,
-               transmission_start_timestamp=0.014000,
-               transmission_end_timestamp=0.015500),
+               transmission_start_native_timestamp=0.014000,
+               transmission_end_native_timestamp=0.015500),
           Mock(spec=UdsMessageRecord,
-               transmission_start_timestamp=0.514000,
-               transmission_end_timestamp=0.989000)),
+               transmission_start_native_timestamp=0.514000,
+               transmission_end_native_timestamp=0.989000)),
          13.5,
          [973.5],
          988.5),
         (Mock(spec=UdsMessageRecord,
+              transmission_start_timestamp=0,
+              transmission_start_native_timestamp=None,
+              transmission_end_timestamp=0.000500,
+              transmission_end_native_timestamp=None),
+         (Mock(spec=UdsMessageRecord,
+               transmission_start_timestamp=0.014000,
+               transmission_start_native_timestamp=None,
+               transmission_end_timestamp=0.015500,
+               transmission_end_native_timestamp=None),
+          Mock(spec=UdsMessageRecord,
+               transmission_start_timestamp=0.514000,
+               transmission_start_native_timestamp=None,
+               transmission_end_timestamp=0.989000,
+               transmission_end_native_timestamp=None)),
+         13.5,
+         [973.5],
+         988.5),
+        (Mock(spec=UdsMessageRecord,
+              transmission_start_native_timestamp=17.917304,
+              transmission_end_native_timestamp=17.919054),
+         (Mock(spec=UdsMessageRecord,
+               transmission_start_native_timestamp=18.017804,
+               transmission_end_native_timestamp=18.019054),
+          Mock(spec=UdsMessageRecord,
+               transmission_start_native_timestamp=18.698454,
+               transmission_end_native_timestamp=18.701304),
+          Mock(spec=UdsMessageRecord,
+               transmission_start_native_timestamp=19.017804,
+               transmission_end_native_timestamp=19.019054)),
+         98.75,
+         [682.25, 317.75],
+         1100),
+        (Mock(spec=UdsMessageRecord,
               transmission_start_timestamp=17.917304,
-              transmission_end_timestamp=17.919054),
+              transmission_start_native_timestamp=None,
+              transmission_end_timestamp=17.919054,
+              transmission_end_native_timestamp=132.456),
          (Mock(spec=UdsMessageRecord,
                transmission_start_timestamp=18.017804,
-               transmission_end_timestamp=18.019054),
+               transmission_start_native_timestamp=None,
+               transmission_end_timestamp=18.019054,
+               transmission_end_native_timestamp=None),
           Mock(spec=UdsMessageRecord,
                transmission_start_timestamp=18.698454,
-               transmission_end_timestamp=18.701304),
+               transmission_start_native_timestamp=987.321,
+               transmission_end_timestamp=18.701304,
+               transmission_end_native_timestamp=None),
           Mock(spec=UdsMessageRecord,
                transmission_start_timestamp=19.017804,
-               transmission_end_timestamp=19.019054)),
+               transmission_start_native_timestamp=None,
+               transmission_end_timestamp=19.019054,
+               transmission_end_native_timestamp=None)),
          98.75,
          [682.25, 317.75],
          1100),
@@ -1563,10 +1510,10 @@ class TestClient:
         mock_isinstance.assert_called_with(mock_message, (UdsMessage, UdsMessageRecord))
 
     @pytest.mark.parametrize("response_message, request_message", [
-        (Mock(spec=UdsMessageRecord, transmission_start_timestamp=1.234),
-         Mock(spec=UdsMessageRecord, transmission_end_timestamp=1.235),),
-        (Mock(spec=UdsMessageRecord, transmission_start_timestamp=54.987),
-         Mock(spec=UdsMessageRecord, transmission_end_timestamp=69.666),),
+        (Mock(spec=UdsMessageRecord, transmission_start_native_timestamp=1.234),
+         Mock(spec=UdsMessageRecord, transmission_end_native_timestamp=1.235),),
+        (Mock(spec=UdsMessageRecord, transmission_start_native_timestamp=54.987),
+         Mock(spec=UdsMessageRecord, transmission_end_native_timestamp=69.666),),
     ])
     def test_is_response_to_request__false__too_early_response(self, response_message, request_message):
         assert Client.is_response_to_request(self.mock_client,
@@ -1582,11 +1529,11 @@ class TestClient:
               payload=[0x3E, 0x00],
               addressing_type=AddressingType.PHYSICAL),),
         (Mock(spec=UdsMessageRecord,
-              transmission_start_timestamp=1.234,
+              transmission_start_native_timestamp=1.234,
               payload=[0x62, 0x10, 0x13, 0xB4],
               addressing_type=AddressingType.FUNCTIONAL),
          Mock(spec=UdsMessageRecord,
-              transmission_end_timestamp=1.234,
+              transmission_end_native_timestamp=1.234,
               payload=[0x22, 0x10, 0x13],
               addressing_type=AddressingType.FUNCTIONAL),),
     ])
@@ -1615,23 +1562,43 @@ class TestClient:
               addressing_type=AddressingType.PHYSICAL),
          Mock(spec=UdsMessage,
               payload=[0x3E, 0x00],
-              addressing_type=AddressingType.PHYSICAL),),
+              addressing_type=AddressingType.PHYSICAL)),
+        (Mock(spec=UdsMessageRecord,
+              transmission_start_native_timestamp=1.234,
+              payload=[0x62, 0x10, 0x13, 0xB4],
+              addressing_type=AddressingType.FUNCTIONAL),
+         Mock(spec=UdsMessageRecord,
+              transmission_end_native_timestamp=1.234,
+              payload=[0x22, 0x10, 0x13],
+              addressing_type=AddressingType.FUNCTIONAL)),
         (Mock(spec=UdsMessageRecord,
               transmission_start_timestamp=1.234,
+              transmission_start_native_timestamp=None,
               payload=[0x62, 0x10, 0x13, 0xB4],
               addressing_type=AddressingType.FUNCTIONAL),
          Mock(spec=UdsMessageRecord,
               transmission_end_timestamp=1.234,
+              transmission_end_native_timestamp=None,
               payload=[0x22, 0x10, 0x13],
-              addressing_type=AddressingType.FUNCTIONAL),),
+              addressing_type=AddressingType.FUNCTIONAL)),
         (Mock(spec=UdsMessageRecord,
               payload=[0x7F, 0x10, 0x78],
               addressing_type=AddressingType.PHYSICAL,
-              transmission_start_timestamp=69.666),
+              transmission_start_native_timestamp=69.666),
          Mock(spec=UdsMessageRecord,
               payload=[0x10, 0x03],
               addressing_type=AddressingType.FUNCTIONAL,
-              transmission_end_timestamp=54.987),),
+              transmission_end_native_timestamp=54.987)),
+        (Mock(spec=UdsMessageRecord,
+              payload=[0x7F, 0x10, 0x78],
+              addressing_type=AddressingType.PHYSICAL,
+              transmission_start_timestamp=69.666,
+              transmission_start_native_timestamp=0.123),
+         Mock(spec=UdsMessageRecord,
+              payload=[0x10, 0x03],
+              addressing_type=AddressingType.FUNCTIONAL,
+              transmission_end_timestamp=54.987,
+              transmission_end_native_timestamp=None)),
     ])
     def test_is_response_to_request__true(self, response_message, request_message):
         self.mock_validate_request_sid.side_effect = RequestSID
@@ -1654,23 +1621,43 @@ class TestClient:
               addressing_type=AddressingType.FUNCTIONAL),
          Mock(spec=UdsMessage,
               payload=[0x3E, 0x00],
-              addressing_type=AddressingType.PHYSICAL),),
+              addressing_type=AddressingType.PHYSICAL)),
         (Mock(spec=UdsMessageRecord,
-              transmission_start_timestamp=1.234,
+              transmission_start_native_timestamp=1.234,
               payload=[0x6A, 0x10, 0x13, 0xB4],
               addressing_type=AddressingType.FUNCTIONAL),
          Mock(spec=UdsMessageRecord,
-              transmission_end_timestamp=1.234,
+              transmission_end_native_timestamp=1.2341,
               payload=[0x22, 0x10, 0x13],
-              addressing_type=AddressingType.FUNCTIONAL),),
+              addressing_type=AddressingType.FUNCTIONAL)),
+        (Mock(spec=UdsMessageRecord,
+              transmission_start_timestamp=1.234,
+              transmission_start_native_timestamp=None,
+              payload=[0x6A, 0x10, 0x13, 0xB4],
+              addressing_type=AddressingType.FUNCTIONAL),
+         Mock(spec=UdsMessageRecord,
+              transmission_end_timestamp=1.2341,
+              transmission_end_native_timestamp=None,
+              payload=[0x22, 0x10, 0x13],
+              addressing_type=AddressingType.FUNCTIONAL)),
         (Mock(spec=UdsMessageRecord,
               payload=[0x7F, 0x11, 0x78],
               addressing_type=AddressingType.PHYSICAL,
-              transmission_start_timestamp=69.666),
+              transmission_start_native_timestamp=69.666),
          Mock(spec=UdsMessageRecord,
               payload=[0x10, 0x03],
-              addressing_type=AddressingType.FUNCTIONAL,
-              transmission_end_timestamp=54.987),),
+              addressing_type=AddressingType.PHYSICAL,
+              transmission_end_native_timestamp=54.987),),
+        (Mock(spec=UdsMessageRecord,
+              payload=[0x7F, 0x11, 0x78],
+              addressing_type=AddressingType.PHYSICAL,
+              transmission_start_timestamp=54.987,
+              transmission_start_native_timestamp=None),
+         Mock(spec=UdsMessageRecord,
+              payload=[0x11, 0x03],
+              addressing_type=AddressingType.PHYSICAL,
+              transmission_end_timestamp=69.666,
+              transmission_end_native_timestamp=None)),
     ])
     def test_is_response_to_request__false(self, response_message, request_message):
         self.mock_validate_request_sid.side_effect = RequestSID
@@ -1807,30 +1794,18 @@ class TestClient:
 
     # get_response
 
-    @pytest.mark.parametrize("timeout", [Mock(), "not a timeout"])
-    @patch(f"{SCRIPT_LOCATION}.isinstance")
-    def test_get_response__type_error(self, mock_isinstance, timeout):
-        mock_isinstance.return_value = False
-        with pytest.raises(TypeError):
-            Client.get_response(self.mock_client, timeout=timeout)
-        mock_isinstance.assert_called_once_with(timeout, (int, float))
-
-    @pytest.mark.parametrize("timeout", [0, -0.043])
-    def test_get_response__value_error(self, timeout):
-        with pytest.raises(ValueError):
-            Client.get_response(self.mock_client, timeout=timeout)
-
     @pytest.mark.parametrize("timeout", [1, 453.231])
     def test_get_response__empty(self, timeout):
         self.mock_client._Client__response_queue.get.side_effect = Empty
         assert Client.get_response(self.mock_client, timeout=timeout) is None
-        self.mock_client._Client__response_queue.get.assert_called_once_with(timeout=None if timeout is None else timeout/1000.)
+        self.mock_validate_timeout.assert_called_once_with(timeout)
+        self.mock_client._Client__response_queue.get.assert_called_once_with(timeout=timeout/1000.)
 
-    @pytest.mark.parametrize("timeout", [None, 1])
-    def test_get_response__response(self, timeout):
-        assert (Client.get_response(self.mock_client, timeout=timeout)
+    def test_get_response__response(self):
+        assert (Client.get_response(self.mock_client, timeout=None)
                 == self.mock_client._Client__response_queue.get.return_value)
-        self.mock_client._Client__response_queue.get.assert_called_once_with(timeout=None if timeout is None else timeout/1000.)
+        self.mock_validate_timeout.assert_called_once_with(None)
+        self.mock_client._Client__response_queue.get.assert_called_once_with(timeout=None)
 
     # get_response_no_wait
 

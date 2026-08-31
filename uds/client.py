@@ -19,6 +19,8 @@ from uds.utilities import (
     ReassignmentError,
     TimeMillisecondsAlias,
     ValueWarning,
+    validate_time,
+    validate_timeout,
 )
 
 
@@ -139,7 +141,7 @@ class Client:
             raise TypeError("Provided value is not an instance of AbstractTransportInterface class. "
                             f"Actual type: {type(value)}.")
         if hasattr(self, "_Client__transport_interface"):
-            raise ReassignmentError("Value of 'transport_interface' attribute cannot be changed once assigned.")
+            raise ReassignmentError("Value of 'transport_interface' attribute cannot be changed once set.")
         self.__transport_interface = value
 
     @property
@@ -153,14 +155,8 @@ class Client:
         Set timeout value for P2Client parameter.
 
         :param value: Value to set.
-
-        :raise TypeError: Provided value is not int or float type.
-        :raise ValueError: Provided time value must be a positive number.
         """
-        if not isinstance(value, (int, float)):
-            raise TypeError(f"Provided time parameter value must be int or float type. Actual type: {type(value)}.")
-        if value <= 0:
-            raise ValueError(f"Provided timeout parameter value must be greater than 0. Actual value: {value}")
+        validate_time(value, accept_zero=False)
         self.__p2_client_timeout = value
         if self.__p2_client_timeout > self.p3_client_physical:
             warn(message="P3Client_Phys had to be updated as its values become less than P2Client timeout.",
@@ -195,14 +191,8 @@ class Client:
         Set timeout value for P2*Client parameter.
 
         :param value: value to set.
-
-        :raise TypeError: Provided value is not int or float type.
-        :raise ValueError: Provided time value must be a positive number.
         """
-        if not isinstance(value, (int, float)):
-            raise TypeError(f"Provided time parameter value must be int or float type. Actual type: {type(value)}.")
-        if value <= 0:
-            raise ValueError(f"Provided timeout parameter value must be greater than 0. Actual value: {value}")
+        validate_time(value, accept_zero=False)
         self.__p2_ext_client_timeout = value
         if self.__p2_ext_client_timeout > self.p6_ext_client_timeout:
             warn(message="P6*Client timeout had to be updated as its values become less than P2*Client timeout.",
@@ -230,14 +220,9 @@ class Client:
 
         :param value: value to set.
 
-        :raise TypeError: Provided value is not int or float type.
-        :raise ValueError: Provided time value must be a positive number.
         :raise InconsistencyError: P3Client timeout value must be greater or equal than P2Client timeout.
         """
-        if not isinstance(value, (int, float)):
-            raise TypeError(f"Provided time parameter value must be int or float type. Actual type: {type(value)}.")
-        if value <= 0:
-            raise ValueError(f"Provided timeout parameter value must be greater than 0. Actual value: {value}")
+        validate_time(value, accept_zero=False)
         if value < self.p2_client_timeout:
             raise InconsistencyError("P3Client timeout value must be greater or equal than "
                                      f"P2Client timeout ({self.p2_client_timeout} ms).")
@@ -259,14 +244,9 @@ class Client:
 
         :param value: value to set.
 
-        :raise TypeError: Provided value is not int or float type.
-        :raise ValueError: Provided time value must be a positive number.
         :raise InconsistencyError: P3Client timeout value must be greater or equal than P2Client timeout.
         """
-        if not isinstance(value, (int, float)):
-            raise TypeError(f"Provided time parameter value must be int or float type. Actual type: {type(value)}.")
-        if value <= 0:
-            raise ValueError(f"Provided timeout parameter value must be greater than 0. Actual value: {value}")
+        validate_time(value, accept_zero=False)
         if value < self.p2_client_timeout:
             raise InconsistencyError("P3Client timeout value must be greater or equal than "
                                      f"P2Client timeout ({self.p2_client_timeout} ms).")
@@ -288,14 +268,9 @@ class Client:
 
         :param value: Value to set.
 
-        :raise TypeError: Provided value is not int or float type.
-        :raise ValueError: Provided time value must be a positive number.
         :raise InconsistencyError: P6Client timeout value must be greater or equal than P2Client timeout.
         """
-        if not isinstance(value, (int, float)):
-            raise TypeError(f"Provided time parameter value must be int or float type. Actual type: {type(value)}.")
-        if value <= 0:
-            raise ValueError(f"Provided timeout parameter value must be greater than 0. Actual value: {value}")
+        validate_time(value, accept_zero=False)
         if value < self.p2_client_timeout:
             raise InconsistencyError("P6Client timeout value must be greater or equal than "
                                      f"P2Client timeout ({self.p2_client_timeout} ms).")
@@ -326,15 +301,10 @@ class Client:
 
         :param value: value to set.
 
-        :raise TypeError: Provided value is not int or float type.
-        :raise ValueError: Provided time value must be a positive number.
         :raise InconsistencyError: P6*Client timeout value must be greater or equal than P2*Client timeout and
             P6Client timeout.
         """
-        if not isinstance(value, (int, float)):
-            raise TypeError(f"Provided time parameter value must be int or float type. Actual type: {type(value)}.")
-        if value <= 0:
-            raise ValueError(f"Provided timeout parameter value must be greater than 0. Actual value: {value}")
+        validate_time(value, accept_zero=False)
         if value < self.p6_client_timeout or value < self.p2_ext_client_timeout:
             raise InconsistencyError("P6*Client timeout value must be greater or equal than "
                                      f"P2*Client timeout ({self.p2_ext_client_timeout} ms) and "
@@ -362,14 +332,9 @@ class Client:
 
         :param value: value to set.
 
-        :raise TypeError: Provided value is not int or float type.
-        :raise ValueError: Provided time value must be a positive number.
         :raise InconsistencyError: S3Client value must be greater or equal than P6Client timeout.
         """
-        if not isinstance(value, (int, float)):
-            raise TypeError(f"Provided time parameter value must be int or float type. Actual type: {type(value)}.")
-        if value <= 0:
-            raise ValueError(f"Provided timeout parameter value must be greater than 0. Actual value: {value}")
+        validate_time(value, accept_zero=False)
         if value < self.p3_client_physical:
             raise InconsistencyError("S3Client value must be greater or equal than "
                                      f"P3Client_Phys ({self.p3_client_physical} ms).")
@@ -456,14 +421,8 @@ class Client:
         Update measured values of P2Client parameter.
 
         :param value: Value to set.
-
-        :raise TypeError: Provided value is not int or float type.
-        :raise ValueError: Provided time value must be a positive number.
         """
-        if not isinstance(value, (int, float)):
-            raise TypeError(f"Provided value is not int or float type. Actual type: {type(value)}.")
-        if value <= 0:
-            raise ValueError(f"P2Client parameter value must be a positive number. Actual value: {value}")
+        validate_time(value, accept_zero=True)
         if value > self.p2_client_timeout:
             warn("Measured value of P2Client was greater than P2Client timeout.",
                  category=ValueWarning)
@@ -476,16 +435,11 @@ class Client:
         :param values: Values to set.
 
         :raise RuntimeError: At least one P2*Client value must be provided.
-        :raise TypeError: One of provided values is not int or float type.
-        :raise ValueError: One of provided values is out of range.
         """
         if len(values) == 0:
             raise RuntimeError("At least one P2*Client value must be provided.")
         for value in values:
-            if not isinstance(value, (int, float)):
-                raise TypeError(f"One of provided values is not int or float type. Actual type: {type(value)}.")
-            if value <= 0:
-                raise ValueError(f"P2*Client parameter value must be a positive number. Actual value: {value}")
+            validate_time(value, accept_zero=True)
             if value > self.p2_ext_client_timeout:
                 warn("Measured value of P2*Client was greater than P2*Client timeout.",
                      category=ValueWarning)
@@ -496,14 +450,8 @@ class Client:
         Update measured values of P6Client parameter.
 
         :param value: Value to set.
-
-        :raise TypeError: Provided value is not int or float type.
-        :raise ValueError: Provided time value must be a positive number.
         """
-        if not isinstance(value, (int, float)):
-            raise TypeError(f"Provided value is not int or float type. Actual type: {type(value)}.")
-        if value <= 0:
-            raise ValueError(f"P6Client parameter value must be a positive number. Actual value: {value}")
+        validate_time(value, accept_zero=True)
         if value > self.p6_client_timeout:
             warn("Measured value of P6Client was greater than P6Client timeout.",
                  category=ValueWarning)
@@ -514,14 +462,8 @@ class Client:
         Update measured values of P6*Client parameter.
 
         :param value: Value to set.
-
-        :raise TypeError: Provided value is not int or float type.
-        :raise ValueError: Provided time value must be a positive number.
         """
-        if not isinstance(value, (int, float)):
-            raise TypeError(f"Provided value is not int or float type. Actual type: {type(value)}.")
-        if value <= 0:
-            raise ValueError(f"P6*Client parameter value must be a positive number. Actual value: {value}")
+        validate_time(value, accept_zero=True)
         if value > self.p6_ext_client_timeout:
             warn("Measured value of P6*Client was greater than P6*Client timeout.",
                  category=ValueWarning)
@@ -600,20 +542,42 @@ class Client:
         :param request_record: Record of the last transmitted request message.
         :param response_records: Records of received responses to provided message.
         """
-        p2_measured = response_records[0].transmission_start_timestamp - request_record.transmission_end_timestamp
+        if (response_records[0].transmission_start_native_timestamp is not None
+                and request_record.transmission_end_native_timestamp is not None):
+            p2_measured = (response_records[0].transmission_start_native_timestamp
+                           - request_record.transmission_end_native_timestamp)
+        else:
+            p2_measured = response_records[0].transmission_start_timestamp - request_record.transmission_end_timestamp
         self.__update_p2_client_measured(round(p2_measured * 1000., 3))
         if len(response_records) > 1:
             p2_ext_measured_list = []
             for i, response_record in enumerate(response_records[1:]):
-                _p2_ext_measured = (response_record.transmission_end_timestamp
-                                    - response_records[i].transmission_end_timestamp)
+                previous_response = response_records[i]
+                if (response_record.transmission_end_native_timestamp is not None
+                        and previous_response.transmission_end_native_timestamp is not None):
+                    _p2_ext_measured = (response_record.transmission_end_native_timestamp
+                                        - previous_response.transmission_end_native_timestamp)
+                else:
+                    _p2_ext_measured = (response_record.transmission_end_timestamp
+                                        - previous_response.transmission_end_timestamp)
                 p2_ext_measured_list.append(round(_p2_ext_measured * 1000., 3))
-            p6_ext_measured = (response_records[-1].transmission_end_timestamp
-                               - request_record.transmission_end_timestamp)
+            if (response_records[-1].transmission_end_native_timestamp is not None
+                    and request_record.transmission_end_native_timestamp is not None):
+                p6_ext_measured = (response_records[-1].transmission_end_native_timestamp
+                                   - request_record.transmission_end_native_timestamp)
+            else:
+                p6_ext_measured = (response_records[-1].transmission_end_timestamp
+                                   - request_record.transmission_end_timestamp)
             self.__update_p2_ext_client_measured(*p2_ext_measured_list)
             self.__update_p6_ext_client_measured(round(p6_ext_measured * 1000., 3))
         else:
-            p6_measured = response_records[-1].transmission_end_timestamp - request_record.transmission_end_timestamp
+            if (response_records[-1].transmission_end_native_timestamp is not None
+                    and request_record.transmission_end_native_timestamp is not None):
+                p6_measured = (response_records[-1].transmission_end_native_timestamp
+                               - request_record.transmission_end_native_timestamp)
+            else:
+                p6_measured = (response_records[-1].transmission_end_timestamp
+                               - request_record.transmission_end_timestamp)
             self.__update_p6_client_measured(round(p6_measured * 1000., 3))
 
     def _send_request(self, request: UdsMessage) -> UdsMessageRecord:
@@ -796,8 +760,14 @@ class Client:
             raise TypeError("Provided request message value is not an instance of UdsMessageRecord class. "
                             f"Actual type: {type(response_message)}.")
         if isinstance(request_message, UdsMessageRecord) and isinstance(response_message, UdsMessageRecord):
-            if response_message.transmission_start_timestamp < request_message.transmission_end_timestamp:
-                return False
+            if (response_message.transmission_start_native_timestamp is not None
+                    and request_message.transmission_end_native_timestamp is not None):
+                if (response_message.transmission_start_native_timestamp
+                        < request_message.transmission_end_native_timestamp):
+                    return False
+            else:
+                if response_message.transmission_start_timestamp < request_message.transmission_end_timestamp:
+                    return False
         if request_message.addressing_type != response_message.addressing_type:
             rx_physical_params = dict(self.transport_interface.addressing_information.rx_physical_params)
             rx_physical_params.pop("addressing_type")
@@ -868,16 +838,9 @@ class Client:
         :param timeout: Maximal time to wait for a response message.
             Leave None to wait forever.
 
-        :raise TypeError: Provided value is not int or float type.
-        :raise ValueError: Provided value is out of range.
-
         :return: Record with the first response message received or None if no message was received.
         """
-        if timeout is not None:
-            if not isinstance(timeout, (int, float)):
-                raise TypeError(f"Timeout value must be None, int or float type. Actual type: {type(timeout)}.")
-            if timeout <= 0:
-                raise ValueError(f"Provided timeout value is less or equal to 0. Actual value: {timeout}")
+        validate_timeout(timeout)
         try:
             return self.__response_queue.get(timeout=None if timeout is None else timeout / 1000.)
         except Empty:

@@ -1,9 +1,14 @@
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, Mock, patch
 
 import pytest
-from mock import Mock, patch
 
-from uds.packet.abstract_packet import AbstractPacketContainer, AbstractPacketRecord, ReassignmentError, datetime
+from uds.packet.abstract_packet import (
+    AbstractPacketContainer,
+    AbstractPacketRecord,
+    ReassignmentError,
+    TransmissionDirection,
+    datetime,
+)
 
 SCRIPT_LOCATION = "uds.packet.abstract_packet"
 
@@ -52,20 +57,22 @@ class TestAbstractPacketRecord:
 
     # __init__
 
-    @pytest.mark.parametrize("frame, direction, transmission_time, transmission_timestamp", [
-        (Mock(), Mock(), Mock(), Mock()),
-        ("Some frame", "Some direction", "Some time", "Some timestamp"),
+    @pytest.mark.parametrize("frame, direction, transmission_time, transmission_timestamp, transmission_native_timestamp", [
+        (Mock(), Mock(), Mock(), Mock(), Mock()),
+        ("Some frame", "Some direction", "Some time", "Some timestamp", "Some native timestamp"),
     ])
-    def test_init(self, frame, direction, transmission_time, transmission_timestamp):
+    def test_init(self, frame, direction, transmission_time, transmission_timestamp, transmission_native_timestamp):
         AbstractPacketRecord.__init__(self=self.mock_packet_record,
                                       frame=frame,
                                       direction=direction,
                                       transmission_time=transmission_time,
-                                      transmission_timestamp=transmission_timestamp)
+                                      transmission_timestamp=transmission_timestamp,
+                                      transmission_native_timestamp=transmission_native_timestamp)
         assert self.mock_packet_record.frame == frame
         assert self.mock_packet_record.direction == direction
         assert self.mock_packet_record.transmission_time == transmission_time
         assert self.mock_packet_record.transmission_timestamp == transmission_timestamp
+        assert self.mock_packet_record.transmission_native_timestamp == transmission_native_timestamp
         self.mock_packet_record._validate_attributes.assert_called_once_with()
 
     # __str__
@@ -86,6 +93,7 @@ class TestAbstractPacketRecord:
         assert "direction=" in output_str
         assert "transmission_time=" in output_str
         assert "transmission_timestamp=" in output_str
+        assert "transmission_native_timestamp=" in output_str
 
     # frame
 
@@ -100,11 +108,10 @@ class TestAbstractPacketRecord:
         assert self.mock_packet_record._AbstractPacketRecord__frame == frame
         self.mock_packet_record._validate_frame.assert_called_once_with(frame)
 
-    @pytest.mark.parametrize("value", [Mock(), "some frame"])
-    def test_frame__set__second_attempt(self, value):
+    def test_frame__set__reassignment_error(self):
         self.mock_packet_record._AbstractPacketRecord__frame = Mock()
         with pytest.raises(ReassignmentError):
-            AbstractPacketRecord.frame.fset(self.mock_packet_record, value=value)
+            AbstractPacketRecord.frame.fset(self.mock_packet_record, value=Mock())
         self.mock_packet_record._validate_frame.assert_not_called()
 
     # direction
@@ -119,11 +126,10 @@ class TestAbstractPacketRecord:
         assert self.mock_packet_record._AbstractPacketRecord__direction == self.mock_validate_direction.return_value
         self.mock_validate_direction.assert_called_once_with(example_transmission_direction)
 
-    @pytest.mark.parametrize("value", [Mock(), "some direction"])
-    def test_direction__set__second_attempt(self, value):
+    def test_direction__set__reassignment_error(self):
         self.mock_packet_record._AbstractPacketRecord__direction = Mock()
         with pytest.raises(ReassignmentError):
-            AbstractPacketRecord.direction.fset(self.mock_packet_record, value=value)
+            AbstractPacketRecord.direction.fset(self.mock_packet_record, value=Mock(spec=TransmissionDirection))
 
     # transmission_time
 
@@ -141,7 +147,7 @@ class TestAbstractPacketRecord:
         assert (self.mock_packet_record._AbstractPacketRecord__transmission_time
                 == self.mock_datetime.now.return_value)
         self.mock_datetime.now.assert_called_once()
-        mock_is_future.assert_called_once_with(value, self.mock_datetime.now.return_value)
+        mock_is_future.assert_called_once_with(self.mock_datetime.now.return_value)
         self.mock_warn.assert_called_once()
         mock_isinstance.assert_called_once_with(value, self.mock_datetime)
 
@@ -154,19 +160,19 @@ class TestAbstractPacketRecord:
         assert (self.mock_packet_record._AbstractPacketRecord__transmission_time
                 == value)
         self.mock_datetime.now.assert_called_once()
-        mock_is_future.assert_called_once_with(value, self.mock_datetime.now.return_value)
+        mock_is_future.assert_called_once_with(self.mock_datetime.now.return_value)
         self.mock_warn.assert_not_called()
         mock_isinstance.assert_called_once_with(value, self.mock_datetime)
 
     @pytest.mark.parametrize("value", [Mock(), "not a timestamp"])
     @patch(f"{SCRIPT_LOCATION}.isinstance")
-    def test_transmission_time__set__invalid_type(self, mock_isinstance, value):
+    def test_transmission_time__set__type_error(self, mock_isinstance, value):
         mock_isinstance.return_value = False
         with pytest.raises(TypeError):
             AbstractPacketRecord.transmission_time.fset(self.mock_packet_record, value=value)
         mock_isinstance.assert_called_once_with(value, self.mock_datetime)
 
-    @pytest.mark.parametrize("value", [Mock(), "some transmission_time"])
+    @pytest.mark.parametrize("value", [Mock()])
     @patch(f"{SCRIPT_LOCATION}.isinstance")
     def test_transmission_time__set__second_attempt(self, mock_isinstance, value):
         self.mock_packet_record._AbstractPacketRecord__transmission_time = Mock()
@@ -188,7 +194,7 @@ class TestAbstractPacketRecord:
         assert (self.mock_packet_record._AbstractPacketRecord__transmission_timestamp
                 == self.mock_perf_counter.return_value)
         self.mock_perf_counter.assert_called_once()
-        mock_is_future.assert_called_once_with(value, self.mock_perf_counter.return_value)
+        mock_is_future.assert_called_once_with(self.mock_perf_counter.return_value)
         self.mock_warn.assert_called_once()
 
     def test_transmission_timestamp__set__without_warning(self):
@@ -198,21 +204,43 @@ class TestAbstractPacketRecord:
         assert (self.mock_packet_record._AbstractPacketRecord__transmission_timestamp
                 == value)
         self.mock_perf_counter.assert_called_once()
-        mock_is_future.assert_called_once_with(value, self.mock_perf_counter.return_value)
+        mock_is_future.assert_called_once_with(self.mock_perf_counter.return_value)
         self.mock_warn.assert_not_called()
 
     @pytest.mark.parametrize("value", [Mock(), "not a timestamp"])
     @patch(f"{SCRIPT_LOCATION}.isinstance")
-    def test_transmission_timestamp__set__invalid_type(self, mock_isinstance, value):
+    def test_transmission_timestamp__set__type_error(self, mock_isinstance, value):
         mock_isinstance.return_value = False
         with pytest.raises(TypeError):
             AbstractPacketRecord.transmission_timestamp.fset(self.mock_packet_record, value=value)
         mock_isinstance.assert_called_once_with(value, float)
 
-    @pytest.mark.parametrize("value", [Mock(), "some transmission_timestamp"])
-    @patch(f"{SCRIPT_LOCATION}.isinstance")
-    def test_transmission_timestamp__set__second_attempt(self, mock_isinstance, value):
+    def test_transmission_timestamp__set__reassignment_error(self):
         self.mock_packet_record._AbstractPacketRecord__transmission_timestamp = Mock()
-        mock_isinstance.return_value = True
         with pytest.raises(ReassignmentError):
-            AbstractPacketRecord.transmission_timestamp.fset(self.mock_packet_record, value=value)
+            AbstractPacketRecord.transmission_timestamp.fset(self.mock_packet_record, value=Mock(spec=float))
+
+    # transmission_native_timestamp
+    
+    def test_transmission_native_timestamp__get(self):
+        self.mock_packet_record._AbstractPacketRecord__transmission_native_timestamp = Mock()
+        assert (AbstractPacketRecord.transmission_native_timestamp.fget(self.mock_packet_record)
+                == self.mock_packet_record._AbstractPacketRecord__transmission_native_timestamp)
+        
+    def test_transmission_native_timestamp__set__valid(self):
+        mock_value = Mock(spec=float)
+        AbstractPacketRecord.transmission_native_timestamp.fset(self.mock_packet_record, value=mock_value)
+        assert self.mock_packet_record._AbstractPacketRecord__transmission_native_timestamp == mock_value
+
+    @pytest.mark.parametrize("value", [Mock(), "not a timestamp"])
+    @patch(f"{SCRIPT_LOCATION}.isinstance")
+    def test_transmission_native_timestamp__set__type_error(self, mock_isinstance, value):
+        mock_isinstance.return_value = False
+        with pytest.raises(TypeError):
+            AbstractPacketRecord.transmission_native_timestamp.fset(self.mock_packet_record, value=value)
+        mock_isinstance.assert_called_once_with(value, float)
+
+    def test_transmission_native_timestamp__set__reassignment_error(self):
+        self.mock_packet_record._AbstractPacketRecord__transmission_native_timestamp = Mock()
+        with pytest.raises(ReassignmentError):
+            AbstractPacketRecord.transmission_native_timestamp.fset(self.mock_packet_record, value=Mock(spec=float))
