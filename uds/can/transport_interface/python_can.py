@@ -258,6 +258,8 @@ class PythonCanTransportInterface(AbstractCanTransportInterface):
                                            timeout=self._MIN_NOTIFIER_TIMEOUT,
                                            loop=loop)
         if self.async_notifier._loop != loop:  # pylint: disable=protected-access
+            warn(message="Async notifier (python-can) using another async event loop was stopped.",
+                 category=RuntimeWarning)
             self.async_notifier.stop()
             self.async_notifier = Notifier(bus=self.network_manager,
                                            listeners=[self.__async_rx_frames_buffer,

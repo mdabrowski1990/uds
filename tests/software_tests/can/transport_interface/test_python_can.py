@@ -536,6 +536,7 @@ class TestPythonCanTransportInterface:
         self.mock_can_transport_interface.teardown_sync.assert_called_once_with()
         self.mock_can_transport_interface.async_notifier.add_bus.assert_not_called()
         self.mock_can_transport_interface.async_notifier.add_listener.assert_not_called()
+        self.mock_warn.assert_not_called()
 
     def test_setup_async__stopped_notifier(self):
         mock_loop = Mock()
@@ -567,6 +568,7 @@ class TestPythonCanTransportInterface:
         self.mock_can_transport_interface.teardown_sync.assert_called_once_with()
         self.mock_can_transport_interface.async_notifier.add_bus.assert_not_called()
         self.mock_can_transport_interface.async_notifier.add_listener.assert_not_called()
+        self.mock_warn.assert_not_called()
 
     def test_setup_async__another_loop_in_notifier(self):
         mock_loop = Mock()
@@ -601,6 +603,7 @@ class TestPythonCanTransportInterface:
         self.mock_can_transport_interface.teardown_sync.assert_called_once_with()
         self.mock_can_transport_interface.async_notifier.add_bus.assert_not_called()
         self.mock_can_transport_interface.async_notifier.add_listener.assert_not_called()
+        self.mock_warn.assert_called_once()
 
     def test_setup_async__notifier_without_listeners(self):
         mock_loop = Mock()
@@ -620,6 +623,7 @@ class TestPythonCanTransportInterface:
             call(self.mock_can_transport_interface._PythonCanTransportInterface__async_tx_frames_buffer),
             call(self.mock_can_transport_interface._PythonCanTransportInterface__async_fc_frames_buffer),
         ], any_order=True)
+        self.mock_warn.assert_not_called()
 
     def test_setup_async__notifier_without_bus(self):
         mock_loop = Mock()
@@ -639,6 +643,7 @@ class TestPythonCanTransportInterface:
         self.mock_can_transport_interface.async_notifier.add_bus.assert_called_once_with(
             self.mock_can_transport_interface.network_manager)
         self.mock_can_transport_interface.async_notifier.add_listener.assert_not_called()
+        self.mock_warn.assert_not_called()
 
     # teardown_sync
 
