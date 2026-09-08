@@ -1,5 +1,6 @@
+from unittest.mock import Mock, call, patch
+
 import pytest
-from mock import Mock, call, patch
 
 from uds.can.addressing.normal_addressing import (
     AddressingType,

@@ -32,7 +32,8 @@ class CanPacketRecord(AbstractCanPacketContainer, AbstractPacketRecord):
                  addressing_type: AddressingType,
                  direction: TransmissionDirection,
                  transmission_time: datetime,
-                 transmission_timestamp: float) -> None:
+                 transmission_timestamp: float,
+                 transmission_native_timestamp: float | None) -> None:
         """
         Create a record of historic information about a CAN packet that was either received or transmitted.
 
@@ -40,14 +41,17 @@ class CanPacketRecord(AbstractCanPacketContainer, AbstractPacketRecord):
         :param addressing_format: CAN Addressing Format used.
         :param addressing_type: Addressing type for which this CAN packet is relevant.
         :param direction: Information whether this packet was transmitted or received.
-        :param transmission_time: Time stamp when this packet was fully transmitted on a CAN bus.
+        :param transmission_time: Wall-clock time at which the packet was transmitted or received
+        :param transmission_timestamp: Monotonic timestamp associated with the packet transmission or reception.
+        :param transmission_native_timestamp: Timestamp provided by the underlying network manager.
         """
         self.addressing_format = addressing_format
         self.addressing_type = addressing_type
         super().__init__(frame=frame,
                          direction=direction,
                          transmission_time=transmission_time,
-                         transmission_timestamp=transmission_timestamp)
+                         transmission_timestamp=transmission_timestamp,
+                         transmission_native_timestamp=transmission_native_timestamp)
 
     def __str__(self) -> str:
         """Present object in string format."""
@@ -58,9 +62,10 @@ class CanPacketRecord(AbstractCanPacketContainer, AbstractPacketRecord):
                 f"addressing_type={self.addressing_type}, "
                 f"direction={self.direction}, "
                 f"packet_type={self.packet_type}, "
-                f"payload={None if self.payload is None else bytes_to_hex(self.payload)},"
+                f"payload={None if self.payload is None else bytes_to_hex(self.payload)}, "
                 f"transmission_time={self.transmission_time}, "
-                f"transmission_timestamp={self.transmission_timestamp})")
+                f"transmission_timestamp={self.transmission_timestamp}, "
+                f"transmission_native_timestamp={self.transmission_native_timestamp})")
 
     @property
     def can_id(self) -> int:
@@ -101,7 +106,7 @@ class CanPacketRecord(AbstractCanPacketContainer, AbstractPacketRecord):
         :raise ReassignmentError: An attempt to change the value after object creation.
         """
         if hasattr(self, "_CanPacketRecord__addressing_format"):
-            raise ReassignmentError("Value of 'addressing_format' attribute cannot be changed once assigned.")
+            raise ReassignmentError("Value of 'addressing_format' attribute cannot be changed once set.")
         self.__addressing_format = CanAddressingFormat.validate_member(value)
 
     @property
@@ -117,7 +122,7 @@ class CanPacketRecord(AbstractCanPacketContainer, AbstractPacketRecord):
         :param value: Value of addressing type.
         """
         if hasattr(self, "_CanPacketRecord__addressing_type"):
-            raise ReassignmentError("Value of 'addressing_type' attribute cannot be changed once assigned.")
+            raise ReassignmentError("Value of 'addressing_type' attribute cannot be changed once set.")
         self.__addressing_type = AddressingType.validate_member(value)
 
     @staticmethod

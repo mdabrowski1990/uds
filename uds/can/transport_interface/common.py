@@ -3,22 +3,36 @@
 __all__ = ["AbstractCanTransportInterface"]
 
 from abc import ABC, abstractmethod
-from asyncio import AbstractEventLoop
+from asyncio import AbstractEventLoop, get_running_loop
+from asyncio import sleep as async_sleep
+from asyncio.exceptions import TimeoutError as AsyncioTimeoutError
+from time import perf_counter, sleep
 from typing import Any
 from warnings import warn
 
 from uds.addressing import TransmissionDirection
-from uds.message import UdsMessageRecord
+from uds.message import UdsMessage, UdsMessageRecord
 from uds.transport_interface import AbstractTransportInterface
-from uds.utilities import TimeMillisecondsAlias, ValueWarning
+from uds.utilities import (
+    MessageTransmissionNotStartedError,
+    NewMessageReceptionWarning,
+    TimeMillisecondsAlias,
+    TimestampAlias,
+    UnexpectedPacketReceptionWarning,
+    ValueWarning,
+    validate_time,
+    validate_timeout,
+)
 
 from ..addressing import AbstractCanAddressingInformation
 from ..frame import CanVersion
 from ..packet import (
     AbstractFlowControlParametersGenerator,
+    CanFlowStatus,
     CanPacket,
     CanPacketRecord,
     CanPacketType,
+    CanSTminTranslator,
     DefaultFlowControlParametersGenerator,
 )
 from ..segmenter import CanSegmenter
@@ -275,14 +289,8 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
         Set timeout value for :ref:`N_As <knowledge-base-can-n-as>` time parameter.
 
         :param value: Value of timeout to set.
-
-        :raise TypeError: Provided value is not int or float type.
-        :raise ValueError: Provided value is less or equal to 0.
         """
-        if not isinstance(value, (int, float)):
-            raise TypeError(f"Provided time parameter value must be int or float type. Actual type: {type(value)}.")
-        if value <= 0:
-            raise ValueError(f"Provided time parameter value must be greater than 0. Actual value: {value}")
+        validate_time(value, accept_zero=False)
         if value != self.N_AS_TIMEOUT:
             warn(message="Non-default value of N_As timeout was set.",
                  category=ValueWarning)
@@ -312,14 +320,8 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
         Set timeout value for :ref:`N_Ar <knowledge-base-can-n-ar>` time parameter.
 
         :param value: Value of timeout to set.
-
-        :raise TypeError: Provided value is not int or float type.
-        :raise ValueError: Provided value is less or equal to 0.
         """
-        if not isinstance(value, (int, float)):
-            raise TypeError(f"Provided time parameter value must be int or float type. Actual type: {type(value)}.")
-        if value <= 0:
-            raise ValueError(f"Provided time parameter value must be greater than 0. Actual value: {value}")
+        validate_time(value, accept_zero=False)
         if value != self.N_AR_TIMEOUT:
             warn(message="Non-default value of N_Ar timeout was set.",
                  category=ValueWarning)
@@ -349,14 +351,8 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
         Set timeout value for :ref:`N_Bs <knowledge-base-can-n-bs>` time parameter.
 
         :param value: Value of timeout to set.
-
-        :raise TypeError: Provided value is not int or float type.
-        :raise ValueError: Provided value is less or equal to 0.
         """
-        if not isinstance(value, (int, float)):
-            raise TypeError(f"Provided time parameter value must be int or float type. Actual type: {type(value)}.")
-        if value <= 0:
-            raise ValueError(f"Provided time parameter value must be greater than 0. Actual value: {value}")
+        validate_time(value, accept_zero=False)
         if value != self.N_BS_TIMEOUT:
             warn(message="Non-default value of N_Bs timeout was set.",
                  category=ValueWarning)
@@ -392,14 +388,12 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
 
         :param value: The value to set.
 
-        :raise TypeError: Provided value is not int or float type.
-        :raise ValueError: Provided value is out of range (0 <= value < MAX N_Br).
+        :raise ValueError: Provided value is greater than N_Br max.
         """
-        if not isinstance(value, (int, float)):
-            raise TypeError(f"Provided time parameter value must be int or float type. Actual type: {type(value)}.")
-        if not 0 <= value < self.n_br_max:
-            raise ValueError("Provided time parameter value is out of range. "
-                             f"Expected: 0 <= value < {self.n_br_max}. Actual value: {value}.")
+        validate_time(value, accept_zero=True)
+        if value >= self.n_br_max:
+            raise ValueError("Provided time parameter value is greater than N_Br Max value. "
+                             f"Expected: value < {self.n_br_max}. Actual value: {value}.")
         self.__n_br = value
 
     @property
@@ -436,15 +430,13 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
             - int/float type - timing value to be used regardless of a received
                 :ref:`STmin <knowledge-base-can-st-min>` value
 
-        :raise TypeError: Provided value is not int or float type.
-        :raise ValueError: Provided value is out of range (0 <= value < MAX N_Cs).
+        :raise ValueError: Provided value is greater than N_Cs max.
         """
         if value is not None:
-            if not isinstance(value, (int, float)):
-                raise TypeError(f"Provided time parameter value must be int or float type. Actual type: {type(value)}.")
-            if not 0 <= value < self.n_cs_max:
-                raise ValueError("Provided time parameter value is out of range. "
-                                 f"Expected: 0 <= value < {self.n_cs_max}. Actual value: {value}.")
+            validate_time(value, accept_zero=True)
+            if value >= self.n_cs_max:
+                raise ValueError("Provided time parameter value is greater than N_Cs Max value. "
+                                 f"Expected: value < {self.n_cs_max}. Actual value: {value}.")
         self.__n_cs = value
 
     @property
@@ -471,14 +463,8 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
         Set timeout value for :ref:`N_Cr <knowledge-base-can-n-cr>` time parameter.
 
         :param value: Value of timeout to set.
-
-        :raise TypeError: Provided value is not int or float type.
-        :raise ValueError: Provided value is less or equal to 0.
         """
-        if not isinstance(value, (int, float)):
-            raise TypeError(f"Provided time parameter value must be int or float type. Actual type: {type(value)}.")
-        if value <= 0:
-            raise ValueError(f"Provided time parameter value must be greater than 0. Actual value: {value}")
+        validate_time(value, accept_zero=False)
         if value != self.N_CR_TIMEOUT:
             warn(message="Non-default value of N_Cr timeout was set.",
                  category=ValueWarning)
@@ -502,14 +488,8 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
         Update measured values of :ref:`N_Ar <knowledge-base-can-n-ar>`.
 
         :param value: Value to set.
-
-        :raise TypeError: Provided value is not int or float type.
-        :raise ValueError: Provided value is out of range.
         """
-        if not isinstance(value, (int, float)):
-            raise TypeError(f"Provided value is not int or float type. Actual type: {type(value)}.")
-        if value < 0:
-            raise ValueError(f"Provided time parameter cannot be a negative number. Actual value: {value}")
+        validate_time(value, accept_zero=True)
         if value > self.n_ar_timeout:
             warn("Measured value of N_Ar was greater than N_Ar timeout.",
                  category=ValueWarning)
@@ -520,14 +500,8 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
         Update measured values of :ref:`N_As <knowledge-base-can-n-as>`.
 
         :param value: Value to set.
-
-        :raise TypeError: Provided value is not int or float type.
-        :raise ValueError: Provided value is out of range.
         """
-        if not isinstance(value, (int, float)):
-            raise TypeError(f"Provided value is not int or float type. Actual type: {type(value)}.")
-        if value < 0:
-            raise ValueError(f"Provided time parameter cannot be a negative number. Actual value: {value}")
+        validate_time(value, accept_zero=True)
         if value > self.n_as_timeout:
             warn("Measured value of N_As was greater than N_As timeout.",
                  category=ValueWarning)
@@ -552,8 +526,13 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
             n_bs_measured = []
             for i, packet_record in enumerate(message_record.packets_records[1:]):
                 if packet_record.packet_type == CanPacketType.FLOW_CONTROL:
-                    n_bs = (packet_record.transmission_timestamp
-                            - message_record.packets_records[i].transmission_timestamp)
+                    previous_packet_record = message_record.packets_records[i]
+                    if (packet_record.transmission_native_timestamp is not None
+                            and previous_packet_record.transmission_native_timestamp is not None):
+                        n_bs = (packet_record.transmission_native_timestamp
+                                - previous_packet_record.transmission_native_timestamp)
+                    else:
+                        n_bs = packet_record.transmission_timestamp - previous_packet_record.transmission_timestamp
                     n_bs_measured.append(round(n_bs * 1000, 3))
             self.__n_bs_measured = tuple(n_bs_measured)
 
@@ -576,8 +555,13 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
             n_cr_measured = []
             for i, packet_record in enumerate(message_record.packets_records[1:]):
                 if packet_record.packet_type == CanPacketType.CONSECUTIVE_FRAME:
-                    n_cr = (packet_record.transmission_timestamp
-                            - message_record.packets_records[i].transmission_timestamp)
+                    previous_packet_record = message_record.packets_records[i]
+                    if (packet_record.transmission_native_timestamp is not None
+                            and previous_packet_record.transmission_native_timestamp is not None):
+                        n_cr = (packet_record.transmission_native_timestamp
+                                - previous_packet_record.transmission_native_timestamp)
+                    else:
+                        n_cr = packet_record.transmission_timestamp - previous_packet_record.transmission_timestamp
                     n_cr_measured.append(round(n_cr * 1000, 3))
             self.__n_cr_measured = tuple(n_cr_measured)
 
@@ -589,6 +573,386 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
         self.__n_cr_measured = None
 
     # Packets transmission and reception
+
+    def _send_cf_packets_block(self,
+                               cf_packets_block: list[CanPacket],
+                               delay: TimeMillisecondsAlias,
+                               fc_transmission_timestamp: float) -> tuple[CanPacketRecord, ...]:
+        """
+        Send a block of Consecutive Frame CAN packets.
+
+        :param cf_packets_block: Consecutive Frame CAN packets to send.
+        :param delay: Minimum delay between sending following Consecutive Frame packets [ms].
+        :param fc_transmission_timestamp: Transmission timestamp of the preceding Flow Control packet.
+
+        :return: Records containing historical information about the transmitted Consecutive Frame CAN packets.
+        """
+        packet_records = []
+        timestamp_send = fc_transmission_timestamp + delay / 1000.
+        for cf_packet in cf_packets_block:
+            time_to_wait_s = timestamp_send - perf_counter()
+            if time_to_wait_s > 0:
+                sleep(time_to_wait_s)
+            cf_packet_record = self.send_packet(cf_packet)
+            timestamp_send = cf_packet_record.transmission_timestamp + delay / 1000.
+            packet_records.append(cf_packet_record)
+        return tuple(packet_records)
+
+    async def _async_send_cf_packets_block(self,
+                                           cf_packets_block: list[CanPacket],
+                                           delay: TimeMillisecondsAlias,
+                                           fc_transmission_timestamp: float,
+                                           loop: AbstractEventLoop) -> tuple[CanPacketRecord, ...]:
+        """
+        Asynchronously send a block of Consecutive Frame CAN packets.
+
+        :param cf_packets_block: Consecutive Frame CAN packets to send.
+        :param delay: Minimum delay between sending following Consecutive Frame packets [ms].
+        :param fc_transmission_timestamp: Transmission timestamp of the preceding Flow Control packet.
+        :param loop: The asyncio event loop to use for scheduling this task.
+
+        :return: Records containing historical information about the transmitted Consecutive Frame CAN packets.
+        """
+        packet_records = []
+        timestamp_send = fc_transmission_timestamp + delay / 1000.
+        for cf_packet in cf_packets_block:
+            time_to_wait_s = timestamp_send - perf_counter()
+            if time_to_wait_s > 0:
+                await async_sleep(time_to_wait_s)
+            cf_packet_record = await self.async_send_packet(cf_packet, loop=loop)
+            timestamp_send = cf_packet_record.transmission_timestamp + delay / 1000.
+            packet_records.append(cf_packet_record)
+        return tuple(packet_records)
+
+    def _receive_cf_packets_block(self,
+                                  sequence_number: int,
+                                  block_size: int,
+                                  remaining_data_length: int,
+                                  timestamp_end: TimestampAlias | None
+                                  ) -> UdsMessageRecord | tuple[CanPacketRecord, ...]:
+        """
+        Receive block of :ref:`Consecutive Frames <knowledge-base-can-consecutive-frame>`.
+
+        :param sequence_number: Current :ref:`Sequence Number <knowledge-base-can-sequence-number>`
+            (next Consecutive Frame shall have this value set).
+        :param block_size: :ref:`Block Size <knowledge-base-can-block-size>` value sent in the last
+            :ref:`Flow Control CAN packet <knowledge-base-can-flow-control>`.
+        :param remaining_data_length: Number of remaining data bytes to receive in UDS message.
+        :param timestamp_end: The final timestamp till when the reception must be completed.
+
+        :raise TimeoutError: Timeout was reached. Either:
+            - Consecutive Frame did not arrive before reaching N_Cr timeout
+            - Diagnostic message reception
+
+        :return: Either:
+            - Record of UDS message if reception was interrupted by a new UDS message transmission.
+            - Tuple with records of received Consecutive Frames.
+        """
+        timestamp_start = perf_counter()
+        timeout_end_ms = float("inf")
+        received_cf: list[CanPacketRecord] = []
+        received_payload_size: int = 0
+        while received_payload_size < remaining_data_length and (len(received_cf) != block_size or block_size == 0):
+            timestamp_now = perf_counter()
+            # check final (timestamp_end) timeout
+            if timestamp_end is not None:
+                timeout_end_ms = (timestamp_end - timestamp_now) * 1000.
+            if timeout_end_ms <= 0:
+                raise TimeoutError("Total message reception timeout was reached.")
+            # check n_cr timeout
+            time_elapsed_ms = (timestamp_now - timestamp_start) * 1000.
+            remaining_n_cr_timeout_ms = self.n_cr_timeout - time_elapsed_ms
+            if remaining_n_cr_timeout_ms <= 0:
+                raise TimeoutError("Timeout (N_Cr) was reached before Consecutive Frame CAN packet was received.")
+            # receive packet
+            received_packet = self.receive_packet(timeout=min(timeout_end_ms, remaining_n_cr_timeout_ms))
+            # handle new message reception
+            if CanPacketType.is_initial_packet_type(received_packet.packet_type):
+                warn(message="A new DoCAN message transmission was started. "
+                             "Reception of the previous message was aborted.",
+                     category=NewMessageReceptionWarning)
+                return self._message_receive_start(initial_packet=received_packet,
+                                                   timestamp_end=timestamp_end)
+            # handle following Consecutive Frame
+            if (received_packet.packet_type == CanPacketType.CONSECUTIVE_FRAME
+                    and received_packet.sequence_number == sequence_number):
+                timestamp_start = perf_counter()
+                received_cf.append(received_packet)
+                received_payload_size += len(received_packet.payload)  # type: ignore
+                sequence_number = (received_packet.sequence_number + 1) & 0xF
+        return tuple(received_cf)
+
+    async def _async_receive_cf_packets_block(self,
+                                              sequence_number: int,
+                                              block_size: int,
+                                              remaining_data_length: int,
+                                              timestamp_end: TimestampAlias | None,
+                                              loop: AbstractEventLoop
+                                              ) -> UdsMessageRecord | tuple[CanPacketRecord, ...]:
+        """
+        Receive asynchronously block of :ref:`Consecutive Frames <knowledge-base-can-consecutive-frame>`.
+
+        :param sequence_number: Current :ref:`Sequence Number <knowledge-base-can-sequence-number>`
+            (next Consecutive Frame shall have this value set).
+        :param block_size: :ref:`Block Size <knowledge-base-can-block-size>` value sent in the last
+            :ref:`Flow Control CAN packet <knowledge-base-can-flow-control>`.
+        :param remaining_data_length: Number of remaining data bytes to receive in UDS message.
+        :param timestamp_end: The final timestamp till when the reception must be completed.
+        :param loop: An asyncio event loop used for observing messages.
+
+        :return: Either:
+            - Record of UDS message if reception was interrupted by a new UDS message transmission.
+            - Tuple with records of received Consecutive Frames.
+        """
+        timestamp_start = perf_counter()
+        timeout_end_ms = float("inf")
+        received_cf: list[CanPacketRecord] = []
+        received_payload_size: int = 0
+        while received_payload_size < remaining_data_length and (len(received_cf) != block_size or block_size == 0):
+            timestamp_now = perf_counter()
+            # check final (timestamp_end) timeout
+            if timestamp_end is not None:
+                timeout_end_ms = (timestamp_end - timestamp_now) * 1000.
+            if timeout_end_ms <= 0:
+                raise TimeoutError("Total message reception timeout was reached.")
+            # check n_cr timeout
+            time_elapsed_ms = (timestamp_now - timestamp_start) * 1000.
+            remaining_n_cr_timeout_ms = self.n_cr_timeout - time_elapsed_ms
+            if remaining_n_cr_timeout_ms <= 0:
+                raise TimeoutError("Timeout (N_Cr) was reached before Consecutive Frame CAN packet was received.")
+            # receive packet
+            received_packet = await self.async_receive_packet(timeout=min(remaining_n_cr_timeout_ms, timeout_end_ms),
+                                                              loop=loop)
+            # handle new message reception
+            if CanPacketType.is_initial_packet_type(received_packet.packet_type):
+                warn(message="A new DoCAN message transmission was started. "
+                             "Reception of the previous message was aborted.",
+                     category=NewMessageReceptionWarning)
+                return await self._async_message_receive_start(initial_packet=received_packet,
+                                                               timestamp_end=timestamp_end,
+                                                               loop=loop)
+            # handle following Consecutive Frame
+            if (received_packet.packet_type == CanPacketType.CONSECUTIVE_FRAME
+                    and received_packet.sequence_number == sequence_number):
+                timestamp_start = perf_counter()
+                received_cf.append(received_packet)
+                received_payload_size += len(received_packet.payload)  # type: ignore
+                sequence_number = (received_packet.sequence_number + 1) & 0xF
+        return tuple(received_cf)
+
+    def _receive_consecutive_frames(self,
+                                    first_frame: CanPacketRecord,
+                                    timestamp_end: TimestampAlias | None) -> UdsMessageRecord:
+        """
+        Receive Consecutive Frames after reception of First Frame.
+
+        :param first_frame: :ref:`First Frame <knowledge-base-can-first-frame>` that was received.
+        :param timestamp_end: The final timestamp till when the reception must be completed.
+
+        :raise OverflowError: Flow Control packet with :ref:`Flow Status <knowledge-base-can-flow-status>` equal to
+            OVERFLOW was sent.
+
+        :return: Record of UDS message that was formed provided First Frame and received Consecutive Frames.
+        """
+        packets_records: list[CanPacketRecord] = [first_frame]
+        message_data_length: int = first_frame.data_length  # type: ignore
+        received_data_length: int = len(first_frame.payload)  # type: ignore
+        sequence_number: int = 1
+        flow_control_iterator = iter(self.flow_control_parameters_generator)
+        remaining_end_timeout_ms = float("inf")
+        while True:
+            if timestamp_end is not None:
+                remaining_end_timeout_ms = (timestamp_end - perf_counter()) * 1000.
+                if remaining_end_timeout_ms < 0:
+                    raise TimeoutError("Total message reception timeout was reached.")
+            time_elapsed_ms = (perf_counter() - packets_records[-1].transmission_timestamp) * 1000.
+            remaining_n_br_timeout_ms = self.n_br - time_elapsed_ms
+            if remaining_n_br_timeout_ms > 0:
+                try:
+                    received_packet = self.receive_packet(timeout=min(remaining_n_br_timeout_ms,
+                                                                      remaining_end_timeout_ms))
+                except TimeoutError:
+                    pass
+                else:
+                    if CanPacketType.is_initial_packet_type(received_packet.packet_type):
+                        warn(message="A new DoCAN message transmission was started. "
+                                     "Reception of the previous message was aborted.",
+                             category=NewMessageReceptionWarning)
+                        return self._message_receive_start(initial_packet=received_packet,
+                                                           timestamp_end=timestamp_end)
+            flow_status, block_size, st_min = next(flow_control_iterator)
+            fc_packet = self.segmenter.get_flow_control_packet(flow_status=flow_status,
+                                                               block_size=block_size,
+                                                               st_min=st_min)
+            packets_records.append(self.send_packet(fc_packet))
+            if flow_status == CanFlowStatus.Overflow:
+                raise OverflowError("Flow Control with Flow Status `OVERFLOW` was transmitted.")
+            if flow_status == CanFlowStatus.ContinueToSend:
+                remaining_data_length = message_data_length - received_data_length
+                cf_block = self._receive_cf_packets_block(sequence_number=sequence_number,
+                                                          block_size=block_size,  # type: ignore
+                                                          remaining_data_length=remaining_data_length,
+                                                          timestamp_end=timestamp_end)
+                if isinstance(cf_block, UdsMessageRecord):  # in case another message interrupted
+                    return cf_block
+                packets_records.extend(cf_block)
+                for cf in cf_block:
+                    received_data_length += len(cf.payload)  # type: ignore
+                if received_data_length >= message_data_length:
+                    break
+                sequence_number = (cf_block[-1].sequence_number + 1) & 0xF  # type: ignore
+        return UdsMessageRecord(packets_records)
+
+    async def _async_receive_consecutive_frames(self,
+                                                first_frame: CanPacketRecord,
+                                                timestamp_end: TimestampAlias | None,
+                                                loop: AbstractEventLoop) -> UdsMessageRecord:
+        """
+        Receive asynchronously Consecutive Frames after reception of First Frame.
+
+        :param first_frame: :ref:`First Frame <knowledge-base-can-first-frame>` that was received.
+        :param timestamp_end: The final timestamp till when the reception must be completed.
+        :param loop: An asyncio event loop used for observing messages.
+
+        :raise TimeoutError: :ref:`N_Cr <knowledge-base-can-n-cr>` timeout was reached.
+        :raise OverflowError: Flow Control packet with :ref:`Flow Status <knowledge-base-can-flow-status>` equal to
+            OVERFLOW was sent.
+        :raise NotImplementedError: Unhandled CAN packet starting a new CAN message transmission was received.
+
+        :return: Record of UDS message that was formed provided First Frame and received Consecutive Frames.
+        """
+        packets_records: list[CanPacketRecord] = [first_frame]
+        message_data_length: int = first_frame.data_length  # type: ignore
+        received_data_length: int = len(first_frame.payload)  # type: ignore
+        sequence_number: int = 1
+        flow_control_iterator = iter(self.flow_control_parameters_generator)
+        remaining_end_timeout_ms = float("inf")
+        while True:
+            if timestamp_end is not None:
+                remaining_end_timeout_ms = (timestamp_end - perf_counter()) * 1000.
+                if remaining_end_timeout_ms < 0:
+                    raise TimeoutError("Total message reception timeout was reached.")
+            time_elapsed_ms = (perf_counter() - packets_records[-1].transmission_timestamp) * 1000.
+            remaining_n_br_timeout_ms = self.n_br - time_elapsed_ms
+            if remaining_n_br_timeout_ms > 0:
+                try:
+                    received_packet = await self.async_receive_packet(loop=loop,
+                                                                      timeout=min(remaining_n_br_timeout_ms,
+                                                                                  remaining_end_timeout_ms))
+                except (TimeoutError, AsyncioTimeoutError):
+                    pass
+                else:
+                    if CanPacketType.is_initial_packet_type(received_packet.packet_type):
+                        warn(message="A new DoCAN message transmission was started. "
+                                     "Reception of the previous message was aborted.",
+                             category=NewMessageReceptionWarning)
+                        return await self._async_message_receive_start(initial_packet=received_packet,
+                                                                       timestamp_end=timestamp_end,
+                                                                       loop=loop)
+            flow_status, block_size, st_min = next(flow_control_iterator)
+            fc_packet = self.segmenter.get_flow_control_packet(flow_status=flow_status,
+                                                               block_size=block_size,
+                                                               st_min=st_min)
+            packets_records.append(await self.async_send_packet(fc_packet, loop=loop))
+            if flow_status == CanFlowStatus.Overflow:
+                raise OverflowError("Flow Control with Flow Status `OVERFLOW` was transmitted.")
+            if flow_status == CanFlowStatus.ContinueToSend:
+                remaining_data_length = message_data_length - received_data_length
+                cf_block = await self._async_receive_cf_packets_block(sequence_number=sequence_number,
+                                                                      block_size=block_size,  # type: ignore
+                                                                      remaining_data_length=remaining_data_length,
+                                                                      timestamp_end=timestamp_end,
+                                                                      loop=loop)
+                if isinstance(cf_block, UdsMessageRecord):  # in case another message interrupted
+                    return cf_block
+                packets_records.extend(cf_block)
+                for cf in cf_block:
+                    received_data_length += len(cf.payload)  # type: ignore
+                if received_data_length >= message_data_length:
+                    break
+                sequence_number = (cf_block[-1].sequence_number + 1) & 0xF  # type: ignore
+        return UdsMessageRecord(packets_records)
+
+    def _message_receive_start(self,
+                               initial_packet: CanPacketRecord,
+                               timestamp_end: TimestampAlias | None) -> UdsMessageRecord:
+        """
+        Continue to receive message after receiving initial packet.
+
+        :param initial_packet: Record of a packet initiating UDS message reception.
+        :param timestamp_end: The final timestamp till when the reception must be completed.
+
+        :raise NotImplementedError: Unhandled CAN packet starting a new CAN message transmission was received.
+
+        :return: Record of UDS message received.
+        """
+        if initial_packet.packet_type == CanPacketType.SINGLE_FRAME:
+            return UdsMessageRecord([initial_packet])
+        if initial_packet.packet_type == CanPacketType.FIRST_FRAME:
+            return self._receive_consecutive_frames(first_frame=initial_packet,
+                                                    timestamp_end=timestamp_end)
+        raise NotImplementedError(f"CAN packet of unhandled type was received: {initial_packet.packet_type}")
+
+    async def _async_message_receive_start(self,
+                                           initial_packet: CanPacketRecord,
+                                           timestamp_end: TimestampAlias | None,
+                                           loop: AbstractEventLoop) -> UdsMessageRecord:
+        """
+        Continue to receive message asynchronously after receiving initial packet.
+
+        :param initial_packet: Record of a packet initiating UDS message reception.
+        :param timestamp_end: The final timestamp till when the reception must be completed.
+        :param loop: An asyncio event loop used for observing messages.
+
+        :raise NotImplementedError: Unhandled CAN packet starting a new CAN message transmission was received.
+
+        :return: Record of UDS message received.
+        """
+        if initial_packet.packet_type == CanPacketType.SINGLE_FRAME:
+            return UdsMessageRecord([initial_packet])
+        if initial_packet.packet_type == CanPacketType.FIRST_FRAME:
+            return await self._async_receive_consecutive_frames(first_frame=initial_packet,
+                                                                timestamp_end=timestamp_end,
+                                                                loop=loop)
+        raise NotImplementedError(f"CAN packet of unhandled type was received: {initial_packet.packet_type}")
+
+    @abstractmethod
+    def _wait_for_flow_control(self, timeout_timestamp: float) -> CanPacketRecord:
+        """
+        Wait until a Flow Control CAN packet is received.
+
+        :param timeout_timestamp: Deadline for receiving the Flow Control CAN packet,
+            expressed as a :func:`time.perf_counter` timestamp.
+
+        :return: Record containing historical information about the received Flow Control CAN packet.
+        """
+
+    @abstractmethod
+    async def _async_wait_for_flow_control(self, timeout_timestamp: float) -> CanPacketRecord:
+        """
+        Asynchronously wait until a Flow Control CAN packet is received.
+
+        :param timeout_timestamp: Deadline for receiving the Flow Control CAN packet,
+            expressed as a :func:`time.perf_counter` timestamp.
+
+        :return: Record containing historical information about the received Flow Control CAN packet.
+        """
+
+    @abstractmethod
+    def clear_received_frame_buffers(self) -> None:
+        """
+        Clear buffers for storing received CAN frames.
+
+        .. warning:: This makes all previously received CAN packets inaccessible.
+        """
+
+    @abstractmethod
+    def clear_transmitted_frame_buffers(self) -> None:
+        """Clear buffers for storing transmitted CAN frames."""
+
+    @abstractmethod
+    def clear_flow_control_frame_buffers(self) -> None:
+        """Clear buffers for storing received Flow Control CAN frames."""
 
     @abstractmethod
     def send_packet(self, packet: CanPacket) -> CanPacketRecord:  # type: ignore
@@ -642,3 +1006,195 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
 
         :return: Record with historic information about received packet.
         """
+
+    def send_message(self, message: UdsMessage) -> UdsMessageRecord:
+        """
+        Transmit UDS message over CAN.
+
+        .. warning:: Must not be called within an asynchronous function.
+
+        :param message: A message to send.
+
+        :raise OverflowError: Flow Control packet with Flow Status equal to OVERFLOW was received.
+        :raise NotImplementedError: Flow Control CAN packet with unknown Flow Status was received.
+
+        :return: Record with historic information about transmitted UDS message.
+        """
+        self.setup_sync()
+        self.clear_flow_control_frame_buffers()
+        packets_to_send = list(self.segmenter.segmentation(message))
+        packet_records = [self.send_packet(packets_to_send.pop(0))]
+        while packets_to_send:
+            flow_control_record = self._wait_for_flow_control(
+                timeout_timestamp=packet_records[-1].transmission_timestamp + self.n_bs_timeout / 1000.)
+            packet_records.append(flow_control_record)
+            if flow_control_record.flow_status == CanFlowStatus.ContinueToSend:
+                cf_number_to_send = len(packets_to_send) if flow_control_record.block_size == 0 \
+                    else flow_control_record.block_size
+                delay_between_cf = self.n_cs if self.n_cs is not None \
+                    else CanSTminTranslator.decode(flow_control_record.st_min)  # type: ignore
+                packet_records.extend(
+                    self._send_cf_packets_block(
+                        cf_packets_block=packets_to_send[:cf_number_to_send],
+                        delay=delay_between_cf,
+                        fc_transmission_timestamp=flow_control_record.transmission_timestamp))
+                packets_to_send = packets_to_send[cf_number_to_send:]
+            elif flow_control_record.flow_status == CanFlowStatus.Wait:
+                continue
+            elif flow_control_record.flow_status == CanFlowStatus.Overflow:
+                raise OverflowError("Flow Control with Flow Status `OVERFLOW` was received.")
+            else:
+                raise NotImplementedError(f"Unknown Flow Status received: {flow_control_record.flow_status}")
+        message_records = UdsMessageRecord(packet_records)
+        self._update_n_bs_measured(message_records)
+        return message_records
+
+    async def async_send_message(self,
+                                 message: UdsMessage,
+                                 loop: AbstractEventLoop | None = None) -> UdsMessageRecord:
+        """
+        Transmit asynchronously UDS message over CAN.
+
+        :param message: A message to send.
+        :param loop: An asyncio event loop to use for scheduling this task.
+
+        :raise OverflowError: Flow Control packet with Flow Status equal to OVERFLOW was received.
+        :raise NotImplementedError: Flow Control CAN packet with unknown Flow Status was received.
+
+        :return: Record with historic information about transmitted UDS message.
+        """
+        loop = loop if isinstance(loop, AbstractEventLoop) else get_running_loop()
+        self.setup_async(loop)
+        self.clear_flow_control_frame_buffers()
+        packets_to_send = list(self.segmenter.segmentation(message))
+        packet_records = [await self.async_send_packet(packets_to_send.pop(0), loop=loop)]
+        while packets_to_send:
+            flow_control_record = await self._async_wait_for_flow_control(
+                timeout_timestamp=packet_records[-1].transmission_timestamp + self.n_bs_timeout / 1000.)
+            packet_records.append(flow_control_record)
+            if flow_control_record.flow_status == CanFlowStatus.ContinueToSend:
+                cf_number_to_send = len(packets_to_send) if flow_control_record.block_size == 0 \
+                    else flow_control_record.block_size
+                delay_between_cf = self.n_cs if self.n_cs is not None \
+                    else CanSTminTranslator.decode(flow_control_record.st_min)  # type: ignore
+                packet_records.extend(
+                    await self._async_send_cf_packets_block(
+                        cf_packets_block=packets_to_send[:cf_number_to_send],
+                        delay=delay_between_cf,
+                        fc_transmission_timestamp=flow_control_record.transmission_timestamp,
+                        loop=loop))
+                packets_to_send = packets_to_send[cf_number_to_send:]
+            elif flow_control_record.flow_status == CanFlowStatus.Wait:
+                continue
+            elif flow_control_record.flow_status == CanFlowStatus.Overflow:
+                raise OverflowError("Flow Control with Flow Status `OVERFLOW` was received.")
+            else:
+                raise NotImplementedError(f"Unknown Flow Status received: {flow_control_record.flow_status}")
+        message_records = UdsMessageRecord(packet_records)
+        self._update_n_bs_measured(message_records)
+        return message_records
+
+    def receive_message(self,
+                        start_timeout: TimeMillisecondsAlias | None = None,
+                        end_timeout: TimeMillisecondsAlias | None = None) -> UdsMessageRecord:
+        """
+        Receive UDS message over CAN.
+
+        :param start_timeout: Maximal time (in milliseconds) to wait for the start of a message transmission.
+            Leave None to wait forever.
+        :param end_timeout: Maximal time (in milliseconds) to wait for a message transmission to finish.
+            Leave None to wait forever.
+
+        :raise MessageTransmissionNotStartedError: Timeout was exceeded before message reception started.
+        :raise TimeoutError: Timeout was exceeded during message receiving (before all packets received).
+
+        :return: Record with historic information about received UDS message.
+        """
+        timestamp_now = perf_counter()
+        validate_timeout(start_timeout)
+        validate_timeout(end_timeout)
+        remaining_timeout_ms = None
+        if end_timeout is not None:
+            timestamp_end_timeout: float | None = timestamp_now + end_timeout / 1000.
+        else:
+            timestamp_end_timeout = None
+        if start_timeout is not None:
+            timestamp_start_timeout: float | None = timestamp_now + start_timeout / 1000.
+        else:
+            timestamp_start_timeout = timestamp_end_timeout
+        self.setup_sync()
+        while True:
+            if timestamp_start_timeout is not None:
+                timestamp_now = perf_counter()
+                if timestamp_start_timeout <= timestamp_now:
+                    raise MessageTransmissionNotStartedError("Timeout was reached before a UDS message was received.")
+                remaining_timeout_ms = (timestamp_start_timeout - timestamp_now) * 1000.
+            # receive packet
+            try:
+                received_packet = self.receive_packet(timeout=remaining_timeout_ms)
+            except TimeoutError as exception:
+                raise MessageTransmissionNotStartedError("Timeout was reached before a UDS message was received.") \
+                    from exception
+            # handle received packet
+            if CanPacketType.is_initial_packet_type(received_packet.packet_type):
+                message_record = self._message_receive_start(initial_packet=received_packet,
+                                                             timestamp_end=timestamp_end_timeout)
+                self._update_n_cr_measured(message_record)
+                return message_record
+            warn(message="A CAN packet that does not start UDS message transmission was received.",
+                 category=UnexpectedPacketReceptionWarning)
+
+    async def async_receive_message(self,
+                                    start_timeout: TimeMillisecondsAlias | None = None,
+                                    end_timeout: TimeMillisecondsAlias | None = None,
+                                    loop: AbstractEventLoop | None = None) -> UdsMessageRecord:
+        """
+        Receive asynchronously UDS message over CAN.
+
+        :param start_timeout: Maximal time (in milliseconds) to wait for the start of a message transmission.
+            Leave None to wait forever.
+        :param end_timeout: Maximal time (in milliseconds) to wait for a message transmission to finish.
+            Leave None to wait forever.
+        :param loop: An asyncio event loop to use for scheduling this task.
+
+        :raise MessageTransmissionNotStartedError: Timeout was exceeded before message reception started.
+        :raise TimeoutError: Timeout was exceeded during message receiving (before all packets received).
+
+        :return: Record with historic information about received UDS message.
+        """
+        timestamp_now = perf_counter()
+        validate_timeout(start_timeout)
+        validate_timeout(end_timeout)
+        remaining_timeout_ms = None
+        if end_timeout is not None:
+            timestamp_end_timeout: float | None = timestamp_now + end_timeout / 1000.
+        else:
+            timestamp_end_timeout = None
+        if start_timeout is not None:
+            timestamp_start_timeout: float | None = timestamp_now + start_timeout / 1000.
+        else:
+            timestamp_start_timeout = timestamp_end_timeout
+        loop = get_running_loop() if loop is None else loop
+        self.setup_async(loop=loop)
+        while True:
+            # calculate remaining timeout
+            if timestamp_start_timeout is not None:
+                timestamp_now = perf_counter()
+                if timestamp_start_timeout <= timestamp_now:
+                    raise MessageTransmissionNotStartedError("Timeout was reached before a UDS message was received.")
+                remaining_timeout_ms = (timestamp_start_timeout - timestamp_now) * 1000.
+            # receive packet
+            try:
+                received_packet = await self.async_receive_packet(timeout=remaining_timeout_ms, loop=loop)
+            except (TimeoutError, AsyncioTimeoutError) as exception:
+                raise MessageTransmissionNotStartedError("Timeout was reached before a UDS message was received.") \
+                    from exception
+            # handle received packet
+            if CanPacketType.is_initial_packet_type(received_packet.packet_type):
+                message_record = await self._async_message_receive_start(initial_packet=received_packet,
+                                                                         timestamp_end=timestamp_end_timeout,
+                                                                         loop=loop)
+                self._update_n_cr_measured(message_record)
+                return message_record
+            warn(message="A CAN packet that does not start UDS message transmission was received.",
+                 category=UnexpectedPacketReceptionWarning)

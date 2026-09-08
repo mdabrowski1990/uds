@@ -1,7 +1,6 @@
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, Mock, call, patch
 
 import pytest
-from mock import Mock, call, patch
 
 from uds.can import CanFlowStatus
 from uds.can.addressing import CanAddressingInformation
@@ -408,8 +407,7 @@ class TestCanSegmenter:
         self.mock_get_single_frame_min_dlc.assert_called_once_with(
             addressing_format=self.mock_can_segmenter.addressing_format,
             payload_length=message_payload_size)
-        mock_is_too_long.assert_called_with(self.mock_get_single_frame_min_dlc.return_value, 
-                                            self.mock_can_segmenter.dlc)
+        mock_is_too_long.assert_called_with(self.mock_can_segmenter.dlc)
 
     @pytest.mark.parametrize("message_payload_size, dlc", [
         (75, 8),

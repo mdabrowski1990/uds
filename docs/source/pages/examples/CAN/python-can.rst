@@ -96,6 +96,97 @@ Packet handling
   :code: python
 
 
+Vector interface
+----------------
+Examples demonstrating the use of `Vector CAN interfaces`_ as hardware devices for sending and receiving CAN messages.
+
+.. seealso:: https://github.com/mdabrowski1990/uds/tree/main/examples/can/python-can/vector
+
+
+Synchronous implementation
+``````````````````````````
+
+Message handling
+''''''''''''''''
+
+- Send UDS message:
+
+.. include:: ../../../../../examples/can/python-can/vector/send_message.py
+  :code: python
+
+- Receive UDS message:
+
+.. include:: ../../../../../examples/can/python-can/vector/receive_message.py
+  :code: python
+
+- Send UDS message on one interface, receive on the other:
+
+.. include:: ../../../../../examples/can/python-can/vector/send_and_receive_message.py
+  :code: python
+
+
+Packet handling
+'''''''''''''''
+
+- Send CAN packets:
+
+.. include:: ../../../../../examples/can/python-can/vector/send_packet.py
+  :code: python
+
+- Receive CAN packets:
+
+.. include:: ../../../../../examples/can/python-can/vector/receive_packet.py
+  :code: python
+
+- Send CAN packets on one interface, receive on the other:
+
+.. include:: ../../../../../examples/can/python-can/vector/send_and_receive_packet.py
+  :code: python
+
+
+Asynchronous implementation
+```````````````````````````
+
+Message handling
+''''''''''''''''
+
+- Send UDS message:
+
+.. include:: ../../../../../examples/can/python-can/vector/send_message_asyncio.py
+  :code: python
+
+- Receive UDS message:
+
+.. include:: ../../../../../examples/can/python-can/vector/receive_message_asyncio.py
+  :code: python
+
+- Send UDS message on one interface, receive on the other:
+
+.. include:: ../../../../../examples/can/python-can/vector/send_and_receive_message_asyncio.py
+  :code: python
+
+
+Packet handling
+'''''''''''''''
+
+- Send CAN packets:
+
+.. include:: ../../../../../examples/can/python-can/vector/send_packet_asyncio.py
+  :code: python
+
+- Receive CAN packets:
+
+.. include:: ../../../../../examples/can/python-can/vector/receive_packet_asyncio.py
+  :code: python
+
+- Send CAN packets on one interface, receive on the other:
+
+.. include:: ../../../../../examples/can/python-can/vector/send_and_receive_packet_asyncio.py
+  :code: python
+
+
 .. _python-can: https://github.com/hardbyte/python-can
 
-.. _Kvaser CAN interfaces: https://www.kvaser.com/products-services/our-products/#/?descriptors=pc_int
+.. _Kvaser CAN interfaces: https://kvaser.com/products/?descriptor=pc_productcategory&pc_productcategory=PC+interfaces
+
+.. _Vector CAN interfaces: https://www.vector.com/int/en/products/products-a-z/hardware/network-interfaces/

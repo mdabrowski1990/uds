@@ -1,5 +1,6 @@
+from unittest.mock import Mock, patch
+
 import pytest
-from mock import Mock, patch
 
 from uds.addressing import AbstractAddressingInformation, AddressingType
 from uds.can.addressing.abstract_addressing_information import AbstractCanAddressingInformation

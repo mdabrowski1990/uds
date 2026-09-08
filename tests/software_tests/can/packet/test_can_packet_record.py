@@ -1,7 +1,7 @@
-from time import perf_counter
+from time import perf_counter, time
+from unittest.mock import Mock, patch
 
 import pytest
-from mock import Mock, patch
 
 from uds.can import CanFlowStatus, CanPacketType
 from uds.can.packet.can_packet_record import (
@@ -44,26 +44,28 @@ class TestCanPacketRecord:
     # __init__
 
     @pytest.mark.parametrize("frame, direction, addressing_type, addressing_format, "
-                             "transmission_time, transmission_timestamp", [
-        (Mock(), Mock(), Mock(), Mock(), Mock(), Mock()),
+                             "transmission_time, transmission_timestamp, transmission_native_timestamp", [
+        (Mock(), Mock(), Mock(), Mock(), Mock(), Mock(), Mock()),
         (Mock(spec=PythonCanFrame), TransmissionDirection.RECEIVED, AddressingType.FUNCTIONAL,
-         CanAddressingFormat.NORMAL_ADDRESSING, Mock(spec=datetime), Mock(spec=float)),
+         CanAddressingFormat.NORMAL_ADDRESSING, Mock(spec=datetime), Mock(spec=float), Mock(spec=float)),
     ])
     def test_init(self, frame, direction, addressing_type, addressing_format,
-                  transmission_time, transmission_timestamp):
+                  transmission_time, transmission_timestamp, transmission_native_timestamp):
         assert CanPacketRecord.__init__(self=self.mock_can_packet_record,
                                         frame=frame,
                                         addressing_format=addressing_format,
                                         addressing_type=addressing_type,
                                         direction=direction,
                                         transmission_time=transmission_time,
-                                        transmission_timestamp=transmission_timestamp) is None
+                                        transmission_timestamp=transmission_timestamp,
+                                        transmission_native_timestamp=transmission_native_timestamp) is None
         assert self.mock_can_packet_record.addressing_format == addressing_format
         assert self.mock_can_packet_record.addressing_type == addressing_type
         self.mock_abstract_packet_record_init.assert_called_once_with(frame=frame,
                                                                       direction=direction,
                                                                       transmission_time=transmission_time,
-                                                                      transmission_timestamp=transmission_timestamp)
+                                                                      transmission_timestamp=transmission_timestamp,
+                                                                      transmission_native_timestamp=transmission_native_timestamp)
 
     # __str__
 
@@ -84,6 +86,7 @@ class TestCanPacketRecord:
         assert "can_id=" in output_str
         assert "direction=" in output_str
         assert "transmission_time=" in output_str
+        assert "transmission_native_timestamp=" in output_str
 
     # can_id
 
@@ -183,7 +186,8 @@ class TestCanPacketRecordIntegration:
           "addressing_type": AddressingType.PHYSICAL,
           "addressing_format": CanAddressingFormat.NORMAL_ADDRESSING,
           "transmission_time": datetime.now(),
-          "transmission_timestamp": perf_counter()},
+          "transmission_timestamp": perf_counter(),
+          "transmission_native_timestamp": 123.456},
          {"raw_frame_data": b"\x01\x3E",
           "addressing_type": AddressingType.PHYSICAL,
           "addressing_format": CanAddressingFormat.NORMAL_ADDRESSING,
@@ -209,7 +213,8 @@ class TestCanPacketRecordIntegration:
           "addressing_type": AddressingType.FUNCTIONAL,
           "addressing_format": CanAddressingFormat.MIXED_29BIT_ADDRESSING,
           "transmission_time": datetime.now(),
-          "transmission_timestamp": perf_counter()},
+          "transmission_timestamp": perf_counter(),
+          "transmission_native_timestamp": time()},
          {"raw_frame_data": bytes([0x37, 0x30, 0x08, 0xF1] + ([0x99] * 60)),
           "addressing_type": AddressingType.FUNCTIONAL,
           "addressing_format": CanAddressingFormat.MIXED_29BIT_ADDRESSING,
@@ -234,6 +239,7 @@ class TestCanPacketRecordIntegration:
         assert packet_record.frame == kwargs["frame"]
         assert packet_record.transmission_time == kwargs["transmission_time"]
         assert packet_record.transmission_timestamp == kwargs["transmission_timestamp"]
+        assert packet_record.transmission_native_timestamp == kwargs["transmission_native_timestamp"]
 
     @pytest.mark.parametrize("kwargs", [
         {"frame": PythonCanFrame(arbitration_id=0x68A,
@@ -244,7 +250,8 @@ class TestCanPacketRecordIntegration:
          "addressing_type": AddressingType.PHYSICAL,
          "addressing_format": CanAddressingFormat.NORMAL_ADDRESSING,
          "transmission_time": datetime.now(),
-         "transmission_timestamp": perf_counter()},
+         "transmission_timestamp": perf_counter(),
+         "transmission_native_timestamp": time()},
         {"frame": PythonCanFrame(arbitration_id=0x12345678,
                                  is_extended_id=True,
                                  dlc=3,
@@ -253,7 +260,8 @@ class TestCanPacketRecordIntegration:
          "addressing_type": AddressingType.FUNCTIONAL,
          "addressing_format": CanAddressingFormat.MIXED_29BIT_ADDRESSING,
          "transmission_time": datetime.now(),
-         "transmission_timestamp": perf_counter()},
+         "transmission_timestamp": perf_counter(),
+         "transmission_native_timestamp": time()},
     ])
     def test_init__value_error(self, kwargs):
         with pytest.raises(ValueError):

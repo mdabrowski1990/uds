@@ -1,5 +1,6 @@
+from unittest.mock import MagicMock, Mock, patch
+
 import pytest
-from mock import MagicMock, Mock, patch
 
 from uds.addressing.abstract_addressing_information import (
     AbstractAddressingInformation,

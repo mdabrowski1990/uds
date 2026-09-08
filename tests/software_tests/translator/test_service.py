@@ -1,7 +1,7 @@
 from copy import deepcopy
+from unittest.mock import MagicMock, Mock, call, patch
 
 import pytest
-from mock import MagicMock, Mock, call, patch
 
 from uds.translator.service import (
     NRC,

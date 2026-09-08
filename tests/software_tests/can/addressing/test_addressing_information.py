@@ -1,5 +1,6 @@
+from unittest.mock import MagicMock, Mock, patch
+
 import pytest
-from mock import MagicMock, Mock, patch
 
 from uds.can.addressing.addressing_information import (
     AddressingType,

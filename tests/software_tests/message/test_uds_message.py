@@ -1,5 +1,6 @@
+from unittest.mock import Mock, patch
+
 import pytest
-from mock import Mock, patch
 
 from uds.message.uds_message import (
     AbstractPacketRecord,
@@ -264,7 +265,6 @@ class TestUdsMessageRecord:
 
     @pytest.mark.parametrize("packets_records", [
         (Mock(spec=AbstractPacketRecord),),
-        (Mock(spec=AbstractPacketRecord), Mock(spec=AbstractPacketRecord)),
         (Mock(spec=AbstractPacketRecord), Mock(spec=AbstractPacketRecord), Mock(spec=AbstractPacketRecord),),
     ])
     def test_transmission_start_time__get(self, packets_records):
@@ -272,23 +272,10 @@ class TestUdsMessageRecord:
         assert UdsMessageRecord.transmission_start_time.fget(self.mock_uds_message_record) \
                == packets_records[0].transmission_time
 
-    # transmission_start_timestamp
-
-    @pytest.mark.parametrize("packets_records", [
-        (Mock(spec=AbstractPacketRecord),),
-        (Mock(spec=AbstractPacketRecord), Mock(spec=AbstractPacketRecord)),
-        (Mock(spec=AbstractPacketRecord), Mock(spec=AbstractPacketRecord), Mock(spec=AbstractPacketRecord),),
-    ])
-    def test_transmission_start_timestamp__get(self, packets_records):
-        self.mock_uds_message_record.packets_records = packets_records
-        assert UdsMessageRecord.transmission_start_timestamp.fget(self.mock_uds_message_record) \
-               == packets_records[0].transmission_timestamp
-
     # transmission_end_time
 
     @pytest.mark.parametrize("packets_records", [
         (Mock(spec=AbstractPacketRecord),),
-        (Mock(spec=AbstractPacketRecord), Mock(spec=AbstractPacketRecord)),
         (Mock(spec=AbstractPacketRecord), Mock(spec=AbstractPacketRecord), Mock(spec=AbstractPacketRecord),),
     ])
     def test_transmission_end_time__get(self, packets_records):
@@ -296,14 +283,46 @@ class TestUdsMessageRecord:
         assert UdsMessageRecord.transmission_end_time.fget(self.mock_uds_message_record) \
                == packets_records[-1].transmission_time
 
+    # transmission_start_timestamp
+
+    @pytest.mark.parametrize("packets_records", [
+        (Mock(spec=AbstractPacketRecord),),
+        (Mock(spec=AbstractPacketRecord), Mock(spec=AbstractPacketRecord), Mock(spec=AbstractPacketRecord),),
+    ])
+    def test_transmission_start_timestamp__get(self, packets_records):
+        self.mock_uds_message_record.packets_records = packets_records
+        assert UdsMessageRecord.transmission_start_timestamp.fget(self.mock_uds_message_record) \
+               == packets_records[0].transmission_timestamp
+
     # transmission_end_timestamp
 
     @pytest.mark.parametrize("packets_records", [
         (Mock(spec=AbstractPacketRecord),),
-        (Mock(spec=AbstractPacketRecord), Mock(spec=AbstractPacketRecord)),
         (Mock(spec=AbstractPacketRecord), Mock(spec=AbstractPacketRecord), Mock(spec=AbstractPacketRecord),),
     ])
     def test_transmission_end_timestamp__get(self, packets_records):
         self.mock_uds_message_record.packets_records = packets_records
         assert UdsMessageRecord.transmission_end_timestamp.fget(self.mock_uds_message_record) \
                == packets_records[-1].transmission_timestamp
+    
+    # transmission_start_native_timestamp
+
+    @pytest.mark.parametrize("packets_records", [
+        (Mock(spec=AbstractPacketRecord),),
+        (Mock(spec=AbstractPacketRecord), Mock(spec=AbstractPacketRecord), Mock(spec=AbstractPacketRecord),),
+    ])
+    def test_transmission_start_native_timestamp__get(self, packets_records):
+        self.mock_uds_message_record.packets_records = packets_records
+        assert UdsMessageRecord.transmission_start_native_timestamp.fget(self.mock_uds_message_record) \
+               == packets_records[0].transmission_native_timestamp
+
+    # transmission_end_native_timestamp
+
+    @pytest.mark.parametrize("packets_records", [
+        (Mock(spec=AbstractPacketRecord),),
+        (Mock(spec=AbstractPacketRecord), Mock(spec=AbstractPacketRecord), Mock(spec=AbstractPacketRecord),),
+    ])
+    def test_transmission_end_native_timestamp__get(self, packets_records):
+        self.mock_uds_message_record.packets_records = packets_records
+        assert UdsMessageRecord.transmission_end_native_timestamp.fget(self.mock_uds_message_record) \
+               == packets_records[-1].transmission_native_timestamp

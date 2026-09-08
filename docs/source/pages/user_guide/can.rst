@@ -463,6 +463,7 @@ Attributes:
 - :attr:`~uds.packet.abstract_packet.AbstractPacketRecord.direction`
 - :attr:`~uds.packet.abstract_packet.AbstractPacketRecord.transmission_time`
 - :attr:`~uds.packet.abstract_packet.AbstractPacketRecord.transmission_timestamp`
+- :attr:`~uds.packet.abstract_packet.AbstractPacketRecord.transmission_native_timestamp`
 
 Methods:
 
@@ -839,6 +840,11 @@ Attributes:
 - :attr:`~uds.can.transport_interface.common.AbstractCanTransportInterface.segmenter`
 - :attr:`~uds.can.transport_interface.common.AbstractCanTransportInterface.can_version`
 - :attr:`~uds.can.transport_interface.common.AbstractCanTransportInterface.bitrate_switch`
+- :attr:`~uds.can.transport_interface.common.AbstractCanTransportInterface.dlc`
+- :attr:`~uds.can.transport_interface.common.AbstractCanTransportInterface.min_dlc`
+- :attr:`~uds.can.transport_interface.common.AbstractCanTransportInterface.use_data_optimization`
+- :attr:`~uds.can.transport_interface.common.AbstractCanTransportInterface.filler_byte`
+- :attr:`~uds.can.transport_interface.common.AbstractCanTransportInterface.flow_control_parameters_generator`
 - :attr:`~uds.can.transport_interface.common.AbstractCanTransportInterface.n_as_timeout`
 - :attr:`~uds.can.transport_interface.common.AbstractCanTransportInterface.n_as_measured`
 - :attr:`~uds.can.transport_interface.common.AbstractCanTransportInterface.n_ar_timeout`
@@ -851,20 +857,40 @@ Attributes:
 - :attr:`~uds.can.transport_interface.common.AbstractCanTransportInterface.n_cs_max`
 - :attr:`~uds.can.transport_interface.common.AbstractCanTransportInterface.n_cr_timeout`
 - :attr:`~uds.can.transport_interface.common.AbstractCanTransportInterface.n_cr_measured`
-- :attr:`~uds.can.transport_interface.common.AbstractCanTransportInterface.dlc`
-- :attr:`~uds.can.transport_interface.common.AbstractCanTransportInterface.min_dlc`
-- :attr:`~uds.can.transport_interface.common.AbstractCanTransportInterface.use_data_optimization`
-- :attr:`~uds.can.transport_interface.common.AbstractCanTransportInterface.filler_byte`
-- :attr:`~uds.can.transport_interface.common.AbstractCanTransportInterface.flow_control_parameters_generator`
 
 Methods:
 
+- :meth:`~uds.can.transport_interface.common.AbstractCanTransportInterface.__init__`
 - :meth:`~uds.can.transport_interface.common.AbstractCanTransportInterface._update_n_ar_measured`
 - :meth:`~uds.can.transport_interface.common.AbstractCanTransportInterface._update_n_as_measured`
 - :meth:`~uds.can.transport_interface.common.AbstractCanTransportInterface._update_n_bs_measured`
 - :meth:`~uds.can.transport_interface.common.AbstractCanTransportInterface._update_n_cr_measured`
 - :meth:`~uds.can.transport_interface.common.AbstractCanTransportInterface.clear_measurements`
-- :meth:`~uds.can.transport_interface.common.AbstractCanTransportInterface.__init__`
+- :meth:`~uds.can.transport_interface.common.AbstractCanTransportInterface._send_cf_packets_block`
+- :meth:`~uds.can.transport_interface.common.AbstractCanTransportInterface._async_send_cf_packets_block`
+- :meth:`~uds.can.transport_interface.common.AbstractCanTransportInterface._receive_cf_packets_block`
+- :meth:`~uds.can.transport_interface.common.AbstractCanTransportInterface._async_receive_cf_packets_block`
+- :meth:`~uds.can.transport_interface.common.AbstractCanTransportInterface._receive_consecutive_frames`
+- :meth:`~uds.can.transport_interface.common.AbstractCanTransportInterface._async_receive_consecutive_frames`
+- :meth:`~uds.can.transport_interface.common.AbstractCanTransportInterface._message_receive_start`
+- :meth:`~uds.can.transport_interface.common.AbstractCanTransportInterface._async_message_receive_start`
+- :meth:`~uds.can.transport_interface.common.AbstractCanTransportInterface.send_message`
+- :meth:`~uds.can.transport_interface.common.AbstractCanTransportInterface.async_send_message`
+- :meth:`~uds.can.transport_interface.common.AbstractCanTransportInterface.receive_message`
+- :meth:`~uds.can.transport_interface.common.AbstractCanTransportInterface.async_receive_message`
+
+Abstract Methods:
+
+- :meth:`~uds.can.transport_interface.common.AbstractCanTransportInterface._wait_for_flow_control`
+- :meth:`~uds.can.transport_interface.common.AbstractCanTransportInterface._async_wait_for_flow_control`
+- :meth:`~uds.can.transport_interface.common.AbstractCanTransportInterface.clear_received_frame_buffers`
+- :meth:`~uds.can.transport_interface.common.AbstractCanTransportInterface.clear_transmitted_frame_buffers`
+- :meth:`~uds.can.transport_interface.common.AbstractCanTransportInterface.clear_flow_control_frame_buffers`
+- :meth:`~uds.can.transport_interface.common.AbstractCanTransportInterface.send_packet`
+- :meth:`~uds.can.transport_interface.common.AbstractCanTransportInterface.async_send_packet`
+- :meth:`~uds.can.transport_interface.common.AbstractCanTransportInterface.receive_packet`
+- :meth:`~uds.can.transport_interface.common.AbstractCanTransportInterface.async_receive_packet`
+
 
 .. warning:: **A user shall not use**
   :class:`~uds.can.transport_interface.common.AbstractCanTransportInterface`

@@ -21,6 +21,7 @@ class PythonCanKvaserConfig(AbstractClientTests):
     transport_interface_2: PythonCanTransportInterface
 
     TIMESTAMP_TOLERANCE: TimeMillisecondsAlias = 2  # python-can has low accuracy
+    SHUTDOWN_TIME: TimeMillisecondsAlias = 300  # python-can has issues with tasks closing (Notifier feature)
 
     def _define_transport_interfaces(self):
         """Configure Transport Interfaces."""
@@ -28,10 +29,12 @@ class PythonCanKvaserConfig(AbstractClientTests):
         addressing_information = make_can_addressing_information(can_addressing_format)
         self.can_interface_1 = Bus(interface="kvaser",
                                    channel=0,
-                                   fd=True)
+                                   fd=True,
+                                   receive_own_messages=True)
         self.can_interface_2 = Bus(interface="kvaser",
                                    channel=1,
-                                   fd=True)
+                                   fd=True,
+                                   receive_own_messages=True)
         transport_interface_1 = PythonCanTransportInterface(
             network_manager=self.can_interface_1,
             addressing_information=addressing_information)
@@ -44,10 +47,18 @@ class PythonCanKvaserConfig(AbstractClientTests):
         """Clean up all tasks that were opened during test and close all connections."""
         self.can_interface_1.flush_tx_buffer()
         self.can_interface_2.flush_tx_buffer()
+        self.transport_interface_1.teardown_sync(True)
+        self.transport_interface_1.teardown_async(True)
+        self.transport_interface_2.teardown_sync(True)
+        self.transport_interface_2.teardown_async(True)
         super().teardown_method()
         self.can_interface_1.shutdown()
         self.can_interface_2.shutdown()
-        sleep(0.1)
+        sleep(self.SHUTDOWN_TIME / 1000.)
+        del self.transport_interface_1
+        del self.transport_interface_2
+        del self.can_interface_1
+        del self.can_interface_2
 
     def configure_slow_message_reception(self):
         """Change configuration of Transport Interfaces to reach timeouts easily."""

@@ -75,6 +75,8 @@ Attributes:
 - :attr:`~uds.message.uds_message.UdsMessageRecord.transmission_end_time`
 - :attr:`~uds.message.uds_message.UdsMessageRecord.transmission_start_timestamp`
 - :attr:`~uds.message.uds_message.UdsMessageRecord.transmission_end_timestamp`
+- :attr:`~uds.message.uds_message.UdsMessageRecord.transmission_start_native_timestamp`
+- :attr:`~uds.message.uds_message.UdsMessageRecord.transmission_end_native_timestamp`
 
 Methods:
 
