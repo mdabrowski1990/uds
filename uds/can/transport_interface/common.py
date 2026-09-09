@@ -707,6 +707,11 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
         :param timestamp_end: The final timestamp till when the reception must be completed.
         :param loop: An asyncio event loop used for observing messages.
 
+        :raise TimeoutError: Timeout was reached. Either:
+            - Consecutive Frame did not arrive before reaching N_Cr timeout
+            - Diagnostic message reception
+        :raise CanUnexpectedSequenceNumber: Consecutive Frame with unexpected Sequence Number value was received.
+
         :return: Either:
             - Record of UDS message if reception was interrupted by a new UDS message transmission.
             - Tuple with records of received Consecutive Frames.
