@@ -684,7 +684,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
                     received_payload_size += len(received_packet.payload)  # type: ignore
                     sequence_number = (received_packet.sequence_number + 1) & 0xF
                 else:
-                    raise CanUnexpectedSequenceNumber(f"Consecutive Frame with Sequence Number out of range received. "
+                    raise CanUnexpectedSequenceNumber(f"Consecutive Frame with Sequence Number out of order received. "
                                                       f"Expected: 0x{sequence_number:X}. "
                                                       f"Received: 0x{received_packet.sequence_number:X}.")
         return tuple(received_cf)
@@ -746,7 +746,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
                     received_payload_size += len(received_packet.payload)  # type: ignore
                     sequence_number = (received_packet.sequence_number + 1) & 0xF
                 else:
-                    raise CanUnexpectedSequenceNumber(f"Consecutive Frame with Sequence Number out of range received. "
+                    raise CanUnexpectedSequenceNumber(f"Consecutive Frame with Sequence Number out of order received. "
                                                       f"Expected: 0x{sequence_number:X}. "
                                                       f"Received: 0x{received_packet.sequence_number:X}.")
         return tuple(received_cf)
