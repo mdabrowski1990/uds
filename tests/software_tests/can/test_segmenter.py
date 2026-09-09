@@ -13,8 +13,8 @@ from uds.can.segmenter import (
     CanPacket,
     CanPacketRecord,
     CanPacketType,
+    CanSegmentationError,
     CanSegmenter,
-    SegmentationError,
     UdsMessage,
 )
 
@@ -224,7 +224,7 @@ class TestCanSegmenter:
     def test_physical_segmentation__too_long(self, mock_len, message_payload_size):
         mock_len.return_value = message_payload_size
         mock_message = Mock(spec=UdsMessage, addressing_type=AddressingType.PHYSICAL)
-        with pytest.raises(SegmentationError):
+        with pytest.raises(CanSegmentationError):
             CanSegmenter._CanSegmenter__physical_segmentation(self=self.mock_can_segmenter, message=mock_message)
         mock_len.assert_called_once_with(mock_message.payload)
 
@@ -401,7 +401,7 @@ class TestCanSegmenter:
         mock_is_too_long = Mock(return_value=True)
         self.mock_get_single_frame_min_dlc.return_value = MagicMock(__gt__=mock_is_too_long)
         mock_message = Mock(spec=UdsMessage, addressing_type=AddressingType.FUNCTIONAL)
-        with pytest.raises(SegmentationError):
+        with pytest.raises(CanSegmentationError):
             CanSegmenter._CanSegmenter__functional_segmentation(self=self.mock_can_segmenter, message=mock_message)
         mock_len.assert_called_once_with(mock_message.payload)
         self.mock_get_single_frame_min_dlc.assert_called_once_with(
@@ -419,7 +419,7 @@ class TestCanSegmenter:
         self.mock_get_single_frame_min_dlc.side_effect = ValueError()
         self.mock_can_segmenter.dlc = dlc
         mock_message = Mock(spec=UdsMessage, addressing_type=AddressingType.FUNCTIONAL)
-        with pytest.raises(SegmentationError):
+        with pytest.raises(CanSegmentationError):
             CanSegmenter._CanSegmenter__functional_segmentation(self=self.mock_can_segmenter, message=mock_message)
         mock_len.assert_called_once_with(mock_message.payload)
         self.mock_get_single_frame_min_dlc.assert_called_once_with(
@@ -658,7 +658,7 @@ class TestCanSegmenter:
     ])
     def test_desegmentation__segmentation_error(self, packets):
         self.mock_can_segmenter.is_desegmented_message.return_value = False
-        with pytest.raises(SegmentationError):
+        with pytest.raises(CanSegmentationError):
             CanSegmenter.desegmentation(self=self.mock_can_segmenter, packets=packets)
         self.mock_can_segmenter.is_desegmented_message.assert_called_once_with(packets)
 
@@ -734,7 +734,7 @@ class TestCanSegmenter:
         self.mock_can_segmenter.is_desegmented_message.return_value = True
         mock_isinstance.side_effect = lambda value, type_: (type_ == self.mock_can_packet
                                                             and isinstance(value, CanPacket))
-        with pytest.raises(SegmentationError):
+        with pytest.raises(CanSegmentationError):
             CanSegmenter.desegmentation(self=self.mock_can_segmenter, packets=packets)
         self.mock_can_segmenter.is_desegmented_message.assert_called_once_with(packets)
 

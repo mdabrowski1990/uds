@@ -1,6 +1,7 @@
 """Implementation of handlers for :ref:`Consecutive Frame <knowledge-base-can-consecutive-frame>` CAN packet."""
 
 __all__ = ["CONSECUTIVE_FRAME_N_PCI", "SN_BYTES_USED",
+           "CanUnexpectedSequenceNumber",
            "is_consecutive_frame", "validate_consecutive_frame_data",
            "create_consecutive_frame_data", "generate_consecutive_frame_data", "extract_consecutive_frame_payload",
            "get_consecutive_frame_min_dlc", "get_consecutive_frame_max_payload_size",
@@ -16,6 +17,10 @@ CONSECUTIVE_FRAME_N_PCI: int = 0x2
 
 SN_BYTES_USED: int = 1
 """Number of CAN Frame data bytes used to carry CAN Packet Type and Sequence Number (SN) in a Consecutive Frame."""
+
+
+class CanUnexpectedSequenceNumber(RuntimeError):
+    """Unexpected Sequence Number value in CAN Consecutive Frame received."""
 
 
 def is_consecutive_frame(addressing_format: CanAddressingFormat, raw_frame_data: RawBytesAlias) -> bool:

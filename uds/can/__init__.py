@@ -31,5 +31,5 @@ from .packet import (
     CanSTminTranslator,
     DefaultFlowControlParametersGenerator,
 )
-from .segmenter import CanSegmenter
+from .segmenter import CanSegmentationError, CanSegmenter
 from .transport_interface import PythonCanTransportInterface

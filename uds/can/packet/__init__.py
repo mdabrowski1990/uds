@@ -7,6 +7,7 @@ from .can_packet_type import CanPacketType
 from .consecutive_frame import (
     CONSECUTIVE_FRAME_N_PCI,
     SN_BYTES_USED,
+    CanUnexpectedSequenceNumber,
     create_consecutive_frame_data,
     encode_sequence_number,
     extract_consecutive_frame_payload,
@@ -42,6 +43,7 @@ from .flow_control import (
     ST_MIN_BYTE_POSITION,
     AbstractFlowControlParametersGenerator,
     CanFlowStatus,
+    CanOverflowFlowStatus,
     CanSTminTranslator,
     DefaultFlowControlParametersGenerator,
     FlowControlParametersAlias,
