@@ -11,8 +11,10 @@ from uds.can.transport_interface.common import (
     AbstractEventLoop,
     AbstractFlowControlParametersGenerator,
     CanFlowStatus,
+    CanOverflowFlowStatus,
     CanPacket,
     CanPacketType,
+    CanUnexpectedSequenceNumber,
     CanVersion,
     MessageTransmissionNotStartedError,
     TransmissionDirection,
@@ -782,7 +784,7 @@ class TestAbstractCanTransportInterface:
         self.mock_sleep.assert_not_called()
         self.mock_async_sleep.assert_called()
 
-# _receive_cf_packets_block
+    # _receive_cf_packets_block
 
     @pytest.mark.parametrize("sequence_number, block_size, remaining_data_length, timestamp_end", [
         (Mock(), Mock(), 1, MagicMock(__sub__=lambda this, other: this,
@@ -866,6 +868,35 @@ class TestAbstractCanTransportInterface:
             initial_packet=self.mock_can_transport_interface.receive_packet.return_value,
             timestamp_end=timestamp_end)
         self.mock_warn.assert_called_once()
+
+    @pytest.mark.parametrize("sequence_number, packet_sequence_numbers, block_size, remaining_data_length, timestamp_end", [
+        (1, [0], 1, 1, MagicMock(__sub__=lambda this, other: this,
+                            __mul__=lambda this, other: this,
+                            __le__=Mock(return_value=False))),
+        (13, [13, 14, 15, 1], 4, 987, None),
+    ])
+    def test_receive_cf_packets_block__incorrect_sn(self, sequence_number, packet_sequence_numbers, block_size,
+                                                    remaining_data_length, timestamp_end):
+        self.mock_perf_counter.return_value = self.mock_can_transport_interface.n_cr_timeout = MagicMock(
+            __sub__=lambda this, other: this,
+            __add__=lambda this, other: this,
+            __mul__=lambda this, other: this,
+            __le__=Mock(return_value=False))
+        self.mock_can_packet_type_is_initial_packet_type.return_value = False
+        packet_sequence = [
+            Mock(spec=CanPacketRecord,
+                 packet_type=CanPacketType.CONSECUTIVE_FRAME,
+                 sequence_number=packet_sequence_numbers[i],
+                 payload=[])
+            for i in range(block_size)
+        ]
+        self.mock_can_transport_interface.receive_packet.side_effect = packet_sequence[:]
+        with pytest.raises(CanUnexpectedSequenceNumber):
+            AbstractCanTransportInterface._receive_cf_packets_block(self.mock_can_transport_interface,
+                                                                    sequence_number=sequence_number,
+                                                                    block_size=block_size,
+                                                                    remaining_data_length=remaining_data_length,
+                                                                    timestamp_end=timestamp_end)
 
     @pytest.mark.parametrize("sequence_number, block_size, remaining_data_length, timestamp_end", [
         (1, 1, 1, MagicMock(__sub__=lambda this, other: this,
@@ -1036,6 +1067,38 @@ class TestAbstractCanTransportInterface:
             loop=mock_loop)
         self.mock_warn.assert_called_once()
 
+    @pytest.mark.parametrize("sequence_number, packet_sequence_numbers, block_size, remaining_data_length, timestamp_end", [
+            (1, [0], 1, 1, MagicMock(__sub__=lambda this, other: this,
+                                     __mul__=lambda this, other: this,
+                                     __le__=Mock(return_value=False))),
+            (13, [13, 14, 15, 1], 4, 987, None),
+        ])
+    @pytest.mark.asyncio
+    async def test_async_receive_cf_packets_block__incorrect_sn(self, sequence_number, packet_sequence_numbers,
+                                                                block_size, remaining_data_length, timestamp_end):
+        mock_loop = Mock()
+        self.mock_perf_counter.return_value = self.mock_can_transport_interface.n_cr_timeout = MagicMock(
+            __sub__=lambda this, other: this,
+            __add__=lambda this, other: this,
+            __mul__=lambda this, other: this,
+            __le__=Mock(return_value=False))
+        self.mock_can_packet_type_is_initial_packet_type.return_value = False
+        packet_sequence = [
+            Mock(spec=CanPacketRecord,
+                 packet_type=CanPacketType.CONSECUTIVE_FRAME,
+                 sequence_number=packet_sequence_numbers[i],
+                 payload=[])
+            for i in range(block_size)
+        ]
+        self.mock_can_transport_interface.async_receive_packet.side_effect = packet_sequence[:]
+        with pytest.raises(CanUnexpectedSequenceNumber):
+            await AbstractCanTransportInterface._async_receive_cf_packets_block(self.mock_can_transport_interface,
+                                                                                sequence_number=sequence_number,
+                                                                                block_size=block_size,
+                                                                                remaining_data_length=remaining_data_length,
+                                                                                timestamp_end=timestamp_end,
+                                                                                loop=mock_loop)
+
     @pytest.mark.parametrize("sequence_number, block_size, remaining_data_length, timestamp_end", [
         (1, 1, 1, MagicMock(__sub__=lambda this, other: this,
                             __mul__=lambda this, other: this,
@@ -1167,7 +1230,7 @@ class TestAbstractCanTransportInterface:
         self.mock_can_transport_interface.flow_control_parameters_generator = [(CanFlowStatus.Overflow, None, None)]
         self.mock_can_transport_interface.n_br = MagicMock(__sub__=lambda this, other: this,
                                                            __gt__=Mock(return_value=False))
-        with pytest.raises(OverflowError):
+        with pytest.raises(CanOverflowFlowStatus):
             AbstractCanTransportInterface._receive_consecutive_frames(self=self.mock_can_transport_interface,
                                                                     first_frame=mock_first_frame,
                                                                     timestamp_end=timestamp_end)
@@ -1328,7 +1391,7 @@ class TestAbstractCanTransportInterface:
         self.mock_can_transport_interface.flow_control_parameters_generator = [(CanFlowStatus.Overflow, None, None)]
         self.mock_can_transport_interface.n_br = MagicMock(__sub__=lambda this, other: this,
                                                            __gt__=Mock(return_value=False))
-        with pytest.raises(OverflowError):
+        with pytest.raises(CanOverflowFlowStatus):
             await AbstractCanTransportInterface._async_receive_consecutive_frames(self=self.mock_can_transport_interface,
                                                                                 first_frame=mock_first_frame,
                                                                                 timestamp_end=timestamp_end,
@@ -1699,7 +1762,7 @@ class TestAbstractCanTransportInterface:
                                                  flow_status=CanFlowStatus.Overflow)
         self.mock_can_transport_interface._wait_for_flow_control.return_value = mock_flow_control_record_overflow
         self.mock_can_transport_interface.n_bs_timeout = MagicMock(__div__=Mock())
-        with pytest.raises(OverflowError):
+        with pytest.raises(CanOverflowFlowStatus):
             AbstractCanTransportInterface.send_message(self.mock_can_transport_interface, message)
         self.mock_can_transport_interface.setup_sync.assert_called_once_with()
         self.mock_can_transport_interface.clear_flow_control_frame_buffers.assert_called_once_with()
@@ -1947,7 +2010,7 @@ class TestAbstractCanTransportInterface:
                                                  packet_type=CanPacketType.FLOW_CONTROL,
                                                  flow_status=CanFlowStatus.Overflow)
         self.mock_can_transport_interface._async_wait_for_flow_control.return_value = mock_flow_control_record_overflow
-        with pytest.raises(OverflowError):
+        with pytest.raises(CanOverflowFlowStatus):
             await AbstractCanTransportInterface.async_send_message(self.mock_can_transport_interface,
                                                                    message=message,
                                                                    loop=mock_loop)

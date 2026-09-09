@@ -29,10 +29,12 @@ from ..frame import CanVersion
 from ..packet import (
     AbstractFlowControlParametersGenerator,
     CanFlowStatus,
+    CanOverflowFlowStatus,
     CanPacket,
     CanPacketRecord,
     CanPacketType,
     CanSTminTranslator,
+    CanUnexpectedSequenceNumber,
     DefaultFlowControlParametersGenerator,
 )
 from ..segmenter import CanSegmenter
@@ -643,6 +645,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
         :raise TimeoutError: Timeout was reached. Either:
             - Consecutive Frame did not arrive before reaching N_Cr timeout
             - Diagnostic message reception
+        :raise CanUnexpectedSequenceNumber: Consecutive Frame with unexpected Sequence Number value was received.
 
         :return: Either:
             - Record of UDS message if reception was interrupted by a new UDS message transmission.
@@ -674,12 +677,16 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
                 return self._message_receive_start(initial_packet=received_packet,
                                                    timestamp_end=timestamp_end)
             # handle following Consecutive Frame
-            if (received_packet.packet_type == CanPacketType.CONSECUTIVE_FRAME
-                    and received_packet.sequence_number == sequence_number):
-                timestamp_start = perf_counter()
-                received_cf.append(received_packet)
-                received_payload_size += len(received_packet.payload)  # type: ignore
-                sequence_number = (received_packet.sequence_number + 1) & 0xF
+            if received_packet.packet_type == CanPacketType.CONSECUTIVE_FRAME:
+                if received_packet.sequence_number == sequence_number:
+                    timestamp_start = perf_counter()
+                    received_cf.append(received_packet)
+                    received_payload_size += len(received_packet.payload)  # type: ignore
+                    sequence_number = (received_packet.sequence_number + 1) & 0xF
+                else:
+                    raise CanUnexpectedSequenceNumber(f"Consecutive Frame with Sequence Number out of range received. "
+                                                      f"Expected: 0x{sequence_number:X}. "
+                                                      f"Received: 0x{received_packet.sequence_number:X}.")
         return tuple(received_cf)
 
     async def _async_receive_cf_packets_block(self,
@@ -732,12 +739,16 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
                                                                timestamp_end=timestamp_end,
                                                                loop=loop)
             # handle following Consecutive Frame
-            if (received_packet.packet_type == CanPacketType.CONSECUTIVE_FRAME
-                    and received_packet.sequence_number == sequence_number):
-                timestamp_start = perf_counter()
-                received_cf.append(received_packet)
-                received_payload_size += len(received_packet.payload)  # type: ignore
-                sequence_number = (received_packet.sequence_number + 1) & 0xF
+            if received_packet.packet_type == CanPacketType.CONSECUTIVE_FRAME:
+                if received_packet.sequence_number == sequence_number:
+                    timestamp_start = perf_counter()
+                    received_cf.append(received_packet)
+                    received_payload_size += len(received_packet.payload)  # type: ignore
+                    sequence_number = (received_packet.sequence_number + 1) & 0xF
+                else:
+                    raise CanUnexpectedSequenceNumber(f"Consecutive Frame with Sequence Number out of range received. "
+                                                      f"Expected: 0x{sequence_number:X}. "
+                                                      f"Received: 0x{received_packet.sequence_number:X}.")
         return tuple(received_cf)
 
     def _receive_consecutive_frames(self,
@@ -749,8 +760,8 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
         :param first_frame: :ref:`First Frame <knowledge-base-can-first-frame>` that was received.
         :param timestamp_end: The final timestamp till when the reception must be completed.
 
-        :raise OverflowError: Flow Control packet with :ref:`Flow Status <knowledge-base-can-flow-status>` equal to
-            OVERFLOW was sent.
+        :raise CanOverflowFlowStatus: Flow Control packet with
+            :ref:`Flow Status <knowledge-base-can-flow-status>` equal to OVERFLOW was sent.
 
         :return: Record of UDS message that was formed provided First Frame and received Consecutive Frames.
         """
@@ -786,7 +797,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
                                                                st_min=st_min)
             packets_records.append(self.send_packet(fc_packet))
             if flow_status == CanFlowStatus.Overflow:
-                raise OverflowError("Flow Control with Flow Status `OVERFLOW` was transmitted.")
+                raise CanOverflowFlowStatus("Flow Control with Flow Status `OVERFLOW` was transmitted.")
             if flow_status == CanFlowStatus.ContinueToSend:
                 remaining_data_length = message_data_length - received_data_length
                 cf_block = self._receive_cf_packets_block(sequence_number=sequence_number,
@@ -815,8 +826,8 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
         :param loop: An asyncio event loop used for observing messages.
 
         :raise TimeoutError: :ref:`N_Cr <knowledge-base-can-n-cr>` timeout was reached.
-        :raise OverflowError: Flow Control packet with :ref:`Flow Status <knowledge-base-can-flow-status>` equal to
-            OVERFLOW was sent.
+        :raise CanOverflowFlowStatus: Flow Control packet with :ref:`Flow Status <knowledge-base-can-flow-status>`
+            equal to OVERFLOW was sent.
         :raise NotImplementedError: Unhandled CAN packet starting a new CAN message transmission was received.
 
         :return: Record of UDS message that was formed provided First Frame and received Consecutive Frames.
@@ -855,7 +866,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
                                                                st_min=st_min)
             packets_records.append(await self.async_send_packet(fc_packet, loop=loop))
             if flow_status == CanFlowStatus.Overflow:
-                raise OverflowError("Flow Control with Flow Status `OVERFLOW` was transmitted.")
+                raise CanOverflowFlowStatus("Flow Control with Flow Status `OVERFLOW` was transmitted.")
             if flow_status == CanFlowStatus.ContinueToSend:
                 remaining_data_length = message_data_length - received_data_length
                 cf_block = await self._async_receive_cf_packets_block(sequence_number=sequence_number,
@@ -1015,7 +1026,8 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
 
         :param message: A message to send.
 
-        :raise OverflowError: Flow Control packet with Flow Status equal to OVERFLOW was received.
+        :raise CanOverflowFlowStatus: Flow Control packet with
+            :ref:`Flow Status <knowledge-base-can-flow-status>` equal to OVERFLOW was received.
         :raise NotImplementedError: Flow Control CAN packet with unknown Flow Status was received.
 
         :return: Record with historic information about transmitted UDS message.
@@ -1042,7 +1054,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
             elif flow_control_record.flow_status == CanFlowStatus.Wait:
                 continue
             elif flow_control_record.flow_status == CanFlowStatus.Overflow:
-                raise OverflowError("Flow Control with Flow Status `OVERFLOW` was received.")
+                raise CanOverflowFlowStatus("Flow Control with Flow Status `OVERFLOW` was received.")
             else:
                 raise NotImplementedError(f"Unknown Flow Status received: {flow_control_record.flow_status}")
         message_records = UdsMessageRecord(packet_records)
@@ -1058,7 +1070,8 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
         :param message: A message to send.
         :param loop: An asyncio event loop to use for scheduling this task.
 
-        :raise OverflowError: Flow Control packet with Flow Status equal to OVERFLOW was received.
+        :raise CanOverflowFlowStatus: Flow Control packet with
+            :ref:`Flow Status <knowledge-base-can-flow-status>` equal to OVERFLOW was received.
         :raise NotImplementedError: Flow Control CAN packet with unknown Flow Status was received.
 
         :return: Record with historic information about transmitted UDS message.
@@ -1087,7 +1100,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
             elif flow_control_record.flow_status == CanFlowStatus.Wait:
                 continue
             elif flow_control_record.flow_status == CanFlowStatus.Overflow:
-                raise OverflowError("Flow Control with Flow Status `OVERFLOW` was received.")
+                raise CanOverflowFlowStatus("Flow Control with Flow Status `OVERFLOW` was received.")
             else:
                 raise NotImplementedError(f"Unknown Flow Status received: {flow_control_record.flow_status}")
         message_records = UdsMessageRecord(packet_records)

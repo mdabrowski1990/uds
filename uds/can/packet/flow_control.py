@@ -8,7 +8,8 @@ This module contains implementation of :ref:`Flow Control CAN packet <knowledge-
 """
 
 __all__ = ["FLOW_CONTROL_N_PCI", "FS_BYTES_USED", "BS_BYTE_POSITION", "ST_MIN_BYTE_POSITION",
-           "CanFlowStatus", "CanSTminTranslator", "UnrecognizedSTminWarning",
+           "CanFlowStatus", "CanOverflowFlowStatus",
+           "CanSTminTranslator", "UnrecognizedSTminWarning",
            "AbstractFlowControlParametersGenerator", "DefaultFlowControlParametersGenerator",
            "FlowControlParametersAlias",
            "is_flow_control", "validate_flow_control_data",
@@ -46,6 +47,10 @@ BS_BYTE_POSITION: int = 1
 """Position of a data byte with :ref:`Block Size <knowledge-base-can-block-size>` parameter."""
 ST_MIN_BYTE_POSITION: int = 2
 """Position of a data byte with  :ref:`STmin <knowledge-base-can-st-min>` parameter."""
+
+
+class CanOverflowFlowStatus(OverflowError):
+    """Flow Control with Overflow Flow Status was either received or transmitted over CAN bus."""
 
 
 class UnrecognizedSTminWarning(Warning):

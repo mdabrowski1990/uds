@@ -1,6 +1,6 @@
 """Segmentation specific for CAN bus."""
 
-__all__ = ["CanSegmenter"]
+__all__ = ["CanSegmentationError", "CanSegmenter"]
 
 from warnings import warn
 
@@ -25,6 +25,10 @@ from .packet import (
     get_first_frame_payload_size,
     get_single_frame_min_dlc,
 )
+
+
+class CanSegmentationError(SegmentationError):
+    """Error during CAN bus specific segmentation or desegmentation."""
 
 
 class CanSegmenter(AbstractSegmenter):
@@ -168,15 +172,15 @@ class CanSegmenter(AbstractSegmenter):
 
         :param message: UDS message to divide into packets.
 
-        :raise SegmentationError: Provided diagnostic message cannot be segmented.
+        :raise CanSegmentationError: Provided diagnostic message cannot be segmented.
 
         :return: CAN packets that are an outcome of UDS message segmentation.
         """
         message_payload_size = len(message.payload)
         if message_payload_size > MAX_LONG_FF_DL_VALUE:
-            raise SegmentationError("Provided diagnostic message cannot be segmented to CAN Packet as it is too big "
-                                    "to transmit it over CAN bus. "
-                                    f"Maximal diagnostic message length: {MAX_LONG_FF_DL_VALUE}")
+            raise CanSegmentationError("Provided diagnostic message cannot be segmented to CAN Packet as it is too big "
+                                       "to transmit it over CAN bus. "
+                                       f"Maximal diagnostic message length: {MAX_LONG_FF_DL_VALUE}")
         try:
             min_sf_dlc = get_single_frame_min_dlc(addressing_format=self.addressing_format,
                                                   payload_length=message_payload_size)
@@ -231,7 +235,7 @@ class CanSegmenter(AbstractSegmenter):
 
         :param message: UDS message to divide into packets.
 
-        :raise SegmentationError: Provided diagnostic message cannot be segmented.
+        :raise CanSegmentationError: Provided diagnostic message cannot be segmented.
 
         :return: CAN packets that are an outcome of UDS message segmentation.
         """
@@ -242,8 +246,8 @@ class CanSegmenter(AbstractSegmenter):
         except ValueError:
             min_sf_dlc = CanDlcHandler.MAX_DLC_VALUE + 1
         if min_sf_dlc > self.dlc:
-            raise SegmentationError("Provided diagnostic message cannot be segmented using functional addressing "
-                                    "as it will not fit into a Single Frame.")
+            raise CanSegmentationError("Provided diagnostic message cannot be segmented using functional addressing "
+                                       "as it will not fit into a Single Frame.")
         if self.use_data_optimization:
             dlc = None if self.min_dlc is None else max(min_sf_dlc, self.min_dlc)
         else:
@@ -322,13 +326,14 @@ class CanSegmenter(AbstractSegmenter):
 
         :param packets: CAN packets to desegment into UDS message.
 
-        :raise SegmentationError: Provided packets are not a complete packets sequence that form a diagnostic message.
+        :raise CanSegmentationError: Provided packets are not a complete packets sequence that form
+            a diagnostic message.
         :raise NotImplementedError: There is missing implementation for the provided CAN Packets type.
 
         :return: A diagnostic message that is an outcome of CAN packets desegmentation.
         """
         if not self.is_desegmented_message(packets):
-            raise SegmentationError("Provided packets are not a complete packets sequence.")
+            raise CanSegmentationError("Provided packets are not a complete packets sequence.")
         if isinstance(packets[0], CanPacketRecord):
             return UdsMessageRecord(packets)  # type: ignore
         if isinstance(packets[0], CanPacket):
@@ -342,7 +347,7 @@ class CanSegmenter(AbstractSegmenter):
                         payload_bytes += bytearray(packet.payload)
                 return UdsMessage(payload=payload_bytes[:packets[0].data_length],
                                   addressing_type=packets[0].addressing_type)
-            raise SegmentationError("Unexpectedly, something went wrong...")
+            raise CanSegmentationError("Unexpectedly, something went wrong...")
         raise NotImplementedError("Missing implementation for the provided CAN Packet type.")
 
     def segmentation(self, message: UdsMessage) -> tuple[CanPacket, ...]:
