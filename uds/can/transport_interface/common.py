@@ -644,7 +644,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
 
         :raise TimeoutError: Timeout was reached. Either:
             - Consecutive Frame did not arrive before reaching N_Cr timeout
-            - Diagnostic message reception
+            - diagnostic message was not fully received on time
         :raise CanUnexpectedSequenceNumber: Consecutive Frame with unexpected Sequence Number value was received.
 
         :return: Either:
@@ -709,7 +709,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
 
         :raise TimeoutError: Timeout was reached. Either:
             - Consecutive Frame did not arrive before reaching N_Cr timeout
-            - Diagnostic message reception
+            - diagnostic message was not fully received on time
         :raise CanUnexpectedSequenceNumber: Consecutive Frame with unexpected Sequence Number value was received.
 
         :return: Either:
@@ -765,6 +765,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
         :param first_frame: :ref:`First Frame <knowledge-base-can-first-frame>` that was received.
         :param timestamp_end: The final timestamp till when the reception must be completed.
 
+        :raise TimeoutError: Message was not fully received on time.
         :raise CanOverflowFlowStatus: Flow Control packet with
             :ref:`Flow Status <knowledge-base-can-flow-status>` equal to OVERFLOW was sent.
 
@@ -830,10 +831,9 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
         :param timestamp_end: The final timestamp till when the reception must be completed.
         :param loop: An asyncio event loop used for observing messages.
 
-        :raise TimeoutError: :ref:`N_Cr <knowledge-base-can-n-cr>` timeout was reached.
+        :raise TimeoutError: Message was not fully received on time.
         :raise CanOverflowFlowStatus: Flow Control packet with :ref:`Flow Status <knowledge-base-can-flow-status>`
             equal to OVERFLOW was sent.
-        :raise NotImplementedError: Unhandled CAN packet starting a new CAN message transmission was received.
 
         :return: Record of UDS message that was formed provided First Frame and received Consecutive Frames.
         """
@@ -1124,7 +1124,6 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
             Leave None to wait forever.
 
         :raise MessageTransmissionNotStartedError: Timeout was exceeded before message reception started.
-        :raise TimeoutError: Timeout was exceeded during message receiving (before all packets received).
 
         :return: Record with historic information about received UDS message.
         """
@@ -1176,7 +1175,6 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
         :param loop: An asyncio event loop to use for scheduling this task.
 
         :raise MessageTransmissionNotStartedError: Timeout was exceeded before message reception started.
-        :raise TimeoutError: Timeout was exceeded during message receiving (before all packets received).
 
         :return: Record with historic information about received UDS message.
         """
