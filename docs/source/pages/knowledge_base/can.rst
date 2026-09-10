@@ -854,7 +854,7 @@ ISO 15765-2 defines the following network layer parameters for Diagnostics over 
 
 N_WFTmax
 ````````
-N_WFTmax is a internal parameter of a CAN communication node.
+N_WFTmax is an internal parameter of a CAN communication node.
 It specifies the maximum number of consecutive :ref:`Flow Control <knowledge-base-can-flow-control>`
 frames with WAIT :ref:`Flow Status <knowledge-base-can-flow-status>` that may be transmitted
 by the receiving entity during message reception.
@@ -863,8 +863,9 @@ This parameter is only used by the receiving entity during message reception.
 It is not used by the transmitting entity and is not transmitted to the communication peer.
 
 Error handling:
-  When ``N_WFTmax`` WAIT Flow Control frames have been transmitted consecutively, the receiving entity shall respond
-  with a ContinueToSend :ref:`Flow Status <knowledge-base-can-flow-status>`.
+  If ``N_WFTmax`` WAIT Flow Control frames have been transmitted consecutively and the receiving entity cannot meet
+  the performance requirement for a ContinueToSend :ref:`Flow Status <knowledge-base-can-flow-status>`,
+  it shall abort message reception and report the wait-frame overrun error to the upper layer.
 
 Affected :ref:`CAN Packets <knowledge-base-can-packet>`:
 
