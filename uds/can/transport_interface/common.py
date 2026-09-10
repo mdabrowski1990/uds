@@ -282,7 +282,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
 
     @property
     def n_as_timeout(self) -> TimeMillisecondsAlias:
-        """Timeout value for :ref:`N_As <knowledge-base-can-n-as>` time parameter."""
+        """Get timeout value for :ref:`N_As <knowledge-base-can-n-as>` time parameter."""
         return self.__n_as_timeout
 
     @n_as_timeout.setter
@@ -313,7 +313,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
 
     @property
     def n_ar_timeout(self) -> TimeMillisecondsAlias:
-        """Timeout value for :ref:`N_Ar <knowledge-base-can-n-ar>` time parameter."""
+        """Get timeout value for :ref:`N_Ar <knowledge-base-can-n-ar>` time parameter."""
         return self.__n_ar_timeout
 
     @n_ar_timeout.setter
@@ -344,7 +344,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
 
     @property
     def n_bs_timeout(self) -> TimeMillisecondsAlias:
-        """Timeout value for :ref:`N_Bs <knowledge-base-can-n-bs>` time parameter."""
+        """Get timeout value for :ref:`N_Bs <knowledge-base-can-n-bs>` time parameter."""
         return self.__n_bs_timeout
 
     @n_bs_timeout.setter
@@ -456,7 +456,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
 
     @property
     def n_cr_timeout(self) -> TimeMillisecondsAlias:
-        """Timeout value for :ref:`N_Cr <knowledge-base-can-n-cr>` time parameter."""
+        """Get timeout value for :ref:`N_Cr <knowledge-base-can-n-cr>` time parameter."""
         return self.__n_cr_timeout
 
     @n_cr_timeout.setter
