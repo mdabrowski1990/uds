@@ -826,8 +826,9 @@ the :ref:`First Frame <knowledge-base-can-first-frame>` and after each block of
 
 Performance and Error Handling
 ------------------------------
-ISO 15765-2 defines the following network layer timing parameters for Diagnostics over CAN (DoCAN):
+ISO 15765-2 defines the following network layer parameters for Diagnostics over CAN (DoCAN):
 
+- N_WFTmax_
 - N_As_
 - N_Ar_
 - N_Bs_
@@ -847,6 +848,27 @@ ISO 15765-2 defines the following network layer timing parameters for Diagnostic
   as it enables to present all CAN timing parameters.
   For :ref:`unsegmented diagnostic message transmission <knowledge-base-can-unsegmented-message-transmission>` though,
   the only applicable time parameter is N_As_.
+
+
+.. _knowledge-base-can-n-wft-max:
+
+N_WFTmax
+````````
+N_WFTmax is a internal parameter of a CAN communication node.
+It specifies the maximum number of consecutive :ref:`Flow Control <knowledge-base-can-flow-control>`
+frames with WAIT :ref:`Flow Status <knowledge-base-can-flow-status>` that may be transmitted
+by the receiving entity during message reception.
+
+This parameter is only used by the receiving entity during message reception.
+It is not used by the transmitting entity and is not transmitted to the communication peer.
+
+Error handling:
+  When ``N_WFTmax`` WAIT Flow Control frames have been transmitted consecutively, the receiving entity shall respond
+  with a ContinueToSend :ref:`Flow Status <knowledge-base-can-flow-status>`.
+
+Affected :ref:`CAN Packets <knowledge-base-can-packet>`:
+
+- :ref:`Flow Control <knowledge-base-can-flow-control>`
 
 
 .. _knowledge-base-can-n-as:
