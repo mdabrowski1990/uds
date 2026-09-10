@@ -859,6 +859,10 @@ It specifies the maximum number of consecutive :ref:`Flow Control <knowledge-bas
 frames with WAIT :ref:`Flow Status <knowledge-base-can-flow-status>` that may be transmitted
 by the receiving entity during message reception.
 
+.. note:: If N_WFTmax equals 0, then receiving entity must not send
+  WAIT :ref:`Flow Status <knowledge-base-can-flow-status>` in :ref:`Flow Control <knowledge-base-can-flow-control>`
+  packets.
+
 This parameter is only used by the receiving entity during message reception.
 It is not used by the transmitting entity and is not transmitted to the communication peer.
 
