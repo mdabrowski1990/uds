@@ -14,8 +14,8 @@ from uds.utilities import Endianness, InconsistencyError, RawBytesAlias, bytes_t
 from .data_record import (
     AbstractConditionalDataRecord,
     AbstractDataRecord,
+    AbstractDataRecordInfo,
     ChildrenValuesAlias,
-    DataRecordInfoAlias,
     MessageStructureAlias,
     SingleOccurrenceInfo,
 )
@@ -36,7 +36,7 @@ Mapping keys are Data Records names.
 Mapping values are corresponding Data Records values.
 """
 
-DecodedMessageAlias = tuple[DataRecordInfoAlias, ...]
+DecodedMessageAlias = tuple[AbstractDataRecordInfo, ...]
 """Alias for decoded information about a Diagnostic Message."""
 
 
