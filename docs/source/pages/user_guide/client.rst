@@ -55,6 +55,7 @@ Methods:
   transmitting functionally addressed request
 - :meth:`~uds.client.Client.wait_till_ready_for_transmission` - wait till Client is ready for
   transmitting given request message
+- :meth:`~uds.client.Client.clear_measurements` - clear measurements of Session Layer communication parameters
 - :meth:`~uds.client.Client.get_response` - wait for the next response collected by `Background Receiving`_
 - :meth:`~uds.client.Client.get_response_no_wait` - get the next response collected by `Background Receiving`_
   without waiting

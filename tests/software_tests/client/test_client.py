@@ -1792,6 +1792,15 @@ class TestClient:
                 == self.mock_client.wait_till_ready_for_functional_transmission.return_value)
         self.mock_client.wait_till_ready_for_functional_transmission.assert_called_once_with()
 
+    # clear_measurements
+
+    def test_clear_measurements(self):
+        assert Client.clear_measurements(self.mock_client) is None
+        assert self.mock_client._Client__p2_client_measured is None
+        assert self.mock_client._Client__p2_ext_client_measured is None
+        assert self.mock_client._Client__p6_client_measured is None
+        assert self.mock_client._Client__p6_ext_client_measured is None
+
     # get_response
 
     @pytest.mark.parametrize("timeout", [1, 453.231])
