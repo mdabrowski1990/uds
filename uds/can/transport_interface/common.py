@@ -568,7 +568,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
             self.__n_cr_measured = tuple(n_cr_measured)
 
     def clear_measurements(self) -> None:
-        """Clear measured values of CAN communication parameters."""
+        """Clear measured values of Network Layer CAN communication parameters."""
         self.__n_ar_measured = None
         self.__n_as_measured = None
         self.__n_bs_measured = None

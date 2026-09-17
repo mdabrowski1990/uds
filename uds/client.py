@@ -824,6 +824,13 @@ class Client:
         raise NotImplementedError("Request message with unexpected `addressing_type` attribute value was provided: "
                                   f"{request.addressing_type!r}")
 
+    def clear_measurements(self) -> None:
+        """Clear measured values of Session Layer communication parameters."""
+        self.__p2_client_measured = None
+        self.__p2_ext_client_measured = None
+        self.__p6_client_measured = None
+        self.__p6_ext_client_measured = None
+
     def get_response(self, timeout: TimeMillisecondsAlias | None = None) -> UdsMessageRecord | None:
         """
         Wait for the first received response message.
