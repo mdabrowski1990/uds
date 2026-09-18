@@ -633,6 +633,7 @@ class TestEcuDiagnosticConfiguration:
             mock_sid_restrictions, *[mock_did_restrictions] * len(dids), *[mock_rid_restrictions] * len(rids))
 
 
+@pytest.mark.integration
 class TestEcuDiagnosticConfigurationIntegration:
     """Integration tests for 'EcuDiagnosticConfiguration' class."""
 

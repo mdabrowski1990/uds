@@ -5,8 +5,9 @@ from uds.message import NRC, RequestSID, ResponseSID
 from uds.translator import BASE_TRANSLATOR, BASE_TRANSLATOR_2013, BASE_TRANSLATOR_2020
 
 
-class TestTranslatorDefinitions:
-    """Unit tests for translator definitions."""
+@pytest.mark.integration
+class TestTranslatorDefinitionsIntegration:
+    """Integration tests for translator definitions."""
 
     @staticmethod
     def _get_services_definitions_names():

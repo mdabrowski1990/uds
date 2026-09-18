@@ -210,7 +210,6 @@ class MultipleOccurrencesInfo(AbstractDataRecordInfo):
             for child in occurrence_data:
                 if child.name == child_name:
                     child_occurrences.append(child)
-                    break
         if child_occurrences:
             return tuple(child_occurrences)
         raise ValueError(f"Child with {child_name!r} name was not found.")
