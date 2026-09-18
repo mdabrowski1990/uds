@@ -7,6 +7,8 @@ This module contains implementation of :ref:`Flow Control CAN packet <knowledge-
  - :ref:`Separation Time minimum (STmin) <knowledge-base-can-st-min>`
 """
 
+from __future__ import annotations
+
 __all__ = ["FLOW_CONTROL_N_PCI", "FS_BYTES_USED", "BS_BYTE_POSITION", "ST_MIN_BYTE_POSITION",
            "CanFlowStatus", "CanOverflowFlowStatus",
            "CanSTminTranslator", "UnrecognizedSTminWarning",
@@ -441,7 +443,7 @@ FlowControlParametersAlias = tuple[CanFlowStatus, int | None, int | None]
 class AbstractFlowControlParametersGenerator(ABC):
     """Definition of Flow Control parameters generator."""
 
-    def __iter__(self) -> "AbstractFlowControlParametersGenerator":
+    def __iter__(self) -> AbstractFlowControlParametersGenerator:
         """Get iterator object - called on each First Frame reception."""
         return self
 
@@ -480,7 +482,7 @@ class DefaultFlowControlParametersGenerator(AbstractFlowControlParametersGenerat
         self.repeat_wait = repeat_wait
         self._remaining_wait: int | None = None
 
-    def __iter__(self) -> "DefaultFlowControlParametersGenerator":
+    def __iter__(self) -> DefaultFlowControlParametersGenerator:
         """Get iterator object."""
         iterator = deepcopy(self)
         if iterator.wait_count > 0:

@@ -1,5 +1,7 @@
 """Implementation of translator configurable through typical diagnostic parameters."""
 
+from __future__ import annotations
+
 __all__ = ["ConfigurableTranslator"]
 
 from collections.abc import Callable, Mapping, Sequence
@@ -150,7 +152,7 @@ class ConfigurableTranslator(Translator):
             self.did_mapping = did_mapping
         self.did_data_mapping = did_data_mapping
 
-    def __deepcopy__(self, memo: dict[int, Any]) -> "ConfigurableTranslator":
+    def __deepcopy__(self, memo: dict[int, Any]) -> ConfigurableTranslator:
         """Get deep copy of the translator."""
         cls = self.__class__
         self_copy = cls.__new__(cls)

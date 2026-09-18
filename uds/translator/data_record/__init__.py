@@ -9,9 +9,12 @@ from .abstract_data_record import (
     AbstractDataRecord,
     AbstractDataRecordInfo,
     ChildrenValuesAlias,
+    DataRecordOccurrenceDict,
+    MultipleOccurrencesDict,
     MultipleOccurrencesInfo,
     MultiplePhysicalValuesAlias,
     PhysicalValueAlias,
+    SingleOccurrenceDict,
     SingleOccurrenceInfo,
     SinglePhysicalValueAlias,
 )

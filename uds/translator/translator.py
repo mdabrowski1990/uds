@@ -1,5 +1,7 @@
 """Implementation of UDS messages translator for data encoding and decoding."""
 
+from __future__ import annotations
+
 __all__ = ["Translator"]
 
 from collections.abc import Collection, Mapping
@@ -31,7 +33,7 @@ class Translator:
         """
         self.services = services
 
-    def __deepcopy__(self, memo: dict[int, Any]) -> "Translator":
+    def __deepcopy__(self, memo: dict[int, Any]) -> Translator:
         """Get deep copy of the translator."""
         cls = self.__class__
         self_copy = cls.__new__(cls)

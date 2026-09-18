@@ -1,5 +1,7 @@
 """Module with various conversion functions."""
 
+from __future__ import annotations
+
 __all__ = [
     "int_to_obd_dtc", "obd_dtc_to_int",
     "bytes_to_hex", "bytes_to_int", "int_to_bytes",
@@ -214,7 +216,7 @@ class TimeSync:
         if sync_expiration is not None:
             self.sync_expiration = sync_expiration
 
-    def __new__(cls, *_: Any, **__: Any) -> "TimeSync":
+    def __new__(cls, *_: Any, **__: Any) -> TimeSync:
         """Return existing instance if one exists, otherwise create one."""
         if cls._instance is None:
             cls._instance = super(TimeSync, cls).__new__(cls)
