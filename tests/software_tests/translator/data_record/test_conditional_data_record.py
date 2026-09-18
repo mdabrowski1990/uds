@@ -29,29 +29,40 @@ class TestAbstractConditionalDataRecord:
 
     @pytest.mark.parametrize("default_message_continuation", [Mock(), DEFAULT_DIAGNOSTIC_MESSAGE_CONTINUATION])
     def test_init(self, default_message_continuation):
-        assert AbstractConditionalDataRecord.__init__(self.mock_conditional_data_record,
-                                                      default_message_continuation=default_message_continuation) is None
+        assert (
+            AbstractConditionalDataRecord.__init__(
+                self.mock_conditional_data_record, default_message_continuation=default_message_continuation
+            )
+            is None
+        )
         assert self.mock_conditional_data_record.default_message_continuation == default_message_continuation
 
     # default_message_continuation
 
     def test_default_message_continuation__get(self):
         self.mock_conditional_data_record._AbstractConditionalDataRecord__default_message_continuation = Mock()
-        assert (AbstractConditionalDataRecord.default_message_continuation.fget(self.mock_conditional_data_record)
-                == self.mock_conditional_data_record._AbstractConditionalDataRecord__default_message_continuation)
+        assert (
+            AbstractConditionalDataRecord.default_message_continuation.fget(self.mock_conditional_data_record)
+            == self.mock_conditional_data_record._AbstractConditionalDataRecord__default_message_continuation
+        )
 
     def test_default_message_continuation__set__none(self):
-        assert AbstractConditionalDataRecord.default_message_continuation.fset(self.mock_conditional_data_record,
-                                                                               None) is None
+        assert (
+            AbstractConditionalDataRecord.default_message_continuation.fset(self.mock_conditional_data_record, None)
+            is None
+        )
         assert self.mock_conditional_data_record._AbstractConditionalDataRecord__default_message_continuation is None
         self.mock_conditional_data_record.validate_message_continuation.assert_not_called()
 
     @pytest.mark.parametrize("value", [MagicMock(), DEFAULT_DIAGNOSTIC_MESSAGE_CONTINUATION])
     def test_default_message_continuation__set__value(self, value):
-        assert AbstractConditionalDataRecord.default_message_continuation.fset(self.mock_conditional_data_record,
-                                                                               value) is None
-        assert (self.mock_conditional_data_record._AbstractConditionalDataRecord__default_message_continuation
-                == tuple(value))
+        assert (
+            AbstractConditionalDataRecord.default_message_continuation.fset(self.mock_conditional_data_record, value)
+            is None
+        )
+        assert self.mock_conditional_data_record._AbstractConditionalDataRecord__default_message_continuation == tuple(
+            value
+        )
         self.mock_conditional_data_record.validate_message_continuation.assert_called_once_with(value)
 
     # validate_message_continuation
@@ -64,66 +75,115 @@ class TestAbstractConditionalDataRecord:
             AbstractConditionalDataRecord.validate_message_continuation(value)
         mock_isinstance.assert_called_once_with(value, Sequence)
 
-    @pytest.mark.parametrize("value", [
-        (Mock(spec=AbstractDataRecord, length=8, min_occurrences=1, max_occurrences=1, fixed_total_length=True),
-         Mock(length=1, min_occurrences=8, max_occurrences=8, fixed_total_length=True),
-         Mock(spec=AbstractConditionalDataRecord, fixed_total_length=True)),
-        (Mock(spec=AbstractDataRecord, length=16, min_occurrences=1, max_occurrences=1, fixed_total_length=True),
-         Mock(spec=AbstractDataRecord, length=1, min_occurrences=8, max_occurrences=8, fixed_total_length=True),
-         Mock(length=2, min_occurrences=4, max_occurrences=None, fixed_total_length=False)),
-    ])
+    @pytest.mark.parametrize(
+        "value",
+        [
+            (
+                Mock(spec=AbstractDataRecord, length=8, min_occurrences=1, max_occurrences=1, fixed_total_length=True),
+                Mock(length=1, min_occurrences=8, max_occurrences=8, fixed_total_length=True),
+                Mock(spec=AbstractConditionalDataRecord, fixed_total_length=True),
+            ),
+            (
+                Mock(spec=AbstractDataRecord, length=16, min_occurrences=1, max_occurrences=1, fixed_total_length=True),
+                Mock(spec=AbstractDataRecord, length=1, min_occurrences=8, max_occurrences=8, fixed_total_length=True),
+                Mock(length=2, min_occurrences=4, max_occurrences=None, fixed_total_length=False),
+            ),
+        ],
+    )
     def test_validate_message_continuation__value_error__data_record_type(self, value):
         with pytest.raises(ValueError):
             AbstractConditionalDataRecord.validate_message_continuation(value)
 
-    @pytest.mark.parametrize("value", [
-        (Mock(spec=AbstractConditionalDataRecord),
-         Mock(spec=AbstractDataRecord, length=16, min_occurrences=1, max_occurrences=1, fixed_total_length=True),
-         Mock(spec=AbstractDataRecord, length=1, min_occurrences=8, max_occurrences=8, fixed_total_length=True),
-         Mock(spec=AbstractDataRecord, length=2, min_occurrences=4, max_occurrences=None, fixed_total_length=False)),
-        (Mock(spec=AbstractConditionalDataRecord),),
-    ])
+    @pytest.mark.parametrize(
+        "value",
+        [
+            (
+                Mock(spec=AbstractConditionalDataRecord),
+                Mock(spec=AbstractDataRecord, length=16, min_occurrences=1, max_occurrences=1, fixed_total_length=True),
+                Mock(spec=AbstractDataRecord, length=1, min_occurrences=8, max_occurrences=8, fixed_total_length=True),
+                Mock(
+                    spec=AbstractDataRecord, length=2, min_occurrences=4, max_occurrences=None, fixed_total_length=False
+                ),
+            ),
+            (Mock(spec=AbstractConditionalDataRecord),),
+        ],
+    )
     def test_validate_message_continuation__value_error__conditional_and_vary_length_data_record_position(self, value):
         with pytest.raises(ValueError):
             AbstractConditionalDataRecord.validate_message_continuation(value)
 
-    @pytest.mark.parametrize("value", [
-        (Mock(spec=AbstractDataRecord, length=23, min_occurrences=1, max_occurrences=1, fixed_total_length=True),
-         Mock(spec=AbstractDataRecord, length=5, min_occurrences=4, max_occurrences=4, fixed_total_length=True)),
-        (Mock(spec=AbstractDataRecord, length=7, min_occurrences=1, max_occurrences=1, fixed_total_length=True),
-         Mock(spec=AbstractDataRecord, length=1, min_occurrences=8, max_occurrences=16, fixed_total_length=False)),
-        (Mock(spec=AbstractDataRecord, length=16, min_occurrences=1, max_occurrences=1, fixed_total_length=True),
-         Mock(spec=AbstractDataRecord, length=2, min_occurrences=4, max_occurrences=4, fixed_total_length=True),
-         Mock(spec=AbstractDataRecord, length=1, min_occurrences=8, max_occurrences=14, fixed_total_length=False)),
-    ])
+    @pytest.mark.parametrize(
+        "value",
+        [
+            (
+                Mock(spec=AbstractDataRecord, length=23, min_occurrences=1, max_occurrences=1, fixed_total_length=True),
+                Mock(spec=AbstractDataRecord, length=5, min_occurrences=4, max_occurrences=4, fixed_total_length=True),
+            ),
+            (
+                Mock(spec=AbstractDataRecord, length=7, min_occurrences=1, max_occurrences=1, fixed_total_length=True),
+                Mock(
+                    spec=AbstractDataRecord, length=1, min_occurrences=8, max_occurrences=16, fixed_total_length=False
+                ),
+            ),
+            (
+                Mock(spec=AbstractDataRecord, length=16, min_occurrences=1, max_occurrences=1, fixed_total_length=True),
+                Mock(spec=AbstractDataRecord, length=2, min_occurrences=4, max_occurrences=4, fixed_total_length=True),
+                Mock(
+                    spec=AbstractDataRecord, length=1, min_occurrences=8, max_occurrences=14, fixed_total_length=False
+                ),
+            ),
+        ],
+    )
     def test_validate_message_continuation__inconsistent__total_length(self, value):
         with pytest.raises(InconsistencyError):
             AbstractConditionalDataRecord.validate_message_continuation(value)
 
-    @pytest.mark.parametrize("value", [
-        (Mock(spec=AbstractDataRecord, length=8, min_occurrences=1, max_occurrences=1, fixed_total_length=True),
-         Mock(spec=AbstractDataRecord, length=1, min_occurrences=8, max_occurrences=8, fixed_total_length=True),
-         Mock(spec=AbstractConditionalDataRecord, fixed_total_length=False)),
-        (Mock(spec=AbstractDataRecord, length=16, min_occurrences=1, max_occurrences=1, fixed_total_length=True),
-         Mock(spec=AbstractDataRecord, length=1, min_occurrences=8, max_occurrences=8, fixed_total_length=True),
-         Mock(spec=AbstractDataRecord, length=2, min_occurrences=4, max_occurrences=None, fixed_total_length=False)),
-    ])
+    @pytest.mark.parametrize(
+        "value",
+        [
+            (
+                Mock(spec=AbstractDataRecord, length=8, min_occurrences=1, max_occurrences=1, fixed_total_length=True),
+                Mock(spec=AbstractDataRecord, length=1, min_occurrences=8, max_occurrences=8, fixed_total_length=True),
+                Mock(spec=AbstractConditionalDataRecord, fixed_total_length=False),
+            ),
+            (
+                Mock(spec=AbstractDataRecord, length=16, min_occurrences=1, max_occurrences=1, fixed_total_length=True),
+                Mock(spec=AbstractDataRecord, length=1, min_occurrences=8, max_occurrences=8, fixed_total_length=True),
+                Mock(
+                    spec=AbstractDataRecord, length=2, min_occurrences=4, max_occurrences=None, fixed_total_length=False
+                ),
+            ),
+        ],
+    )
     def test_validate_message_continuation__inconsistent__same_names(self, value):
         for dr in value:
             dr.name = "Common"
         with pytest.raises(InconsistencyError):
             AbstractConditionalDataRecord.validate_message_continuation(value)
 
-    @pytest.mark.parametrize("value", [
-        (Mock(spec=AbstractDataRecord, length=8, min_occurrences=1, max_occurrences=1, fixed_total_length=True),),
-        (Mock(spec=AbstractDataRecord, length=8, min_occurrences=0, max_occurrences=None, fixed_total_length=False),),
-        (Mock(spec=AbstractDataRecord, length=8, min_occurrences=1, max_occurrences=1, fixed_total_length=True),
-         Mock(spec=AbstractDataRecord, length=1, min_occurrences=8, max_occurrences=8, fixed_total_length=True),
-         Mock(spec=AbstractConditionalDataRecord, fixed_total_length=False)),
-        (Mock(spec=AbstractDataRecord, length=16, min_occurrences=1, max_occurrences=1, fixed_total_length=True),
-         Mock(spec=AbstractDataRecord, length=1, min_occurrences=8, max_occurrences=8, fixed_total_length=True),
-         Mock(spec=AbstractDataRecord, length=2, min_occurrences=4, max_occurrences=None, fixed_total_length=False)),
-    ])
+    @pytest.mark.parametrize(
+        "value",
+        [
+            (Mock(spec=AbstractDataRecord, length=8, min_occurrences=1, max_occurrences=1, fixed_total_length=True),),
+            (
+                Mock(
+                    spec=AbstractDataRecord, length=8, min_occurrences=0, max_occurrences=None, fixed_total_length=False
+                ),
+            ),
+            (
+                Mock(spec=AbstractDataRecord, length=8, min_occurrences=1, max_occurrences=1, fixed_total_length=True),
+                Mock(spec=AbstractDataRecord, length=1, min_occurrences=8, max_occurrences=8, fixed_total_length=True),
+                Mock(spec=AbstractConditionalDataRecord, fixed_total_length=False),
+            ),
+            (
+                Mock(spec=AbstractDataRecord, length=16, min_occurrences=1, max_occurrences=1, fixed_total_length=True),
+                Mock(spec=AbstractDataRecord, length=1, min_occurrences=8, max_occurrences=8, fixed_total_length=True),
+                Mock(
+                    spec=AbstractDataRecord, length=2, min_occurrences=4, max_occurrences=None, fixed_total_length=False
+                ),
+            ),
+        ],
+    )
     def test_validate_message_continuation__valid(self, value):
         assert AbstractConditionalDataRecord.validate_message_continuation(value) is None
 
@@ -131,20 +191,29 @@ class TestAbstractConditionalDataRecord:
 
     @pytest.mark.parametrize("raw_value", [Mock(), 0])
     def test_get_message_continuation__valid(self, raw_value):
-        assert AbstractConditionalDataRecord.get_message_continuation(
-            self.mock_conditional_data_record,
-            raw_value=raw_value) == self.mock_conditional_data_record.__getitem__.return_value
+        assert (
+            AbstractConditionalDataRecord.get_message_continuation(
+                self.mock_conditional_data_record, raw_value=raw_value
+            )
+            == self.mock_conditional_data_record.__getitem__.return_value
+        )
         self.mock_conditional_data_record.__getitem__.assert_called_once_with(raw_value)
 
-    @pytest.mark.parametrize("raw_value, exception_raised", [
-        (Mock(), ValueError),
-        (0, KeyError),
-    ])
+    @pytest.mark.parametrize(
+        "raw_value, exception_raised",
+        [
+            (Mock(), ValueError),
+            (0, KeyError),
+        ],
+    )
     def test_get_message_continuation__default(self, raw_value, exception_raised):
         self.mock_conditional_data_record.__getitem__.side_effect = exception_raised
-        assert AbstractConditionalDataRecord.get_message_continuation(
-            self.mock_conditional_data_record,
-            raw_value=raw_value) == self.mock_conditional_data_record.default_message_continuation
+        assert (
+            AbstractConditionalDataRecord.get_message_continuation(
+                self.mock_conditional_data_record, raw_value=raw_value
+            )
+            == self.mock_conditional_data_record.default_message_continuation
+        )
         self.mock_conditional_data_record.__getitem__.assert_called_once_with(raw_value)
 
     @pytest.mark.parametrize("raw_value", [Mock(), 0])
@@ -152,8 +221,9 @@ class TestAbstractConditionalDataRecord:
         self.mock_conditional_data_record.__getitem__.side_effect = KeyError
         self.mock_conditional_data_record.default_message_continuation = None
         with pytest.raises(ValueError):
-            AbstractConditionalDataRecord.get_message_continuation(self.mock_conditional_data_record,
-                                                                   raw_value=raw_value)
+            AbstractConditionalDataRecord.get_message_continuation(
+                self.mock_conditional_data_record, raw_value=raw_value
+            )
         self.mock_conditional_data_record.__getitem__.assert_called_once_with(raw_value)
 
 
@@ -165,8 +235,9 @@ class TestConditionalMappingDataRecord:
         # patching
         self._patcher_deepcopy = patch(f"{SCRIPT_LOCATION}.deepcopy")
         self.mock_deepcopy = self._patcher_deepcopy.start()
-        self._patcher_abstract_conditional_data_record_init \
-            = patch(f"{SCRIPT_LOCATION}.AbstractConditionalDataRecord.__init__")
+        self._patcher_abstract_conditional_data_record_init = patch(
+            f"{SCRIPT_LOCATION}.AbstractConditionalDataRecord.__init__"
+        )
         self.mock_abstract_conditional_data_record_init = self._patcher_abstract_conditional_data_record_init.start()
         self._patcher_mapping_proxy_type = patch(f"{SCRIPT_LOCATION}.MappingProxyType")
         self.mock_mapping_proxy_type = self._patcher_mapping_proxy_type.start()
@@ -180,26 +251,33 @@ class TestConditionalMappingDataRecord:
 
     @pytest.mark.parametrize("mapping", [Mock(), {1: Mock(), 2: []}])
     def test_init__mandatory_args(self, mapping):
-        assert ConditionalMappingDataRecord.__init__(self.mock_conditional_data_record,
-                                                     mapping=mapping) is None
+        assert ConditionalMappingDataRecord.__init__(self.mock_conditional_data_record, mapping=mapping) is None
         assert self.mock_conditional_data_record.mapping == mapping
         assert self.mock_conditional_data_record.value_mask is None
-        self.mock_abstract_conditional_data_record_init.assert_called_once_with(
-            default_message_continuation=None)
+        self.mock_abstract_conditional_data_record_init.assert_called_once_with(default_message_continuation=None)
 
-    @pytest.mark.parametrize("mapping, default_message_continuation, value_mask", [
-        (Mock(), Mock(), Mock()),
-        ({1: Mock(), 2: []}, DEFAULT_DIAGNOSTIC_MESSAGE_CONTINUATION, 0xFF),
-    ])
+    @pytest.mark.parametrize(
+        "mapping, default_message_continuation, value_mask",
+        [
+            (Mock(), Mock(), Mock()),
+            ({1: Mock(), 2: []}, DEFAULT_DIAGNOSTIC_MESSAGE_CONTINUATION, 0xFF),
+        ],
+    )
     def test_init__all_args(self, mapping, default_message_continuation, value_mask):
-        assert ConditionalMappingDataRecord.__init__(self.mock_conditional_data_record,
-                                                     mapping=mapping,
-                                                     default_message_continuation=default_message_continuation,
-                                                     value_mask=value_mask) is None
+        assert (
+            ConditionalMappingDataRecord.__init__(
+                self.mock_conditional_data_record,
+                mapping=mapping,
+                default_message_continuation=default_message_continuation,
+                value_mask=value_mask,
+            )
+            is None
+        )
         assert self.mock_conditional_data_record.mapping == mapping
         assert self.mock_conditional_data_record.value_mask == value_mask
         self.mock_abstract_conditional_data_record_init.assert_called_once_with(
-            default_message_continuation=default_message_continuation)
+            default_message_continuation=default_message_continuation
+        )
 
     # __getitem__
 
@@ -219,10 +297,13 @@ class TestConditionalMappingDataRecord:
             ConditionalMappingDataRecord.__getitem__(self.mock_conditional_data_record, value)
         mock_isinstance.assert_called_once_with(value, int)
 
-    @pytest.mark.parametrize("value, value_mask", [
-        (55, 0x0F),
-        (0x51, None),
-    ])
+    @pytest.mark.parametrize(
+        "value, value_mask",
+        [
+            (55, 0x0F),
+            (0x51, None),
+        ],
+    )
     @patch(f"{SCRIPT_LOCATION}.isinstance")
     def test_getitem__key_error(self, mock_isinstance, value, value_mask):
         mock_isinstance.return_value = True
@@ -244,34 +325,38 @@ class TestConditionalMappingDataRecord:
         mock_getitem = Mock()
         self.mock_conditional_data_record.value_mask = None
         self.mock_conditional_data_record.mapping = MagicMock(__getitem__=mock_getitem)
-        assert (ConditionalMappingDataRecord.__getitem__(self.mock_conditional_data_record, value)
-                == mock_getitem.return_value)
+        assert (
+            ConditionalMappingDataRecord.__getitem__(self.mock_conditional_data_record, value)
+            == mock_getitem.return_value
+        )
         mock_isinstance.assert_called_once_with(value, int)
         mock_getitem.assert_called_once_with(value)
 
-    @pytest.mark.parametrize("value, value_mask", [
-        (0xFF, 0x5A),
-        (0xFC, 0x01),
-    ])
+    @pytest.mark.parametrize(
+        "value, value_mask",
+        [
+            (0xFF, 0x5A),
+            (0xFC, 0x01),
+        ],
+    )
     @patch(f"{SCRIPT_LOCATION}.isinstance")
     def test_getitem__valid__with_mask(self, mock_isinstance, value, value_mask):
         mock_isinstance.return_value = True
         mock_getitem = Mock()
         self.mock_conditional_data_record.value_mask = value_mask
         self.mock_conditional_data_record.mapping = MagicMock(__getitem__=mock_getitem)
-        assert (ConditionalMappingDataRecord.__getitem__(self.mock_conditional_data_record, value)
-                == mock_getitem.return_value)
+        assert (
+            ConditionalMappingDataRecord.__getitem__(self.mock_conditional_data_record, value)
+            == mock_getitem.return_value
+        )
         mock_isinstance.assert_called_once_with(value, int)
         mock_getitem.assert_called_once_with(value & value_mask)
 
     # __deepcopy__
 
-    @pytest.mark.parametrize("mapping", [
-        {i: i * [Mock()] for i in range(20)},
-        {20: 5 * [Mock()],
-         1: [],
-         0: [Mock(), Mock()]}
-    ])
+    @pytest.mark.parametrize(
+        "mapping", [{i: i * [Mock()] for i in range(20)}, {20: 5 * [Mock()], 1: [], 0: [Mock(), Mock()]}]
+    )
     @patch(f"{SCRIPT_LOCATION}.ConditionalMappingDataRecord.__init__")
     def test_deepcopy(self, mock_init, mapping):
         memo = {}
@@ -282,18 +367,24 @@ class TestConditionalMappingDataRecord:
             output,
             mapping={key: self.mock_deepcopy.return_value for key in mapping.keys()},
             default_message_continuation=self.mock_deepcopy.return_value,
-            value_mask=self.mock_conditional_data_record.value_mask)
-        self.mock_deepcopy.assert_has_calls([call(self.mock_conditional_data_record.default_message_continuation,
-                                                   memo=memo),
-                                             *[call(value, memo=memo) for value in mapping.values()]],
-                                            any_order=True)
+            value_mask=self.mock_conditional_data_record.value_mask,
+        )
+        self.mock_deepcopy.assert_has_calls(
+            [
+                call(self.mock_conditional_data_record.default_message_continuation, memo=memo),
+                *[call(value, memo=memo) for value in mapping.values()],
+            ],
+            any_order=True,
+        )
 
     # mapping
 
     def test_mapping__get(self):
         self.mock_conditional_data_record._ConditionalMappingDataRecord__mapping = Mock()
-        assert (ConditionalMappingDataRecord.mapping.fget(self.mock_conditional_data_record)
-                == self.mock_conditional_data_record._ConditionalMappingDataRecord__mapping)
+        assert (
+            ConditionalMappingDataRecord.mapping.fget(self.mock_conditional_data_record)
+            == self.mock_conditional_data_record._ConditionalMappingDataRecord__mapping
+        )
 
     @pytest.mark.parametrize("value", [Mock(), "Some value"])
     @patch(f"{SCRIPT_LOCATION}.isinstance")
@@ -326,20 +417,26 @@ class TestConditionalMappingDataRecord:
     def test_mapping__set__valid(self, mock_isinstance, value):
         mock_isinstance.return_value = True
         assert ConditionalMappingDataRecord.mapping.fset(self.mock_conditional_data_record, value) is None
-        assert (self.mock_conditional_data_record._ConditionalMappingDataRecord__mapping
-                == self.mock_mapping_proxy_type.return_value)
-        mock_isinstance.assert_has_calls([call(value, Mapping)] + [call(key, int) for key in value.keys()],
-                                         any_order=True)
+        assert (
+            self.mock_conditional_data_record._ConditionalMappingDataRecord__mapping
+            == self.mock_mapping_proxy_type.return_value
+        )
+        mock_isinstance.assert_has_calls(
+            [call(value, Mapping)] + [call(key, int) for key in value.keys()], any_order=True
+        )
         self.mock_conditional_data_record.validate_message_continuation.assert_has_calls(
-            [call(i) for i in value.values()], any_order=True)
+            [call(i) for i in value.values()], any_order=True
+        )
         self.mock_mapping_proxy_type.assert_called_once_with(value)
-        
+
     # value_mask
-    
+
     def test_value_mask__get(self):
         self.mock_conditional_data_record._ConditionalMappingDataRecord__value_mask = Mock()
-        assert (ConditionalMappingDataRecord.value_mask.fget(self.mock_conditional_data_record)
-                == self.mock_conditional_data_record._ConditionalMappingDataRecord__value_mask)
+        assert (
+            ConditionalMappingDataRecord.value_mask.fget(self.mock_conditional_data_record)
+            == self.mock_conditional_data_record._ConditionalMappingDataRecord__value_mask
+        )
 
     @pytest.mark.parametrize("value", [Mock(), "Some value"])
     @patch(f"{SCRIPT_LOCATION}.isinstance")
@@ -368,8 +465,9 @@ class TestConditionalFormulaDataRecord:
         # patching
         self._patcher_deepcopy = patch(f"{SCRIPT_LOCATION}.deepcopy")
         self.mock_deepcopy = self._patcher_deepcopy.start()
-        self._patcher_abstract_conditional_data_record_init \
-            = patch(f"{SCRIPT_LOCATION}.AbstractConditionalDataRecord.__init__")
+        self._patcher_abstract_conditional_data_record_init = patch(
+            f"{SCRIPT_LOCATION}.AbstractConditionalDataRecord.__init__"
+        )
         self.mock_abstract_conditional_data_record_init = self._patcher_abstract_conditional_data_record_init.start()
         self._patcher_signature = patch(f"{SCRIPT_LOCATION}.signature")
         self.mock_signature = self._patcher_signature.start()
@@ -381,17 +479,26 @@ class TestConditionalFormulaDataRecord:
 
     # __init__
 
-    @pytest.mark.parametrize("formula, default_message_continuation", [
-        (Mock(), Mock()),
-        ({1: Mock(), 2: []}, DEFAULT_DIAGNOSTIC_MESSAGE_CONTINUATION),
-    ])
+    @pytest.mark.parametrize(
+        "formula, default_message_continuation",
+        [
+            (Mock(), Mock()),
+            ({1: Mock(), 2: []}, DEFAULT_DIAGNOSTIC_MESSAGE_CONTINUATION),
+        ],
+    )
     def test_init(self, formula, default_message_continuation):
-        assert ConditionalFormulaDataRecord.__init__(self.mock_conditional_data_record,
-                                                     default_message_continuation=default_message_continuation,
-                                                     formula=formula) is None
+        assert (
+            ConditionalFormulaDataRecord.__init__(
+                self.mock_conditional_data_record,
+                default_message_continuation=default_message_continuation,
+                formula=formula,
+            )
+            is None
+        )
         assert self.mock_conditional_data_record.formula == formula
         self.mock_abstract_conditional_data_record_init.assert_called_once_with(
-            default_message_continuation=default_message_continuation)
+            default_message_continuation=default_message_continuation
+        )
 
     # __getitem__
 
@@ -415,8 +522,10 @@ class TestConditionalFormulaDataRecord:
     @patch(f"{SCRIPT_LOCATION}.isinstance")
     def test_getitem__valid(self, mock_isinstance, value):
         mock_isinstance.return_value = True
-        assert (ConditionalFormulaDataRecord.__getitem__(self.mock_conditional_data_record, value)
-                == self.mock_conditional_data_record.formula.return_value)
+        assert (
+            ConditionalFormulaDataRecord.__getitem__(self.mock_conditional_data_record, value)
+            == self.mock_conditional_data_record.formula.return_value
+        )
         mock_isinstance.assert_called_once_with(value, int)
         self.mock_conditional_data_record.formula.assert_called_once_with(value)
 
@@ -430,16 +539,20 @@ class TestConditionalFormulaDataRecord:
         mock_init.assert_called_once_with(
             output,
             formula=self.mock_conditional_data_record.formula,
-            default_message_continuation=self.mock_deepcopy.return_value)
-        self.mock_deepcopy.assert_called_once_with(self.mock_conditional_data_record.default_message_continuation,
-                                                   memo=memo)
+            default_message_continuation=self.mock_deepcopy.return_value,
+        )
+        self.mock_deepcopy.assert_called_once_with(
+            self.mock_conditional_data_record.default_message_continuation, memo=memo
+        )
 
     # formula
 
     def test_formula__get(self):
         self.mock_conditional_data_record._ConditionalFormulaDataRecord__formula = Mock()
-        assert (ConditionalFormulaDataRecord.formula.fget(self.mock_conditional_data_record)
-                == self.mock_conditional_data_record._ConditionalFormulaDataRecord__formula)
+        assert (
+            ConditionalFormulaDataRecord.formula.fget(self.mock_conditional_data_record)
+            == self.mock_conditional_data_record._ConditionalFormulaDataRecord__formula
+        )
 
     @pytest.mark.parametrize("value", [Mock(), "Something"])
     @patch(f"{SCRIPT_LOCATION}.callable")
@@ -449,10 +562,13 @@ class TestConditionalFormulaDataRecord:
             ConditionalFormulaDataRecord.formula.fset(self.mock_conditional_data_record, value)
         mock_callable.assert_called_once_with(value)
 
-    @pytest.mark.parametrize("value, arg_number", [
-        (Mock(), 0),
-        (Mock(spec=Callable), 2),
-    ])
+    @pytest.mark.parametrize(
+        "value, arg_number",
+        [
+            (Mock(), 0),
+            (Mock(spec=Callable), 2),
+        ],
+    )
     @patch(f"{SCRIPT_LOCATION}.callable")
     def test_formula__set__value_error__arguments_number(self, mock_callable, value, arg_number):
         mock_callable.return_value = True
@@ -462,10 +578,13 @@ class TestConditionalFormulaDataRecord:
         mock_callable.assert_called_once_with(value)
         self.mock_signature.assert_called_once_with(value)
 
-    @pytest.mark.parametrize("value, arg_number", [
-        (Mock(), 0),
-        (Mock(spec=Callable), 2),
-    ])
+    @pytest.mark.parametrize(
+        "value, arg_number",
+        [
+            (Mock(), 0),
+            (Mock(spec=Callable), 2),
+        ],
+    )
     @patch(f"{SCRIPT_LOCATION}.callable")
     def test_formula__set__value_error__arguments_number(self, mock_callable, value, arg_number):
         mock_callable.return_value = True
@@ -475,10 +594,13 @@ class TestConditionalFormulaDataRecord:
         mock_callable.assert_called_once_with(value)
         self.mock_signature.assert_called_once_with(value)
 
-    @pytest.mark.parametrize("value, arg_type", [
-        (Mock(), Mock()),
-        (Mock(spec=Callable), float),
-    ])
+    @pytest.mark.parametrize(
+        "value, arg_type",
+        [
+            (Mock(), Mock()),
+            (Mock(spec=Callable), float),
+        ],
+    )
     @patch(f"{SCRIPT_LOCATION}.issubclass")
     @patch(f"{SCRIPT_LOCATION}.callable")
     def test_formula__set__value_error__arguments_annotation(self, mock_callable, mock_issubclass, value, arg_type):
@@ -491,10 +613,13 @@ class TestConditionalFormulaDataRecord:
         mock_issubclass.assert_called_once_with(arg_type, int)
         self.mock_signature.assert_called_once_with(value)
 
-    @pytest.mark.parametrize("value, arg_type", [
-        (Mock(), Mock(spec=int)),
-        (Mock(spec=Callable), bool),
-    ])
+    @pytest.mark.parametrize(
+        "value, arg_type",
+        [
+            (Mock(), Mock(spec=int)),
+            (Mock(spec=Callable), bool),
+        ],
+    )
     @patch(f"{SCRIPT_LOCATION}.issubclass")
     @patch(f"{SCRIPT_LOCATION}.callable")
     def test_formula__set__valid_type(self, mock_callable, mock_issubclass, value, arg_type):
@@ -528,26 +653,28 @@ class TestConditionalMappingDataRecordIntegration:
 
     def setup_class(self):
         self.did_mapping = {
-            0x1000: [RawDataRecord(name="Digits Number",
-                                   length=8,
-                                   min_occurrences=1,
-                                   max_occurrences=1),
-                     ConditionalFormulaDataRecord(formula=lambda raw_value: [
-                         TextDataRecord(name="BCD digits",
-                                        encoding=TextEncoding.BCD,
-                                        min_occurrences=raw_value,
-                                        max_occurrences=raw_value)])],
-            0x1234: [RawDataRecord(name="Entry#1",
-                                   length=64)],
-            0xF186: [TextDataRecord(name="ASCII text",
-                                    encoding=TextEncoding.ASCII,
-                                    min_occurrences=1,
-                                    max_occurrences=None)],
+            0x1000: [
+                RawDataRecord(name="Digits Number", length=8, min_occurrences=1, max_occurrences=1),
+                ConditionalFormulaDataRecord(
+                    formula=lambda raw_value: [
+                        TextDataRecord(
+                            name="BCD digits",
+                            encoding=TextEncoding.BCD,
+                            min_occurrences=raw_value,
+                            max_occurrences=raw_value,
+                        )
+                    ]
+                ),
+            ],
+            0x1234: [RawDataRecord(name="Entry#1", length=64)],
+            0xF186: [
+                TextDataRecord(name="ASCII text", encoding=TextEncoding.ASCII, min_occurrences=1, max_occurrences=None)
+            ],
         }
         self.undefined_dids = [0x0000, 0xFFFF]
         self.did_conditional_data_record = ConditionalMappingDataRecord(
-            mapping=self.did_mapping,
-            default_message_continuation=DEFAULT_DIAGNOSTIC_MESSAGE_CONTINUATION)
+            mapping=self.did_mapping, default_message_continuation=DEFAULT_DIAGNOSTIC_MESSAGE_CONTINUATION
+        )
 
     # getitem
 
@@ -568,8 +695,11 @@ class TestConditionalMappingDataRecordIntegration:
 
     def test_get_message_continuation__default(self):
         for did in self.undefined_dids:
-            assert (self.did_conditional_data_record.get_message_continuation(did)
-                    == DEFAULT_DIAGNOSTIC_MESSAGE_CONTINUATION)
+            assert (
+                self.did_conditional_data_record.get_message_continuation(did)
+                == DEFAULT_DIAGNOSTIC_MESSAGE_CONTINUATION
+            )
+
 
 @pytest.mark.integration
 class TestConditionalFormulaDataRecordIntegration:
@@ -579,21 +709,19 @@ class TestConditionalFormulaDataRecordIntegration:
         def continuation_length_formula(raw_value: int) -> MessageStructureAlias:
             if raw_value <= 0 or raw_value > 20:
                 raise ValueError
-            return [RawDataRecord(name="Entries",
-                                  length=32,
-                                  min_occurrences=raw_value,
-                                  max_occurrences=raw_value)]
+            return [RawDataRecord(name="Entries", length=32, min_occurrences=raw_value, max_occurrences=raw_value)]
 
         self.continuation_length_formula_1 = continuation_length_formula
-        self.continuation_length_formula_2 = lambda raw_value: [TextDataRecord(name="BCD digits",
-                                                                               encoding=TextEncoding.BCD,
-                                                                               min_occurrences=raw_value,
-                                                                               max_occurrences=raw_value)]
+        self.continuation_length_formula_2 = lambda raw_value: [
+            TextDataRecord(
+                name="BCD digits", encoding=TextEncoding.BCD, min_occurrences=raw_value, max_occurrences=raw_value
+            )
+        ]
         self.formula_data_record_1 = ConditionalFormulaDataRecord(
             formula=self.continuation_length_formula_1,
-            default_message_continuation=DEFAULT_DIAGNOSTIC_MESSAGE_CONTINUATION)
-        self.formula_data_record_2 = ConditionalFormulaDataRecord(
-            formula=self.continuation_length_formula_2)
+            default_message_continuation=DEFAULT_DIAGNOSTIC_MESSAGE_CONTINUATION,
+        )
+        self.formula_data_record_2 = ConditionalFormulaDataRecord(formula=self.continuation_length_formula_2)
 
     # getitem
 

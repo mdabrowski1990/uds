@@ -31,8 +31,7 @@ class TestTranslator:
     """Unit tests for `Translator` class."""
 
     def setup_method(self):
-        self.mock_translator = MagicMock(spec=Translator,
-                                         __class__=Translator)
+        self.mock_translator = MagicMock(spec=Translator, __class__=Translator)
         # patching
         self._patcher_deepcopy = patch(f"{SCRIPT_LOCATION}.deepcopy")
         self.mock_deepcopy = self._patcher_deepcopy.start()
@@ -42,30 +41,34 @@ class TestTranslator:
 
     # __init__
 
-    @pytest.mark.parametrize("services", [
-        [Mock()],
-        [Mock(), Mock()],
-    ])
+    @pytest.mark.parametrize(
+        "services",
+        [
+            [Mock()],
+            [Mock(), Mock()],
+        ],
+    )
     def test_init(self, services):
         assert Translator.__init__(self.mock_translator, services=services) is None
         assert self.mock_translator.services == services
 
     # __deepcopy__
 
-    @pytest.mark.parametrize("services", [
-        [Mock()],
-        [Mock(), Mock()],
-    ])
+    @pytest.mark.parametrize(
+        "services",
+        [
+            [Mock()],
+            [Mock(), Mock()],
+        ],
+    )
     @patch(f"{SCRIPT_LOCATION}.Translator.__init__")
     def test_deepcopy(self, mock_init, services):
         self.mock_translator.services = services
         memo = {}
         output = Translator.__deepcopy__(self.mock_translator, memo)
         assert output == memo[id(self.mock_translator)]
-        mock_init.assert_called_once_with(output,
-                                          [self.mock_deepcopy.return_value] * len(services))
-        self.mock_deepcopy.assert_has_calls([call(service, memo=memo) for service in services],
-                                            any_order=True)
+        mock_init.assert_called_once_with(output, [self.mock_deepcopy.return_value] * len(services))
+        self.mock_deepcopy.assert_has_calls([call(service, memo=memo) for service in services], any_order=True)
 
     # services
 
@@ -81,28 +84,41 @@ class TestTranslator:
             Translator.services.fset(self.mock_translator, services)
         mock_isinstance.assert_called_once_with(services, Collection)
 
-    @pytest.mark.parametrize("services", [
-        {Mock(spec=Service), Mock(spec=Service), Mock()},
-    ])
+    @pytest.mark.parametrize(
+        "services",
+        [
+            {Mock(spec=Service), Mock(spec=Service), Mock()},
+        ],
+    )
     def test_services__set__value_error(self, services):
         with pytest.raises(ValueError):
             Translator.services.fset(self.mock_translator, services)
 
-    @pytest.mark.parametrize("services", [
-        [Mock(spec=Service, request_sid=1, response_sid=2),
-         Mock(spec=Service, request_sid=4, response_sid=5),
-         Mock(spec=Service, request_sid=3, response_sid=4)]
-    ])
+    @pytest.mark.parametrize(
+        "services",
+        [
+            [
+                Mock(spec=Service, request_sid=1, response_sid=2),
+                Mock(spec=Service, request_sid=4, response_sid=5),
+                Mock(spec=Service, request_sid=3, response_sid=4),
+            ]
+        ],
+    )
     def test_services__set__inconsistent(self, services):
         with pytest.raises(InconsistencyError):
             Translator.services.fset(self.mock_translator, services)
 
-    @pytest.mark.parametrize("services", [
-        {Mock(spec=Service), Mock(spec=Service), Mock(spec=Service)},
-        [Mock(spec=Service, request_sid=1, response_sid=2),
-         Mock(spec=Service, request_sid=4, response_sid=5),
-         Mock(spec=Service, request_sid=3, response_sid=6)],
-    ])
+    @pytest.mark.parametrize(
+        "services",
+        [
+            {Mock(spec=Service), Mock(spec=Service), Mock(spec=Service)},
+            [
+                Mock(spec=Service, request_sid=1, response_sid=2),
+                Mock(spec=Service, request_sid=4, response_sid=5),
+                Mock(spec=Service, request_sid=3, response_sid=6),
+            ],
+        ],
+    )
     def test_services__set__valid(self, services):
         services_dict = {}
         for service in services:
@@ -116,8 +132,9 @@ class TestTranslator:
 
     def test_services_mapping__get(self):
         self.mock_translator._Translator__services_mapping = Mock()
-        assert (Translator.services_mapping.fget(self.mock_translator)
-                == self.mock_translator._Translator__services_mapping)
+        assert (
+            Translator.services_mapping.fget(self.mock_translator) == self.mock_translator._Translator__services_mapping
+        )
 
     # encode
 
@@ -128,8 +145,10 @@ class TestTranslator:
         mock_contains = Mock(return_value=True)
         self.mock_translator.services_mapping = MagicMock(__getitem__=mock_getitem, __contains__=mock_contains)
         mock_data_records_values = MagicMock()
-        assert (Translator.encode(self.mock_translator, sid=sid, data_records_values=mock_data_records_values)
-                == mock_service.encode_request.return_value)
+        assert (
+            Translator.encode(self.mock_translator, sid=sid, data_records_values=mock_data_records_values)
+            == mock_service.encode_request.return_value
+        )
         mock_getitem.assert_called_once_with(sid)
         mock_service.encode_request.assert_called_once_with(data_records_values=mock_data_records_values)
 
@@ -140,33 +159,43 @@ class TestTranslator:
         mock_contains = Mock(return_value=True)
         self.mock_translator.services_mapping = MagicMock(__getitem__=mock_getitem, __contains__=mock_contains)
         mock_data_records_values = MagicMock()
-        assert (Translator.encode(self.mock_translator, rsid=rsid, data_records_values=mock_data_records_values)
-                == mock_service.encode_positive_response.return_value)
+        assert (
+            Translator.encode(self.mock_translator, rsid=rsid, data_records_values=mock_data_records_values)
+            == mock_service.encode_positive_response.return_value
+        )
         mock_getitem.assert_called_once_with(rsid)
         mock_service.encode_positive_response.assert_called_once_with(data_records_values=mock_data_records_values)
 
-    @pytest.mark.parametrize("rsid, sid", [
-        (0x7F, 0x10),
-        (ResponseSID.NegativeResponse, 0x2E),
-    ])
+    @pytest.mark.parametrize(
+        "rsid, sid",
+        [
+            (0x7F, 0x10),
+            (ResponseSID.NegativeResponse, 0x2E),
+        ],
+    )
     def test_encode__encode_negative_response(self, rsid, sid):
         mock_service = Mock()
         mock_getitem = MagicMock(return_value=mock_service)
         mock_contains = Mock(return_value=True)
         self.mock_translator.services_mapping = MagicMock(__getitem__=mock_getitem, __contains__=mock_contains)
         mock_data_records_values = MagicMock()
-        assert (Translator.encode(self.mock_translator, rsid=rsid, sid=sid, data_records_values=mock_data_records_values)
-                == mock_service.encode_negative_response.return_value)
+        assert (
+            Translator.encode(self.mock_translator, rsid=rsid, sid=sid, data_records_values=mock_data_records_values)
+            == mock_service.encode_negative_response.return_value
+        )
         mock_getitem.assert_called_once_with(sid)
         mock_service.encode_negative_response.assert_called_once_with(nrc=mock_data_records_values["NRC"])
 
-    @pytest.mark.parametrize("sid, rsid, services_mapping", [
-        (None, None, {}),
-        (0x10, 0x7F, {0x7F: Mock()}),
-        (0x10, 0x50, {0x10: Mock(), 0x50: Mock()}),
-        (0x10, None, {0x11: Mock(), 0x0F: Mock()}),
-        (None, 0x50, {0x4F: Mock(), 0x51: Mock()}),
-    ])
+    @pytest.mark.parametrize(
+        "sid, rsid, services_mapping",
+        [
+            (None, None, {}),
+            (0x10, 0x7F, {0x7F: Mock()}),
+            (0x10, 0x50, {0x10: Mock(), 0x50: Mock()}),
+            (0x10, None, {0x11: Mock(), 0x0F: Mock()}),
+            (None, 0x50, {0x4F: Mock(), 0x51: Mock()}),
+        ],
+    )
     def test_encode__value_error(self, sid, rsid, services_mapping):
         self.mock_translator.services_mapping = services_mapping
         with pytest.raises(ValueError):
@@ -174,38 +203,38 @@ class TestTranslator:
 
     # decode
 
-    @pytest.mark.parametrize("payload", [
-        [0x10, 0x03],
-        [0x62, *range(255)],
-        [0x7F, 0x00, 0x01],
-    ])
+    @pytest.mark.parametrize(
+        "payload",
+        [
+            [0x10, 0x03],
+            [0x62, *range(255)],
+            [0x7F, 0x00, 0x01],
+        ],
+    )
     def test_decode__value_error__undefined(self, payload):
         self.mock_translator.services_mapping = {}
         with pytest.raises(ValueError):
             Translator.decode(self.mock_translator, payload)
 
-    @pytest.mark.parametrize("payload", [
-        [0x7F],
-        (0x7F, *range(255))
-    ])
+    @pytest.mark.parametrize("payload", [[0x7F], (0x7F, *range(255))])
     def test_decode__value_error__negative_response_length(self, payload):
         with pytest.raises(ValueError):
             Translator.decode(self.mock_translator, payload)
 
-    @pytest.mark.parametrize("payload", [
-        [0x10, 0x03],
-        [0x62, *range(255)]
-    ])
+    @pytest.mark.parametrize("payload", [[0x10, 0x03], [0x62, *range(255)]])
     def test_decode(self, payload):
         mock_service = Mock()
         self.mock_translator.services_mapping = {payload[0]: mock_service}
         assert Translator.decode(self.mock_translator, payload) == mock_service.decode.return_value
         mock_service.decode.assert_called_once_with(payload)
 
-    @pytest.mark.parametrize("payload", [
-        [0x7F, 0x10, 0x65],
-        [0x7F, 0x3E, 0xAB],
-    ])
+    @pytest.mark.parametrize(
+        "payload",
+        [
+            [0x7F, 0x10, 0x65],
+            [0x7F, 0x3E, 0xAB],
+        ],
+    )
     def test_decode__negative_response(self, payload):
         mock_service = Mock()
         self.mock_translator.services_mapping = {payload[1]: mock_service}
@@ -219,142 +248,144 @@ class TestTranslatorIntegration:
 
     def setup_class(self):
         did_mapping = {
-            0xF186: [MappingDataRecord(name="diagnosticSessionType",
-                                       length=8,
-                                       values_mapping={1: "Default",
-                                                       2: "Programming",
-                                                       3: "Extended"})],
-            0xF187: [TextDataRecord(name="Spare Part Number",
-                                    encoding=TextEncoding.ASCII,
-                                    min_occurrences=1,
-                                    max_occurrences=None)],
-            0xF188: [TextDataRecord(name="ECU Software Number",
-                                    encoding=TextEncoding.BCD,
-                                    min_occurrences=4,
-                                    max_occurrences=4)],
-            0xF191: [TextDataRecord(name="ECU Hardware Number",
-                                    encoding=TextEncoding.BCD,
-                                    min_occurrences=4,
-                                    max_occurrences=4)],
+            0xF186: [
+                MappingDataRecord(
+                    name="diagnosticSessionType",
+                    length=8,
+                    values_mapping={1: "Default", 2: "Programming", 3: "Extended"},
+                )
+            ],
+            0xF187: [
+                TextDataRecord(
+                    name="Spare Part Number", encoding=TextEncoding.ASCII, min_occurrences=1, max_occurrences=None
+                )
+            ],
+            0xF188: [
+                TextDataRecord(
+                    name="ECU Software Number", encoding=TextEncoding.BCD, min_occurrences=4, max_occurrences=4
+                )
+            ],
+            0xF191: [
+                TextDataRecord(
+                    name="ECU Hardware Number", encoding=TextEncoding.BCD, min_occurrences=4, max_occurrences=4
+                )
+            ],
         }
-        did_1 = MappingDataRecord(name="DID #1",
-                                  length=16,
-                                  values_mapping={
-                                      0xF186: "ActiveDiagnosticSessionDataIdentifier",
-                                      0xF187: "vehicleManufacturerSparePartNumberDataIdentifier",
-                                      0xF188: "vehicleManufacturerECUSoftwareNumberDataIdentifier",
-                                      0xF191: "vehicleManufacturerECUHardwareNumberDataIdentifier",
-                                  })
-        did_2 = MappingDataRecord(name="DID #2",
-                                  length=16,
-                                  values_mapping={
-                                      0xF186: "ActiveDiagnosticSessionDataIdentifier",
-                                      0xF187: "vehicleManufacturerSparePartNumberDataIdentifier",
-                                      0xF188: "vehicleManufacturerECUSoftwareNumberDataIdentifier",
-                                      0xF191: "vehicleManufacturerECUHardwareNumberDataIdentifier",
-                                  },
-                                  min_occurrences=0,
-                                  max_occurrences=1)
-        did_3 = MappingDataRecord(name="DID #3",
-                                  length=16,
-                                  values_mapping={
-                                      0xF186: "ActiveDiagnosticSessionDataIdentifier",
-                                      0xF187: "vehicleManufacturerSparePartNumberDataIdentifier",
-                                      0xF188: "vehicleManufacturerECUSoftwareNumberDataIdentifier",
-                                      0xF191: "vehicleManufacturerECUHardwareNumberDataIdentifier",
-                                  },
-                                  min_occurrences=0,
-                                  max_occurrences=1)
+        did_1 = MappingDataRecord(
+            name="DID #1",
+            length=16,
+            values_mapping={
+                0xF186: "ActiveDiagnosticSessionDataIdentifier",
+                0xF187: "vehicleManufacturerSparePartNumberDataIdentifier",
+                0xF188: "vehicleManufacturerECUSoftwareNumberDataIdentifier",
+                0xF191: "vehicleManufacturerECUHardwareNumberDataIdentifier",
+            },
+        )
+        did_2 = MappingDataRecord(
+            name="DID #2",
+            length=16,
+            values_mapping={
+                0xF186: "ActiveDiagnosticSessionDataIdentifier",
+                0xF187: "vehicleManufacturerSparePartNumberDataIdentifier",
+                0xF188: "vehicleManufacturerECUSoftwareNumberDataIdentifier",
+                0xF191: "vehicleManufacturerECUHardwareNumberDataIdentifier",
+            },
+            min_occurrences=0,
+            max_occurrences=1,
+        )
+        did_3 = MappingDataRecord(
+            name="DID #3",
+            length=16,
+            values_mapping={
+                0xF186: "ActiveDiagnosticSessionDataIdentifier",
+                0xF187: "vehicleManufacturerSparePartNumberDataIdentifier",
+                0xF188: "vehicleManufacturerECUSoftwareNumberDataIdentifier",
+                0xF191: "vehicleManufacturerECUHardwareNumberDataIdentifier",
+            },
+            min_occurrences=0,
+            max_occurrences=1,
+        )
         did_3_data = did_2_data = did_1_data = ConditionalMappingDataRecord(mapping=did_mapping)
         diagnostic_session_control = Service(
             request_sid=RequestSID.DiagnosticSessionControl,
             request_structure=[
-                RawDataRecord(name="subFunction",
-                              length=8,
-                              children=[
-                                  MappingDataRecord(name="SPRMIB",
-                                                    length=1,
-                                                    values_mapping={0: "no", 1: "yes"}),
-                                  MappingDataRecord(name="diagnosticSessionType",
-                                                    length=7,
-                                                    values_mapping={1: "Default",
-                                                                    2: "Programming",
-                                                                    3: "Extended"})
-                              ])
+                RawDataRecord(
+                    name="subFunction",
+                    length=8,
+                    children=[
+                        MappingDataRecord(name="SPRMIB", length=1, values_mapping={0: "no", 1: "yes"}),
+                        MappingDataRecord(
+                            name="diagnosticSessionType",
+                            length=7,
+                            values_mapping={1: "Default", 2: "Programming", 3: "Extended"},
+                        ),
+                    ],
+                )
             ],
             response_structure=[
-                RawDataRecord(name="subFunction",
-                              length=8,
-                              children=[
-                                  MappingDataRecord(name="SPRMIB",
-                                                    length=1,
-                                                    values_mapping={0: "no", 1: "yes"}),
-                                  MappingDataRecord(name="diagnosticSessionType",
-                                                    length=7,
-                                                    values_mapping={1: "Default",
-                                                                    2: "Programming",
-                                                                    3: "Extended"})
-                              ]),
-                RawDataRecord(name="sessionParameterRecord",
-                              length=32,
-                              children=[
-                                  LinearFormulaDataRecord(name="P2Server_max",
-                                                          length=16,
-                                                          factor=1,
-                                                          offset=0,
-                                                          unit="ms"),
-                                  LinearFormulaDataRecord(name="P2*Server_max",
-                                                          length=16,
-                                                          factor=10,
-                                                          offset=0,
-                                                          unit="ms")
-                              ])
-            ]
+                RawDataRecord(
+                    name="subFunction",
+                    length=8,
+                    children=[
+                        MappingDataRecord(name="SPRMIB", length=1, values_mapping={0: "no", 1: "yes"}),
+                        MappingDataRecord(
+                            name="diagnosticSessionType",
+                            length=7,
+                            values_mapping={1: "Default", 2: "Programming", 3: "Extended"},
+                        ),
+                    ],
+                ),
+                RawDataRecord(
+                    name="sessionParameterRecord",
+                    length=32,
+                    children=[
+                        LinearFormulaDataRecord(name="P2Server_max", length=16, factor=1, offset=0, unit="ms"),
+                        LinearFormulaDataRecord(name="P2*Server_max", length=16, factor=10, offset=0, unit="ms"),
+                    ],
+                ),
+            ],
         )
         read_memory_by_address = Service(
             request_sid=RequestSID.ReadMemoryByAddress,
             request_structure=[
-                RawDataRecord(name="addressAndLengthFormatIdentifier",
-                              length=8,
-                              children=[
-                                  RawDataRecord(name="memorySizeLength",
-                                                length=4),
-                                  RawDataRecord(name="memoryAddressLength",
-                                                length=4)
-                              ]),
+                RawDataRecord(
+                    name="addressAndLengthFormatIdentifier",
+                    length=8,
+                    children=[
+                        RawDataRecord(name="memorySizeLength", length=4),
+                        RawDataRecord(name="memoryAddressLength", length=4),
+                    ],
+                ),
                 ConditionalFormulaDataRecord(
                     formula=lambda addressAndLengthFormatIdentifier: [
-                        RawDataRecord(name="memoryAddress", length=8*(addressAndLengthFormatIdentifier & 0xF)),
-                        RawDataRecord(name="memorySize", length=8*(addressAndLengthFormatIdentifier >> 4))
+                        RawDataRecord(name="memoryAddress", length=8 * (addressAndLengthFormatIdentifier & 0xF)),
+                        RawDataRecord(name="memorySize", length=8 * (addressAndLengthFormatIdentifier >> 4)),
                     ]
-                )
+                ),
             ],
-            response_structure=[
-                RawDataRecord(name="data",
-                              length=8,
-                              min_occurrences=1,
-                              max_occurrences=None)
-            ]
+            response_structure=[RawDataRecord(name="data", length=8, min_occurrences=1, max_occurrences=None)],
         )
         read_data_by_identifier = Service(
             request_sid=RequestSID.ReadDataByIdentifier,
             request_structure=[
-                MappingDataRecord(name="DID",
-                                  length=16,
-                                  values_mapping={
-                                      0xF186: "ActiveDiagnosticSessionDataIdentifier",
-                                      0xF187: "vehicleManufacturerSparePartNumberDataIdentifier",
-                                      0xF188: "vehicleManufacturerECUSoftwareNumberDataIdentifier",
-                                      0xF191: "vehicleManufacturerECUHardwareNumberDataIdentifier",
-                                  },
-                                  min_occurrences=1,
-                                  max_occurrences=None)
+                MappingDataRecord(
+                    name="DID",
+                    length=16,
+                    values_mapping={
+                        0xF186: "ActiveDiagnosticSessionDataIdentifier",
+                        0xF187: "vehicleManufacturerSparePartNumberDataIdentifier",
+                        0xF188: "vehicleManufacturerECUSoftwareNumberDataIdentifier",
+                        0xF191: "vehicleManufacturerECUHardwareNumberDataIdentifier",
+                    },
+                    min_occurrences=1,
+                    max_occurrences=None,
+                )
             ],
             response_structure=[did_1, did_1_data, did_2, did_2_data, did_3, did_3_data],
         )
-        self.translator = Translator(services={diagnostic_session_control,
-                                               read_memory_by_address,
-                                               read_data_by_identifier})
+        self.translator = Translator(
+            services={diagnostic_session_control, read_memory_by_address, read_data_by_identifier}
+        )
 
     # services_mapping
 
@@ -365,148 +396,146 @@ class TestTranslatorIntegration:
 
     # encode
 
-    @pytest.mark.parametrize("sid, rsid, data_records_values, payload", [
-        # Diagnostic Session Control
-        (
-            0x10,
-            None,
-            {"subFunction": 0x03},
-            bytearray([0x10, 0x03])
-        ),
-        (
-            None,
-            0x50,
-            {
-                "subFunction": {"SPRMIB": 1, "diagnosticSessionType": 3},
-                "sessionParameterRecord": {"P2Server_max": 0x1234, "P2*Server_max": 0x5678}
-            },
-            bytearray([0x50, 0x83, 0x12, 0x34, 0x56, 0x78])
-        ),
-        (
-            0x10,
-            0x7F,
-            {"NRC": 0x84},
-            bytearray([0x7F, 0x10, 0x84])
-        ),
-        # Read Data By Identifier
-        (
-            RequestSID.ReadDataByIdentifier,
-            None,
-            {
-                "DID": [0x1234, 0xF186, 0xF191]
-            },
-            bytearray([0x22, 0x12, 0x34, 0xF1, 0x86, 0xF1, 0x91])
-        ),
-        (
-            None,
-            ResponseSID.ReadDataByIdentifier,
-            {
-                "DID #1": 0xF186,
-                "diagnosticSessionType": 0x02,
-                "DID #2": 0xF188,
-                "ECU Software Number": [9, 0, 8, 1],
-                # "DID #3": 0xF187,
-                # "Spare Part Number": [0x31, 0x32, 0x33, 0x34, 0x35]
-            },
-            bytearray(b"\x62"
-                      b"\xF1\x86\x02"
-                      b"\xF1\x88\x90\x81")
-                      # b"\xF1\x87\x31\x32\x33\x34\x35")
-        ),
-        (
-            None,
-            ResponseSID.ReadDataByIdentifier,
-            {
-                "DID #1": 0xF186,
-                "diagnosticSessionType": 0x03,
-            },
-            bytearray(b"\x62\xF1\x86\x03")
-        ),
-        (
-            RequestSID.ReadDataByIdentifier,
-            ResponseSID.NegativeResponse,
-            {
-                "NRC": NRC.GeneralReject
-            },
-            bytearray([0x7F, 0x22, 0x10])
-        ),
-        # Read Memory By Address
-        (
-            RequestSID.ReadMemoryByAddress,
-            None,
-            {
-                "addressAndLengthFormatIdentifier": 0x24,
-                "memoryAddress": 0x20481392,
-                "memorySize": 0x0103
-            },
-            bytearray([0x23, 0x24, 0x20, 0x48, 0x13, 0x92, 0x01, 0x03])
-        ),
-        (
-            None,
-            ResponseSID.ReadMemoryByAddress,
-            {
-                "data": [0xF0, 0xE1, 0xD2, 0xC3, 0xB4, 0xA5, 0x96, 0x87, 0x78, 0x69, 0x5A, 0x4B, 0x3C, 0x2D, 0x1E, 0x0F],
-            },
-            bytearray(b"\x63\xF0\xE1\xD2\xC3\xB4\xA5\x96\x87\x78\x69\x5A\x4B\x3C\x2D\x1E\x0F")
-        ),
-        (
-            RequestSID.ReadMemoryByAddress,
-            ResponseSID.NegativeResponse,
-            {
-                "NRC": NRC.ServiceNotSupportedInActiveSession
-            },
-            bytearray([0x7F, 0x23, 0x7F])
-        )
-    ])
+    @pytest.mark.parametrize(
+        "sid, rsid, data_records_values, payload",
+        [
+            # Diagnostic Session Control
+            (0x10, None, {"subFunction": 0x03}, bytearray([0x10, 0x03])),
+            (
+                None,
+                0x50,
+                {
+                    "subFunction": {"SPRMIB": 1, "diagnosticSessionType": 3},
+                    "sessionParameterRecord": {"P2Server_max": 0x1234, "P2*Server_max": 0x5678},
+                },
+                bytearray([0x50, 0x83, 0x12, 0x34, 0x56, 0x78]),
+            ),
+            (0x10, 0x7F, {"NRC": 0x84}, bytearray([0x7F, 0x10, 0x84])),
+            # Read Data By Identifier
+            (
+                RequestSID.ReadDataByIdentifier,
+                None,
+                {"DID": [0x1234, 0xF186, 0xF191]},
+                bytearray([0x22, 0x12, 0x34, 0xF1, 0x86, 0xF1, 0x91]),
+            ),
+            (
+                None,
+                ResponseSID.ReadDataByIdentifier,
+                {
+                    "DID #1": 0xF186,
+                    "diagnosticSessionType": 0x02,
+                    "DID #2": 0xF188,
+                    "ECU Software Number": [9, 0, 8, 1],
+                    # "DID #3": 0xF187,
+                    # "Spare Part Number": [0x31, 0x32, 0x33, 0x34, 0x35]
+                },
+                bytearray(b"\x62\xf1\x86\x02\xf1\x88\x90\x81"),
+                # b"\xF1\x87\x31\x32\x33\x34\x35")
+            ),
+            (
+                None,
+                ResponseSID.ReadDataByIdentifier,
+                {
+                    "DID #1": 0xF186,
+                    "diagnosticSessionType": 0x03,
+                },
+                bytearray(b"\x62\xf1\x86\x03"),
+            ),
+            (
+                RequestSID.ReadDataByIdentifier,
+                ResponseSID.NegativeResponse,
+                {"NRC": NRC.GeneralReject},
+                bytearray([0x7F, 0x22, 0x10]),
+            ),
+            # Read Memory By Address
+            (
+                RequestSID.ReadMemoryByAddress,
+                None,
+                {"addressAndLengthFormatIdentifier": 0x24, "memoryAddress": 0x20481392, "memorySize": 0x0103},
+                bytearray([0x23, 0x24, 0x20, 0x48, 0x13, 0x92, 0x01, 0x03]),
+            ),
+            (
+                None,
+                ResponseSID.ReadMemoryByAddress,
+                {
+                    "data": [
+                        0xF0,
+                        0xE1,
+                        0xD2,
+                        0xC3,
+                        0xB4,
+                        0xA5,
+                        0x96,
+                        0x87,
+                        0x78,
+                        0x69,
+                        0x5A,
+                        0x4B,
+                        0x3C,
+                        0x2D,
+                        0x1E,
+                        0x0F,
+                    ],
+                },
+                bytearray(b"\x63\xf0\xe1\xd2\xc3\xb4\xa5\x96\x87\x78\x69\x5a\x4b\x3c\x2d\x1e\x0f"),
+            ),
+            (
+                RequestSID.ReadMemoryByAddress,
+                ResponseSID.NegativeResponse,
+                {"NRC": NRC.ServiceNotSupportedInActiveSession},
+                bytearray([0x7F, 0x23, 0x7F]),
+            ),
+        ],
+    )
     def test_encode(self, sid, rsid, data_records_values, payload):
-        assert self.translator.encode(sid=sid,
-                                      rsid=rsid,
-                                      data_records_values=data_records_values) == payload
+        assert self.translator.encode(sid=sid, rsid=rsid, data_records_values=data_records_values) == payload
 
-    @pytest.mark.parametrize("sid, rsid, data_records_values", [
-        (
-            None,
-            None,
-            {"subFunction": 0x03},
-        ),
-        (
-            RequestSID.DiagnosticSessionControl,
-            None,
-            {"subFunction": 0x03, "non-existing-param": None},
-        ),
-        (
-            0x10,
-            0x50,
-            {
-                "subFunction": {"SPRMIB": 1, "diagnosticSessionType": 3},
-                "sessionParameterRecord": {"P2Server_max": 0x1234, "P2*Server_max": 0x5678}
-            },
-        ),
-        (
-            None,
-            0x7F,
-            {"NRC": 0x84},
-        ),
-        (
-            RequestSID.ReadDataByIdentifier,
-            None,
-            {
-                "DID": [0x1234, 0xF186, 0xF191],
-                "subFunction": 0x01,
-            },
-        ),
-        (
-            None,
-            ResponseSID.ReadDataByIdentifier,
-            {
-                "DID #1": 0xF186,
-                "diagnosticSessionType": 0x01,
-                "DID #2": 0xF188,
-                "ECU Software Number": [9, 0, 8, 1],
-                "not a parameter": None
-            },
-        ),
-        (
+    @pytest.mark.parametrize(
+        "sid, rsid, data_records_values",
+        [
+            (
+                None,
+                None,
+                {"subFunction": 0x03},
+            ),
+            (
+                RequestSID.DiagnosticSessionControl,
+                None,
+                {"subFunction": 0x03, "non-existing-param": None},
+            ),
+            (
+                0x10,
+                0x50,
+                {
+                    "subFunction": {"SPRMIB": 1, "diagnosticSessionType": 3},
+                    "sessionParameterRecord": {"P2Server_max": 0x1234, "P2*Server_max": 0x5678},
+                },
+            ),
+            (
+                None,
+                0x7F,
+                {"NRC": 0x84},
+            ),
+            (
+                RequestSID.ReadDataByIdentifier,
+                None,
+                {
+                    "DID": [0x1234, 0xF186, 0xF191],
+                    "subFunction": 0x01,
+                },
+            ),
+            (
+                None,
+                ResponseSID.ReadDataByIdentifier,
+                {
+                    "DID #1": 0xF186,
+                    "diagnosticSessionType": 0x01,
+                    "DID #2": 0xF188,
+                    "ECU Software Number": [9, 0, 8, 1],
+                    "not a parameter": None,
+                },
+            ),
+            (
                 None,
                 ResponseSID.ReadDataByIdentifier,
                 {
@@ -516,310 +545,407 @@ class TestTranslatorIntegration:
                     "ECU Software Number": [9, 0, 8, 1],
                     "DID #3": 0xF187,
                 },
-        ),
-        (
-            RequestSID.ReadMemoryByAddress,
-            None,
-            {
-                "addressAndLengthFormatIdentifier": 0x24,
-                "memorySize": 0x0103
-            },
-        ),
-        (
-            None,
-            ResponseSID.ReadMemoryByAddress,
-            {
-                "data": [],
-            },
-        ),
-    ])
+            ),
+            (
+                RequestSID.ReadMemoryByAddress,
+                None,
+                {"addressAndLengthFormatIdentifier": 0x24, "memorySize": 0x0103},
+            ),
+            (
+                None,
+                ResponseSID.ReadMemoryByAddress,
+                {
+                    "data": [],
+                },
+            ),
+        ],
+    )
     def test_encode__error(self, sid, rsid, data_records_values):
         with pytest.raises(Exception):
-            self.translator.encode(sid=sid,
-                                   rsid=rsid,
-                                   data_records_values=data_records_values)
+            self.translator.encode(sid=sid, rsid=rsid, data_records_values=data_records_values)
 
     # decode
 
-    @pytest.mark.parametrize("payload, decoded_message", [
-        (
-            # Diagnostic Session Control
-            [0x10, 0x40],
+    @pytest.mark.parametrize(
+        "payload, decoded_message",
+        [
             (
-                SingleOccurrenceInfo(name="SID",
-                                     length=8,
-                                     raw_value=0x10,
-                                     physical_value="DiagnosticSessionControl",
-                                     children=tuple(),
-                                     unit=None),
-                SingleOccurrenceInfo(name="subFunction",
-                                     length=8,
-                                     raw_value=0x40,
-                                     physical_value=0x40,
-                                     children=(
-                                         SingleOccurrenceInfo(name="SPRMIB",
-                                                              length=1,
-                                                              raw_value=0,
-                                                              physical_value="no",
-                                                              children=tuple(),
-                                                              unit=None),
-                                         SingleOccurrenceInfo(name="diagnosticSessionType",
-                                                              length=7,
-                                                              raw_value=0x40,
-                                                              physical_value=0x40,
-                                                              children=tuple(),
-                                                              unit=None),
-                                     ),
-                                     unit=None),
-            )
-        ),
-        (
-            [0x50, 0x83, 0x12, 0x34, 0x56, 0x78],
+                # Diagnostic Session Control
+                [0x10, 0x40],
+                (
+                    SingleOccurrenceInfo(
+                        name="SID",
+                        length=8,
+                        raw_value=0x10,
+                        physical_value="DiagnosticSessionControl",
+                        children=tuple(),
+                        unit=None,
+                    ),
+                    SingleOccurrenceInfo(
+                        name="subFunction",
+                        length=8,
+                        raw_value=0x40,
+                        physical_value=0x40,
+                        children=(
+                            SingleOccurrenceInfo(
+                                name="SPRMIB", length=1, raw_value=0, physical_value="no", children=tuple(), unit=None
+                            ),
+                            SingleOccurrenceInfo(
+                                name="diagnosticSessionType",
+                                length=7,
+                                raw_value=0x40,
+                                physical_value=0x40,
+                                children=tuple(),
+                                unit=None,
+                            ),
+                        ),
+                        unit=None,
+                    ),
+                ),
+            ),
             (
-                SingleOccurrenceInfo(name="RSID",
-                                     length=8,
-                                     raw_value=0x50,
-                                     physical_value="DiagnosticSessionControl",
-                                     children=tuple(),
-                                     unit=None),
-                SingleOccurrenceInfo(name="subFunction",
-                                     length=8,
-                                     raw_value=0x83,
-                                     physical_value=0x83,
-                                     children=(
-                                             SingleOccurrenceInfo(name="SPRMIB",
-                                                                  length=1,
-                                                                  raw_value=1,
-                                                                  physical_value="yes",
-                                                                  children=tuple(),
-                                                                  unit=None),
-                                             SingleOccurrenceInfo(name="diagnosticSessionType",
-                                                                  length=7,
-                                                                  raw_value=0x03,
-                                                                  physical_value="Extended",
-                                                                  children=tuple(),
-                                                                  unit=None),
-                                     ),
-                                     unit=None),
-                SingleOccurrenceInfo(name="sessionParameterRecord",
-                                     length=32,
-                                     raw_value=0x12345678,
-                                     physical_value=0x12345678,
-                                     children=(
-                                             SingleOccurrenceInfo(name="P2Server_max",
-                                                                  length=16,
-                                                                  raw_value=0x1234,
-                                                                  physical_value=0x1234,
-                                                                  children=tuple(),
-                                                                  unit="ms"),
-                                             SingleOccurrenceInfo(name="P2*Server_max",
-                                                                  length=16,
-                                                                  raw_value=0x5678,
-                                                                  physical_value=0x5678 * 10,
-                                                                  children=tuple(),
-                                                                  unit="ms"),
-                                     ),
-                                     unit=None)
-            )
-        ),
-        (
-            b"\x7F\x10\x84",
+                [0x50, 0x83, 0x12, 0x34, 0x56, 0x78],
+                (
+                    SingleOccurrenceInfo(
+                        name="RSID",
+                        length=8,
+                        raw_value=0x50,
+                        physical_value="DiagnosticSessionControl",
+                        children=tuple(),
+                        unit=None,
+                    ),
+                    SingleOccurrenceInfo(
+                        name="subFunction",
+                        length=8,
+                        raw_value=0x83,
+                        physical_value=0x83,
+                        children=(
+                            SingleOccurrenceInfo(
+                                name="SPRMIB", length=1, raw_value=1, physical_value="yes", children=tuple(), unit=None
+                            ),
+                            SingleOccurrenceInfo(
+                                name="diagnosticSessionType",
+                                length=7,
+                                raw_value=0x03,
+                                physical_value="Extended",
+                                children=tuple(),
+                                unit=None,
+                            ),
+                        ),
+                        unit=None,
+                    ),
+                    SingleOccurrenceInfo(
+                        name="sessionParameterRecord",
+                        length=32,
+                        raw_value=0x12345678,
+                        physical_value=0x12345678,
+                        children=(
+                            SingleOccurrenceInfo(
+                                name="P2Server_max",
+                                length=16,
+                                raw_value=0x1234,
+                                physical_value=0x1234,
+                                children=tuple(),
+                                unit="ms",
+                            ),
+                            SingleOccurrenceInfo(
+                                name="P2*Server_max",
+                                length=16,
+                                raw_value=0x5678,
+                                physical_value=0x5678 * 10,
+                                children=tuple(),
+                                unit="ms",
+                            ),
+                        ),
+                        unit=None,
+                    ),
+                ),
+            ),
             (
-                SingleOccurrenceInfo(name="RSID",
-                                     length=8,
-                                     raw_value=0x7F,
-                                     physical_value="NegativeResponse",
-                                     children=tuple(),
-                                     unit=None),
-                SingleOccurrenceInfo(name="SID",
-                                     length=8,
-                                     raw_value=0x10,
-                                     physical_value="DiagnosticSessionControl",
-                                     children=tuple(),
-                                     unit=None),
-                SingleOccurrenceInfo(name="NRC",
-                                     length=8,
-                                     raw_value=0x84,
-                                     physical_value="EngineIsNotRunning",
-                                     children=tuple(),
-                                     unit=None),
-            )
-        ),
-        # Read Data By Identifier
-        (
-            [0x22, 0x12, 0x34, 0xF1, 0x86, 0xF1, 0x91],
+                b"\x7f\x10\x84",
+                (
+                    SingleOccurrenceInfo(
+                        name="RSID",
+                        length=8,
+                        raw_value=0x7F,
+                        physical_value="NegativeResponse",
+                        children=tuple(),
+                        unit=None,
+                    ),
+                    SingleOccurrenceInfo(
+                        name="SID",
+                        length=8,
+                        raw_value=0x10,
+                        physical_value="DiagnosticSessionControl",
+                        children=tuple(),
+                        unit=None,
+                    ),
+                    SingleOccurrenceInfo(
+                        name="NRC",
+                        length=8,
+                        raw_value=0x84,
+                        physical_value="EngineIsNotRunning",
+                        children=tuple(),
+                        unit=None,
+                    ),
+                ),
+            ),
+            # Read Data By Identifier
             (
-                SingleOccurrenceInfo(name="SID",
-                                     length=8,
-                                     raw_value=0x22,
-                                     physical_value="ReadDataByIdentifier",
-                                     children=tuple(),
-                                     unit=None),
-                MultipleOccurrencesInfo(name="DID",
-                                        length=16,
-                                        raw_value=(0x1234, 0xF186, 0xF191),
-                                        physical_value=(0x1234,
-                                                        "ActiveDiagnosticSessionDataIdentifier",
-                                                        "vehicleManufacturerECUHardwareNumberDataIdentifier"),
-                                        children=((), (), ()),
-                                        unit=None),
-            )
-        ),
-        (
-            b"\x62\xF1\x86\x01\xF1\x88\x52\x49\xF1\x87\x49\x30\x41\x31\x42\x39",
+                [0x22, 0x12, 0x34, 0xF1, 0x86, 0xF1, 0x91],
+                (
+                    SingleOccurrenceInfo(
+                        name="SID",
+                        length=8,
+                        raw_value=0x22,
+                        physical_value="ReadDataByIdentifier",
+                        children=tuple(),
+                        unit=None,
+                    ),
+                    MultipleOccurrencesInfo(
+                        name="DID",
+                        length=16,
+                        raw_value=(0x1234, 0xF186, 0xF191),
+                        physical_value=(
+                            0x1234,
+                            "ActiveDiagnosticSessionDataIdentifier",
+                            "vehicleManufacturerECUHardwareNumberDataIdentifier",
+                        ),
+                        children=((), (), ()),
+                        unit=None,
+                    ),
+                ),
+            ),
             (
-                SingleOccurrenceInfo(name="RSID",
-                                     length=8,
-                                     raw_value=0x62,
-                                     physical_value="ReadDataByIdentifier",
-                                     children=tuple(),
-                                     unit=None),
-                SingleOccurrenceInfo(name="DID #1",
-                                     length=16,
-                                     raw_value=0xF186,
-                                     physical_value="ActiveDiagnosticSessionDataIdentifier",
-                                     children=tuple(),
-                                     unit=None),
-                SingleOccurrenceInfo(name="diagnosticSessionType",
-                                     length=8,
-                                     raw_value=0x01,
-                                     physical_value="Default",
-                                     children=tuple(),
-                                     unit=None),
-                SingleOccurrenceInfo(name="DID #2",
-                                     length=16,
-                                     raw_value=0xF188,
-                                     physical_value="vehicleManufacturerECUSoftwareNumberDataIdentifier",
-                                     children=tuple(),
-                                     unit=None),
-                MultipleOccurrencesInfo(name="ECU Software Number",
-                                        length=4,
-                                        raw_value=(5, 2, 4, 9),
-                                        physical_value="5249",
-                                        children=(tuple(),) * 4,
-                                        unit=None),
-                SingleOccurrenceInfo(name="DID #3",
-                                     length=16,
-                                     raw_value=0xF187,
-                                     physical_value="vehicleManufacturerSparePartNumberDataIdentifier",
-                                     children=tuple(),
-                                     unit=None),
-                MultipleOccurrencesInfo(name="Spare Part Number",
-                                        length=8,
-                                        raw_value=(0x49, 0x30, 0x41, 0x31, 0x42, 0x39),
-                                        physical_value="I0A1B9",
-                                        children=(tuple(),) * 6,
-                                        unit=None),
-            )
-        ),
-        (
-            b"\x7F\x22\x10",
+                b"\x62\xf1\x86\x01\xf1\x88\x52\x49\xf1\x87\x49\x30\x41\x31\x42\x39",
+                (
+                    SingleOccurrenceInfo(
+                        name="RSID",
+                        length=8,
+                        raw_value=0x62,
+                        physical_value="ReadDataByIdentifier",
+                        children=tuple(),
+                        unit=None,
+                    ),
+                    SingleOccurrenceInfo(
+                        name="DID #1",
+                        length=16,
+                        raw_value=0xF186,
+                        physical_value="ActiveDiagnosticSessionDataIdentifier",
+                        children=tuple(),
+                        unit=None,
+                    ),
+                    SingleOccurrenceInfo(
+                        name="diagnosticSessionType",
+                        length=8,
+                        raw_value=0x01,
+                        physical_value="Default",
+                        children=tuple(),
+                        unit=None,
+                    ),
+                    SingleOccurrenceInfo(
+                        name="DID #2",
+                        length=16,
+                        raw_value=0xF188,
+                        physical_value="vehicleManufacturerECUSoftwareNumberDataIdentifier",
+                        children=tuple(),
+                        unit=None,
+                    ),
+                    MultipleOccurrencesInfo(
+                        name="ECU Software Number",
+                        length=4,
+                        raw_value=(5, 2, 4, 9),
+                        physical_value="5249",
+                        children=(tuple(),) * 4,
+                        unit=None,
+                    ),
+                    SingleOccurrenceInfo(
+                        name="DID #3",
+                        length=16,
+                        raw_value=0xF187,
+                        physical_value="vehicleManufacturerSparePartNumberDataIdentifier",
+                        children=tuple(),
+                        unit=None,
+                    ),
+                    MultipleOccurrencesInfo(
+                        name="Spare Part Number",
+                        length=8,
+                        raw_value=(0x49, 0x30, 0x41, 0x31, 0x42, 0x39),
+                        physical_value="I0A1B9",
+                        children=(tuple(),) * 6,
+                        unit=None,
+                    ),
+                ),
+            ),
             (
-                SingleOccurrenceInfo(name="RSID",
-                                     length=8,
-                                     raw_value=0x7F,
-                                     physical_value="NegativeResponse",
-                                     children=tuple(),
-                                     unit=None),
-                SingleOccurrenceInfo(name="SID",
-                                     length=8,
-                                     raw_value=0x22,
-                                     physical_value="ReadDataByIdentifier",
-                                     children=tuple(),
-                                     unit=None),
-                SingleOccurrenceInfo(name="NRC",
-                                     length=8,
-                                     raw_value=0x10,
-                                     physical_value="GeneralReject",
-                                     children=tuple(),
-                                     unit=None),
-            )
-        ),
-        # Read Memory By Address
-        (
-            [0x23, 0x24, 0x20, 0x48, 0x13, 0x92, 0x01, 0x03],
+                b"\x7f\x22\x10",
+                (
+                    SingleOccurrenceInfo(
+                        name="RSID",
+                        length=8,
+                        raw_value=0x7F,
+                        physical_value="NegativeResponse",
+                        children=tuple(),
+                        unit=None,
+                    ),
+                    SingleOccurrenceInfo(
+                        name="SID",
+                        length=8,
+                        raw_value=0x22,
+                        physical_value="ReadDataByIdentifier",
+                        children=tuple(),
+                        unit=None,
+                    ),
+                    SingleOccurrenceInfo(
+                        name="NRC",
+                        length=8,
+                        raw_value=0x10,
+                        physical_value="GeneralReject",
+                        children=tuple(),
+                        unit=None,
+                    ),
+                ),
+            ),
+            # Read Memory By Address
             (
-                SingleOccurrenceInfo(name="SID",
-                                     length=8,
-                                     raw_value=0x23,
-                                     physical_value="ReadMemoryByAddress",
-                                     children=tuple(),
-                                     unit=None),
-                SingleOccurrenceInfo(name="addressAndLengthFormatIdentifier",
-                                     length=8,
-                                     raw_value=0x24,
-                                     physical_value=0x24,
-                                     children=(
-                                             SingleOccurrenceInfo(name="memorySizeLength",
-                                                                  length=4,
-                                                                  raw_value=0x2,
-                                                                  physical_value=0x2,
-                                                                  children=tuple(),
-                                                                  unit=None),
-                                             SingleOccurrenceInfo(name="memoryAddressLength",
-                                                                  length=4,
-                                                                  raw_value=0x4,
-                                                                  physical_value=0x4,
-                                                                  children=tuple(),
-                                                                  unit=None),
-                                     ),
-                                     unit=None),
-                SingleOccurrenceInfo(name="memoryAddress",
-                                     length=32,
-                                     raw_value=0x20481392,
-                                     physical_value=0x20481392,
-                                     children=tuple(),
-                                     unit=None),
-                SingleOccurrenceInfo(name="memorySize",
-                                     length=16,
-                                     raw_value=0x0103,
-                                     physical_value=0x0103,
-                                     children=tuple(),
-                                     unit=None),
-            )
-        ),
-        (
-            b"\x63\xF0\xE1\xD2\xC3\xB4\xA5\x96\x87\x78\x69\x5A\x4B\x3C\x2D\x1E\x0F",
+                [0x23, 0x24, 0x20, 0x48, 0x13, 0x92, 0x01, 0x03],
+                (
+                    SingleOccurrenceInfo(
+                        name="SID",
+                        length=8,
+                        raw_value=0x23,
+                        physical_value="ReadMemoryByAddress",
+                        children=tuple(),
+                        unit=None,
+                    ),
+                    SingleOccurrenceInfo(
+                        name="addressAndLengthFormatIdentifier",
+                        length=8,
+                        raw_value=0x24,
+                        physical_value=0x24,
+                        children=(
+                            SingleOccurrenceInfo(
+                                name="memorySizeLength",
+                                length=4,
+                                raw_value=0x2,
+                                physical_value=0x2,
+                                children=tuple(),
+                                unit=None,
+                            ),
+                            SingleOccurrenceInfo(
+                                name="memoryAddressLength",
+                                length=4,
+                                raw_value=0x4,
+                                physical_value=0x4,
+                                children=tuple(),
+                                unit=None,
+                            ),
+                        ),
+                        unit=None,
+                    ),
+                    SingleOccurrenceInfo(
+                        name="memoryAddress",
+                        length=32,
+                        raw_value=0x20481392,
+                        physical_value=0x20481392,
+                        children=tuple(),
+                        unit=None,
+                    ),
+                    SingleOccurrenceInfo(
+                        name="memorySize",
+                        length=16,
+                        raw_value=0x0103,
+                        physical_value=0x0103,
+                        children=tuple(),
+                        unit=None,
+                    ),
+                ),
+            ),
             (
-                SingleOccurrenceInfo(name="RSID",
-                                     length=8,
-                                     raw_value=0x63,
-                                     physical_value="ReadMemoryByAddress",
-                                     children=tuple(),
-                                     unit=None),
-                MultipleOccurrencesInfo(name="data",
-                                        length=8,
-                                        raw_value=(0xF0, 0xE1, 0xD2, 0xC3, 0xB4, 0xA5, 0x96, 0x87, 0x78, 0x69,
-                                                   0x5A, 0x4B, 0x3C, 0x2D, 0x1E, 0x0F),
-                                        physical_value=(0xF0, 0xE1, 0xD2, 0xC3, 0xB4, 0xA5, 0x96, 0x87, 0x78, 0x69,
-                                                        0x5A, 0x4B, 0x3C, 0x2D, 0x1E, 0x0F),
-                                        children=(tuple(),) * 16,
-                                        unit=None),
-            )
-        ),
-        (
-            b"\x7F\x23\x7F",
+                b"\x63\xf0\xe1\xd2\xc3\xb4\xa5\x96\x87\x78\x69\x5a\x4b\x3c\x2d\x1e\x0f",
+                (
+                    SingleOccurrenceInfo(
+                        name="RSID",
+                        length=8,
+                        raw_value=0x63,
+                        physical_value="ReadMemoryByAddress",
+                        children=tuple(),
+                        unit=None,
+                    ),
+                    MultipleOccurrencesInfo(
+                        name="data",
+                        length=8,
+                        raw_value=(
+                            0xF0,
+                            0xE1,
+                            0xD2,
+                            0xC3,
+                            0xB4,
+                            0xA5,
+                            0x96,
+                            0x87,
+                            0x78,
+                            0x69,
+                            0x5A,
+                            0x4B,
+                            0x3C,
+                            0x2D,
+                            0x1E,
+                            0x0F,
+                        ),
+                        physical_value=(
+                            0xF0,
+                            0xE1,
+                            0xD2,
+                            0xC3,
+                            0xB4,
+                            0xA5,
+                            0x96,
+                            0x87,
+                            0x78,
+                            0x69,
+                            0x5A,
+                            0x4B,
+                            0x3C,
+                            0x2D,
+                            0x1E,
+                            0x0F,
+                        ),
+                        children=(tuple(),) * 16,
+                        unit=None,
+                    ),
+                ),
+            ),
             (
-                SingleOccurrenceInfo(name="RSID",
-                                     length=8,
-                                     raw_value=0x7F,
-                                     physical_value="NegativeResponse",
-                                     children=tuple(),
-                                     unit=None),
-                SingleOccurrenceInfo(name="SID",
-                                     length=8,
-                                     raw_value=0x23,
-                                     physical_value="ReadMemoryByAddress",
-                                     children=tuple(),
-                                     unit=None),
-                SingleOccurrenceInfo(name="NRC",
-                                     length=8,
-                                     raw_value=0x7F,
-                                     physical_value="ServiceNotSupportedInActiveSession",
-                                     children=tuple(),
-                                     unit=None),
-            )
-        ),
-    ])
+                b"\x7f\x23\x7f",
+                (
+                    SingleOccurrenceInfo(
+                        name="RSID",
+                        length=8,
+                        raw_value=0x7F,
+                        physical_value="NegativeResponse",
+                        children=tuple(),
+                        unit=None,
+                    ),
+                    SingleOccurrenceInfo(
+                        name="SID",
+                        length=8,
+                        raw_value=0x23,
+                        physical_value="ReadMemoryByAddress",
+                        children=tuple(),
+                        unit=None,
+                    ),
+                    SingleOccurrenceInfo(
+                        name="NRC",
+                        length=8,
+                        raw_value=0x7F,
+                        physical_value="ServiceNotSupportedInActiveSession",
+                        children=tuple(),
+                        unit=None,
+                    ),
+                ),
+            ),
+        ],
+    )
     def test_decode(self, payload, decoded_message):
         assert self.translator.decode(payload=payload) == decoded_message

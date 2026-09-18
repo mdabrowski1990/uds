@@ -20,7 +20,6 @@ class TestFunctions:
             validate_time(value)
         mock_isinstance.assert_called_once_with(value, (int, float))
 
-
     @pytest.mark.parametrize("value", [-0.231, -0.00001])
     def test_validate_time__value_error(self, value):
         with pytest.raises(ValueError):
@@ -47,12 +46,10 @@ class TestFunctions:
             validate_timeout(value)
         mock_isinstance.assert_called_once_with(value, (int, float))
 
-
     @pytest.mark.parametrize("value", [0, -0.231])
     def test_validate_timeout__value_error(self, value):
         with pytest.raises(ValueError):
             validate_timeout(value)
-
 
     @pytest.mark.parametrize("value", [None, 0.1, 543])
     def test_validate_timeout__valid(self, value):

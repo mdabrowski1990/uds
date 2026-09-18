@@ -65,7 +65,7 @@ class TestFunctions:
             validate_raw_bytes(value=invalid_raw_bytes, allow_empty=allow_empty)
 
     # validate_raw_2byte_value
-    
+
     @pytest.mark.parametrize("value", [0x0000, 0x1234, 0xF0E1, 0xFFFF])
     def test_validate_raw_2byte_value__valid(self, value):
         assert validate_raw_2byte_value(value=value) is None

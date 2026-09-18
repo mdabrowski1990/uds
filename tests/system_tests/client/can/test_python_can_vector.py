@@ -27,23 +27,19 @@ class PythonCanVectorConfig(AbstractClientTests):
         """Configure Transport Interfaces."""
         can_addressing_format: CanAddressingFormat = choice(list(CanAddressingFormat))
         addressing_information = make_can_addressing_information(can_addressing_format)
-        self.can_interface_1 = Bus(interface="vector",
-                                   app_name="python-can",
-                                   channel=0,
-                                   fd=True,
-                                   receive_own_messages=True)
-        self.can_interface_2 = Bus(interface="vector",
-                                   app_name="python-can",
-                                   channel=1,
-                                   fd=True,
-                                   receive_own_messages=True)
+        self.can_interface_1 = Bus(
+            interface="vector", app_name="python-can", channel=0, fd=True, receive_own_messages=True
+        )
+        self.can_interface_2 = Bus(
+            interface="vector", app_name="python-can", channel=1, fd=True, receive_own_messages=True
+        )
         transport_interface_1 = PythonCanTransportInterface(
-            network_manager=self.can_interface_1,
-            addressing_information=addressing_information)
+            network_manager=self.can_interface_1, addressing_information=addressing_information
+        )
         self.transport_interface_1 = self.transport_logger(transport_interface_1)
         self.transport_interface_2 = PythonCanTransportInterface(
-            network_manager=self.can_interface_2,
-            addressing_information=addressing_information.get_other_end())
+            network_manager=self.can_interface_2, addressing_information=addressing_information.get_other_end()
+        )
 
     def teardown_method(self):
         """Clean up all tasks that were opened during test and close all connections."""
@@ -56,7 +52,7 @@ class PythonCanVectorConfig(AbstractClientTests):
         super().teardown_method()
         self.can_interface_1.shutdown()
         self.can_interface_2.shutdown()
-        sleep(self.SHUTDOWN_TIME / 1000.)
+        sleep(self.SHUTDOWN_TIME / 1000.0)
         del self.transport_interface_1
         del self.transport_interface_2
         del self.can_interface_1
@@ -65,8 +61,8 @@ class PythonCanVectorConfig(AbstractClientTests):
     def configure_slow_message_reception(self):
         """Change configuration of Transport Interfaces to reach timeouts easily."""
         self.transport_interface_1.flow_control_parameters_generator = DefaultFlowControlParametersGenerator(
-            block_size=5,
-            st_min=127)
+            block_size=5, st_min=127
+        )
 
 
 class TestBaseClientFunctionalityTests(AbstractBaseClientFunctionalityTests, PythonCanVectorConfig):

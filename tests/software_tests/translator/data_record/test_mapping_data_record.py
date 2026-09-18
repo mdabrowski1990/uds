@@ -19,8 +19,7 @@ class TestAbstractMappingDataRecord:
     """Unit tests for `AbstractMappingDataRecord` class."""
 
     def setup_method(self):
-        self.mock_data_record = Mock(spec=AbstractMappingDataRecord,
-                                     min_raw_value = 0)
+        self.mock_data_record = Mock(spec=AbstractMappingDataRecord, min_raw_value=0)
 
     @pytest.mark.parametrize("values_mapping", [Mock(), {1: "abc"}])
     def test_init(self, values_mapping):
@@ -31,8 +30,10 @@ class TestAbstractMappingDataRecord:
 
     def test_values_mapping__get(self):
         self.mock_data_record._AbstractMappingDataRecord__values_mapping = Mock()
-        assert (AbstractMappingDataRecord.values_mapping.fget(self.mock_data_record)
-                == self.mock_data_record._AbstractMappingDataRecord__values_mapping)
+        assert (
+            AbstractMappingDataRecord.values_mapping.fget(self.mock_data_record)
+            == self.mock_data_record._AbstractMappingDataRecord__values_mapping
+        )
 
     @patch(f"{SCRIPT_LOCATION}.isinstance")
     def test_values_mapping__set__type_error(self, mock_isinstance):
@@ -42,28 +43,37 @@ class TestAbstractMappingDataRecord:
             AbstractMappingDataRecord.values_mapping.fset(self.mock_data_record, mock_value)
         mock_isinstance.assert_called_once_with(mock_value, Mapping)
 
-    @pytest.mark.parametrize("max_raw_value, mapping_value", [
-        (1, {0: "No", "1": "Yes"}),
-        (3, {4: "ECU#4"}),
-    ])
+    @pytest.mark.parametrize(
+        "max_raw_value, mapping_value",
+        [
+            (1, {0: "No", "1": "Yes"}),
+            (3, {4: "ECU#4"}),
+        ],
+    )
     def test_values_mapping__set__value_error_1(self, max_raw_value, mapping_value):
         self.mock_data_record.max_raw_value = max_raw_value
         with pytest.raises(ValueError, match="out of raw values range"):
             AbstractMappingDataRecord.values_mapping.fset(self.mock_data_record, mapping_value)
 
-    @pytest.mark.parametrize("max_raw_value, mapping_value", [
-        (1, {0: False, 1: True}),
-        (3, {3: 4.5}),
-    ])
+    @pytest.mark.parametrize(
+        "max_raw_value, mapping_value",
+        [
+            (1, {0: False, 1: True}),
+            (3, {3: 4.5}),
+        ],
+    )
     def test_values_mapping__set__value_error_2(self, max_raw_value, mapping_value):
         self.mock_data_record.max_raw_value = max_raw_value
         with pytest.raises(ValueError, match="not str type"):
             AbstractMappingDataRecord.values_mapping.fset(self.mock_data_record, mapping_value)
 
-    @pytest.mark.parametrize("max_raw_value, mapping_value", [
-        (1, {0: "No", 1: "Yes"}),
-        (3, {i: f"ECU#{i}" for i in range(4)}),
-    ])
+    @pytest.mark.parametrize(
+        "max_raw_value, mapping_value",
+        [
+            (1, {0: "No", 1: "Yes"}),
+            (3, {i: f"ECU#{i}" for i in range(4)}),
+        ],
+    )
     def test_values_mapping__set__valid(self, max_raw_value, mapping_value):
         self.mock_data_record.max_raw_value = max_raw_value
         assert AbstractMappingDataRecord.values_mapping.fset(self.mock_data_record, mapping_value) is None
@@ -77,8 +87,10 @@ class TestAbstractMappingDataRecord:
 
     def test_labels_mapping__get(self):
         self.mock_data_record._AbstractMappingDataRecord__labels_mapping = Mock()
-        assert (AbstractMappingDataRecord.labels_mapping.fget(self.mock_data_record)
-                == self.mock_data_record._AbstractMappingDataRecord__labels_mapping)
+        assert (
+            AbstractMappingDataRecord.labels_mapping.fget(self.mock_data_record)
+            == self.mock_data_record._AbstractMappingDataRecord__labels_mapping
+        )
 
 
 class TestMappingDataRecord:
@@ -104,59 +116,86 @@ class TestMappingDataRecord:
 
     # __init__
 
-    @pytest.mark.parametrize("name, length, values_mapping", [
-        ("TestRawDataRecord", 8, {1: "A", 2: "B", 3: "C"}),
-        (Mock(), Mock(), Mock()),
-    ])
+    @pytest.mark.parametrize(
+        "name, length, values_mapping",
+        [
+            ("TestRawDataRecord", 8, {1: "A", 2: "B", 3: "C"}),
+            (Mock(), Mock(), Mock()),
+        ],
+    )
     @patch(f"{SCRIPT_LOCATION}.RawDataRecord.__init__")
     @patch(f"{SCRIPT_LOCATION}.AbstractMappingDataRecord.__init__")
-    def test_init__mandatory_args(self, mock_abstract_mapping_data_record_init, mock_raw_data_record_init,
-                                  name, length, values_mapping):
+    def test_init__mandatory_args(
+        self, mock_abstract_mapping_data_record_init, mock_raw_data_record_init, name, length, values_mapping
+    ):
         assert MappingDataRecord.__init__(self.mock_data_record, name, length, values_mapping) is None
-        mock_raw_data_record_init.assert_called_once_with(self.mock_data_record,
-                                                          name=name,
-                                                          length=length,
-                                                          children=tuple(),
-                                                          unit=None,
-                                                          min_occurrences=1,
-                                                          max_occurrences=1,
-                                                          enforce_reoccurring=False)
-        mock_abstract_mapping_data_record_init.assert_called_once_with(self.mock_data_record,
-                                                                       values_mapping=values_mapping)
+        mock_raw_data_record_init.assert_called_once_with(
+            self.mock_data_record,
+            name=name,
+            length=length,
+            children=tuple(),
+            unit=None,
+            min_occurrences=1,
+            max_occurrences=1,
+            enforce_reoccurring=False,
+        )
+        mock_abstract_mapping_data_record_init.assert_called_once_with(
+            self.mock_data_record, values_mapping=values_mapping
+        )
 
-    @pytest.mark.parametrize("name, length, values_mapping, children, unit, min_occurrences, max_occurrences, "
-                             "enforce_reoccurring", [
-        ("TestRawDataRecord", 8, {1: "A", 2: "B", 3: "C"}, [Mock(), Mock()], "m/s", 0, None, True),
-        (Mock(), Mock(), Mock(), Mock(), Mock(), Mock(), Mock(), Mock()),
-    ])
+    @pytest.mark.parametrize(
+        "name, length, values_mapping, children, unit, min_occurrences, max_occurrences, enforce_reoccurring",
+        [
+            ("TestRawDataRecord", 8, {1: "A", 2: "B", 3: "C"}, [Mock(), Mock()], "m/s", 0, None, True),
+            (Mock(), Mock(), Mock(), Mock(), Mock(), Mock(), Mock(), Mock()),
+        ],
+    )
     @patch(f"{SCRIPT_LOCATION}.AbstractDataRecord.__init__")
     @patch(f"{SCRIPT_LOCATION}.AbstractMappingDataRecord.__init__")
-    def test_init__all_args(self, mock_abstract_mapping_data_record_init, mock_abstract_data_record_init,
-                            name, length, values_mapping, children, unit, min_occurrences, max_occurrences,
-                            enforce_reoccurring):
-        assert MappingDataRecord.__init__(self.mock_data_record,
-                                          name=name,
-                                          length=length,
-                                          values_mapping=values_mapping,
-                                          children=children,
-                                          unit=unit,
-                                          min_occurrences=min_occurrences,
-                                          max_occurrences=max_occurrences,
-                                          enforce_reoccurring=enforce_reoccurring) is None
-        mock_abstract_data_record_init.assert_called_once_with(name=name,
-                                                               length=length,
-                                                               children=children,
-                                                               unit=unit,
-                                                               min_occurrences=min_occurrences,
-                                                               max_occurrences=max_occurrences,
-                                                               enforce_reoccurring=enforce_reoccurring)
-        mock_abstract_mapping_data_record_init.assert_called_once_with(self.mock_data_record,
-                                                                       values_mapping=values_mapping)
+    def test_init__all_args(
+        self,
+        mock_abstract_mapping_data_record_init,
+        mock_abstract_data_record_init,
+        name,
+        length,
+        values_mapping,
+        children,
+        unit,
+        min_occurrences,
+        max_occurrences,
+        enforce_reoccurring,
+    ):
+        assert (
+            MappingDataRecord.__init__(
+                self.mock_data_record,
+                name=name,
+                length=length,
+                values_mapping=values_mapping,
+                children=children,
+                unit=unit,
+                min_occurrences=min_occurrences,
+                max_occurrences=max_occurrences,
+                enforce_reoccurring=enforce_reoccurring,
+            )
+            is None
+        )
+        mock_abstract_data_record_init.assert_called_once_with(
+            name=name,
+            length=length,
+            children=children,
+            unit=unit,
+            min_occurrences=min_occurrences,
+            max_occurrences=max_occurrences,
+            enforce_reoccurring=enforce_reoccurring,
+        )
+        mock_abstract_mapping_data_record_init.assert_called_once_with(
+            self.mock_data_record, values_mapping=values_mapping
+        )
 
     # __deepcopy__
 
     @patch(f"{SCRIPT_LOCATION}.MappingDataRecord.__init__")
-    def test_deepcopy(self,  mock_init):
+    def test_deepcopy(self, mock_init):
         memo = {}
         output = MappingDataRecord.__deepcopy__(self.mock_data_record, memo)
         assert output == memo[id(self.mock_data_record)]
@@ -169,45 +208,45 @@ class TestMappingDataRecord:
             min_occurrences=self.mock_data_record.min_occurrences,
             max_occurrences=self.mock_data_record.max_occurrences,
             unit=self.mock_data_record.unit,
-            enforce_reoccurring=self.mock_data_record.enforce_reoccurring)
+            enforce_reoccurring=self.mock_data_record.enforce_reoccurring,
+        )
         self.mock_deepcopy.assert_called_once_with(self.mock_data_record.children, memo=memo)
 
     # get_physical_value
 
-    @pytest.mark.parametrize("raw_value, values_mapping", [
-        (0, {0: "foo", 1: "bar"}),
-        (3, {i: Mock() for i in range(7)})
-    ])
+    @pytest.mark.parametrize(
+        "raw_value, values_mapping", [(0, {0: "foo", 1: "bar"}), (3, {i: Mock() for i in range(7)})]
+    )
     def test_get_physical_value__from_values_mapping(self, raw_value, values_mapping):
         self.mock_data_record.values_mapping = values_mapping
         assert MappingDataRecord.get_physical_value(self.mock_data_record, raw_value) == values_mapping[raw_value]
         self.mock_warn.assert_not_called()
 
-    @pytest.mark.parametrize("raw_value, values_mapping", [
-        (0, {1: "foo", 2: "bar"}),
-        (3, {i: Mock() for i in range(4, 13)})
-    ])
+    @pytest.mark.parametrize(
+        "raw_value, values_mapping", [(0, {1: "foo", 2: "bar"}), (3, {i: Mock() for i in range(4, 13)})]
+    )
     @patch(f"{SCRIPT_LOCATION}.RawDataRecord.get_physical_value")
     def test_get_physical_value__not_in_values_mapping(self, mock_get_physical_value, raw_value, values_mapping):
         self.mock_data_record.values_mapping = values_mapping
-        assert MappingDataRecord.get_physical_value(self.mock_data_record, raw_value) == mock_get_physical_value.return_value
+        assert (
+            MappingDataRecord.get_physical_value(self.mock_data_record, raw_value)
+            == mock_get_physical_value.return_value
+        )
         mock_get_physical_value.assert_called_once_with(raw_value)
         self.mock_warn.assert_called_once()
 
     # get_raw_value
 
-    @pytest.mark.parametrize("physical_value, labels_mapping", [
-        ("foo", {"foo": 0, "bar": 1}),
-        ("ECU#4", {f"ECU#{i}": i for i in range(7)})
-    ])
+    @pytest.mark.parametrize(
+        "physical_value, labels_mapping", [("foo", {"foo": 0, "bar": 1}), ("ECU#4", {f"ECU#{i}": i for i in range(7)})]
+    )
     def test_get_raw_value__from_labels_mapping(self, physical_value, labels_mapping):
         self.mock_data_record.labels_mapping = labels_mapping
         assert MappingDataRecord.get_raw_value(self.mock_data_record, physical_value) == labels_mapping[physical_value]
 
-    @pytest.mark.parametrize("physical_value, labels_mapping", [
-        (2, {"foo": 0, "bar": 1}),
-        (Mock(), {f"ECU#{i}": i for i in range(7)})
-    ])
+    @pytest.mark.parametrize(
+        "physical_value, labels_mapping", [(2, {"foo": 0, "bar": 1}), (Mock(), {f"ECU#{i}": i for i in range(7)})]
+    )
     @patch(f"{SCRIPT_LOCATION}.RawDataRecord.get_raw_value")
     def test_get_raw_value__not_in_labels_mapping(self, mock_get_raw_value, physical_value, labels_mapping):
         self.mock_data_record.labels_mapping = labels_mapping
@@ -238,63 +277,103 @@ class TestMappingAndLinearFormulaDataRecord:
 
     # __init__
 
-    @pytest.mark.parametrize("name, length, values_mapping, factor, offset", [
-        ("TestRawDataRecord", 8, {1: "A", 2: "B", 3: "C"}, 1.25, 9.5),
-        (Mock(), Mock(), Mock(), Mock(), Mock()),
-    ])
+    @pytest.mark.parametrize(
+        "name, length, values_mapping, factor, offset",
+        [
+            ("TestRawDataRecord", 8, {1: "A", 2: "B", 3: "C"}, 1.25, 9.5),
+            (Mock(), Mock(), Mock(), Mock(), Mock()),
+        ],
+    )
     @patch(f"{SCRIPT_LOCATION}.LinearFormulaDataRecord.__init__")
     @patch(f"{SCRIPT_LOCATION}.AbstractMappingDataRecord.__init__")
-    def test_init__mandatory_args(self, mock_abstract_mapping_data_record_init, mock_linear_data_record_init,
-                                  name, length, values_mapping, factor, offset):
-        assert MappingAndLinearFormulaDataRecord.__init__(self.mock_data_record,
-                                                          name=name,
-                                                          length=length,
-                                                          values_mapping=values_mapping,
-                                                          factor=factor,
-                                                          offset=offset) is None
-        mock_linear_data_record_init.assert_called_once_with(self.mock_data_record,
-                                                             name=name,
-                                                             length=length,
-                                                             factor=factor,
-                                                             offset=offset,
-                                                             unit=None,
-                                                             min_occurrences=1,
-                                                             max_occurrences=1,
-                                                             enforce_reoccurring=False)
-        mock_abstract_mapping_data_record_init.assert_called_once_with(self.mock_data_record,
-                                                                       values_mapping=values_mapping)
+    def test_init__mandatory_args(
+        self,
+        mock_abstract_mapping_data_record_init,
+        mock_linear_data_record_init,
+        name,
+        length,
+        values_mapping,
+        factor,
+        offset,
+    ):
+        assert (
+            MappingAndLinearFormulaDataRecord.__init__(
+                self.mock_data_record,
+                name=name,
+                length=length,
+                values_mapping=values_mapping,
+                factor=factor,
+                offset=offset,
+            )
+            is None
+        )
+        mock_linear_data_record_init.assert_called_once_with(
+            self.mock_data_record,
+            name=name,
+            length=length,
+            factor=factor,
+            offset=offset,
+            unit=None,
+            min_occurrences=1,
+            max_occurrences=1,
+            enforce_reoccurring=False,
+        )
+        mock_abstract_mapping_data_record_init.assert_called_once_with(
+            self.mock_data_record, values_mapping=values_mapping
+        )
 
-    @pytest.mark.parametrize("name, length, values_mapping, factor, offset, unit, min_occurrences, max_occurrences,"
-                             "enforce_reoccurring", [
-        ("TestRawDataRecord", 8, {1: "A", 2: "B", 3: "C"}, 5, 10, "m/s", 0, None, True),
-        (Mock(), Mock(), Mock(), Mock(), Mock(), Mock(), Mock(), Mock(), Mock()),
-    ])
+    @pytest.mark.parametrize(
+        "name, length, values_mapping, factor, offset, unit, min_occurrences, max_occurrences,enforce_reoccurring",
+        [
+            ("TestRawDataRecord", 8, {1: "A", 2: "B", 3: "C"}, 5, 10, "m/s", 0, None, True),
+            (Mock(), Mock(), Mock(), Mock(), Mock(), Mock(), Mock(), Mock(), Mock()),
+        ],
+    )
     @patch(f"{SCRIPT_LOCATION}.LinearFormulaDataRecord.__init__")
     @patch(f"{SCRIPT_LOCATION}.AbstractMappingDataRecord.__init__")
-    def test_init__all_args(self, mock_abstract_mapping_data_record_init, mock_linear_data_record_init,
-                            name, length, values_mapping, factor, offset, unit, min_occurrences, max_occurrences,
-                            enforce_reoccurring):
-        assert MappingAndLinearFormulaDataRecord.__init__(self.mock_data_record,
-                                                          name=name,
-                                                          length=length,
-                                                          values_mapping=values_mapping,
-                                                          factor=factor,
-                                                          offset=offset,
-                                                          unit=unit,
-                                                          min_occurrences=min_occurrences,
-                                                          max_occurrences=max_occurrences,
-                                                          enforce_reoccurring=enforce_reoccurring) is None
-        mock_linear_data_record_init.assert_called_once_with(self.mock_data_record,
-                                                             name=name,
-                                                             length=length,
-                                                             factor=factor,
-                                                             offset=offset,
-                                                             unit=unit,
-                                                             min_occurrences=min_occurrences,
-                                                             max_occurrences=max_occurrences,
-                                                             enforce_reoccurring=enforce_reoccurring)
-        mock_abstract_mapping_data_record_init.assert_called_once_with(self.mock_data_record,
-                                                                       values_mapping=values_mapping)
+    def test_init__all_args(
+        self,
+        mock_abstract_mapping_data_record_init,
+        mock_linear_data_record_init,
+        name,
+        length,
+        values_mapping,
+        factor,
+        offset,
+        unit,
+        min_occurrences,
+        max_occurrences,
+        enforce_reoccurring,
+    ):
+        assert (
+            MappingAndLinearFormulaDataRecord.__init__(
+                self.mock_data_record,
+                name=name,
+                length=length,
+                values_mapping=values_mapping,
+                factor=factor,
+                offset=offset,
+                unit=unit,
+                min_occurrences=min_occurrences,
+                max_occurrences=max_occurrences,
+                enforce_reoccurring=enforce_reoccurring,
+            )
+            is None
+        )
+        mock_linear_data_record_init.assert_called_once_with(
+            self.mock_data_record,
+            name=name,
+            length=length,
+            factor=factor,
+            offset=offset,
+            unit=unit,
+            min_occurrences=min_occurrences,
+            max_occurrences=max_occurrences,
+            enforce_reoccurring=enforce_reoccurring,
+        )
+        mock_abstract_mapping_data_record_init.assert_called_once_with(
+            self.mock_data_record, values_mapping=values_mapping
+        )
 
     # __deepcopy__
 
@@ -313,67 +392,73 @@ class TestMappingAndLinearFormulaDataRecord:
             min_occurrences=self.mock_data_record.min_occurrences,
             max_occurrences=self.mock_data_record.max_occurrences,
             unit=self.mock_data_record.unit,
-            enforce_reoccurring=self.mock_data_record.enforce_reoccurring)
+            enforce_reoccurring=self.mock_data_record.enforce_reoccurring,
+        )
 
     # get_physical_value
 
-    @pytest.mark.parametrize("raw_value, values_mapping", [
-        (0, {0: "foo", 1: "bar"}),
-        (3, {i: Mock() for i in range(7)})
-    ])
+    @pytest.mark.parametrize(
+        "raw_value, values_mapping", [(0, {0: "foo", 1: "bar"}), (3, {i: Mock() for i in range(7)})]
+    )
     def test_get_physical_value__from_values_mapping(self, raw_value, values_mapping):
         self.mock_data_record.values_mapping = values_mapping
-        assert (MappingAndLinearFormulaDataRecord.get_physical_value(self.mock_data_record, raw_value)
-                == values_mapping[raw_value])
+        assert (
+            MappingAndLinearFormulaDataRecord.get_physical_value(self.mock_data_record, raw_value)
+            == values_mapping[raw_value]
+        )
 
-    @pytest.mark.parametrize("raw_value, values_mapping", [
-        (0, {1: "foo", 2: "bar"}),
-        (3, {i: Mock() for i in range(4, 13)})
-    ])
+    @pytest.mark.parametrize(
+        "raw_value, values_mapping", [(0, {1: "foo", 2: "bar"}), (3, {i: Mock() for i in range(4, 13)})]
+    )
     @patch(f"{SCRIPT_LOCATION}.LinearFormulaDataRecord.get_physical_value")
     def test_get_physical_value__not_in_values_mapping(self, mock_get_physical_value, raw_value, values_mapping):
         self.mock_data_record.values_mapping = values_mapping
-        assert (MappingAndLinearFormulaDataRecord.get_physical_value(self.mock_data_record, raw_value)
-                == mock_get_physical_value.return_value)
+        assert (
+            MappingAndLinearFormulaDataRecord.get_physical_value(self.mock_data_record, raw_value)
+            == mock_get_physical_value.return_value
+        )
         mock_get_physical_value.assert_called_once_with(raw_value)
         self.mock_warn.assert_not_called()
 
     # get_raw_value
 
-    @pytest.mark.parametrize("physical_value, labels_mapping", [
-        ("foo", {"foo": 0, "bar": 1}),
-        ("ECU#4", {f"ECU#{i}": i for i in range(7)})
-    ])
+    @pytest.mark.parametrize(
+        "physical_value, labels_mapping", [("foo", {"foo": 0, "bar": 1}), ("ECU#4", {f"ECU#{i}": i for i in range(7)})]
+    )
     def test_get_raw_value__from_labels_mapping(self, physical_value, labels_mapping):
         self.mock_data_record.labels_mapping = labels_mapping
-        assert (MappingAndLinearFormulaDataRecord.get_raw_value(self.mock_data_record, physical_value)
-                == labels_mapping[physical_value])
+        assert (
+            MappingAndLinearFormulaDataRecord.get_raw_value(self.mock_data_record, physical_value)
+            == labels_mapping[physical_value]
+        )
         self.mock_warn.assert_not_called()
 
-    @pytest.mark.parametrize("physical_value, labels_mapping", [
-        (2, {"foo": 0, "bar": 1}),
-        (Mock(), {f"ECU#{i}": i for i in range(7)})
-    ])
+    @pytest.mark.parametrize(
+        "physical_value, labels_mapping", [(2, {"foo": 0, "bar": 1}), (Mock(), {f"ECU#{i}": i for i in range(7)})]
+    )
     @patch(f"{SCRIPT_LOCATION}.LinearFormulaDataRecord.get_raw_value")
     def test_get_raw_value__physical_value_with_label(self, mock_get_raw_value, physical_value, labels_mapping):
         self.mock_data_record.labels_mapping = labels_mapping
         self.mock_data_record.values_mapping = {value: key for key, value in labels_mapping.items()}
         mock_get_raw_value.return_value = tuple(labels_mapping.values())[0]
-        assert (MappingAndLinearFormulaDataRecord.get_raw_value(self.mock_data_record, physical_value)
-                == mock_get_raw_value.return_value)
+        assert (
+            MappingAndLinearFormulaDataRecord.get_raw_value(self.mock_data_record, physical_value)
+            == mock_get_raw_value.return_value
+        )
         mock_get_raw_value.assert_called_once_with(physical_value)
         self.mock_warn.assert_called_once()
 
-    @pytest.mark.parametrize("physical_value, labels_mapping", [
-        (2, {"foo": 0, "bar": 1}),
-        (Mock(), {f"ECU#{i}": i for i in range(7)})
-    ])
+    @pytest.mark.parametrize(
+        "physical_value, labels_mapping", [(2, {"foo": 0, "bar": 1}), (Mock(), {f"ECU#{i}": i for i in range(7)})]
+    )
     @patch(f"{SCRIPT_LOCATION}.LinearFormulaDataRecord.get_raw_value")
     def test_get_raw_value__not_in_labels_mapping(self, mock_get_raw_value, physical_value, labels_mapping):
         self.mock_data_record.labels_mapping = labels_mapping
         self.mock_data_record.values_mapping = {value: key for key, value in labels_mapping.items()}
-        assert (MappingAndLinearFormulaDataRecord.get_raw_value(self.mock_data_record, physical_value)
-                == mock_get_raw_value.return_value)
+        assert (
+            MappingAndLinearFormulaDataRecord.get_raw_value(self.mock_data_record, physical_value)
+            == mock_get_raw_value.return_value
+        )
         mock_get_raw_value.assert_called_once_with(physical_value)
         self.mock_warn.assert_not_called()
 
@@ -383,95 +468,108 @@ class TestMappingDataRecordIntegration:
     """Integration tests for `MappingDataRecord` class."""
 
     def setup_class(self):
-        self.dtc_status_bit0 = MappingDataRecord(name="Test Failed",
-                                                 length=1,
-                                                 values_mapping={0: "No", 1: "Yes"})
-        self.dtc_status_bit1 = MappingDataRecord(name="Test Failed This Operation Cycle",
-                                                 length=1,
-                                                 values_mapping={0: "No", 1: "Yes"})
-        self.dtc_status_bit2 = MappingDataRecord(name="Pending DTC",
-                                                 length=1,
-                                                 values_mapping={0: "No", 1: "Yes"})
-        self.dtc_status_bit3 = MappingDataRecord(name="Confirmed DTC",
-                                                 length=1,
-                                                 values_mapping={0: "No", 1: "Yes"})
-        self.dtc_status_bit4 = MappingDataRecord(name="Test Not Completed Since Last Clear",
-                                                 length=1,
-                                                 values_mapping={0: "No", 1: "Yes"})
-        self.dtc_status_bit5 = MappingDataRecord(name="Test Failed Since Last Clear",
-                                                 length=1,
-                                                 values_mapping={0: "No", 1: "Yes"})
-        self.dtc_status_bit6 = MappingDataRecord(name="Test Not Completed This Operation Cycle",
-                                                 length=1,
-                                                 values_mapping={0: "No", 1: "Yes"})
-        self.dtc_status_bit7 = MappingDataRecord(name="Warning Indicator Requested/MIL on",
-                                                 length=1,
-                                                 values_mapping={0: "No", 1: "Yes"})
-        self.dtc_status = MappingDataRecord(name="DTC Status",
-                                            length=8,
-                                            values_mapping={
-                                                0x00: "Inactive",
-                                                0x2F: "Active with Lamp OFF",
-                                                0xAF: "Active with Lamp ON",
-                                            },
-                                            children=[self.dtc_status_bit7,
-                                                      self.dtc_status_bit6,
-                                                      self.dtc_status_bit5,
-                                                      self.dtc_status_bit4,
-                                                      self.dtc_status_bit3,
-                                                      self.dtc_status_bit2,
-                                                      self.dtc_status_bit1,
-                                                      self.dtc_status_bit0],
-                                            max_occurrences=None)
+        self.dtc_status_bit0 = MappingDataRecord(name="Test Failed", length=1, values_mapping={0: "No", 1: "Yes"})
+        self.dtc_status_bit1 = MappingDataRecord(
+            name="Test Failed This Operation Cycle", length=1, values_mapping={0: "No", 1: "Yes"}
+        )
+        self.dtc_status_bit2 = MappingDataRecord(name="Pending DTC", length=1, values_mapping={0: "No", 1: "Yes"})
+        self.dtc_status_bit3 = MappingDataRecord(name="Confirmed DTC", length=1, values_mapping={0: "No", 1: "Yes"})
+        self.dtc_status_bit4 = MappingDataRecord(
+            name="Test Not Completed Since Last Clear", length=1, values_mapping={0: "No", 1: "Yes"}
+        )
+        self.dtc_status_bit5 = MappingDataRecord(
+            name="Test Failed Since Last Clear", length=1, values_mapping={0: "No", 1: "Yes"}
+        )
+        self.dtc_status_bit6 = MappingDataRecord(
+            name="Test Not Completed This Operation Cycle", length=1, values_mapping={0: "No", 1: "Yes"}
+        )
+        self.dtc_status_bit7 = MappingDataRecord(
+            name="Warning Indicator Requested/MIL on", length=1, values_mapping={0: "No", 1: "Yes"}
+        )
+        self.dtc_status = MappingDataRecord(
+            name="DTC Status",
+            length=8,
+            values_mapping={
+                0x00: "Inactive",
+                0x2F: "Active with Lamp OFF",
+                0xAF: "Active with Lamp ON",
+            },
+            children=[
+                self.dtc_status_bit7,
+                self.dtc_status_bit6,
+                self.dtc_status_bit5,
+                self.dtc_status_bit4,
+                self.dtc_status_bit3,
+                self.dtc_status_bit2,
+                self.dtc_status_bit1,
+                self.dtc_status_bit0,
+            ],
+            max_occurrences=None,
+        )
 
     # get_physical_value
 
-    @pytest.mark.parametrize("dtc_status_value, expected_output", [
-        (0x00, {
-            "DTC Status": "Inactive",
-            "Test Failed": (0,),
-            "Test Failed This Operation Cycle": (0,),
-            "Pending DTC": (0,),
-            "Confirmed DTC": (0,),
-            "Test Not Completed Since Last Clear": (0,),
-            "Test Failed Since Last Clear": (0,),
-            "Test Not Completed This Operation Cycle": (0,),
-            "Warning Indicator Requested/MIL on": (0,),
-        }),
-        (0x2F, {
-            "DTC Status": "Active with Lamp OFF",
-            "Test Failed": (1,),
-            "Test Failed This Operation Cycle": (1,),
-            "Pending DTC": (1,),
-            "Confirmed DTC": (1,),
-            "Test Not Completed Since Last Clear": (0,),
-            "Test Failed Since Last Clear": (1,),
-            "Test Not Completed This Operation Cycle": (0,),
-            "Warning Indicator Requested/MIL on": (0,),
-        }),
-        (0xAF, {
-            "DTC Status": "Active with Lamp ON",
-            "Test Failed": (1,),
-            "Test Failed This Operation Cycle":(1,),
-            "Pending DTC": (1,),
-            "Confirmed DTC": (1,),
-            "Test Not Completed Since Last Clear":(0,),
-            "Test Failed Since Last Clear": (1,),
-            "Test Not Completed This Operation Cycle": (0,),
-            "Warning Indicator Requested/MIL on": (1,),
-        }),
-        (0xFF, {
-            "DTC Status": 0xFF,
-            "Test Failed": (1,),
-            "Test Failed This Operation Cycle": (1,),
-            "Pending DTC": (1,),
-            "Confirmed DTC": (1,),
-            "Test Not Completed Since Last Clear": (1,),
-            "Test Failed Since Last Clear": (1,),
-            "Test Not Completed This Operation Cycle": (1,),
-            "Warning Indicator Requested/MIL on": (1,),
-        })
-    ])
+    @pytest.mark.parametrize(
+        "dtc_status_value, expected_output",
+        [
+            (
+                0x00,
+                {
+                    "DTC Status": "Inactive",
+                    "Test Failed": (0,),
+                    "Test Failed This Operation Cycle": (0,),
+                    "Pending DTC": (0,),
+                    "Confirmed DTC": (0,),
+                    "Test Not Completed Since Last Clear": (0,),
+                    "Test Failed Since Last Clear": (0,),
+                    "Test Not Completed This Operation Cycle": (0,),
+                    "Warning Indicator Requested/MIL on": (0,),
+                },
+            ),
+            (
+                0x2F,
+                {
+                    "DTC Status": "Active with Lamp OFF",
+                    "Test Failed": (1,),
+                    "Test Failed This Operation Cycle": (1,),
+                    "Pending DTC": (1,),
+                    "Confirmed DTC": (1,),
+                    "Test Not Completed Since Last Clear": (0,),
+                    "Test Failed Since Last Clear": (1,),
+                    "Test Not Completed This Operation Cycle": (0,),
+                    "Warning Indicator Requested/MIL on": (0,),
+                },
+            ),
+            (
+                0xAF,
+                {
+                    "DTC Status": "Active with Lamp ON",
+                    "Test Failed": (1,),
+                    "Test Failed This Operation Cycle": (1,),
+                    "Pending DTC": (1,),
+                    "Confirmed DTC": (1,),
+                    "Test Not Completed Since Last Clear": (0,),
+                    "Test Failed Since Last Clear": (1,),
+                    "Test Not Completed This Operation Cycle": (0,),
+                    "Warning Indicator Requested/MIL on": (1,),
+                },
+            ),
+            (
+                0xFF,
+                {
+                    "DTC Status": 0xFF,
+                    "Test Failed": (1,),
+                    "Test Failed This Operation Cycle": (1,),
+                    "Pending DTC": (1,),
+                    "Confirmed DTC": (1,),
+                    "Test Not Completed Since Last Clear": (1,),
+                    "Test Failed Since Last Clear": (1,),
+                    "Test Not Completed This Operation Cycle": (1,),
+                    "Warning Indicator Requested/MIL on": (1,),
+                },
+            ),
+        ],
+    )
     def test_get_physical_value__valid(self, dtc_status_value, expected_output):
         assert self.dtc_status.get_physical_value(dtc_status_value) == expected_output["DTC Status"]
         children_values = self.dtc_status.get_children_values(dtc_status_value)
@@ -487,13 +585,16 @@ class TestMappingDataRecordIntegration:
 
     # get_raw_value
 
-    @pytest.mark.parametrize("dtc_status_value, expected_output", [
-        ("Inactive", 0x00),
-        ("Active with Lamp OFF", 0x2F),
-        ("Active with Lamp ON", 0xAF),
-        (0xAF, 0xAF),
-        (0x11, 0x11),
-    ])
+    @pytest.mark.parametrize(
+        "dtc_status_value, expected_output",
+        [
+            ("Inactive", 0x00),
+            ("Active with Lamp OFF", 0x2F),
+            ("Active with Lamp ON", 0xAF),
+            (0xAF, 0xAF),
+            (0x11, 0x11),
+        ],
+    )
     def test_get_raw_value__valid(self, dtc_status_value, expected_output):
         assert self.dtc_status.get_raw_value(dtc_status_value) == expected_output
 
@@ -504,353 +605,361 @@ class TestMappingDataRecordIntegration:
 
     # get_occurrence_info
 
-    @pytest.mark.parametrize("dtc_status_values, expected_output", [
-        ((0x00,), {
-            "name": "DTC Status",
-            "physical_value": ("Inactive",),
-            "unit": None,
-            "children": (
-                (
-                    {
-                        "name": "Warning Indicator Requested/MIL on",
-                        "length": 1,
-                        "raw_value": 0,
-                        "physical_value": "No",
-                        "children": tuple(),
-                        "unit": None,
-                    },
-                    {
-                        "name": "Test Not Completed This Operation Cycle",
-                        "length": 1,
-                        "raw_value": 0,
-                        "physical_value": "No",
-                        "children": tuple(),
-                        "unit": None,
-                    },
-                    {
-                        "name": "Test Failed Since Last Clear",
-                        "length": 1,
-                        "raw_value": 0,
-                        "physical_value": "No",
-                        "children": tuple(),
-                        "unit": None,
-                    },
-                    {
-                        "name": "Test Not Completed Since Last Clear",
-                        "length": 1,
-                        "raw_value": 0,
-                        "physical_value": "No",
-                        "children": tuple(),
-                        "unit": None,
-                    },
-                    {
-                        "name": "Confirmed DTC",
-                        "length": 1,
-                        "raw_value": 0,
-                        "physical_value": "No",
-                        "children": tuple(),
-                        "unit": None,
-                    },
-                    {
-                        "name": "Pending DTC",
-                        "length": 1,
-                        "raw_value": 0,
-                        "physical_value": "No",
-                        "children": tuple(),
-                        "unit": None,
-                    },
-                    {
-                        "name": "Test Failed This Operation Cycle",
-                        "length": 1,
-                        "raw_value": 0,
-                        "physical_value": "No",
-                        "children": tuple(),
-                        "unit": None,
-                    },
-                    {
-                        "name": "Test Failed",
-                        "length": 1,
-                        "raw_value": 0,
-                        "physical_value": "No",
-                        "children": tuple(),
-                        "unit": None,
-                    },
-                ),
+    @pytest.mark.parametrize(
+        "dtc_status_values, expected_output",
+        [
+            (
+                (0x00,),
+                {
+                    "name": "DTC Status",
+                    "physical_value": ("Inactive",),
+                    "unit": None,
+                    "children": (
+                        (
+                            {
+                                "name": "Warning Indicator Requested/MIL on",
+                                "length": 1,
+                                "raw_value": 0,
+                                "physical_value": "No",
+                                "children": tuple(),
+                                "unit": None,
+                            },
+                            {
+                                "name": "Test Not Completed This Operation Cycle",
+                                "length": 1,
+                                "raw_value": 0,
+                                "physical_value": "No",
+                                "children": tuple(),
+                                "unit": None,
+                            },
+                            {
+                                "name": "Test Failed Since Last Clear",
+                                "length": 1,
+                                "raw_value": 0,
+                                "physical_value": "No",
+                                "children": tuple(),
+                                "unit": None,
+                            },
+                            {
+                                "name": "Test Not Completed Since Last Clear",
+                                "length": 1,
+                                "raw_value": 0,
+                                "physical_value": "No",
+                                "children": tuple(),
+                                "unit": None,
+                            },
+                            {
+                                "name": "Confirmed DTC",
+                                "length": 1,
+                                "raw_value": 0,
+                                "physical_value": "No",
+                                "children": tuple(),
+                                "unit": None,
+                            },
+                            {
+                                "name": "Pending DTC",
+                                "length": 1,
+                                "raw_value": 0,
+                                "physical_value": "No",
+                                "children": tuple(),
+                                "unit": None,
+                            },
+                            {
+                                "name": "Test Failed This Operation Cycle",
+                                "length": 1,
+                                "raw_value": 0,
+                                "physical_value": "No",
+                                "children": tuple(),
+                                "unit": None,
+                            },
+                            {
+                                "name": "Test Failed",
+                                "length": 1,
+                                "raw_value": 0,
+                                "physical_value": "No",
+                                "children": tuple(),
+                                "unit": None,
+                            },
+                        ),
+                    ),
+                },
             ),
-        }),
-        ((0x00, 0x2F, 0xAF, 0xFF), {
-            "name": "DTC Status",
-            "physical_value": ("Inactive", "Active with Lamp OFF", "Active with Lamp ON", 0xFF),
-            "unit": None,
-            "children": (
-                (
-                    {
-                        "name": "Warning Indicator Requested/MIL on",
-                        "length": 1,
-                        "raw_value": 0,
-                        "physical_value": "No",
-                        "children": tuple(),
-                        "unit": None,
-                    },
-                    {
-                        "name": "Test Not Completed This Operation Cycle",
-                        "length": 1,
-                        "raw_value": 0,
-                        "physical_value": "No",
-                        "children": tuple(),
-                        "unit": None,
-                    },
-                    {
-                        "name": "Test Failed Since Last Clear",
-                        "length": 1,
-                        "raw_value": 0,
-                        "physical_value": "No",
-                        "children": tuple(),
-                        "unit": None,
-                    },
-                    {
-                        "name": "Test Not Completed Since Last Clear",
-                        "length": 1,
-                        "raw_value": 0,
-                        "physical_value": "No",
-                        "children": tuple(),
-                        "unit": None,
-                    },
-                    {
-                        "name": "Confirmed DTC",
-                        "length": 1,
-                        "raw_value": 0,
-                        "physical_value": "No",
-                        "children": tuple(),
-                        "unit": None,
-                    },
-                    {
-                        "name": "Pending DTC",
-                        "length": 1,
-                        "raw_value": 0,
-                        "physical_value": "No",
-                        "children": tuple(),
-                        "unit": None,
-                    },
-                    {
-                        "name": "Test Failed This Operation Cycle",
-                        "length": 1,
-                        "raw_value": 0,
-                        "physical_value": "No",
-                        "children": tuple(),
-                        "unit": None,
-                    },
-                    {
-                        "name": "Test Failed",
-                        "length": 1,
-                        "raw_value": 0,
-                        "physical_value": "No",
-                        "children": tuple(),
-                        "unit": None,
-                    },
-                ),
-                (
-                    {
-                        "name": "Warning Indicator Requested/MIL on",
-                        "length": 1,
-                        "raw_value": 0,
-                        "physical_value": "No",
-                        "children": tuple(),
-                        "unit": None,
-                    },
-                    {
-                        "name": "Test Not Completed This Operation Cycle",
-                        "length": 1,
-                        "raw_value": 0,
-                        "physical_value": "No",
-                        "children": tuple(),
-                        "unit": None,
-                    },
-                    {
-                        "name": "Test Failed Since Last Clear",
-                        "length": 1,
-                        "raw_value": 1,
-                        "physical_value": "Yes",
-                        "children": tuple(),
-                        "unit": None,
-                    },
-                    {
-                        "name": "Test Not Completed Since Last Clear",
-                        "length": 1,
-                        "raw_value": 0,
-                        "physical_value": "No",
-                        "children": tuple(),
-                        "unit": None,
-                    },
-                    {
-                        "name": "Confirmed DTC",
-                        "length": 1,
-                        "raw_value": 1,
-                        "physical_value": "Yes",
-                        "children": tuple(),
-                        "unit": None,
-                    },
-                    {
-                        "name": "Pending DTC",
-                        "length": 1,
-                        "raw_value": 1,
-                        "physical_value": "Yes",
-                        "children": tuple(),
-                        "unit": None,
-                    },
-                    {
-                        "name": "Test Failed This Operation Cycle",
-                        "length": 1,
-                        "raw_value": 1,
-                        "physical_value": "Yes",
-                        "children": tuple(),
-                        "unit": None,
-                    },
-                    {
-                        "name": "Test Failed",
-                        "length": 1,
-                        "raw_value": 1,
-                        "physical_value": "Yes",
-                        "children": tuple(),
-                        "unit": None,
-                    },
-                ),
-                (
-                    {
-                        "name": "Warning Indicator Requested/MIL on",
-                        "length": 1,
-                        "raw_value": 1,
-                        "physical_value": "Yes",
-                        "children": tuple(),
-                        "unit": None,
-                    },
-                    {
-                        "name": "Test Not Completed This Operation Cycle",
-                        "length": 1,
-                        "raw_value": 0,
-                        "physical_value": "No",
-                        "children": tuple(),
-                        "unit": None,
-                    },
-                    {
-                        "name": "Test Failed Since Last Clear",
-                        "length": 1,
-                        "raw_value": 1,
-                        "physical_value": "Yes",
-                        "children": tuple(),
-                        "unit": None,
-                    },
-                    {
-                        "name": "Test Not Completed Since Last Clear",
-                        "length": 1,
-                        "raw_value": 0,
-                        "physical_value": "No",
-                        "children": tuple(),
-                        "unit": None,
-                    },
-                    {
-                        "name": "Confirmed DTC",
-                        "length": 1,
-                        "raw_value": 1,
-                        "physical_value": "Yes",
-                        "children": tuple(),
-                        "unit": None,
-                    },
-                    {
-                        "name": "Pending DTC",
-                        "length": 1,
-                        "raw_value": 1,
-                        "physical_value": "Yes",
-                        "children": tuple(),
-                        "unit": None,
-                    },
-                    {
-                        "name": "Test Failed This Operation Cycle",
-                        "length": 1,
-                        "raw_value": 1,
-                        "physical_value": "Yes",
-                        "children": tuple(),
-                        "unit": None,
-                    },
-                    {
-                        "name": "Test Failed",
-                        "length": 1,
-                        "raw_value": 1,
-                        "physical_value": "Yes",
-                        "children": tuple(),
-                        "unit": None,
-                    },
-                ),
-                (
-                    {
-                        "name": "Warning Indicator Requested/MIL on",
-                        "length": 1,
-                        "raw_value": 1,
-                        "physical_value": "Yes",
-                        "children": tuple(),
-                        "unit": None,
-                    },
-                    {
-                        "name": "Test Not Completed This Operation Cycle",
-                        "length": 1,
-                        "raw_value": 1,
-                        "physical_value": "Yes",
-                        "children": tuple(),
-                        "unit": None,
-                    },
-                    {
-                        "name": "Test Failed Since Last Clear",
-                        "length": 1,
-                        "raw_value": 1,
-                        "physical_value": "Yes",
-                        "children": tuple(),
-                        "unit": None,
-                    },
-                    {
-                        "name": "Test Not Completed Since Last Clear",
-                        "length": 1,
-                        "raw_value": 1,
-                        "physical_value": "Yes",
-                        "children": tuple(),
-                        "unit": None,
-                    },
-                    {
-                        "name": "Confirmed DTC",
-                        "length": 1,
-                        "raw_value": 1,
-                        "physical_value": "Yes",
-                        "children": tuple(),
-                        "unit": None,
-                    },
-                    {
-                        "name": "Pending DTC",
-                        "length": 1,
-                        "raw_value": 1,
-                        "physical_value": "Yes",
-                        "children": tuple(),
-                        "unit": None,
-                    },
-                    {
-                        "name": "Test Failed This Operation Cycle",
-                        "length": 1,
-                        "raw_value": 1,
-                        "physical_value": "Yes",
-                        "children": tuple(),
-                        "unit": None,
-                    },
-                    {
-                        "name": "Test Failed",
-                        "length": 1,
-                        "raw_value": 1,
-                        "physical_value": "Yes",
-                        "children": tuple(),
-                        "unit": None,
-                    },
-                )
-            )
-        }
-         )
-    ])
+            (
+                (0x00, 0x2F, 0xAF, 0xFF),
+                {
+                    "name": "DTC Status",
+                    "physical_value": ("Inactive", "Active with Lamp OFF", "Active with Lamp ON", 0xFF),
+                    "unit": None,
+                    "children": (
+                        (
+                            {
+                                "name": "Warning Indicator Requested/MIL on",
+                                "length": 1,
+                                "raw_value": 0,
+                                "physical_value": "No",
+                                "children": tuple(),
+                                "unit": None,
+                            },
+                            {
+                                "name": "Test Not Completed This Operation Cycle",
+                                "length": 1,
+                                "raw_value": 0,
+                                "physical_value": "No",
+                                "children": tuple(),
+                                "unit": None,
+                            },
+                            {
+                                "name": "Test Failed Since Last Clear",
+                                "length": 1,
+                                "raw_value": 0,
+                                "physical_value": "No",
+                                "children": tuple(),
+                                "unit": None,
+                            },
+                            {
+                                "name": "Test Not Completed Since Last Clear",
+                                "length": 1,
+                                "raw_value": 0,
+                                "physical_value": "No",
+                                "children": tuple(),
+                                "unit": None,
+                            },
+                            {
+                                "name": "Confirmed DTC",
+                                "length": 1,
+                                "raw_value": 0,
+                                "physical_value": "No",
+                                "children": tuple(),
+                                "unit": None,
+                            },
+                            {
+                                "name": "Pending DTC",
+                                "length": 1,
+                                "raw_value": 0,
+                                "physical_value": "No",
+                                "children": tuple(),
+                                "unit": None,
+                            },
+                            {
+                                "name": "Test Failed This Operation Cycle",
+                                "length": 1,
+                                "raw_value": 0,
+                                "physical_value": "No",
+                                "children": tuple(),
+                                "unit": None,
+                            },
+                            {
+                                "name": "Test Failed",
+                                "length": 1,
+                                "raw_value": 0,
+                                "physical_value": "No",
+                                "children": tuple(),
+                                "unit": None,
+                            },
+                        ),
+                        (
+                            {
+                                "name": "Warning Indicator Requested/MIL on",
+                                "length": 1,
+                                "raw_value": 0,
+                                "physical_value": "No",
+                                "children": tuple(),
+                                "unit": None,
+                            },
+                            {
+                                "name": "Test Not Completed This Operation Cycle",
+                                "length": 1,
+                                "raw_value": 0,
+                                "physical_value": "No",
+                                "children": tuple(),
+                                "unit": None,
+                            },
+                            {
+                                "name": "Test Failed Since Last Clear",
+                                "length": 1,
+                                "raw_value": 1,
+                                "physical_value": "Yes",
+                                "children": tuple(),
+                                "unit": None,
+                            },
+                            {
+                                "name": "Test Not Completed Since Last Clear",
+                                "length": 1,
+                                "raw_value": 0,
+                                "physical_value": "No",
+                                "children": tuple(),
+                                "unit": None,
+                            },
+                            {
+                                "name": "Confirmed DTC",
+                                "length": 1,
+                                "raw_value": 1,
+                                "physical_value": "Yes",
+                                "children": tuple(),
+                                "unit": None,
+                            },
+                            {
+                                "name": "Pending DTC",
+                                "length": 1,
+                                "raw_value": 1,
+                                "physical_value": "Yes",
+                                "children": tuple(),
+                                "unit": None,
+                            },
+                            {
+                                "name": "Test Failed This Operation Cycle",
+                                "length": 1,
+                                "raw_value": 1,
+                                "physical_value": "Yes",
+                                "children": tuple(),
+                                "unit": None,
+                            },
+                            {
+                                "name": "Test Failed",
+                                "length": 1,
+                                "raw_value": 1,
+                                "physical_value": "Yes",
+                                "children": tuple(),
+                                "unit": None,
+                            },
+                        ),
+                        (
+                            {
+                                "name": "Warning Indicator Requested/MIL on",
+                                "length": 1,
+                                "raw_value": 1,
+                                "physical_value": "Yes",
+                                "children": tuple(),
+                                "unit": None,
+                            },
+                            {
+                                "name": "Test Not Completed This Operation Cycle",
+                                "length": 1,
+                                "raw_value": 0,
+                                "physical_value": "No",
+                                "children": tuple(),
+                                "unit": None,
+                            },
+                            {
+                                "name": "Test Failed Since Last Clear",
+                                "length": 1,
+                                "raw_value": 1,
+                                "physical_value": "Yes",
+                                "children": tuple(),
+                                "unit": None,
+                            },
+                            {
+                                "name": "Test Not Completed Since Last Clear",
+                                "length": 1,
+                                "raw_value": 0,
+                                "physical_value": "No",
+                                "children": tuple(),
+                                "unit": None,
+                            },
+                            {
+                                "name": "Confirmed DTC",
+                                "length": 1,
+                                "raw_value": 1,
+                                "physical_value": "Yes",
+                                "children": tuple(),
+                                "unit": None,
+                            },
+                            {
+                                "name": "Pending DTC",
+                                "length": 1,
+                                "raw_value": 1,
+                                "physical_value": "Yes",
+                                "children": tuple(),
+                                "unit": None,
+                            },
+                            {
+                                "name": "Test Failed This Operation Cycle",
+                                "length": 1,
+                                "raw_value": 1,
+                                "physical_value": "Yes",
+                                "children": tuple(),
+                                "unit": None,
+                            },
+                            {
+                                "name": "Test Failed",
+                                "length": 1,
+                                "raw_value": 1,
+                                "physical_value": "Yes",
+                                "children": tuple(),
+                                "unit": None,
+                            },
+                        ),
+                        (
+                            {
+                                "name": "Warning Indicator Requested/MIL on",
+                                "length": 1,
+                                "raw_value": 1,
+                                "physical_value": "Yes",
+                                "children": tuple(),
+                                "unit": None,
+                            },
+                            {
+                                "name": "Test Not Completed This Operation Cycle",
+                                "length": 1,
+                                "raw_value": 1,
+                                "physical_value": "Yes",
+                                "children": tuple(),
+                                "unit": None,
+                            },
+                            {
+                                "name": "Test Failed Since Last Clear",
+                                "length": 1,
+                                "raw_value": 1,
+                                "physical_value": "Yes",
+                                "children": tuple(),
+                                "unit": None,
+                            },
+                            {
+                                "name": "Test Not Completed Since Last Clear",
+                                "length": 1,
+                                "raw_value": 1,
+                                "physical_value": "Yes",
+                                "children": tuple(),
+                                "unit": None,
+                            },
+                            {
+                                "name": "Confirmed DTC",
+                                "length": 1,
+                                "raw_value": 1,
+                                "physical_value": "Yes",
+                                "children": tuple(),
+                                "unit": None,
+                            },
+                            {
+                                "name": "Pending DTC",
+                                "length": 1,
+                                "raw_value": 1,
+                                "physical_value": "Yes",
+                                "children": tuple(),
+                                "unit": None,
+                            },
+                            {
+                                "name": "Test Failed This Operation Cycle",
+                                "length": 1,
+                                "raw_value": 1,
+                                "physical_value": "Yes",
+                                "children": tuple(),
+                                "unit": None,
+                            },
+                            {
+                                "name": "Test Failed",
+                                "length": 1,
+                                "raw_value": 1,
+                                "physical_value": "Yes",
+                                "children": tuple(),
+                                "unit": None,
+                            },
+                        ),
+                    ),
+                },
+            ),
+        ],
+    )
     def test_get_occurrence_info(self, dtc_status_values, expected_output):
         output = self.dtc_status.get_occurrence_info(*dtc_status_values)
         assert output["name"] == expected_output["name"]
@@ -865,22 +974,26 @@ class TestMappingAndLinearFormulaDataRecordIntegration:
     """Integration tests for `MappingAndLinearFormulaDataRecord` class."""
 
     def setup_class(self):
-        self.vehicle_speed_data_record = MappingAndLinearFormulaDataRecord(name="Vehicle Speed Records",
-                                                                           length=16,
-                                                                           values_mapping={0xFFFF: "Error",
-                                                                                           0xFFFE: "Init"},
-                                                                           factor=0.01,
-                                                                           offset=-100,
-                                                                           unit="km/h")
+        self.vehicle_speed_data_record = MappingAndLinearFormulaDataRecord(
+            name="Vehicle Speed Records",
+            length=16,
+            values_mapping={0xFFFF: "Error", 0xFFFE: "Init"},
+            factor=0.01,
+            offset=-100,
+            unit="km/h",
+        )
 
     # get_physical_value
 
-    @pytest.mark.parametrize("raw_value, physical_value", [
-        (0xFFFE, "Init"),
-        (0xFFFF, "Error"),
-        (0xFFFD, 555.33),
-        (0x0000, -100),
-    ])
+    @pytest.mark.parametrize(
+        "raw_value, physical_value",
+        [
+            (0xFFFE, "Init"),
+            (0xFFFF, "Error"),
+            (0xFFFD, 555.33),
+            (0x0000, -100),
+        ],
+    )
     def test_get_physical_value__valid(self, raw_value, physical_value):
         assert self.vehicle_speed_data_record.get_physical_value(raw_value) == physical_value
 
@@ -891,12 +1004,15 @@ class TestMappingAndLinearFormulaDataRecordIntegration:
 
     # get_raw_value
 
-    @pytest.mark.parametrize("raw_value, physical_value", [
-        (0xFFFE, "Init"),
-        (0xFFFF, "Error"),
-        (0xFFFD, 555.33),
-        (0x0000, -100),
-    ])
+    @pytest.mark.parametrize(
+        "raw_value, physical_value",
+        [
+            (0xFFFE, "Init"),
+            (0xFFFF, "Error"),
+            (0xFFFD, 555.33),
+            (0x0000, -100),
+        ],
+    )
     def test_get_raw_value__valid(self, raw_value, physical_value):
         assert self.vehicle_speed_data_record.get_raw_value(physical_value) == raw_value
 

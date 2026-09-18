@@ -18,202 +18,201 @@ class TestECUReset:
 class TestECUResetIntegration:
     """Integration tests for `ECUReset` service."""
 
-    @pytest.mark.parametrize("payload, decoded_message", [
-        (
-            [0x11, 0x01],
+    @pytest.mark.parametrize(
+        "payload, decoded_message",
+        [
             (
-                {
-                    'children': (),
-                    'length': 8,
-                    'name': 'SID',
-                    'physical_value': 'ECUReset',
-                    'raw_value': 0x11,
-                    'unit': None
-                },
-                {
-                    'children': (
-                        {
-                            'children': (),
-                            'length': 1,
-                            'name': 'suppressPosRspMsgIndicationBit',
-                            'physical_value': 'no',
-                            'raw_value': 0,
-                            'unit': None
-                        },
-                        {
-                            'children': (),
-                            'length': 7,
-                            'name': 'resetType',
-                            'physical_value': 'hardReset',
-                            'raw_value': 0x01,
-                            'unit': None
-                        },
-                    ),
-                    'length': 8,
-                    'name': 'SubFunction',
-                    'physical_value': 0x01,
-                    'raw_value': 0x01,
-                    'unit': None
-                },
-            )
-        ),
-        (
-            [0x11, 0x84],
+                [0x11, 0x01],
+                (
+                    {
+                        "children": (),
+                        "length": 8,
+                        "name": "SID",
+                        "physical_value": "ECUReset",
+                        "raw_value": 0x11,
+                        "unit": None,
+                    },
+                    {
+                        "children": (
+                            {
+                                "children": (),
+                                "length": 1,
+                                "name": "suppressPosRspMsgIndicationBit",
+                                "physical_value": "no",
+                                "raw_value": 0,
+                                "unit": None,
+                            },
+                            {
+                                "children": (),
+                                "length": 7,
+                                "name": "resetType",
+                                "physical_value": "hardReset",
+                                "raw_value": 0x01,
+                                "unit": None,
+                            },
+                        ),
+                        "length": 8,
+                        "name": "SubFunction",
+                        "physical_value": 0x01,
+                        "raw_value": 0x01,
+                        "unit": None,
+                    },
+                ),
+            ),
             (
-                {
-                    'children': (),
-                    'length': 8,
-                    'name': 'SID',
-                    'physical_value': 'ECUReset',
-                    'raw_value': 0x11,
-                    'unit': None
-                },
-                {
-                    'children': (
-                        {
-                            'children': (),
-                            'length': 1,
-                            'name': 'suppressPosRspMsgIndicationBit',
-                            'physical_value': 'yes',
-                            'raw_value': 1,
-                            'unit': None
-                        },
-                        {
-                            'children': (),
-                            'length': 7,
-                            'name': 'resetType',
-                            'physical_value': 'enableRapidPowerShutDown',
-                            'raw_value': 0x04,
-                            'unit': None
-                        },
-                    ),
-                    'length': 8,
-                    'name': 'SubFunction',
-                    'physical_value': 0x84,
-                    'raw_value': 0x84,
-                    'unit': None
-                },
-            )
-        ),
-        (
-            [0x51, 0x04, 0xFF],
+                [0x11, 0x84],
+                (
+                    {
+                        "children": (),
+                        "length": 8,
+                        "name": "SID",
+                        "physical_value": "ECUReset",
+                        "raw_value": 0x11,
+                        "unit": None,
+                    },
+                    {
+                        "children": (
+                            {
+                                "children": (),
+                                "length": 1,
+                                "name": "suppressPosRspMsgIndicationBit",
+                                "physical_value": "yes",
+                                "raw_value": 1,
+                                "unit": None,
+                            },
+                            {
+                                "children": (),
+                                "length": 7,
+                                "name": "resetType",
+                                "physical_value": "enableRapidPowerShutDown",
+                                "raw_value": 0x04,
+                                "unit": None,
+                            },
+                        ),
+                        "length": 8,
+                        "name": "SubFunction",
+                        "physical_value": 0x84,
+                        "raw_value": 0x84,
+                        "unit": None,
+                    },
+                ),
+            ),
             (
-                {
-                    'children': (),
-                    'length': 8,
-                    'name': 'RSID',
-                    'physical_value': 'ECUReset',
-                    'raw_value': 0x51,
-                    'unit': None
-                },
-                {
-                    'children': (
-                        {
-                            'children': (),
-                            'length': 1,
-                            'name': 'suppressPosRspMsgIndicationBit',
-                            'physical_value': 'no',
-                            'raw_value': 0,
-                            'unit': None
-                        },
-                        {
-                            'children': (),
-                            'length': 7,
-                            'name': 'resetType',
-                            'physical_value': 'enableRapidPowerShutDown',
-                            'raw_value': 0x04,
-                            'unit': None
-                        },
-                    ),
-                    'length': 8,
-                    'name': 'SubFunction',
-                    'physical_value': 4,
-                    'raw_value': 0x04,
-                    'unit': None
-                },
-                {
-                    'children': (),
-                    'length': 8,
-                    'name': 'powerDownTime',
-                    'physical_value': 'failure or time unavailable',
-                    'raw_value': 0xFF,
-                    'unit': 's'
-                },
-            )
-        ),
-        (
-            [0x51, 0x84, 0x02],
+                [0x51, 0x04, 0xFF],
+                (
+                    {
+                        "children": (),
+                        "length": 8,
+                        "name": "RSID",
+                        "physical_value": "ECUReset",
+                        "raw_value": 0x51,
+                        "unit": None,
+                    },
+                    {
+                        "children": (
+                            {
+                                "children": (),
+                                "length": 1,
+                                "name": "suppressPosRspMsgIndicationBit",
+                                "physical_value": "no",
+                                "raw_value": 0,
+                                "unit": None,
+                            },
+                            {
+                                "children": (),
+                                "length": 7,
+                                "name": "resetType",
+                                "physical_value": "enableRapidPowerShutDown",
+                                "raw_value": 0x04,
+                                "unit": None,
+                            },
+                        ),
+                        "length": 8,
+                        "name": "SubFunction",
+                        "physical_value": 4,
+                        "raw_value": 0x04,
+                        "unit": None,
+                    },
+                    {
+                        "children": (),
+                        "length": 8,
+                        "name": "powerDownTime",
+                        "physical_value": "failure or time unavailable",
+                        "raw_value": 0xFF,
+                        "unit": "s",
+                    },
+                ),
+            ),
             (
-                {
-                    'children': (),
-                    'length': 8,
-                    'name': 'RSID',
-                    'physical_value': 'ECUReset',
-                    'raw_value': 0x51,
-                    'unit': None
-                },
-                {
-                    'children': (
-                        {
-                            'children': (),
-                            'length': 1,
-                            'name': 'suppressPosRspMsgIndicationBit',
-                            'physical_value': 'yes',
-                            'raw_value': 1,
-                            'unit': None
-                        },
-                        {
-                            'children': (),
-                            'length': 7,
-                            'name': 'resetType',
-                            'physical_value': 'enableRapidPowerShutDown',
-                            'raw_value': 0x04,
-                            'unit': None
-                        },
-                    ),
-                    'length': 8,
-                    'name': 'SubFunction',
-                    'physical_value': 0x84,
-                    'raw_value': 0x84,
-                    'unit': None
-                },
-                {
-                    'children': (),
-                    'length': 8,
-                    'name': 'powerDownTime',
-                    'physical_value': 2,
-                    'raw_value': 0x02,
-                    'unit': 's'
-                },
-            )
-        ),
-    ])
+                [0x51, 0x84, 0x02],
+                (
+                    {
+                        "children": (),
+                        "length": 8,
+                        "name": "RSID",
+                        "physical_value": "ECUReset",
+                        "raw_value": 0x51,
+                        "unit": None,
+                    },
+                    {
+                        "children": (
+                            {
+                                "children": (),
+                                "length": 1,
+                                "name": "suppressPosRspMsgIndicationBit",
+                                "physical_value": "yes",
+                                "raw_value": 1,
+                                "unit": None,
+                            },
+                            {
+                                "children": (),
+                                "length": 7,
+                                "name": "resetType",
+                                "physical_value": "enableRapidPowerShutDown",
+                                "raw_value": 0x04,
+                                "unit": None,
+                            },
+                        ),
+                        "length": 8,
+                        "name": "SubFunction",
+                        "physical_value": 0x84,
+                        "raw_value": 0x84,
+                        "unit": None,
+                    },
+                    {
+                        "children": (),
+                        "length": 8,
+                        "name": "powerDownTime",
+                        "physical_value": 2,
+                        "raw_value": 0x02,
+                        "unit": "s",
+                    },
+                ),
+            ),
+        ],
+    )
     def test_decode(self, payload, decoded_message):
         assert ECU_RESET.decode(payload) == decoded_message
 
-    @pytest.mark.parametrize("data_records_values, sid, rsid, payload", [
-        (
-            {
-                "SubFunction": {
-                    "suppressPosRspMsgIndicationBit": True,
-                    "resetType": 0x02
-                }
-            },
-            RequestSID.ECUReset,
-            None,
-            bytearray([0x11, 0x82])
-        ),
-        (
-            {
-                "SubFunction": 0x04,
-                "powerDownTime": 0x5A,
-            },
-            None,
-            ResponseSID.ECUReset,
-            bytearray([0x51, 0x04, 0x5A])
-        ),
-    ])
+    @pytest.mark.parametrize(
+        "data_records_values, sid, rsid, payload",
+        [
+            (
+                {"SubFunction": {"suppressPosRspMsgIndicationBit": True, "resetType": 0x02}},
+                RequestSID.ECUReset,
+                None,
+                bytearray([0x11, 0x82]),
+            ),
+            (
+                {
+                    "SubFunction": 0x04,
+                    "powerDownTime": 0x5A,
+                },
+                None,
+                ResponseSID.ECUReset,
+                bytearray([0x51, 0x04, 0x5A]),
+            ),
+        ],
+    )
     def test_encode(self, data_records_values, sid, rsid, payload):
-        assert ECU_RESET.encode(data_records_values=data_records_values,
-                                sid=sid,
-                                rsid=rsid) == payload
+        assert ECU_RESET.encode(data_records_values=data_records_values, sid=sid, rsid=rsid) == payload
