@@ -21,6 +21,7 @@ from .data_record import (
     RawDataRecord,
 )
 from .data_record_definitions import (
+    DIAGNOSTIC_SESSION_TYPE,
     DID_COUNT_RECORDS,
     DTC_AND_STATUS,
     DTC_STORED_DATA_RECORD_NUMBERS_LIST,
@@ -187,7 +188,7 @@ class ConfigurableTranslator(Translator):
         diagnostic_session_control = self.services_mapping.get(RequestSID.DiagnosticSessionControl, None)
         if diagnostic_session_control is None:
             return None
-        sub_function: MappingDataRecord = diagnostic_session_control.request_structure[0].children[1]  # type: ignore
+        sub_function: MappingDataRecord = diagnostic_session_control.request_structure[0][DIAGNOSTIC_SESSION_TYPE.name]  # type: ignore  # TODO: propagate the change
         return sub_function.values_mapping
 
     @diagnostic_session_type_mapping.setter
@@ -198,8 +199,8 @@ class ConfigurableTranslator(Translator):
         :param value: Mapping value to set.
         """
         diagnostic_session_control = self.services_mapping[RequestSID.DiagnosticSessionControl]
-        diagnostic_session_control.request_structure[0].children[1].values_mapping = value  # type: ignore
-        diagnostic_session_control.response_structure[0].children[1].values_mapping = value  # type: ignore
+        diagnostic_session_control.request_structure[0][DIAGNOSTIC_SESSION_TYPE.name].values_mapping = value  # type: ignore
+        diagnostic_session_control.response_structure[0][DIAGNOSTIC_SESSION_TYPE.name].values_mapping = value  # type: ignore
 
     @property
     def reset_type_mapping(self) -> Mapping[int, str] | None:
@@ -321,9 +322,7 @@ class ConfigurableTranslator(Translator):
         dynamically_define_data_identifier = self.services_mapping.get(RequestSID.DynamicallyDefineDataIdentifier, None)
         if dynamically_define_data_identifier is None:
             return None
-        sub_function: MappingDataRecord = (  # type: ignore
-            dynamically_define_data_identifier.request_structure[0].children
-        )[1]  # type: ignore
+        sub_function: MappingDataRecord = dynamically_define_data_identifier.request_structure[0].children[1]  # type: ignore
         return sub_function.values_mapping
 
     @definition_type_mapping.setter

@@ -195,6 +195,20 @@ class TestAbstractDataRecord:
         assert self.mock_data_record.min_occurrences == min_occurrences
         assert self.mock_data_record.max_occurrences == max_occurrences
 
+    # __getitem__
+
+    def test_getitem__value_error(self):
+        self.mock_data_record.children = [Mock()] * 10
+        with pytest.raises(ValueError):
+            AbstractDataRecord.__getitem__(self.mock_data_record, "Not a child name")
+
+    def test_getitem__valid(self):
+        self.mock_data_record.children = [Mock()] * 10
+        assert all(
+            AbstractDataRecord.__getitem__(self.mock_data_record, child.name) == child
+            for child in self.mock_data_record.children
+        )
+
     # _validate_raw_value
 
     @patch(f"{SCRIPT_LOCATION}.isinstance")
