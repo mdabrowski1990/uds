@@ -200,7 +200,9 @@ class TestReadMemoryByAddressIntegration:
         ],
     )
     def test_decode(self, payload, decoded_message):
-        assert READ_MEMORY_BY_ADDRESS.decode(payload) == decoded_message
+        output = READ_MEMORY_BY_ADDRESS.decode(payload)
+        output_dict = tuple(info.to_dict() for info in output)
+        assert output_dict == decoded_message
 
     @pytest.mark.parametrize(
         "data_records_values, sid, rsid, payload",

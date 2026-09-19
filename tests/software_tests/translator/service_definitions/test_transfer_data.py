@@ -154,7 +154,9 @@ class TestTransferDataIntegration:
         ],
     )
     def test_decode(self, payload, decoded_message):
-        assert TRANSFER_DATA.decode(payload) == decoded_message
+        output = TRANSFER_DATA.decode(payload)
+        output_dict = tuple(info.to_dict() for info in output)
+        assert output_dict == decoded_message
 
     @pytest.mark.parametrize(
         "data_records_values, sid, rsid, payload",

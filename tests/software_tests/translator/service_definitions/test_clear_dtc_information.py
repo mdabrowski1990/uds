@@ -96,7 +96,9 @@ class TestClearDiagnosticInformation2020Integration:
         ],
     )
     def test_decode(self, payload, decoded_message):
-        assert CLEAR_DIAGNOSTIC_INFORMATION_2020.decode(payload) == decoded_message
+        output = CLEAR_DIAGNOSTIC_INFORMATION_2020.decode(payload)
+        output_dict = tuple(info.to_dict() for info in output)
+        assert output_dict == decoded_message
 
     @pytest.mark.parametrize(
         "data_records_values, sid, rsid, payload",
@@ -193,7 +195,9 @@ class TestClearDiagnosticInformation2013Integration:
         ],
     )
     def test_decode(self, payload, decoded_message):
-        assert CLEAR_DIAGNOSTIC_INFORMATION_2013.decode(payload) == decoded_message
+        output = CLEAR_DIAGNOSTIC_INFORMATION_2013.decode(payload)
+        output_dict = tuple(info.to_dict() for info in output)
+        assert output_dict == decoded_message
 
     @pytest.mark.parametrize(
         "data_records_values, sid, rsid, payload",

@@ -566,7 +566,9 @@ class TestSecuredDataTransmission2020Integration:
         ],
     )
     def test_decode(self, payload, decoded_message):
-        assert SECURED_DATA_TRANSMISSION_2020.decode(payload) == decoded_message
+        output = SECURED_DATA_TRANSMISSION_2020.decode(payload)
+        output_dict = tuple(info.to_dict() for info in output)
+        assert output_dict == decoded_message
 
     @pytest.mark.parametrize(
         "data_records_values, sid, rsid, payload",
@@ -895,7 +897,9 @@ class TestSecuredDataTransmission2013Integration:
         ],
     )
     def test_decode(self, payload, decoded_message):
-        assert SECURED_DATA_TRANSMISSION_2013.decode(payload) == decoded_message
+        output = SECURED_DATA_TRANSMISSION_2013.decode(payload)
+        output_dict = tuple(info.to_dict() for info in output)
+        assert output_dict == decoded_message
 
     @pytest.mark.parametrize(
         "data_records_values, sid, rsid, payload",

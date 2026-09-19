@@ -341,7 +341,9 @@ class TestRoutineControlIntegration:
         ],
     )
     def test_decode(self, payload, decoded_message):
-        assert ROUTINE_CONTROL.decode(payload) == decoded_message
+        output = ROUTINE_CONTROL.decode(payload)
+        output_dict = tuple(info.to_dict() for info in output)
+        assert output_dict == decoded_message
 
     @pytest.mark.parametrize(
         "data_records_values, sid, rsid, payload",
