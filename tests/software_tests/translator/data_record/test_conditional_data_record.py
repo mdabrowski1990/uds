@@ -632,6 +632,18 @@ class TestConditionalFormulaDataRecord:
         mock_issubclass.assert_called_once_with(arg_type, int)
         self.mock_signature.assert_called_once_with(value)
 
+    @patch(f"{SCRIPT_LOCATION}.issubclass")
+    @patch(f"{SCRIPT_LOCATION}.callable")
+    def test_formula__set__valid_int_str(self, mock_callable, mock_issubclass):
+        mock_callable.return_value = True
+        mock_value = Mock()
+        self.mock_signature.return_value = Mock(parameters={Mock(): Mock(annotation="int")})
+        assert ConditionalFormulaDataRecord.formula.fset(self.mock_conditional_data_record, mock_value) is None
+        assert self.mock_conditional_data_record._ConditionalFormulaDataRecord__formula == mock_value
+        mock_callable.assert_called_once_with(mock_value)
+        mock_issubclass.assert_not_called()
+        self.mock_signature.assert_called_once_with(mock_value)
+
     @pytest.mark.parametrize("value", [Mock(), Mock(spec=Callable)])
     @patch(f"{SCRIPT_LOCATION}.issubclass")
     @patch(f"{SCRIPT_LOCATION}.callable")
