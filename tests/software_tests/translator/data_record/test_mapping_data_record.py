@@ -613,6 +613,8 @@ class TestMappingDataRecordIntegration:
                 {
                     "name": "DTC Status",
                     "physical_value": ("Inactive",),
+                    "raw_value": (0x00,),
+                    "length": 8,
                     "unit": None,
                     "children": (
                         (
@@ -689,6 +691,8 @@ class TestMappingDataRecordIntegration:
                 {
                     "name": "DTC Status",
                     "physical_value": ("Inactive", "Active with Lamp OFF", "Active with Lamp ON", 0xFF),
+                    "raw_value": (0x00, 0x2F, 0xAF, 0xFF),
+                    "length": 8,
                     "unit": None,
                     "children": (
                         (
@@ -962,11 +966,12 @@ class TestMappingDataRecordIntegration:
     )
     def test_get_occurrence_info(self, dtc_status_values, expected_output):
         output = self.dtc_status.get_occurrence_info(*dtc_status_values)
-        assert output["name"] == expected_output["name"]
-        assert output["physical_value"] == expected_output["physical_value"]
-        assert output["raw_value"] == dtc_status_values
-        assert output["children"] == expected_output["children"]
-        assert output["unit"] == expected_output["unit"]
+        assert output.to_dict() == expected_output
+        assert output.name == expected_output["name"]
+        assert output.length == expected_output["length"]
+        assert output.physical_value == expected_output["physical_value"]
+        assert output.raw_value == expected_output["raw_value"] == dtc_status_values
+        assert output.unit == expected_output["unit"]
 
 
 @pytest.mark.integration

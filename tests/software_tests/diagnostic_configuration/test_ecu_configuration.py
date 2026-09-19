@@ -553,8 +553,8 @@ class TestEcuDiagnosticConfiguration:
     @pytest.mark.parametrize(
         "decoded_message",
         [
-            ({"raw_value": 0x00}, Mock(), Mock(), Mock()),
-            ({"raw_value": 0x10}, Mock(), Mock()),
+            (Mock(raw_value=0x00), Mock(), Mock(), Mock()),
+            (Mock(raw_value=0x10), Mock(), Mock()),
         ],
     )
     def test_extract_dids__wrong_service(self, decoded_message):
@@ -569,21 +569,23 @@ class TestEcuDiagnosticConfiguration:
         "decoded_message, dids",
         [
             [
-                ({"raw_value": list(SERVICES_WITH_DID)[0], "name": "SID"}, {"raw_value": 0xF012, "name": "DID"}),
+                (Mock(raw_value=list(SERVICES_WITH_DID)[0], name="SID"), Mock(raw_value=0xF012, name="DID")),
                 {0xF012},
             ],
             [
                 (
-                    {"raw_value": list(SERVICES_WITH_DID)[0], "name": "SID"},
-                    dict(raw_value=0x9153, name="DID#1"),
-                    dict(raw_value=0xFFFF, name="DID#2"),
-                    dict(raw_value=0x0000, name="Not a DID"),
+                    Mock(raw_value=list(SERVICES_WITH_DID)[0], name="SID"),
+                    Mock(raw_value=0x9153, name="DID#1"),
+                    Mock(raw_value=0xFFFF, name="DID#2"),
+                    Mock(raw_value=0x0000, name="Not a DID"),
                 ),
                 {0x9153, 0xFFFF},
             ],
         ],
     )
     def test_extract_dids__add(self, decoded_message, dids):
+        for mock in decoded_message:
+            mock.name = mock._extract_mock_name()
         assert (
             EcuDiagnosticConfiguration._EcuDiagnosticConfiguration__extract_dids(decoded_message)
             == self.mock_set.return_value
@@ -595,20 +597,22 @@ class TestEcuDiagnosticConfiguration:
         "decoded_message, dids",
         [
             [
-                (dict(raw_value=list(SERVICES_WITH_DID)[0], name="SID"), dict(raw_value=(0xF012, 0x0000), name="DID")),
+                (Mock(raw_value=list(SERVICES_WITH_DID)[0], name="SID"), Mock(raw_value=(0xF012, 0x0000), name="DID")),
                 {(0xF012, 0x0000)},
             ],
             [
                 (
-                    dict(raw_value=list(SERVICES_WITH_DID)[0], name="SID"),
-                    dict(raw_value=(0x9153, 0xFFFF), name="DID"),
-                    dict(raw_value=0x1234, name="Something"),
+                    Mock(raw_value=list(SERVICES_WITH_DID)[0], name="SID"),
+                    Mock(raw_value=(0x9153, 0xFFFF), name="DID"),
+                    Mock(raw_value=0x1234, name="Something"),
                 ),
                 {(0x9153, 0xFFFF)},
             ],
         ],
     )
     def test_extract_dids__update(self, decoded_message, dids):
+        for mock in decoded_message:
+            mock.name = mock._extract_mock_name()
         assert (
             EcuDiagnosticConfiguration._EcuDiagnosticConfiguration__extract_dids(decoded_message)
             == self.mock_set.return_value
@@ -621,8 +625,8 @@ class TestEcuDiagnosticConfiguration:
     @pytest.mark.parametrize(
         "decoded_message",
         [
-            (dict(raw_value=0x00), Mock(), Mock(), Mock()),
-            (dict(raw_value=0x10), Mock(), Mock()),
+            (Mock(raw_value=0x00), Mock(), Mock(), Mock()),
+            (Mock(raw_value=0x10), Mock(), Mock()),
         ],
     )
     def test_extract_rids__wrong_service(self, decoded_message):
@@ -636,19 +640,21 @@ class TestEcuDiagnosticConfiguration:
     @pytest.mark.parametrize(
         "decoded_message, rids",
         [
-            [(dict(raw_value=list(SERVICES_WITH_RID)[0], name="SID"), dict(raw_value=0xF012, name="RID")), {0xF012}],
+            [(Mock(raw_value=list(SERVICES_WITH_RID)[0], name="SID"), Mock(raw_value=0xF012, name="RID")), {0xF012}],
             [
                 (
-                    dict(raw_value=list(SERVICES_WITH_RID)[0], name="SID"),
-                    dict(raw_value=0x9153, name="RID#1"),
-                    dict(raw_value=0xFFFF, name="RID#2"),
-                    dict(raw_value=0x0000, name="Not a RID"),
+                    Mock(raw_value=list(SERVICES_WITH_RID)[0], name="SID"),
+                    Mock(raw_value=0x9153, name="RID#1"),
+                    Mock(raw_value=0xFFFF, name="RID#2"),
+                    Mock(raw_value=0x0000, name="Not a RID"),
                 ),
                 {0x9153, 0xFFFF},
             ],
         ],
     )
     def test_extract_rids__add(self, decoded_message, rids):
+        for mock in decoded_message:
+            mock.name = mock._extract_mock_name()
         assert (
             EcuDiagnosticConfiguration._EcuDiagnosticConfiguration__extract_rids(decoded_message)
             == self.mock_set.return_value
@@ -660,20 +666,22 @@ class TestEcuDiagnosticConfiguration:
         "decoded_message, rids",
         [
             [
-                (dict(raw_value=list(SERVICES_WITH_RID)[0], name="SID"), dict(raw_value=(0xF012, 0x0000), name="RID")),
+                (Mock(raw_value=list(SERVICES_WITH_RID)[0], name="SID"), Mock(raw_value=(0xF012, 0x0000), name="RID")),
                 {(0xF012, 0x0000)},
             ],
             [
                 (
-                    dict(raw_value=list(SERVICES_WITH_RID)[0], name="SID"),
-                    dict(raw_value=(0x9153, 0xFFFF), name="RID"),
-                    dict(raw_value=0x1234, name="fdkuhtw"),
+                    Mock(raw_value=list(SERVICES_WITH_RID)[0], name="SID"),
+                    Mock(raw_value=(0x9153, 0xFFFF), name="RID"),
+                    Mock(raw_value=0x1234, name="fdkuhtw"),
                 ),
                 {(0x9153, 0xFFFF)},
             ],
         ],
     )
     def test_extract_rids__update(self, decoded_message, rids):
+        for mock in decoded_message:
+            mock.name = mock._extract_mock_name()
         assert (
             EcuDiagnosticConfiguration._EcuDiagnosticConfiguration__extract_rids(decoded_message)
             == self.mock_set.return_value

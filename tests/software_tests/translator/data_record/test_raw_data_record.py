@@ -181,4 +181,10 @@ class TestRawDataRecordIntegration:
         ],
     )
     def test_get_occurrence_info(self, value, expected_output):
-        assert self.dtc.get_occurrence_info(value) == expected_output
+        output = self.dtc.get_occurrence_info(value)
+        assert output.to_dict() == expected_output
+        assert output.name == expected_output["name"]
+        assert output.length == expected_output["length"]
+        assert output.raw_value == expected_output["raw_value"]
+        assert output.physical_value == expected_output["physical_value"]
+        assert output.unit == expected_output["unit"]

@@ -33,12 +33,15 @@ class EcuDiagnosticConfiguration:
     RequiredStatesAlias = Mapping[str, Collection[Any]]
     """Alias storing states names and required values."""
 
-    def __init__(self, *,
-                 states: Collection[State],
-                 sid_restrictions: Mapping[SidAlias, RequiredStatesAlias],
-                 subfunction_restrictions: Mapping[SidAlias, Mapping[int, RequiredStatesAlias]],
-                 did_restrictions: Mapping[SidAlias, Mapping[int, RequiredStatesAlias]],
-                 rid_restrictions: Mapping[SidAlias, Mapping[int, RequiredStatesAlias]]) -> None:
+    def __init__(
+        self,
+        *,
+        states: Collection[State],
+        sid_restrictions: Mapping[SidAlias, RequiredStatesAlias],
+        subfunction_restrictions: Mapping[SidAlias, Mapping[int, RequiredStatesAlias]],
+        did_restrictions: Mapping[SidAlias, Mapping[int, RequiredStatesAlias]],
+        rid_restrictions: Mapping[SidAlias, Mapping[int, RequiredStatesAlias]],
+    ) -> None:
         """
         Configure restrictions used by ECU for diagnostic messages.
 
@@ -78,8 +81,9 @@ class EcuDiagnosticConfiguration:
         :param states: ECU states relevant for diagnostic communication.
         """
         if hasattr(self, "_EcuDiagnosticConfiguration__states"):
-            raise ReassignmentError("Value of 'states' attribute cannot be changed once set. "
-                                    "Create a new object instead.")
+            raise ReassignmentError(
+                "Value of 'states' attribute cannot be changed once set. Create a new object instead."
+            )
         self.__states = set(states)
         self.__states_names = {state.name for state in self.__states}
         self.__states_mapping = {state.name: state for state in self.__states}
@@ -114,8 +118,9 @@ class EcuDiagnosticConfiguration:
         mapping = dict(value)
         for sid, required_states in value.items():
             if not RequestSID.is_request_sid(sid) and not ResponseSID.is_response_sid(sid):
-                raise ValueError(f"Mapping contains key that is neither RequestSID nor ResponseSID value. "
-                                 f"Actual value: {sid!r}.")
+                raise ValueError(
+                    f"Mapping contains key that is neither RequestSID nor ResponseSID value. Actual value: {sid!r}."
+                )
             mapping[sid] = self.__validate_required_states(required_states)
         self.__sid_restrictions = MappingProxyType(mapping)
 
@@ -141,13 +146,16 @@ class EcuDiagnosticConfiguration:
         mapping = dict(value)
         for sid, subfunction_required_states in value.items():
             if not RequestSID.is_request_sid(sid) and not ResponseSID.is_response_sid(sid):
-                raise ValueError(f"Mapping contains key that is neither RequestSID nor ResponseSID value. "
-                                 f"Actual value: {sid!r}.")
+                raise ValueError(
+                    f"Mapping contains key that is neither RequestSID nor ResponseSID value. Actual value: {sid!r}."
+                )
             if sid not in SERVICES_WITH_SUBFUNCTION:
-                raise InconsistencyError(f"Mapping contains key that is SID for services that does not "
-                                         f"use SubFunctions. Actual value: {sid!r}. "
-                                         f"Update `uds.message.SERVICES_WITH_SUBFUNCTION` if this is "
-                                         f"False-Negative error.")
+                raise InconsistencyError(
+                    f"Mapping contains key that is SID for services that does not "
+                    f"use SubFunctions. Actual value: {sid!r}. "
+                    f"Update `uds.message.SERVICES_WITH_SUBFUNCTION` if this is "
+                    f"False-Negative error."
+                )
             subfunction_mapping = {}
             for subfunction, required_states in subfunction_required_states.items():
                 validate_raw_byte(subfunction)
@@ -177,12 +185,15 @@ class EcuDiagnosticConfiguration:
         mapping = dict(value)
         for sid, did_required_states in value.items():
             if not RequestSID.is_request_sid(sid) and not ResponseSID.is_response_sid(sid):
-                raise ValueError(f"Mapping contains key that is neither RequestSID nor ResponseSID value. "
-                                 f"Actual value: {sid!r}.")
+                raise ValueError(
+                    f"Mapping contains key that is neither RequestSID nor ResponseSID value. Actual value: {sid!r}."
+                )
             if sid not in SERVICES_WITH_DID:
-                raise InconsistencyError(f"Mapping contains key that is SID for services that does not use DIDs. "
-                                         f"Actual value: {sid!r}. "
-                                         f"Update `uds.message.SERVICES_WITH_DID` if this is False-Negative error.")
+                raise InconsistencyError(
+                    f"Mapping contains key that is SID for services that does not use DIDs. "
+                    f"Actual value: {sid!r}. "
+                    f"Update `uds.message.SERVICES_WITH_DID` if this is False-Negative error."
+                )
             did_mapping = {}
             for did, required_states in did_required_states.items():
                 validate_raw_2byte_value(did)
@@ -212,12 +223,15 @@ class EcuDiagnosticConfiguration:
         mapping = dict(value)
         for sid, rid_required_states in value.items():
             if not RequestSID.is_request_sid(sid) and not ResponseSID.is_response_sid(sid):
-                raise ValueError(f"Mapping contains key that is neither RequestSID nor ResponseSID value. "
-                                 f"Actual value: {sid!r}.")
+                raise ValueError(
+                    f"Mapping contains key that is neither RequestSID nor ResponseSID value. Actual value: {sid!r}."
+                )
             if sid not in SERVICES_WITH_RID:
-                raise InconsistencyError(f"Mapping contains key that is SID for services that does not use RIDs. "
-                                         f"Actual value: {sid!r}. "
-                                         f"Update `uds.message.SERVICES_WITH_RID` if this is False-Negative error.")
+                raise InconsistencyError(
+                    f"Mapping contains key that is SID for services that does not use RIDs. "
+                    f"Actual value: {sid!r}. "
+                    f"Update `uds.message.SERVICES_WITH_RID` if this is False-Negative error."
+                )
             rid_mapping = {}
             for rid, required_states in rid_required_states.items():
                 validate_raw_2byte_value(rid)
@@ -241,10 +255,12 @@ class EcuDiagnosticConfiguration:
                 raise InconsistencyError(f"Mapping contains name for a state that is not added: {state_name!r}.")
             state = getitem(self, state_name)
             if not state.possible_values.issuperset(state_values):
-                raise InconsistencyError(f"Mapping contains state values that are unreachable. "
-                                         f"State name: {state_name!r}. "
-                                         f"All state values: {state.possible_values}. "
-                                         f"Restriction values from mapping: {state_values}.")
+                raise InconsistencyError(
+                    f"Mapping contains state values that are unreachable. "
+                    f"State name: {state_name!r}. "
+                    f"All state values: {state.possible_values}. "
+                    f"Restriction values from mapping: {state_values}."
+                )
             mapping[state_name] = frozenset(state_values)
         return MappingProxyType(mapping)
 
@@ -259,30 +275,30 @@ class EcuDiagnosticConfiguration:
     def __extract_dids(decoded_message: DecodedMessageAlias) -> set[int]:
         """Extract DIDs from decoded message."""
         dids = set()
-        if decoded_message[0]["raw_value"] in SERVICES_WITH_DID:
+        if decoded_message[0].raw_value in SERVICES_WITH_DID:
             for decoded_data_record in decoded_message:
-                if (decoded_data_record["name"] == "DID"
-                        or (decoded_data_record["name"].startswith("DID#") and decoded_data_record["name"][
-                            4:].isdigit())):
-                    if isinstance(decoded_data_record["raw_value"], int):
-                        dids.add(decoded_data_record["raw_value"])
-                    else:
-                        dids.update(decoded_data_record["raw_value"])
+                if decoded_data_record.name == "DID" or (
+                    decoded_data_record.name.startswith("DID#") and decoded_data_record.name[4:].isdigit()
+                ):
+                    if isinstance(decoded_data_record.raw_value, int):  # Single Occurrence
+                        dids.add(decoded_data_record.raw_value)
+                    else:  # Multiple Occurrences
+                        dids.update(decoded_data_record.raw_value)
         return dids
 
     @staticmethod
     def __extract_rids(decoded_message: DecodedMessageAlias) -> set[int]:
         """Extract RIDs from decoded message."""
         rids = set()
-        if decoded_message[0]["raw_value"] in SERVICES_WITH_RID:
+        if decoded_message[0].raw_value in SERVICES_WITH_RID:
             for decoded_data_record in decoded_message:
-                if (decoded_data_record["name"] == "RID"
-                        or (decoded_data_record["name"].startswith("RID#") and decoded_data_record["name"][
-                            4:].isdigit())):
-                    if isinstance(decoded_data_record["raw_value"], int):
-                        rids.add(decoded_data_record["raw_value"])
-                    else:
-                        rids.update(decoded_data_record["raw_value"])
+                if decoded_data_record.name == "RID" or (
+                    decoded_data_record.name.startswith("RID#") and decoded_data_record.name[4:].isdigit()
+                ):
+                    if isinstance(decoded_data_record.raw_value, int):  # Single Occurrence
+                        rids.add(decoded_data_record.raw_value)
+                    else:  # Multiple Occurrences
+                        rids.update(decoded_data_record.raw_value)
         return rids
 
     def combine_restrictions(self, *restrictions: RequiredStatesAlias) -> RequiredStatesAlias:
@@ -300,8 +316,9 @@ class EcuDiagnosticConfiguration:
         combined_restrictions = {}
         for state_name in self.states_names:
             all_possible_values = self.states_mapping[state_name].possible_values
-            combined_restrictions[state_name] = set.intersection(*[set(restriction.get(state_name, all_possible_values))
-                                                                   for restriction in restrictions])
+            combined_restrictions[state_name] = set.intersection(
+                *[set(restriction.get(state_name, all_possible_values)) for restriction in restrictions]
+            )
         return combined_restrictions
 
     def get_restrictions(self, message_payload: RawBytesAlias) -> RequiredStatesAlias:
