@@ -1,7 +1,5 @@
 """Implementation of translator configurable through typical diagnostic parameters."""
 
-from __future__ import annotations
-
 __all__ = ["ConfigurableTranslator"]
 
 from collections.abc import Callable, Mapping, Sequence
@@ -49,25 +47,27 @@ class ConfigurableTranslator(Translator):
         :class:`~uds.translator.translator.Translator` shall be directly used instead.
     """
 
-    def __init__(self,  # pylint: disable=too-many-branches
-                 base: Translator = BASE_TRANSLATOR,
-                 *,
-                 diagnostic_session_type_mapping: Mapping[int, str] | None = None,
-                 reset_type_mapping: Mapping[int, str] | None = None,
-                 report_type_mapping: Mapping[int, str] | None = None,
-                 security_access_type_mapping: Mapping[int, str] | None = None,
-                 control_type_type_mapping: Mapping[int, str] | None = None,
-                 authentication_task_mapping: Mapping[int, str] | None = None,
-                 definition_type_mapping: Mapping[int, str] | None = None,
-                 routine_control_type_mapping: Mapping[int, str] | None = None,
-                 zero_subfunction_mapping: Mapping[int, str] | None = None,
-                 timing_parameter_access_type_mapping: Mapping[int, str] | None = None,
-                 dtc_setting_type_mapping: Mapping[int, str] | None = None,
-                 event_type_mapping: Mapping[int, str] | None = None,
-                 link_control_type_mapping: Mapping[int, str] | None = None,
-                 rid_mapping: Mapping[int, str] | None = None,
-                 did_mapping: Mapping[int, str] | None = None,
-                 did_data_mapping: Mapping[int, MessageStructureAlias]) -> None:
+    def __init__(
+        self,  # pylint: disable=too-many-branches
+        base: Translator = BASE_TRANSLATOR,
+        *,
+        diagnostic_session_type_mapping: Mapping[int, str] | None = None,
+        reset_type_mapping: Mapping[int, str] | None = None,
+        report_type_mapping: Mapping[int, str] | None = None,
+        security_access_type_mapping: Mapping[int, str] | None = None,
+        control_type_type_mapping: Mapping[int, str] | None = None,
+        authentication_task_mapping: Mapping[int, str] | None = None,
+        definition_type_mapping: Mapping[int, str] | None = None,
+        routine_control_type_mapping: Mapping[int, str] | None = None,
+        zero_subfunction_mapping: Mapping[int, str] | None = None,
+        timing_parameter_access_type_mapping: Mapping[int, str] | None = None,
+        dtc_setting_type_mapping: Mapping[int, str] | None = None,
+        event_type_mapping: Mapping[int, str] | None = None,
+        link_control_type_mapping: Mapping[int, str] | None = None,
+        rid_mapping: Mapping[int, str] | None = None,
+        did_mapping: Mapping[int, str] | None = None,
+        did_data_mapping: Mapping[int, MessageStructureAlias],
+    ) -> None:
         """
         Reconfigure a translator.
 
@@ -152,29 +152,31 @@ class ConfigurableTranslator(Translator):
             self.did_mapping = did_mapping
         self.did_data_mapping = did_data_mapping
 
-    def __deepcopy__(self, memo: dict[int, Any]) -> ConfigurableTranslator:
+    def __deepcopy__(self, memo: dict[int, Any]) -> "ConfigurableTranslator":
         """Get deep copy of the translator."""
         cls = self.__class__
         self_copy = cls.__new__(cls)
         memo[id(self)] = self_copy
-        ConfigurableTranslator.__init__(self_copy,
-                                        base=self,
-                                        diagnostic_session_type_mapping=self.diagnostic_session_type_mapping,
-                                        reset_type_mapping=self.reset_type_mapping,
-                                        report_type_mapping=self.report_type_mapping,
-                                        security_access_type_mapping=self.security_access_type_mapping,
-                                        control_type_type_mapping=self.control_type_type_mapping,
-                                        authentication_task_mapping=self.authentication_task_mapping,
-                                        definition_type_mapping=self.definition_type_mapping,
-                                        routine_control_type_mapping=self.routine_control_type_mapping,
-                                        zero_subfunction_mapping=self.zero_subfunction_mapping,
-                                        timing_parameter_access_type_mapping=self.timing_parameter_access_type_mapping,
-                                        dtc_setting_type_mapping=self.dtc_setting_type_mapping,
-                                        event_type_mapping=self.event_type_mapping,
-                                        link_control_type_mapping=self.link_control_type_mapping,
-                                        rid_mapping=self.rid_mapping,
-                                        did_mapping=self.did_mapping,
-                                        did_data_mapping=deepcopy(dict(self.did_data_mapping), memo=memo))
+        ConfigurableTranslator.__init__(
+            self_copy,
+            base=self,
+            diagnostic_session_type_mapping=self.diagnostic_session_type_mapping,
+            reset_type_mapping=self.reset_type_mapping,
+            report_type_mapping=self.report_type_mapping,
+            security_access_type_mapping=self.security_access_type_mapping,
+            control_type_type_mapping=self.control_type_type_mapping,
+            authentication_task_mapping=self.authentication_task_mapping,
+            definition_type_mapping=self.definition_type_mapping,
+            routine_control_type_mapping=self.routine_control_type_mapping,
+            zero_subfunction_mapping=self.zero_subfunction_mapping,
+            timing_parameter_access_type_mapping=self.timing_parameter_access_type_mapping,
+            dtc_setting_type_mapping=self.dtc_setting_type_mapping,
+            event_type_mapping=self.event_type_mapping,
+            link_control_type_mapping=self.link_control_type_mapping,
+            rid_mapping=self.rid_mapping,
+            did_mapping=self.did_mapping,
+            did_data_mapping=deepcopy(dict(self.did_data_mapping), memo=memo),
+        )
         return self_copy
 
     @property
@@ -238,20 +240,16 @@ class ConfigurableTranslator(Translator):
         read_dtc_information.response_structure[0].children[1].values_mapping = value  # type: ignore
         response_on_event = self.services_mapping.get(RequestSID.ResponseOnEvent, None)
         if response_on_event is not None:
-            subfunction_08_request_continuation = (
-                response_on_event.request_structure[1].mapping.get(0x08, None))  # type: ignore
+            subfunction_08_request_continuation = response_on_event.request_structure[1].mapping.get(0x08, None)  # type: ignore
             if subfunction_08_request_continuation is not None:
                 subfunction_08_request_continuation[1].children[1].values_mapping = value
-            subfunction_09_request_continuation = (
-                response_on_event.request_structure[1].mapping.get(0x09, None))  # type: ignore
+            subfunction_09_request_continuation = response_on_event.request_structure[1].mapping.get(0x09, None)  # type: ignore
             if subfunction_09_request_continuation is not None:
                 subfunction_09_request_continuation[1].children[2].values_mapping = value
-            subfunction_08_response_continuation = (
-                response_on_event.response_structure[1].mapping.get(0x08, None))  # type: ignore
+            subfunction_08_response_continuation = response_on_event.response_structure[1].mapping.get(0x08, None)  # type: ignore
             if subfunction_08_response_continuation is not None:
                 subfunction_08_response_continuation[2].children[1].values_mapping = value
-            subfunction_09_response_continuation = (
-                response_on_event.response_structure[1].mapping.get(0x09, None))  # type: ignore
+            subfunction_09_response_continuation = response_on_event.response_structure[1].mapping.get(0x09, None)  # type: ignore
             if subfunction_09_response_continuation is not None:
                 subfunction_09_response_continuation[2].children[2].values_mapping = value
 
@@ -322,7 +320,8 @@ class ConfigurableTranslator(Translator):
         if dynamically_define_data_identifier is None:
             return None
         sub_function: MappingDataRecord = (  # type: ignore
-            dynamically_define_data_identifier.request_structure[0].children)[1]  # type: ignore
+            dynamically_define_data_identifier.request_structure[0].children
+        )[1]  # type: ignore
         return sub_function.values_mapping
 
     @definition_type_mapping.setter
@@ -503,7 +502,8 @@ class ConfigurableTranslator(Translator):
         # ReadDataByIdentifier
         read_data_by_identifier = self.services_mapping[RequestSID.ReadDataByIdentifier]
         read_data_by_identifier.request_structure[0].values_mapping = (  # type: ignore
-            value)  # did_mapping value is stored here
+            value
+        )  # did_mapping value is stored here
         for did in read_data_by_identifier.response_structure[::2]:
             did.values_mapping = value  # type: ignore
         # WriteDataByIdentifier
@@ -520,18 +520,24 @@ class ConfigurableTranslator(Translator):
         dynamically_define_data_identifier = self.services_mapping.get(RequestSID.DynamicallyDefineDataIdentifier, None)
         if dynamically_define_data_identifier is not None:
             dynamically_define_data_identifier.request_structure[1].mapping[0x01][0].values_mapping = (  # type: ignore
-                value)
+                value
+            )
             dynamically_define_data_identifier.request_structure[1].mapping[0x01][1].children[0].values_mapping = value  # type: ignore  # pylint: disable=line-too-long
             dynamically_define_data_identifier.request_structure[1].mapping[0x02][0].values_mapping = (  # type: ignore
-                value)
+                value
+            )
             dynamically_define_data_identifier.request_structure[1].mapping[0x03][0].values_mapping = (  # type: ignore
-                value)
+                value
+            )
             dynamically_define_data_identifier.response_structure[1].mapping[0x01][0].values_mapping = (  # type: ignore
-                value)
+                value
+            )
             dynamically_define_data_identifier.response_structure[1].mapping[0x02][0].values_mapping = (  # type: ignore
-                value)
+                value
+            )
             dynamically_define_data_identifier.response_structure[1].mapping[0x03][0].values_mapping = (  # type: ignore
-                value)
+                value
+            )
         # InputOutputControlByIdentifier
         input_output_control_by_identifier = self.services_mapping.get(RequestSID.InputOutputControlByIdentifier, None)
         if input_output_control_by_identifier is not None:
@@ -543,9 +549,7 @@ class ConfigurableTranslator(Translator):
             mapping = dict(read_dtc_information.response_structure[1].mapping)  # type: ignore
             mapping[0x04] = (DTC_AND_STATUS, *self.__dtc_snapshot_records)
             mapping[0x05] = self.__dtc_stored_data_records
-            mapping[0x18] = (MEMORY_SELECTION,
-                             DTC_AND_STATUS,
-                             *self.__dtc_snapshot_records)
+            mapping[0x18] = (MEMORY_SELECTION, DTC_AND_STATUS, *self.__dtc_snapshot_records)
             read_dtc_information.response_structure[1].mapping = mapping  # type: ignore
         # ResponseOnEvent
         response_on_event = self.services_mapping.get(RequestSID.ResponseOnEvent, None)
@@ -576,29 +580,31 @@ class ConfigurableTranslator(Translator):
         if read_data_by_identifier is not None:
             read_data_by_identifier.response_structure = (
                 *self.__get_did_record(did_count=1, record_number=None, optional=False),
-                *self.__get_did_record(did_count=REPEATED_DATA_RECORDS_NUMBER, record_number=None, optional=True)[2:]
+                *self.__get_did_record(did_count=REPEATED_DATA_RECORDS_NUMBER, record_number=None, optional=True)[2:],
             )
         # WriteDataByIdentifier
         write_data_by_identifier = self.services_mapping.get(RequestSID.WriteDataByIdentifier, None)
         if write_data_by_identifier is not None:
-            write_data_by_identifier.request_structure = (write_data_by_identifier.request_structure[0],
-                                                          self.__get_did_data())
+            write_data_by_identifier.request_structure = (
+                write_data_by_identifier.request_structure[0],
+                self.__get_did_data(),
+            )
         # InputOutputControlByIdentifier
         input_output_control_by_identifier = self.services_mapping.get(RequestSID.InputOutputControlByIdentifier, None)
         if input_output_control_by_identifier is not None:
             input_output_control_by_identifier.request_structure[1].formula = (  # type: ignore
-                self.__get_input_output_control_by_identifier_request)
+                self.__get_input_output_control_by_identifier_request
+            )
             input_output_control_by_identifier.response_structure[1].formula = (  # type: ignore
-                self.__get_input_output_control_by_identifier_response)
+                self.__get_input_output_control_by_identifier_response
+            )
         # ReadDTCInformation
         read_dtc_information = self.services_mapping.get(RequestSID.ReadDTCInformation, None)
         if read_dtc_information is not None:
             mapping = dict(read_dtc_information.response_structure[1].mapping)  # type: ignore
             mapping[0x04] = (DTC_AND_STATUS, *self.__dtc_snapshot_records)
             mapping[0x05] = self.__dtc_stored_data_records
-            mapping[0x18] = (MEMORY_SELECTION,
-                             DTC_AND_STATUS,
-                             *self.__dtc_snapshot_records)
+            mapping[0x18] = (MEMORY_SELECTION, DTC_AND_STATUS, *self.__dtc_snapshot_records)
             read_dtc_information.response_structure[1].mapping = mapping  # type: ignore
 
     @property
@@ -610,8 +616,10 @@ class ConfigurableTranslator(Translator):
             :obj:`~uds.translator.data_record_definitions.conditional._DID_RECORDS_2020` and
             :obj:`~uds.translator.data_record_definitions.conditional._DID_RECORDS_2013`.
         """
-        return tuple(ConditionalFormulaDataRecord(formula=self.__get_did_records_formula(record_number + 1))
-                     for record_number in range(REPEATED_DATA_RECORDS_NUMBER))
+        return tuple(
+            ConditionalFormulaDataRecord(formula=self.__get_did_records_formula(record_number + 1))
+            for record_number in range(REPEATED_DATA_RECORDS_NUMBER)
+        )
 
     @property
     def __dtc_snapshot_records(self) -> tuple[MappingDataRecord | RawDataRecord | ConditionalFormulaDataRecord, ...]:
@@ -622,12 +630,13 @@ class ConfigurableTranslator(Translator):
             :obj:`~uds.translator.data_record_definitions.conditional._DTC_SNAPSHOT_RECORDS_2020` and
             :obj:`~uds.translator.data_record_definitions.conditional._DTC_SNAPSHOT_RECORDS_2013`.
         """
-        return tuple(item
-                     for snapshot_record in zip(OPTIONAL_DTC_SNAPSHOT_RECORDS_NUMBERS_LIST,
-                                                DID_COUNT_RECORDS,
-                                                self.__did_records,
-                                                strict=True)
-                     for item in snapshot_record)
+        return tuple(
+            item
+            for snapshot_record in zip(
+                OPTIONAL_DTC_SNAPSHOT_RECORDS_NUMBERS_LIST, DID_COUNT_RECORDS, self.__did_records, strict=True
+            )
+            for item in snapshot_record
+        )
 
     @property
     def __dtc_stored_data_records(self) -> tuple[MappingDataRecord | RawDataRecord | ConditionalFormulaDataRecord, ...]:
@@ -638,13 +647,17 @@ class ConfigurableTranslator(Translator):
             :obj:`~uds.translator.data_record_definitions.conditional._DTC_STORED_DATA_RECORDS_2020` and
             :obj:`~uds.translator.data_record_definitions.conditional._DTC_STORED_DATA_RECORDS_2013`.
         """
-        return tuple(item
-                     for stored_data_record in zip(DTC_STORED_DATA_RECORD_NUMBERS_LIST,
-                                                   DTCS_AND_STATUSES_LIST,
-                                                   DID_COUNT_RECORDS,
-                                                   self.__did_records,
-                                                   strict=True)
-                     for item in stored_data_record)
+        return tuple(
+            item
+            for stored_data_record in zip(
+                DTC_STORED_DATA_RECORD_NUMBERS_LIST,
+                DTCS_AND_STATUSES_LIST,
+                DID_COUNT_RECORDS,
+                self.__did_records,
+                strict=True,
+            )
+            for item in stored_data_record
+        )
 
     @property
     def __event_window_time(self) -> MappingDataRecord:
@@ -728,11 +741,13 @@ class ConfigurableTranslator(Translator):
         """
         if self.did_mapping is None:
             raise ValueError("ReadDataByIdentifier service is not defined in this Translator.")
-        return MappingDataRecord(name=name,
-                                 length=DID_BIT_LENGTH,
-                                 values_mapping=self.did_mapping,
-                                 min_occurrences=0 if optional else 1,
-                                 max_occurrences=1)
+        return MappingDataRecord(
+            name=name,
+            length=DID_BIT_LENGTH,
+            values_mapping=self.did_mapping,
+            min_occurrences=0 if optional else 1,
+            max_occurrences=1,
+        )
 
     def __get_did_data(self, name: str = "DID data") -> ConditionalFormulaDataRecord:
         """
@@ -746,10 +761,7 @@ class ConfigurableTranslator(Translator):
 
         :return: Conditional Data Record for DID data.
         """
-        default_did_data = RawDataRecord(name=name,
-                                         length=8,
-                                         min_occurrences=1,
-                                         max_occurrences=None)
+        default_did_data = RawDataRecord(name=name, length=8, min_occurrences=1, max_occurrences=None)
 
         def _get_did_data(did: int) -> tuple[RawDataRecord]:
             data_records: Sequence[AbstractDataRecord] = self.did_data_mapping.get(did, None)  # type: ignore
@@ -758,17 +770,18 @@ class ConfigurableTranslator(Translator):
             total_length = 0
             for dr in data_records:
                 if not isinstance(dr, AbstractDataRecord) or not dr.fixed_total_length:
-                    raise ValueError(f"Incorrectly defined data structure for DID 0x{did:04X}. "
-                                     f"Only fixed length data records are supported right now.")
+                    raise ValueError(
+                        f"Incorrectly defined data structure for DID 0x{did:04X}. "
+                        f"Only fixed length data records are supported right now."
+                    )
                 total_length += dr.min_occurrences * dr.length
-            return (RawDataRecord(name=name,
-                                  children=data_records,
-                                  length=total_length,
-                                  min_occurrences=1,
-                                  max_occurrences=1),)
+            return (
+                RawDataRecord(
+                    name=name, children=data_records, length=total_length, min_occurrences=1, max_occurrences=1
+                ),
+            )
 
-        return ConditionalFormulaDataRecord(formula=_get_did_data,
-                                            default_message_continuation=[default_did_data])
+        return ConditionalFormulaDataRecord(formula=_get_did_data, default_message_continuation=[default_did_data])
 
     def __get_did_data_mask(self, name: str, optional: bool) -> ConditionalFormulaDataRecord:
         """
@@ -783,19 +796,19 @@ class ConfigurableTranslator(Translator):
 
         :return: Conditional Data Record for DID data mask.
         """
-        default_did_data_mask = RawDataRecord(name=name,
-                                              length=8,
-                                              min_occurrences=0 if optional else 1,
-                                              max_occurrences=None)
+        default_did_data_mask = RawDataRecord(
+            name=name, length=8, min_occurrences=0 if optional else 1, max_occurrences=None
+        )
 
         def _get_mask_data_record(data_record: AbstractDataRecord) -> RawDataRecord:
-            return MappingDataRecord(name=f"{data_record.name} (mask)",
-                                     length=data_record.length,
-                                     values_mapping={0: "no",
-                                                     data_record.max_raw_value: "yes"},
-                                     children=[_get_mask_data_record(child) for child in data_record.children],
-                                     min_occurrences=data_record.min_occurrences,
-                                     max_occurrences=data_record.max_occurrences)
+            return MappingDataRecord(
+                name=f"{data_record.name} (mask)",
+                length=data_record.length,
+                values_mapping={0: "no", data_record.max_raw_value: "yes"},
+                children=[_get_mask_data_record(child) for child in data_record.children],
+                min_occurrences=data_record.min_occurrences,
+                max_occurrences=data_record.max_occurrences,
+            )
 
         def _get_did_data_mask(did: int) -> tuple[RawDataRecord]:
             data_records = self.did_data_mapping.get(did, None)
@@ -805,18 +818,25 @@ class ConfigurableTranslator(Translator):
             mask_data_records = []
             for dr in data_records:
                 if not isinstance(dr, AbstractDataRecord) or not dr.fixed_total_length:
-                    raise ValueError(f"Incorrectly defined data structure for DID 0x{did:04X}. "
-                                     f"Only fixed length data records are supported right now.")
+                    raise ValueError(
+                        f"Incorrectly defined data structure for DID 0x{did:04X}. "
+                        f"Only fixed length data records are supported right now."
+                    )
                 total_length += dr.min_occurrences * dr.length
                 mask_data_records.append(_get_mask_data_record(dr))
-            return (RawDataRecord(name=name,
-                                  children=mask_data_records,
-                                  length=total_length,
-                                  min_occurrences=0 if optional else 1,
-                                  max_occurrences=1),)
+            return (
+                RawDataRecord(
+                    name=name,
+                    children=mask_data_records,
+                    length=total_length,
+                    min_occurrences=0 if optional else 1,
+                    max_occurrences=1,
+                ),
+            )
 
-        return ConditionalFormulaDataRecord(formula=_get_did_data_mask,
-                                            default_message_continuation=[default_did_data_mask])
+        return ConditionalFormulaDataRecord(
+            formula=_get_did_data_mask, default_message_continuation=[default_did_data_mask]
+        )
 
     def __get_did_records_formula(self, record_number: int | None) -> Callable[[int], MessageStructureAlias]:
         """
@@ -833,10 +853,9 @@ class ConfigurableTranslator(Translator):
         """
         return lambda did_count: self.__get_did_record(did_count=did_count, record_number=record_number)
 
-    def __get_did_record(self,
-                         did_count: int,
-                         record_number: int | None,
-                         optional: bool = False) -> tuple[MappingDataRecord | ConditionalFormulaDataRecord, ...]:
+    def __get_did_record(
+        self, did_count: int, record_number: int | None, optional: bool = False
+    ) -> tuple[MappingDataRecord | ConditionalFormulaDataRecord, ...]:
         """
         Get DID record (e.g. for DTC Snapshot or DTC Stored Data) with DID numbers and data.
 
@@ -872,14 +891,20 @@ class ConfigurableTranslator(Translator):
 
         :return: Following Data Records.
         """
-        return (INPUT_OUTPUT_CONTROL_PARAMETER,
-                ConditionalMappingDataRecord(mapping={
+        return (
+            INPUT_OUTPUT_CONTROL_PARAMETER,
+            ConditionalMappingDataRecord(
+                mapping={
                     0x00: (),
                     0x01: (),
                     0x02: (),
-                    0x03: (*self.__conditional_control_state.get_message_continuation(did),
-                           *self.__conditional_optional_control_enable_mask.get_message_continuation(did)),
-                }))
+                    0x03: (
+                        *self.__conditional_control_state.get_message_continuation(did),
+                        *self.__conditional_optional_control_enable_mask.get_message_continuation(did),
+                    ),
+                }
+            ),
+        )
 
     def __get_input_output_control_by_identifier_response(self, did: int) -> MessageStructureAlias:
         # pylint: disable=line-too-long
@@ -896,13 +921,17 @@ class ConfigurableTranslator(Translator):
         :return: Following Data Records.
         """
         control_state_data_records = self.__conditional_control_state.get_message_continuation(did)
-        return (INPUT_OUTPUT_CONTROL_PARAMETER,
-                ConditionalMappingDataRecord(mapping={
+        return (
+            INPUT_OUTPUT_CONTROL_PARAMETER,
+            ConditionalMappingDataRecord(
+                mapping={
                     0x00: control_state_data_records,
                     0x01: control_state_data_records,
                     0x02: control_state_data_records,
                     0x03: control_state_data_records,
-                }))
+                }
+            ),
+        )
 
     def __get_event_window_time(self, event_number: int) -> MappingDataRecord:
         """
@@ -921,9 +950,9 @@ class ConfigurableTranslator(Translator):
         event_window.name = f"{event_window.name}#{event_number}"
         return event_window
 
-    def __get_activated_events(self, number_of_activated_events: int) -> tuple[RawDataRecord
-                                                                               | MappingDataRecord
-                                                                               | ConditionalMappingDataRecord, ...]:
+    def __get_activated_events(
+        self, number_of_activated_events: int
+    ) -> tuple[RawDataRecord | MappingDataRecord | ConditionalMappingDataRecord, ...]:
         """
         Get activated events.
 
@@ -941,25 +970,18 @@ class ConfigurableTranslator(Translator):
             service_to_respond = get_service_to_respond(event_number)
             data_records.append(self.__get_event_type_of_active_event(event_number))
             mapping: dict[int, MessageStructureAlias] = {
-                0x01: (event_window_time,
-                       get_event_type_record_01(event_number),
-                       service_to_respond),
+                0x01: (event_window_time, get_event_type_record_01(event_number), service_to_respond),
             }
             for event_type in (0x02, 0x03, 0x07):
-                event_type_record = self.__get_event_type_record(event=event_type,
-                                                                 event_number=event_number)
+                event_type_record = self.__get_event_type_record(event=event_type, event_number=event_number)
                 if event_type_record is None:
                     continue
-                mapping[event_type] = (event_window_time,
-                                       event_type_record,
-                                       service_to_respond)
+                mapping[event_type] = (event_window_time, event_type_record, service_to_respond)
 
-            event_type_record_08 = self.__get_event_type_record(event=0x08,
-                                                                event_number=event_number)
+            event_type_record_08 = self.__get_event_type_record(event=0x08, event_number=event_number)
             if event_type_record_08 is not None:
                 mapping[0x08] = (event_window_time, event_type_record_08)
-            event_type_record_09 = self.__get_event_type_record(event=0x09,
-                                                                event_number=event_number)
+            event_type_record_09 = self.__get_event_type_record(event=0x09, event_number=event_number)
             event_type_record_09_continuation = self.__get_event_type_record_09_continuation(event_number=event_number)
             if event_type_record_09 is not None and event_type_record_09_continuation is not None:
                 mapping[0x09] = (event_window_time, event_type_record_09, event_type_record_09_continuation)
@@ -978,10 +1000,9 @@ class ConfigurableTranslator(Translator):
 
         :return: Created `eventTypeOfActiveEvent` Data Record.
         """
-        return RawDataRecord(name=f"eventTypeOfActiveEvent#{event_number}",
-                             length=8,
-                             children=(RESERVED_BIT,
-                                       self.__event_type))
+        return RawDataRecord(
+            name=f"eventTypeOfActiveEvent#{event_number}", length=8, children=(RESERVED_BIT, self.__event_type)
+        )
 
     def __get_event_type_record(self, event: int, event_number: int) -> RawDataRecord | None:
         """

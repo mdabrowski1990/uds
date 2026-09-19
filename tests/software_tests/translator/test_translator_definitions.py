@@ -205,4 +205,6 @@ class TestTranslatorDefinitionsIntegration:
         ],
     )
     def test_decode(self, translator, payload, decoded_message):
-        assert translator.decode(payload=payload) == decoded_message
+        output = translator.decode(payload=payload)
+        output_dict = tuple(data_record_info.to_dict() for data_record_info in output)
+        assert output_dict == decoded_message

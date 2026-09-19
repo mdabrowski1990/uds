@@ -570,6 +570,7 @@ class TestMappingDataRecordIntegration:
             ),
         ],
     )
+    @pytest.mark.filterwarnings("ignore:No label defined")
     def test_get_physical_value__valid(self, dtc_status_value, expected_output):
         assert self.dtc_status.get_physical_value(dtc_status_value) == expected_output["DTC Status"]
         children_values = self.dtc_status.get_children_values(dtc_status_value)
@@ -579,6 +580,7 @@ class TestMappingDataRecordIntegration:
             assert item[1] == expected_output[child.name]
 
     @pytest.mark.parametrize("dtc_status_value", [-1, 0x100, "Active with Lamp ON"])
+    @pytest.mark.filterwarnings("ignore:No label defined")
     def test_get_physical_value__invalid(self, dtc_status_value):
         with pytest.raises((TypeError, ValueError)):
             self.dtc_status.get_physical_value(dtc_status_value)
