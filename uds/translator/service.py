@@ -2,8 +2,14 @@
 
 from __future__ import annotations
 
-__all__ = ["Service", "DecodedMessageAlias", "DataRecordsValuesAlias",
-           "DataRecordValueAlias", "MultipleDataRecordValueAlias", "SingleDataRecordValueAlias"]
+__all__ = [
+    "Service",
+    "DecodedMessageAlias",
+    "DataRecordsValuesAlias",
+    "DataRecordValueAlias",
+    "MultipleDataRecordValueAlias",
+    "SingleDataRecordValueAlias",
+]
 
 from collections.abc import Collection, Mapping, Sequence
 from copy import deepcopy
@@ -55,11 +61,13 @@ class Service:
      - provides tools for creating diagnostic messages out of meaningful information (physical values)
     """
 
-    def __init__(self,
-                 request_sid: RequestSID,
-                 request_structure: MessageStructureAlias,
-                 response_structure: MessageStructureAlias,
-                 supported_nrc: Collection[NRC] = tuple(NRC)) -> None:
+    def __init__(
+        self,
+        request_sid: RequestSID,
+        request_structure: MessageStructureAlias,
+        response_structure: MessageStructureAlias,
+        supported_nrc: Collection[NRC] = tuple(NRC),
+    ) -> None:
         """
         Define a translator for a single diagnostic service.
 
@@ -82,11 +90,13 @@ class Service:
         cls = self.__class__
         self_copy = cls.__new__(cls)
         memo[id(self)] = self_copy
-        Service.__init__(self_copy,
-                         request_sid=self.request_sid,
-                         request_structure=deepcopy(self.request_structure, memo=memo),
-                         response_structure=deepcopy(self.response_structure, memo=memo),
-                         supported_nrc=deepcopy(self.supported_nrc, memo=memo))
+        Service.__init__(
+            self_copy,
+            request_sid=self.request_sid,
+            request_structure=deepcopy(self.request_structure, memo=memo),
+            response_structure=deepcopy(self.response_structure, memo=memo),
+            supported_nrc=deepcopy(self.supported_nrc, memo=memo),
+        )
         return self_copy
 
     @property
@@ -173,21 +183,20 @@ class Service:
         :return: Detailed information about RSID value.
         """
         rsid = self.response_sid if positive else ResponseSID.NegativeResponse
-        return SingleOccurrenceInfo(name="RSID",
-                                    length=8,
-                                    raw_value=rsid.value,
-                                    physical_value=rsid.name,
-                                    children=tuple(),
-                                    unit=None)
+        return SingleOccurrenceInfo(
+            name="RSID", length=8, raw_value=rsid.value, physical_value=rsid.name, children=tuple(), unit=None
+        )
 
     def _get_sid_info(self) -> SingleOccurrenceInfo:
         """Get detailed information about Service Identifier."""
-        return SingleOccurrenceInfo(name="SID",
-                                    length=8,
-                                    raw_value=self.request_sid.value,
-                                    physical_value=self.request_sid.name,
-                                    children=tuple(),
-                                    unit=None)
+        return SingleOccurrenceInfo(
+            name="SID",
+            length=8,
+            raw_value=self.request_sid.value,
+            physical_value=self.request_sid.name,
+            children=tuple(),
+            unit=None,
+        )
 
     @staticmethod
     def _get_nrc_info(nrc: NRC) -> SingleOccurrenceInfo:
@@ -199,16 +208,14 @@ class Service:
         :return: Detailed information for single occurrence of NRC Data Record.
         """
         nrc = NRC.validate_member(nrc)
-        return SingleOccurrenceInfo(name="NRC",
-                                    length=8,
-                                    raw_value=nrc.value,
-                                    physical_value=nrc.name,
-                                    children=tuple(),
-                                    unit=None)
+        return SingleOccurrenceInfo(
+            name="NRC", length=8, raw_value=nrc.value, physical_value=nrc.name, children=tuple(), unit=None
+        )
 
     @staticmethod
-    def _get_single_data_record_occurrence(data_record: AbstractDataRecord,
-                                           value: SingleDataRecordValueAlias) -> list[int]:
+    def _get_single_data_record_occurrence(
+        data_record: AbstractDataRecord, value: SingleDataRecordValueAlias
+    ) -> list[int]:
         """
         Get occurrence value for a single occurrence Data Record.
 
@@ -228,20 +235,25 @@ class Service:
             return []
         if isinstance(value, int):
             if not data_record.min_raw_value <= value <= data_record.max_raw_value:
-                raise ValueError("Provided occurrence value is out of range. "
-                                 f"Data Record name = {data_record.name!r}. "
-                                 f"Data Record min raw value = {data_record.min_raw_value}. "
-                                 f"Data Record max raw value = {data_record.max_raw_value}. "
-                                 f"Provided sequence = {value}. Occurrence value = {value}.")
+                raise ValueError(
+                    "Provided occurrence value is out of range. "
+                    f"Data Record name = {data_record.name!r}. "
+                    f"Data Record min raw value = {data_record.min_raw_value}. "
+                    f"Data Record max raw value = {data_record.max_raw_value}. "
+                    f"Provided sequence = {value}. Occurrence value = {value}."
+                )
             return [value]
         if isinstance(value, Mapping):
             return [data_record.get_raw_value_from_children(value)]
-        raise TypeError(f"Incorrect value was provided for a Single Occurrence Data Record. "
-                        f"Data Record name = {data_record.name!r}. Provided value = {value}.")
+        raise TypeError(
+            f"Incorrect value was provided for a Single Occurrence Data Record. "
+            f"Data Record name = {data_record.name!r}. Provided value = {value}."
+        )
 
     @staticmethod
-    def _get_reoccurring_data_record_occurrences(data_record: AbstractDataRecord,
-                                                 value: MultipleDataRecordValueAlias) -> list[int]:
+    def _get_reoccurring_data_record_occurrences(
+        data_record: AbstractDataRecord, value: MultipleDataRecordValueAlias
+    ) -> list[int]:
         """
         Get occurrences values for multiple occurrences Data Record.
 
@@ -254,36 +266,42 @@ class Service:
         :return: List with raw values for this Data Record.
         """
         if not isinstance(value, Sequence):
-            raise TypeError("A sequence of values has to be provided for a reoccurring Data Record. "
-                            f"Data Record name = {data_record.name!r}.")
+            raise TypeError(
+                "A sequence of values has to be provided for a reoccurring Data Record. "
+                f"Data Record name = {data_record.name!r}."
+            )
         if len(value) < data_record.min_occurrences or len(value) > (data_record.max_occurrences or float("inf")):
-            raise ValueError("A sequence of values has to contain proper number of Data Record occurrences."
-                             f"Data Record name = {data_record.name!r}. "
-                             f"Data Record min occurrences number = {data_record.min_occurrences}. "
-                             f"Data Record max occurrences number = {data_record.max_occurrences}. "
-                             f"Provided sequence = {value}.")
+            raise ValueError(
+                "A sequence of values has to contain proper number of Data Record occurrences."
+                f"Data Record name = {data_record.name!r}. "
+                f"Data Record min occurrences number = {data_record.min_occurrences}. "
+                f"Data Record max occurrences number = {data_record.max_occurrences}. "
+                f"Provided sequence = {value}."
+            )
         raw_values: list[int] = []
         for occurrence_value in value:
             if isinstance(occurrence_value, int):
                 if not data_record.min_raw_value <= occurrence_value <= data_record.max_raw_value:
-                    raise ValueError("Provided occurrence value is out of range. "
-                                     f"Data Record name = {data_record.name!r}. "
-                                     f"Data Record min raw value = {data_record.min_raw_value}. "
-                                     f"Data Record max raw value = {data_record.max_raw_value}. "
-                                     f"Provided sequence = {value}. Occurrence value = {occurrence_value}.")
+                    raise ValueError(
+                        "Provided occurrence value is out of range. "
+                        f"Data Record name = {data_record.name!r}. "
+                        f"Data Record min raw value = {data_record.min_raw_value}. "
+                        f"Data Record max raw value = {data_record.max_raw_value}. "
+                        f"Provided sequence = {value}. Occurrence value = {occurrence_value}."
+                    )
                 raw_values.append(occurrence_value)
             elif isinstance(occurrence_value, Mapping):
                 raw_values.append(data_record.get_raw_value_from_children(occurrence_value))
             else:
-                raise ValueError("Incorrect value was provided for at least one occurrence of a Multi Occurrences "
-                                 f"Data Record. Data Record name = {data_record.name!r}. "
-                                 f"Provided values = {value}. Incorrect occurrence = {occurrence_value}.")
+                raise ValueError(
+                    "Incorrect value was provided for at least one occurrence of a Multi Occurrences "
+                    f"Data Record. Data Record name = {data_record.name!r}. "
+                    f"Provided values = {value}. Incorrect occurrence = {occurrence_value}."
+                )
         return raw_values
 
     @classmethod
-    def _get_data_record_occurrences(cls,
-                                     data_record: AbstractDataRecord,
-                                     value: DataRecordValueAlias) -> list[int]:
+    def _get_data_record_occurrences(cls, data_record: AbstractDataRecord, value: DataRecordValueAlias) -> list[int]:
         """
         Get raw values of all occurrences provided as value.
 
@@ -319,10 +337,12 @@ class Service:
         return min_length
 
     @classmethod
-    def _decode_payload(cls,  # pylint: disable=too-many-branches
-                        payload: RawBytesAlias,
-                        message_structure: MessageStructureAlias,
-                        check_remaining_length: bool = True) -> DecodedMessageAlias:
+    def _decode_payload(
+        cls,  # pylint: disable=too-many-branches
+        payload: RawBytesAlias,
+        message_structure: MessageStructureAlias,
+        check_remaining_length: bool = True,
+    ) -> DecodedMessageAlias:
         """
         Decode information for given message structure and payload.
 
@@ -345,7 +365,7 @@ class Service:
             if isinstance(data_record, AbstractDataRecord):
                 if data_record.is_reoccurring and not data_record.fixed_total_length:
                     try:
-                        additional_required_length = cls._get_remaining_length(message_structure[i + 1:])
+                        additional_required_length = cls._get_remaining_length(message_structure[i + 1 :])
                     except TypeError:
                         additional_required_length = 0
                     max_occurrences_number = (remaining_length - additional_required_length) // data_record.length
@@ -370,21 +390,27 @@ class Service:
                     raise RuntimeError("Incorrect Data Records structure.")
                 bytes_number = remaining_length // 8
                 conditional_message_continuation = data_record.get_message_continuation(raw_value=raw_values[-1])
-                remaining_payload = int_to_bytes(int_value=payload_int & ((1 << remaining_length) - 1),
-                                                 endianness=Endianness.BIG_ENDIAN,
-                                                 size=bytes_number)
+                remaining_payload = int_to_bytes(
+                    int_value=payload_int & ((1 << remaining_length) - 1),
+                    endianness=Endianness.BIG_ENDIAN,
+                    size=bytes_number,
+                )
                 decoded_conditional_message_continuation = cls._decode_payload(
                     payload=remaining_payload,
                     message_structure=conditional_message_continuation,
-                    check_remaining_length=False)
+                    check_remaining_length=False,
+                )
                 for data_record_info in decoded_conditional_message_continuation:
-                    occurrences_number = 1 if isinstance(data_record_info["raw_value"], int) \
-                        else len(data_record_info["raw_value"])
-                    remaining_length -= occurrences_number * data_record_info["length"]
+                    occurrences_number = (
+                        1 if isinstance(data_record_info.raw_value, int) else len(data_record_info.raw_value)
+                    )
+                    remaining_length -= occurrences_number * data_record_info.length
                     decoded_message_continuation.append(data_record_info)
-                    raw_values.append(data_record_info["raw_value"]
-                                      if isinstance(data_record_info["raw_value"], int) else
-                                      data_record_info["raw_value"][-1])
+                    raw_values.append(
+                        data_record_info.raw_value
+                        if isinstance(data_record_info.raw_value, int)
+                        else data_record_info.raw_value[-1]
+                    )
             else:
                 raise NotImplementedError("Unexpected Data Record type found in the structure.")
         if check_remaining_length and remaining_length != 0:
@@ -392,10 +418,12 @@ class Service:
         return tuple(decoded_message_continuation)
 
     @classmethod
-    def _encode_message(cls,  # pylint: disable=too-many-branches
-                        data_records_values: dict[str, DataRecordValueAlias],
-                        message_structure: MessageStructureAlias,
-                        check_unused_data_record_values: bool = True) -> bytearray:
+    def _encode_message(
+        cls,  # pylint: disable=too-many-branches
+        data_records_values: dict[str, DataRecordValueAlias],
+        message_structure: MessageStructureAlias,
+        check_unused_data_record_values: bool = True,
+    ) -> bytearray:
         """
         Encode payload of a diagnostic message.
 
@@ -419,8 +447,7 @@ class Service:
             if isinstance(data_record, AbstractDataRecord):
                 if data_record.name in data_records_values:
                     data_record_value = data_records_values.pop(data_record.name)
-                    occurrences = cls._get_data_record_occurrences(data_record=data_record,
-                                                                   value=data_record_value)
+                    occurrences = cls._get_data_record_occurrences(data_record=data_record, value=data_record_value)
                 elif data_record.min_occurrences == 0:
                     occurrences = []
                 else:
@@ -433,9 +460,11 @@ class Service:
             elif isinstance(data_record, AbstractConditionalDataRecord):
                 message_continuation = data_record.get_message_continuation(raw_value=raw_value)
                 if message_continuation:
-                    payload_continuation = cls._encode_message(data_records_values=data_records_values,
-                                                               message_structure=message_continuation,
-                                                               check_unused_data_record_values=False)
+                    payload_continuation = cls._encode_message(
+                        data_records_values=data_records_values,
+                        message_structure=message_continuation,
+                        check_unused_data_record_values=False,
+                    )
                     _length = 8 * len(payload_continuation)
                     total_length += _length
                     continuation_raw_value = bytes_to_int(payload_continuation, endianness=Endianness.BIG_ENDIAN)
@@ -451,9 +480,9 @@ class Service:
             raise RuntimeError("Incorrect message structure was provided.")
         if check_unused_data_record_values and data_records_values:
             raise ValueError(f"Unused Data Record values were provided: {data_records_values}.")
-        return bytearray(int_to_bytes(int_value=total_raw_value,
-                                      size=total_length // 8,
-                                      endianness=Endianness.BIG_ENDIAN))
+        return bytearray(
+            int_to_bytes(int_value=total_raw_value, size=total_length // 8, endianness=Endianness.BIG_ENDIAN)
+        )
 
     @staticmethod
     def validate_message_structure(value: MessageStructureAlias) -> None:
@@ -477,8 +506,9 @@ class Service:
         validate_raw_bytes(payload, allow_empty=False)
         if payload[0] != self.request_sid:
             raise ValueError("Provided payload does not start from SID value for this service.")
-        decoded_message_continuation = self._decode_payload(payload=payload[1:],
-                                                            message_structure=self.request_structure)
+        decoded_message_continuation = self._decode_payload(
+            payload=payload[1:], message_structure=self.request_structure
+        )
         return self._get_sid_info(), *decoded_message_continuation
 
     def decode_positive_response(self, payload: RawBytesAlias) -> DecodedMessageAlias:
@@ -494,8 +524,9 @@ class Service:
         validate_raw_bytes(payload, allow_empty=False)
         if payload[0] != self.response_sid:
             raise ValueError("Provided payload does not start from RSID value for this service.")
-        decoded_message_continuation = self._decode_payload(payload=payload[1:],
-                                                            message_structure=self.response_structure)
+        decoded_message_continuation = self._decode_payload(
+            payload=payload[1:], message_structure=self.response_structure
+        )
         return self._get_rsid_info(), *decoded_message_continuation
 
     def decode_negative_response(self, payload: RawBytesAlias) -> DecodedMessageAlias:
@@ -510,8 +541,9 @@ class Service:
         """
         validate_raw_bytes(payload, allow_empty=False)
         if len(payload) != NEGATIVE_RESPONSE_MESSAGE_LENGTH:
-            raise ValueError(f"Negative Response Message must be exactly {NEGATIVE_RESPONSE_MESSAGE_LENGTH}-bytes "
-                             f"long.")
+            raise ValueError(
+                f"Negative Response Message must be exactly {NEGATIVE_RESPONSE_MESSAGE_LENGTH}-bytes long."
+            )
         rsid = payload[0]
         sid = payload[1]
         nrc = payload[2]
@@ -520,8 +552,10 @@ class Service:
         if sid != self.request_sid:
             raise ValueError(f"Provided payload contains Negative Response for another service with SID=0x{sid:02X}.")
         if nrc not in self.supported_nrc:
-            warn(message=f"Received NRC code `0x{nrc:02X}` that is not supported by {self.name!r} service.",
-                 category=UserWarning)
+            warn(
+                message=f"Received NRC code `0x{nrc:02X}` that is not supported by {self.name!r} service.",
+                category=UserWarning,
+            )
         return self._get_rsid_info(positive=False), self._get_sid_info(), self._get_nrc_info(NRC(nrc))
 
     def decode(self, payload: RawBytesAlias) -> DecodedMessageAlias:
@@ -553,9 +587,9 @@ class Service:
 
         :return: Payload of a request message.
         """
-        return (bytearray([self.request_sid])
-                + self._encode_message(data_records_values=deepcopy(dict(data_records_values)),
-                                       message_structure=self.request_structure))
+        return bytearray([self.request_sid]) + self._encode_message(
+            data_records_values=deepcopy(dict(data_records_values)), message_structure=self.request_structure
+        )
 
     def encode_positive_response(self, data_records_values: DataRecordsValuesAlias) -> bytearray:
         """
@@ -568,9 +602,9 @@ class Service:
 
         :return: Payload of a positive response message.
         """
-        return (bytearray([self.response_sid])
-                + self._encode_message(data_records_values=deepcopy(dict(data_records_values)),
-                                       message_structure=self.response_structure))
+        return bytearray([self.response_sid]) + self._encode_message(
+            data_records_values=deepcopy(dict(data_records_values)), message_structure=self.response_structure
+        )
 
     def encode_negative_response(self, nrc: NRC) -> bytearray:
         """
@@ -582,14 +616,15 @@ class Service:
         """
         NRC.validate_member(nrc)
         if nrc not in self.supported_nrc:
-            warn(message=f"NRC code {nrc} is not supported by service {self.name!r}.",
-                 category=UserWarning)
+            warn(message=f"NRC code {nrc} is not supported by service {self.name!r}.", category=UserWarning)
         return bytearray([ResponseSID.NegativeResponse, self.request_sid, nrc])
 
-    def encode(self,
-               data_records_values: DataRecordsValuesAlias,
-               sid: RequestSID | None = None,
-               rsid: ResponseSID | None = None) -> bytearray:
+    def encode(
+        self,
+        data_records_values: DataRecordsValuesAlias,
+        sid: RequestSID | None = None,
+        rsid: ResponseSID | None = None,
+    ) -> bytearray:
         """
         Encode diagnostic message payload for this service.
 
@@ -609,13 +644,16 @@ class Service:
         """
         if rsid == ResponseSID.NegativeResponse and sid in {None, self.request_sid}:
             if set(data_records_values.keys()) != {"NRC"}:
-                raise InconsistencyError("Value only for `NRC` Data Record shall be provided in case of "
-                                         "negative response message. "
-                                         f"Actual values: {data_records_values}")
+                raise InconsistencyError(
+                    "Value only for `NRC` Data Record shall be provided in case of "
+                    "negative response message. "
+                    f"Actual values: {data_records_values}"
+                )
             return self.encode_negative_response(nrc=data_records_values["NRC"])  # type: ignore
         if rsid == self.response_sid and sid is None:
             return self.encode_positive_response(data_records_values=data_records_values)
         if sid == self.request_sid and rsid is None:
             return self.encode_request(data_records_values=data_records_values)
-        raise ValueError("Either SID or RSID value is missing or incorrect. Provided values: "
-                         f"SID = {sid}. RSID = {rsid}.")
+        raise ValueError(
+            f"Either SID or RSID value is missing or incorrect. Provided values: SID = {sid}. RSID = {rsid}."
+        )

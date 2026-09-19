@@ -816,12 +816,12 @@ class TestService:
         ]
         mock_get_message_continuation = Mock(return_value=message_continuation)
         message_structure[-1].get_message_continuation = mock_get_message_continuation
-        message_continuation[0].get_occurrence_info.return_value = {
-            "length": message_continuation[0].length,
-            "raw_value": range(
+        message_continuation[0].get_occurrence_info.return_value = Mock(
+            length=message_continuation[0].length,
+            raw_value=range(
                 int(len(payload[message_structure[0].max_occurrences :]) * 8 // message_continuation[0].length)
             ),
-        }
+        )
         assert Service._decode_payload(payload=payload, message_structure=message_structure) == tuple(
             dr.get_occurrence_info.return_value
             for dr in message_structure + message_continuation
