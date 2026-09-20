@@ -61,13 +61,12 @@ class Service:
      - provides tools for creating diagnostic messages out of meaningful information (physical values)
     """
 
-    def __init__(
-        self,
-        request_sid: RequestSID,
-        request_structure: MessageStructureAlias,
-        response_structure: MessageStructureAlias,
-        supported_nrc: Collection[NRC] = tuple(NRC),
-    ) -> None:
+    def __init__(self,
+                 request_sid: RequestSID,
+                 request_structure: MessageStructureAlias,
+                 response_structure: MessageStructureAlias,
+                 supported_nrc: Collection[NRC] = tuple(NRC),
+                 ) -> None:
         """
         Define a translator for a single diagnostic service.
 
@@ -213,9 +212,9 @@ class Service:
         )
 
     @staticmethod
-    def _get_single_data_record_occurrence(
-        data_record: AbstractDataRecord, value: SingleDataRecordValueAlias
-    ) -> list[int]:
+    def _get_single_data_record_occurrence(data_record: AbstractDataRecord,
+                                           value: SingleDataRecordValueAlias,
+                                           ) -> list[int]:
         """
         Get occurrence value for a single occurrence Data Record.
 
@@ -251,9 +250,9 @@ class Service:
         )
 
     @staticmethod
-    def _get_reoccurring_data_record_occurrences(
-        data_record: AbstractDataRecord, value: MultipleDataRecordValueAlias
-    ) -> list[int]:
+    def _get_reoccurring_data_record_occurrences(data_record: AbstractDataRecord,
+                                                 value: MultipleDataRecordValueAlias,
+                                                 ) -> list[int]:
         """
         Get occurrences values for multiple occurrences Data Record.
 
@@ -337,12 +336,11 @@ class Service:
         return min_length
 
     @classmethod
-    def _decode_payload(
-        cls,  # pylint: disable=too-many-branches
-        payload: RawBytesAlias,
-        message_structure: MessageStructureAlias,
-        check_remaining_length: bool = True,
-    ) -> DecodedMessageAlias:
+    def _decode_payload(cls,  # pylint: disable=too-many-branches
+                        payload: RawBytesAlias,
+                        message_structure: MessageStructureAlias,
+                        check_remaining_length: bool = True,
+                        ) -> DecodedMessageAlias:
         """
         Decode information for given message structure and payload.
 
@@ -365,7 +363,7 @@ class Service:
             if isinstance(data_record, AbstractDataRecord):
                 if data_record.is_reoccurring and not data_record.fixed_total_length:
                     try:
-                        additional_required_length = cls._get_remaining_length(message_structure[i + 1 :])
+                        additional_required_length = cls._get_remaining_length(message_structure[i + 1:])
                     except TypeError:
                         additional_required_length = 0
                     max_occurrences_number = (remaining_length - additional_required_length) // data_record.length
@@ -418,12 +416,11 @@ class Service:
         return tuple(decoded_message_continuation)
 
     @classmethod
-    def _encode_message(
-        cls,  # pylint: disable=too-many-branches
-        data_records_values: dict[str, DataRecordValueAlias],
-        message_structure: MessageStructureAlias,
-        check_unused_data_record_values: bool = True,
-    ) -> bytearray:
+    def _encode_message(cls,  # pylint: disable=too-many-branches
+                        data_records_values: dict[str, DataRecordValueAlias],
+                        message_structure: MessageStructureAlias,
+                        check_unused_data_record_values: bool = True,
+                        ) -> bytearray:
         """
         Encode payload of a diagnostic message.
 
@@ -619,12 +616,11 @@ class Service:
             warn(message=f"NRC code {nrc} is not supported by service {self.name!r}.", category=UserWarning)
         return bytearray([ResponseSID.NegativeResponse, self.request_sid, nrc])
 
-    def encode(
-        self,
-        data_records_values: DataRecordsValuesAlias,
-        sid: RequestSID | None = None,
-        rsid: ResponseSID | None = None,
-    ) -> bytearray:
+    def encode(self,
+               data_records_values: DataRecordsValuesAlias,
+               sid: RequestSID | None = None,
+               rsid: ResponseSID | None = None,
+               ) -> bytearray:
         """
         Encode diagnostic message payload for this service.
 

@@ -56,27 +56,26 @@ class ConfigurableTranslator(Translator):
         :class:`~uds.translator.translator.Translator` shall be directly used instead.
     """
 
-    def __init__(
-        self,  # pylint: disable=too-many-branches  # noqa: MC0001
-        base: Translator = BASE_TRANSLATOR,
-        *,
-        diagnostic_session_type_mapping: Mapping[int, str] | None = None,
-        reset_type_mapping: Mapping[int, str] | None = None,
-        report_type_mapping: Mapping[int, str] | None = None,
-        security_access_type_mapping: Mapping[int, str] | None = None,
-        control_type_type_mapping: Mapping[int, str] | None = None,
-        authentication_task_mapping: Mapping[int, str] | None = None,
-        definition_type_mapping: Mapping[int, str] | None = None,
-        routine_control_type_mapping: Mapping[int, str] | None = None,
-        zero_subfunction_mapping: Mapping[int, str] | None = None,
-        timing_parameter_access_type_mapping: Mapping[int, str] | None = None,
-        dtc_setting_type_mapping: Mapping[int, str] | None = None,
-        event_type_mapping: Mapping[int, str] | None = None,
-        link_control_type_mapping: Mapping[int, str] | None = None,
-        rid_mapping: Mapping[int, str] | None = None,
-        did_mapping: Mapping[int, str] | None = None,
-        did_data_mapping: Mapping[int, MessageStructureAlias],
-    ) -> None:
+    def __init__(self,  # pylint: disable=too-many-branches  # noqa: MC0001
+                 base: Translator = BASE_TRANSLATOR,
+                 *,
+                 diagnostic_session_type_mapping: Mapping[int, str] | None = None,
+                 reset_type_mapping: Mapping[int, str] | None = None,
+                 report_type_mapping: Mapping[int, str] | None = None,
+                 security_access_type_mapping: Mapping[int, str] | None = None,
+                 control_type_type_mapping: Mapping[int, str] | None = None,
+                 authentication_task_mapping: Mapping[int, str] | None = None,
+                 definition_type_mapping: Mapping[int, str] | None = None,
+                 routine_control_type_mapping: Mapping[int, str] | None = None,
+                 zero_subfunction_mapping: Mapping[int, str] | None = None,
+                 timing_parameter_access_type_mapping: Mapping[int, str] | None = None,
+                 dtc_setting_type_mapping: Mapping[int, str] | None = None,
+                 event_type_mapping: Mapping[int, str] | None = None,
+                 link_control_type_mapping: Mapping[int, str] | None = None,
+                 rid_mapping: Mapping[int, str] | None = None,
+                 did_mapping: Mapping[int, str] | None = None,
+                 did_data_mapping: Mapping[int, MessageStructureAlias],
+                 ) -> None:
         """
         Reconfigure a translator.
 
@@ -275,25 +274,21 @@ class ConfigurableTranslator(Translator):
         response_on_event = self.services_mapping.get(RequestSID.ResponseOnEvent, None)
         if response_on_event is not None:
             request_conditional_continuation: ConditionalMappingDataRecord = (  # type: ignore
-                response_on_event.request_structure
-            )[1]
+                response_on_event.request_structure)[1]
             response_conditional_continuation: ConditionalMappingDataRecord = (  # type: ignore
-                response_on_event.response_structure
-            )[1]
+                response_on_event.response_structure)[1]
             request_continuation_08 = request_conditional_continuation.mapping.get(0x08, None)
             response_continuation_08 = response_conditional_continuation.mapping.get(0x08, None)
             request_continuation_09 = request_conditional_continuation.mapping.get(0x09, None)
             response_continuation_09 = response_conditional_continuation.mapping.get(0x09, None)
             if request_continuation_08 is not None:
-                event_type_record_08: RawDataRecord | None = find_element(
-                    request_continuation_08,  # type: ignore
+                request_event_type_record_08: RawDataRecord | None = find_element(  # type: ignore
+                    request_continuation_08,
                     name=EVENT_TYPE_RECORD_08_2020.name,
-                    length=EVENT_TYPE_RECORD_08_2020.length,
-                )
-                if event_type_record_08 is not None:
+                    length=EVENT_TYPE_RECORD_08_2020.length)
+                if request_event_type_record_08 is not None:
                     subfunction_parameter: MappingDataRecord = (  # type: ignore
-                        event_type_record_08
-                    )[REPORT_TYPE_2013.name]
+                        request_event_type_record_08)[REPORT_TYPE_2013.name]
                     subfunction_parameter.values_mapping = value
                 else:
                     warn(
@@ -302,15 +297,14 @@ class ConfigurableTranslator(Translator):
                         category=UserWarning,
                     )
             if response_continuation_08 is not None:
-                event_type_record_08: RawDataRecord | None = find_element(
-                    response_continuation_08,  # type: ignore
+                response_event_type_record_08: RawDataRecord | None = find_element(  # type: ignore
+                    response_continuation_08,
                     name=EVENT_TYPE_RECORD_08_2020.name,
                     length=EVENT_TYPE_RECORD_08_2020.length,
                 )
-                if event_type_record_08 is not None:
+                if response_event_type_record_08 is not None:
                     subfunction_parameter: MappingDataRecord = (  # type: ignore
-                        event_type_record_08
-                    )[REPORT_TYPE_2013.name]
+                        response_event_type_record_08)[REPORT_TYPE_2013.name]
                     subfunction_parameter.values_mapping = value
                 else:
                     warn(
@@ -319,15 +313,14 @@ class ConfigurableTranslator(Translator):
                         category=UserWarning,
                     )
             if request_continuation_09 is not None:
-                event_type_record_09: RawDataRecord | None = find_element(
-                    request_continuation_09,  # type: ignore
+                request_event_type_record_09: RawDataRecord | None = find_element(  # type: ignore
+                    request_continuation_09,
                     name=EVENT_TYPE_RECORD_09_2020.name,
                     length=EVENT_TYPE_RECORD_09_2020.length,
                 )
-                if event_type_record_09 is not None:
+                if request_event_type_record_09 is not None:
                     subfunction_parameter: MappingDataRecord = (  # type: ignore
-                        event_type_record_09
-                    )[REPORT_TYPE_2013.name]
+                        request_event_type_record_09)[REPORT_TYPE_2013.name]
                     subfunction_parameter.values_mapping = value
                 else:
                     warn(
@@ -336,15 +329,14 @@ class ConfigurableTranslator(Translator):
                         category=UserWarning,
                     )
             if response_continuation_09 is not None:
-                event_type_record_09: RawDataRecord | None = find_element(
-                    response_continuation_09,  # type: ignore
+                response_event_type_record_09: RawDataRecord | None = find_element(  # type: ignore
+                    response_continuation_09,
                     name=EVENT_TYPE_RECORD_08_2020.name,
                     length=EVENT_TYPE_RECORD_08_2020.length,
                 )
-                if event_type_record_09 is not None:
+                if response_event_type_record_09 is not None:
                     subfunction_parameter: MappingDataRecord = (  # type: ignore
-                        event_type_record_09
-                    )[REPORT_TYPE_2013.name]
+                        response_event_type_record_09)[REPORT_TYPE_2013.name]
                     subfunction_parameter.values_mapping = value
                 else:
                     warn(

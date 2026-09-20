@@ -33,6 +33,7 @@ from uds.translator import (
     RawDataRecord,
 )
 from uds.translator.configurable_translator import (
+    DIAGNOSTIC_SESSION_TYPE,
     DID_BIT_LENGTH,
     DID_COUNT_RECORDS,
     DTC_AND_STATUS,
@@ -43,7 +44,9 @@ from uds.translator.configurable_translator import (
     NUMBER_OF_ACTIVATED_EVENTS,
     OPTIONAL_DTC_SNAPSHOT_RECORDS_NUMBERS_LIST,
     REPEATED_DATA_RECORDS_NUMBER,
+    REPORT_TYPE_2013,
     RESERVED_BIT,
+    RESET_TYPE,
     AbstractDataRecord,
     ConfigurableTranslator,
     RequestSID,
@@ -82,6 +85,10 @@ class TestConfigurableTranslator:
         # patching
         self._patcher_deepcopy = patch(f"{SCRIPT_LOCATION}.deepcopy")
         self.mock_deepcopy = self._patcher_deepcopy.start()
+        self._patcher_warn = patch(f"{SCRIPT_LOCATION}.warn")
+        self.mock_warn = self._patcher_warn.start()
+        self._patcher_find_element = patch(f"{SCRIPT_LOCATION}.find_element")
+        self.mock_find_element = self._patcher_find_element.start()
         self._patcher_mapping_proxy_type = patch(f"{SCRIPT_LOCATION}.MappingProxyType")
         self.mock_mapping_proxy_type = self._patcher_mapping_proxy_type.start()
         self._patcher_raw_data_record = patch(f"{SCRIPT_LOCATION}.RawDataRecord")
@@ -95,6 +102,8 @@ class TestConfigurableTranslator:
 
     def teardown_method(self):
         self._patcher_deepcopy.stop()
+        self._patcher_warn.stop()
+        self._patcher_find_element.stop()
         self._patcher_mapping_proxy_type.stop()
         self._patcher_raw_data_record.stop()
         self._patcher_mapping_data_record.stop()
@@ -245,13 +254,14 @@ class TestConfigurableTranslator:
     # diagnostic_session_type_mapping
 
     def test_diagnostic_session_type_mapping_mapping__get(self):
+        mock_get_request_subfunction_parameter = Mock()
+        diagnostic_session_control = self.mock_translator.services_mapping[RequestSID.DiagnosticSessionControl]
+        diagnostic_session_control.request_structure[0].__getitem__ = mock_get_request_subfunction_parameter
         assert (
             ConfigurableTranslator.diagnostic_session_type_mapping.fget(self.mock_translator)
-            == self.mock_translator.services_mapping[RequestSID.DiagnosticSessionControl]
-            .request_structure[0]
-            .children[1]
-            .values_mapping
+            == mock_get_request_subfunction_parameter.return_value.values_mapping
         )
+        mock_get_request_subfunction_parameter.assert_called_once_with(DIAGNOSTIC_SESSION_TYPE.name)
 
     def test_diagnostic_session_type_mapping_mapping__get__none(self):
         mock_get = Mock(return_value=None)
@@ -261,32 +271,28 @@ class TestConfigurableTranslator:
 
     def test_diagnostic_session_type_mapping_mapping__set(self):
         mock_value = {Mock(): Mock()}
+        mock_get_request_subfunction_parameter = Mock()
+        mock_get_response_subfunction_parameter = Mock()
+        diagnostic_session_control = self.mock_translator.services_mapping[RequestSID.DiagnosticSessionControl]
+        diagnostic_session_control.request_structure[0].__getitem__ = mock_get_request_subfunction_parameter
+        diagnostic_session_control.response_structure[0].__getitem__ = mock_get_response_subfunction_parameter
         assert ConfigurableTranslator.diagnostic_session_type_mapping.fset(self.mock_translator, mock_value) is None
-        assert (
-            self.mock_translator.services_mapping[RequestSID.DiagnosticSessionControl]
-            .request_structure[0]
-            .children[1]
-            .values_mapping
-            == mock_value
-        )
-        assert (
-            self.mock_translator.services_mapping[RequestSID.DiagnosticSessionControl]
-            .response_structure[0]
-            .children[1]
-            .values_mapping
-            == mock_value
-        )
+        assert mock_get_request_subfunction_parameter.return_value.values_mapping == mock_value
+        assert mock_get_response_subfunction_parameter.return_value.values_mapping == mock_value
+        mock_get_request_subfunction_parameter.assert_called_once_with(DIAGNOSTIC_SESSION_TYPE.name)
+        mock_get_response_subfunction_parameter.assert_called_once_with(DIAGNOSTIC_SESSION_TYPE.name)
 
     # reset_type_mapping
 
     def test_reset_type_mapping_mapping__get(self):
+        mock_get_request_subfunction_parameter = Mock()
+        ecu_reset = self.mock_translator.services_mapping[RequestSID.ECUReset]
+        ecu_reset.request_structure[0].__getitem__ = mock_get_request_subfunction_parameter
         assert (
             ConfigurableTranslator.reset_type_mapping.fget(self.mock_translator)
-            == self.mock_translator.services_mapping[RequestSID.ECUReset]
-            .request_structure[0]
-            .children[1]
-            .values_mapping
+            == mock_get_request_subfunction_parameter.return_value.values_mapping
         )
+        mock_get_request_subfunction_parameter.assert_called_once_with(RESET_TYPE.name)
 
     def test_reset_type_mapping_mapping__get__none(self):
         mock_get = Mock(return_value=None)
@@ -296,26 +302,28 @@ class TestConfigurableTranslator:
 
     def test_reset_type_mapping_mapping__set(self):
         mock_value = {Mock(): Mock()}
+        mock_get_request_subfunction_parameter = Mock()
+        mock_get_response_subfunction_parameter = Mock()
+        ecu_reset = self.mock_translator.services_mapping[RequestSID.ECUReset]
+        ecu_reset.request_structure[0].__getitem__ = mock_get_request_subfunction_parameter
+        ecu_reset.response_structure[0].__getitem__ = mock_get_response_subfunction_parameter
         assert ConfigurableTranslator.reset_type_mapping.fset(self.mock_translator, mock_value) is None
-        assert (
-            self.mock_translator.services_mapping[RequestSID.ECUReset].request_structure[0].children[1].values_mapping
-            == mock_value
-        )
-        assert (
-            self.mock_translator.services_mapping[RequestSID.ECUReset].response_structure[0].children[1].values_mapping
-            == mock_value
-        )
+        assert mock_get_request_subfunction_parameter.return_value.values_mapping == mock_value
+        assert mock_get_response_subfunction_parameter.return_value.values_mapping == mock_value
+        mock_get_request_subfunction_parameter.assert_called_once_with(RESET_TYPE.name)
+        mock_get_response_subfunction_parameter.assert_called_once_with(RESET_TYPE.name)
 
     # report_type_mapping
 
     def test_report_type_mapping_mapping__get(self):
+        mock_get_request_subfunction_parameter = Mock()
+        read_dtc_information = self.mock_translator.services_mapping[RequestSID.ReadDTCInformation]
+        read_dtc_information.request_structure[0].__getitem__ = mock_get_request_subfunction_parameter
         assert (
             ConfigurableTranslator.report_type_mapping.fget(self.mock_translator)
-            == self.mock_translator.services_mapping[RequestSID.ReadDTCInformation]
-            .request_structure[0]
-            .children[1]
-            .values_mapping
+            == mock_get_request_subfunction_parameter.return_value.values_mapping
         )
+        mock_get_request_subfunction_parameter.assert_called_once_with(REPORT_TYPE_2013.name)
 
     def test_report_type_mapping_mapping__get__none(self):
         mock_get = Mock(return_value=None)
@@ -325,48 +333,81 @@ class TestConfigurableTranslator:
 
     def test_report_type_mapping_mapping__set__read_dtc_information_only(self):
         mock_value = {Mock(): Mock()}
-        self.mock_translator.services_mapping.pop(RequestSID.ResponseOnEvent)
+        self.mock_translator.services_mapping.pop(RequestSID.ResponseOnEvent, None)
+        mock_get_request_subfunction_parameter = Mock()
+        mock_get_response_subfunction_parameter = Mock()
+        read_dtc_information = self.mock_translator.services_mapping[RequestSID.ReadDTCInformation]
+        read_dtc_information.request_structure[0].__getitem__ = mock_get_request_subfunction_parameter
+        read_dtc_information.response_structure[0].__getitem__ = mock_get_response_subfunction_parameter
         assert ConfigurableTranslator.report_type_mapping.fset(self.mock_translator, mock_value) is None
-        assert (
-            self.mock_translator.services_mapping[RequestSID.ReadDTCInformation]
-            .request_structure[0]
-            .children[1]
-            .values_mapping
-            == mock_value
-        )
-        assert (
-            self.mock_translator.services_mapping[RequestSID.ReadDTCInformation]
-            .response_structure[0]
-            .children[1]
-            .values_mapping
-            == mock_value
-        )
+        assert mock_get_request_subfunction_parameter.return_value.values_mapping == mock_value
+        assert mock_get_response_subfunction_parameter.return_value.values_mapping == mock_value
+        mock_get_request_subfunction_parameter.assert_called_once_with(REPORT_TYPE_2013.name)
+        mock_get_response_subfunction_parameter.assert_called_once_with(REPORT_TYPE_2013.name)
+        self.mock_warn.assert_not_called()
 
-    def test_report_type_mapping_mapping__set__response_on_event_not_updated(self):
+    def test_report_type_mapping_mapping__set__response_on_event_subfunctions_not_supported(self):
         mock_value = {Mock(): Mock()}
         mock_get_request_continuation = Mock(return_value=None)
         mock_get_response_continuation = Mock(return_value=None)
+        mock_get_request_subfunction_parameter = Mock()
+        mock_get_response_subfunction_parameter = Mock()
+        read_dtc_information = self.mock_translator.services_mapping[RequestSID.ReadDTCInformation]
+        read_dtc_information.request_structure[0].__getitem__ = mock_get_request_subfunction_parameter
+        read_dtc_information.response_structure[0].__getitem__ = mock_get_response_subfunction_parameter
         self.mock_translator.services_mapping[RequestSID.ResponseOnEvent] = Mock(
-            request_structure=(Mock(), Mock(mapping=Mock(get=mock_get_request_continuation))),
-            response_structure=(Mock(), Mock(mapping=Mock(get=mock_get_response_continuation))),
+            request_structure=(
+                Mock(),
+                Mock(mapping=Mock(get=mock_get_request_continuation)),
+            ),
+            response_structure=(
+                Mock(),
+                Mock(mapping=Mock(get=mock_get_response_continuation)),
+            ),
         )
         assert ConfigurableTranslator.report_type_mapping.fset(self.mock_translator, mock_value) is None
-        assert (
-            self.mock_translator.services_mapping[RequestSID.ReadDTCInformation]
-            .request_structure[0]
-            .children[1]
-            .values_mapping
-            == mock_value
-        )
-        assert (
-            self.mock_translator.services_mapping[RequestSID.ReadDTCInformation]
-            .response_structure[0]
-            .children[1]
-            .values_mapping
-            == mock_value
-        )
+        assert mock_get_request_subfunction_parameter.return_value.values_mapping == mock_value
+        assert mock_get_response_subfunction_parameter.return_value.values_mapping == mock_value
         mock_get_request_continuation.assert_has_calls([call(0x08, None), call(0x09, None)], any_order=True)
         mock_get_response_continuation.assert_has_calls([call(0x08, None), call(0x09, None)], any_order=True)
+        self.mock_warn.assert_not_called()
+
+    def test_report_type_mapping_mapping__set__response_on_event_not_updated(self):
+        mock_value = {Mock(): Mock()}
+        mock_request_08_continuation = MagicMock()
+        mock_request_09_continuation = MagicMock()
+        mock_response_08_continuation = MagicMock()
+        mock_response_09_continuation = MagicMock()
+        mock_get_request_subfunction_parameter = Mock()
+        mock_get_response_subfunction_parameter = Mock()
+        read_dtc_information = self.mock_translator.services_mapping[RequestSID.ReadDTCInformation]
+        read_dtc_information.request_structure[0].__getitem__ = mock_get_request_subfunction_parameter
+        read_dtc_information.response_structure[0].__getitem__ = mock_get_response_subfunction_parameter
+        self.mock_translator.services_mapping[RequestSID.ResponseOnEvent] = Mock(
+            request_structure=(
+                Mock(),
+                Mock(
+                    mapping={
+                        0x08: mock_request_08_continuation,
+                        0x09: mock_request_09_continuation,
+                    }
+                ),
+            ),
+            response_structure=(
+                Mock(),
+                Mock(
+                    mapping={
+                        0x08: mock_response_08_continuation,
+                        0x09: mock_response_09_continuation,
+                    }
+                ),
+            ),
+        )
+        self.mock_find_element.return_value = None
+        assert ConfigurableTranslator.report_type_mapping.fset(self.mock_translator, mock_value) is None
+        assert mock_get_request_subfunction_parameter.return_value.values_mapping == mock_value
+        assert mock_get_response_subfunction_parameter.return_value.values_mapping == mock_value
+        assert self.mock_warn.call_count == 4
 
     def test_report_type_mapping_mapping__set__response_on_event_updated(self):
         mock_value = {Mock(): Mock()}
@@ -374,35 +415,38 @@ class TestConfigurableTranslator:
         mock_request_09_continuation = MagicMock()
         mock_response_08_continuation = MagicMock()
         mock_response_09_continuation = MagicMock()
+        mock_get_request_subfunction_parameter = Mock()
+        mock_get_response_subfunction_parameter = Mock()
+        read_dtc_information = self.mock_translator.services_mapping[RequestSID.ReadDTCInformation]
+        read_dtc_information.request_structure[0].__getitem__ = mock_get_request_subfunction_parameter
+        read_dtc_information.response_structure[0].__getitem__ = mock_get_response_subfunction_parameter
         self.mock_translator.services_mapping[RequestSID.ResponseOnEvent] = Mock(
             request_structure=(
                 Mock(),
-                Mock(mapping={0x08: mock_request_08_continuation, 0x09: mock_request_09_continuation}),
+                Mock(
+                    mapping={
+                        0x08: mock_request_08_continuation,
+                        0x09: mock_request_09_continuation,
+                    }
+                ),
             ),
             response_structure=(
                 Mock(),
-                Mock(mapping={0x08: mock_response_08_continuation, 0x09: mock_response_09_continuation}),
+                Mock(
+                    mapping={
+                        0x08: mock_response_08_continuation,
+                        0x09: mock_response_09_continuation,
+                    }
+                ),
             ),
         )
         assert ConfigurableTranslator.report_type_mapping.fset(self.mock_translator, mock_value) is None
-        assert (
-            self.mock_translator.services_mapping[RequestSID.ReadDTCInformation]
-            .request_structure[0]
-            .children[1]
-            .values_mapping
-            == mock_value
-        )
-        assert (
-            self.mock_translator.services_mapping[RequestSID.ReadDTCInformation]
-            .response_structure[0]
-            .children[1]
-            .values_mapping
-            == mock_value
-        )
-        assert mock_request_08_continuation[1].children[1].values_mapping == mock_value
-        assert mock_request_09_continuation[1].children[2].values_mapping == mock_value
-        assert mock_response_08_continuation[2].children[1].values_mapping == mock_value
-        assert mock_response_09_continuation[2].children[2].values_mapping == mock_value
+        assert mock_get_request_subfunction_parameter.return_value.values_mapping == mock_value
+        assert mock_get_response_subfunction_parameter.return_value.values_mapping == mock_value
+        assert self.mock_find_element.return_value.__getitem__.return_value.values_mapping == mock_value
+        assert self.mock_find_element.return_value.__getitem__.call_count == 4
+        self.mock_find_element.return_value.__getitem__.assert_called_with(REPORT_TYPE_2013.name)
+        self.mock_warn.assert_not_called()
 
     # security_access_type_mapping
 
@@ -821,8 +865,14 @@ class TestConfigurableTranslator:
             RequestSID.InputOutputControlByIdentifier: MagicMock(),
             RequestSID.ReadDTCInformation: MagicMock(response_structure=[Mock(), Mock(mapping={})]),
             RequestSID.ResponseOnEvent: MagicMock(
-                request_structure=[MagicMock(), MagicMock(mapping={i: 10 * [MagicMock()] for i in range(10)})],
-                response_structure=[MagicMock(), MagicMock(mapping={i: 10 * [MagicMock()] for i in range(10)})],
+                request_structure=[
+                    MagicMock(),
+                    MagicMock(mapping={i: 10 * [MagicMock()] for i in range(10)}),
+                ],
+                response_structure=[
+                    MagicMock(),
+                    MagicMock(mapping={i: 10 * [MagicMock()] for i in range(10)}),
+                ],
             ),
         }
         self.mock_translator._ConfigurableTranslator__conditional_read_dtc_information_response = Mock()
@@ -927,14 +977,21 @@ class TestConfigurableTranslator:
         # ReadDTCInformation
         assert self.mock_translator.services_mapping[RequestSID.ReadDTCInformation].response_structure[1].mapping[
             0x04
-        ] == (DTC_AND_STATUS, *self.mock_translator._ConfigurableTranslator__dtc_snapshot_records)
+        ] == (
+            DTC_AND_STATUS,
+            *self.mock_translator._ConfigurableTranslator__dtc_snapshot_records,
+        )
         assert (
             self.mock_translator.services_mapping[RequestSID.ReadDTCInformation].response_structure[1].mapping[0x05]
             == self.mock_translator._ConfigurableTranslator__dtc_stored_data_records
         )
         assert self.mock_translator.services_mapping[RequestSID.ReadDTCInformation].response_structure[1].mapping[
             0x18
-        ] == (MEMORY_SELECTION, DTC_AND_STATUS, *self.mock_translator._ConfigurableTranslator__dtc_snapshot_records)
+        ] == (
+            MEMORY_SELECTION,
+            DTC_AND_STATUS,
+            *self.mock_translator._ConfigurableTranslator__dtc_snapshot_records,
+        )
         # ResponseOnEvent
         assert (
             self.mock_translator.services_mapping[RequestSID.ResponseOnEvent]
@@ -962,7 +1019,10 @@ class TestConfigurableTranslator:
         )
         assert self.mock_translator.services_mapping[RequestSID.ResponseOnEvent].response_structure[1].mapping[
             0x04
-        ] == (NUMBER_OF_ACTIVATED_EVENTS, self.mock_translator._ConfigurableTranslator__conditional_activated_events)
+        ] == (
+            NUMBER_OF_ACTIVATED_EVENTS,
+            self.mock_translator._ConfigurableTranslator__conditional_activated_events,
+        )
         assert (
             self.mock_translator.services_mapping[RequestSID.ResponseOnEvent]
             .response_structure[1]
@@ -1016,7 +1076,11 @@ class TestConfigurableTranslator:
         self.mock_translator._ConfigurableTranslator__get_did_record.assert_has_calls(
             [
                 call(did_count=1, record_number=None, optional=False),
-                call(did_count=REPEATED_DATA_RECORDS_NUMBER, record_number=None, optional=True),
+                call(
+                    did_count=REPEATED_DATA_RECORDS_NUMBER,
+                    record_number=None,
+                    optional=True,
+                ),
             ]
         )
         # WriteDataByIdentifier
@@ -1041,14 +1105,21 @@ class TestConfigurableTranslator:
         # ReadDTCInformation
         assert self.mock_translator.services_mapping[RequestSID.ReadDTCInformation].response_structure[1].mapping[
             0x04
-        ] == (DTC_AND_STATUS, *self.mock_translator._ConfigurableTranslator__dtc_snapshot_records)
+        ] == (
+            DTC_AND_STATUS,
+            *self.mock_translator._ConfigurableTranslator__dtc_snapshot_records,
+        )
         assert (
             self.mock_translator.services_mapping[RequestSID.ReadDTCInformation].response_structure[1].mapping[0x05]
             == self.mock_translator._ConfigurableTranslator__dtc_stored_data_records
         )
         assert self.mock_translator.services_mapping[RequestSID.ReadDTCInformation].response_structure[1].mapping[
             0x18
-        ] == (MEMORY_SELECTION, DTC_AND_STATUS, *self.mock_translator._ConfigurableTranslator__dtc_snapshot_records)
+        ] == (
+            MEMORY_SELECTION,
+            DTC_AND_STATUS,
+            *self.mock_translator._ConfigurableTranslator__dtc_snapshot_records,
+        )
 
     # __did_records
 
@@ -1060,7 +1131,8 @@ class TestConfigurableTranslator:
             formula=self.mock_translator._ConfigurableTranslator__get_did_records_formula.return_value
         )
         self.mock_translator._ConfigurableTranslator__get_did_records_formula.assert_has_calls(
-            [call(record_number + 1) for record_number in range(REPEATED_DATA_RECORDS_NUMBER)], any_order=False
+            [call(record_number + 1) for record_number in range(REPEATED_DATA_RECORDS_NUMBER)],
+            any_order=False,
         )
 
     # __dtc_snapshot_records
@@ -1208,7 +1280,13 @@ class TestConfigurableTranslator:
         incorrect_did = 0x10000
         self.mock_translator.did_data_mapping = {
             some_defined_did: [
-                Mock(spec=AbstractDataRecord, fixed_total_length=True, min_occurrences=1, max_occurrences=1, length=16)
+                Mock(
+                    spec=AbstractDataRecord,
+                    fixed_total_length=True,
+                    min_occurrences=1,
+                    max_occurrences=1,
+                    length=16,
+                )
             ],
             incorrect_did: [Mock(fixed_total_length=False)],
         }
@@ -1314,7 +1392,10 @@ class TestConfigurableTranslator:
         mock_did = Mock()
         assert ConfigurableTranslator._ConfigurableTranslator__get_input_output_control_by_identifier_request(
             self.mock_translator, mock_did
-        ) == (INPUT_OUTPUT_CONTROL_PARAMETER, self.mock_conditional_mapping_data_record.return_value)
+        ) == (
+            INPUT_OUTPUT_CONTROL_PARAMETER,
+            self.mock_conditional_mapping_data_record.return_value,
+        )
         self.mock_translator._ConfigurableTranslator__conditional_control_state.get_message_continuation.assert_called_once_with(
             mock_did
         )
@@ -1328,7 +1409,10 @@ class TestConfigurableTranslator:
         mock_did = Mock()
         assert ConfigurableTranslator._ConfigurableTranslator__get_input_output_control_by_identifier_response(
             self.mock_translator, mock_did
-        ) == (INPUT_OUTPUT_CONTROL_PARAMETER, self.mock_conditional_mapping_data_record.return_value)
+        ) == (
+            INPUT_OUTPUT_CONTROL_PARAMETER,
+            self.mock_conditional_mapping_data_record.return_value,
+        )
         self.mock_translator._ConfigurableTranslator__conditional_control_state.get_message_continuation.assert_called_once_with(
             mock_did
         )
@@ -1350,7 +1434,10 @@ class TestConfigurableTranslator:
     @patch(f"{SCRIPT_LOCATION}.get_event_type_record_01")
     @pytest.mark.parametrize("number_of_activated_events", [0, 1, 5])
     def test_get_activated_events__only_mandatory(
-        self, mock_get_event_type_record_01, mock_get_service_to_respond, number_of_activated_events
+        self,
+        mock_get_event_type_record_01,
+        mock_get_service_to_respond,
+        number_of_activated_events,
     ):
         self.mock_translator._ConfigurableTranslator__get_event_type_record.return_value = None
         self.mock_translator._ConfigurableTranslator__get_event_type_record_09_continuation.return_value = None
@@ -1389,7 +1476,10 @@ class TestConfigurableTranslator:
     @patch(f"{SCRIPT_LOCATION}.get_event_type_record_01")
     @pytest.mark.parametrize("number_of_activated_events", [0, 1, 5])
     def test_get_activated_events__all(
-        self, mock_get_event_type_record_01, mock_get_service_to_respond, number_of_activated_events
+        self,
+        mock_get_event_type_record_01,
+        mock_get_service_to_respond,
+        number_of_activated_events,
     ):
         self.mock_translator._ConfigurableTranslator__get_event_type_record.return_value = Mock()
         self.mock_translator._ConfigurableTranslator__get_event_type_record_09_continuation.return_value = Mock()
@@ -1461,7 +1551,10 @@ class TestConfigurableTranslator:
         self.mock_raw_data_record.assert_called_once_with(
             name=f"eventTypeOfActiveEvent#{event_number}",
             length=8,
-            children=(RESERVED_BIT, self.mock_translator._ConfigurableTranslator__event_type),
+            children=(
+                RESERVED_BIT,
+                self.mock_translator._ConfigurableTranslator__event_type,
+            ),
         )
 
     # __get_event_type_record
@@ -1478,7 +1571,10 @@ class TestConfigurableTranslator:
     def test_get_event_type_record__none(self, event, event_number):
         self.mock_translator.services_mapping = {
             RequestSID.ResponseOnEvent: MagicMock(
-                response_structure=[MagicMock(), MagicMock(mapping={i: 2 * [MagicMock()] for i in range(5)})]
+                response_structure=[
+                    MagicMock(),
+                    MagicMock(mapping={i: 2 * [MagicMock()] for i in range(5)}),
+                ]
             ),
         }
         assert (
@@ -1494,7 +1590,10 @@ class TestConfigurableTranslator:
     def test_get_event_type_record__valid(self, event, event_number):
         self.mock_translator.services_mapping = {
             RequestSID.ResponseOnEvent: MagicMock(
-                response_structure=[MagicMock(), MagicMock(mapping={i: 10 * [MagicMock()] for i in range(10)})]
+                response_structure=[
+                    MagicMock(),
+                    MagicMock(mapping={i: 10 * [MagicMock()] for i in range(10)}),
+                ]
             ),
         }
         assert (
@@ -1568,7 +1667,11 @@ class TestConfigurableTranslator:
 class TestConfigurableTranslatorIntegration:
     """Integration tests for `ConfigurableTranslator` class."""
 
-    diagnostic_session_type_mapping = {0x01: "Default", 0x03: "Extended", 0x40: "Custom"}
+    diagnostic_session_type_mapping = {
+        0x01: "Default",
+        0x03: "Extended",
+        0x40: "Custom",
+    }
     reset_type_mapping = {0x03: "Hard", 0x40: "Custom"}
     report_type_mapping = {
         0x01: "reportDTCNumberByStatusMask",
@@ -1581,7 +1684,11 @@ class TestConfigurableTranslatorIntegration:
         0x07: "requestSeedForScrapping",
         0x08: "sendKeyForScrapping",
     }
-    control_type_type_mapping = {0x00: "enableRxAndTx", 0x03: "disableRxAndTx", 0x40: "Custom"}
+    control_type_type_mapping = {
+        0x00: "enableRxAndTx",
+        0x03: "disableRxAndTx",
+        0x40: "Custom",
+    }
     authentication_task_mapping = {0x00: "deAuthenticate", 0x40: "CustomAuthentication"}
     definition_type_mapping = {
         0x01: "defineByIdentifier",
@@ -1595,7 +1702,10 @@ class TestConfigurableTranslatorIntegration:
         0x40: "block",
     }
     zero_subfunction_mapping = {0x00: "default", 0x41: "till reset"}
-    timing_parameter_access_type_mapping = {0x01: "readExtendedTimingParameterSet", 0x02: "Custom"}
+    timing_parameter_access_type_mapping = {
+        0x01: "readExtendedTimingParameterSet",
+        0x02: "Custom",
+    }
     dtc_setting_type_mapping = {0x01: "ON", 0x02: "OFF", 0x40: "Custom"}
     event_type_mapping = {
         0x00: "stopResponseOnEvent",
@@ -1627,13 +1737,21 @@ class TestConfigurableTranslatorIntegration:
     }
     did_data_mapping = {
         0x0100: (RawDataRecord(name="Param1", length=8, min_occurrences=2, max_occurrences=2),),
-        0x0101: (RawDataRecord(name="a#1", length=4), RawDataRecord(name="a#2", length=4)),
+        0x0101: (
+            RawDataRecord(name="a#1", length=4),
+            RawDataRecord(name="a#2", length=4),
+        ),
         0xF186: (RESERVED_BIT, ACTIVE_DIAGNOSTIC_SESSION),
     }
 
     def setup_class(self):
         self.minimalistic_translator = Translator(
-            services=(DIAGNOSTIC_SESSION_CONTROL, TESTER_PRESENT, ACCESS_TIMING_PARAMETER_2013, READ_DATA_BY_IDENTIFIER)
+            services=(
+                DIAGNOSTIC_SESSION_CONTROL,
+                TESTER_PRESENT,
+                ACCESS_TIMING_PARAMETER_2013,
+                READ_DATA_BY_IDENTIFIER,
+            )
         )
 
     @pytest.fixture(scope="class")
@@ -2455,7 +2573,16 @@ class TestConfigurableTranslatorIntegration:
                         "children": ((), (), (), (), (), (), (), ()),
                         "length": 8,
                         "name": "securitySeed",
-                        "physical_value": (0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC, 0xDE, 0xF0),
+                        "physical_value": (
+                            0x12,
+                            0x34,
+                            0x56,
+                            0x78,
+                            0x9A,
+                            0xBC,
+                            0xDE,
+                            0xF0,
+                        ),
                         "raw_value": (0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC, 0xDE, 0xF0),
                         "unit": None,
                     },

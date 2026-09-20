@@ -91,5 +91,5 @@ class TestFunctions:
             ),
         ],
     )
-    def test_find_element__valid(self, sequence, attributes):
+    def test_find_element__not_found(self, sequence, attributes):
         assert find_element(sequence, **attributes) is None
