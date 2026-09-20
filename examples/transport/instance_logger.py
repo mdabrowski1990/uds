@@ -23,11 +23,13 @@ logger.addHandler(stream_handler)
 
 # configure your logger
 # https://uds.readthedocs.io/en/stable/pages/user_guide/logging.html#configuration
-transport_logger = TransportLogger(logger_name="UDS",  # the same name as previously configured logger
-                                   message_logging_level=logging.INFO,
-                                   packet_logging_level=logging.DEBUG,
-                                   log_sending=True,
-                                   log_receiving=True)
+transport_logger = TransportLogger(
+    logger_name="UDS",  # the same name as previously configured logger
+    message_logging_level=logging.INFO,
+    packet_logging_level=logging.DEBUG,
+    log_sending=True,
+    log_receiving=True,
+)
 
 # activate your logger
 # https://uds.readthedocs.io/en/stable/pages/user_guide/logging.html#decorating-transport-interface-instance

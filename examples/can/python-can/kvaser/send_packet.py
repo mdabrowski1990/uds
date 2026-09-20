@@ -16,22 +16,24 @@ def main():
         # configure your CAN bus
         bitrate=500_000,
         fd=True,
-        data_bitrate=4_000_000)
+        data_bitrate=4_000_000,
+    )
 
     # configure addresses for Diagnostics on CAN communication
     # CAN Addressing Formats explanation:
     # https://uds.readthedocs.io/en/stable/pages/knowledge_base/packet.html#can-packet-addressing-formats
-    addressing_information = CanAddressingInformation(addressing_format=CanAddressingFormat.NORMAL_ADDRESSING,
-                                                      rx_physical_params={"can_id": 0x611},
-                                                      tx_physical_params={"can_id": 0x612},
-                                                      rx_functional_params={"can_id": 0x6FF},
-                                                      tx_functional_params={"can_id": 0x6FE})
+    addressing_information = CanAddressingInformation(
+        addressing_format=CanAddressingFormat.NORMAL_ADDRESSING,
+        rx_physical_params={"can_id": 0x611},
+        tx_physical_params={"can_id": 0x612},
+        rx_functional_params={"can_id": 0x6FF},
+        tx_functional_params={"can_id": 0x6FE},
+    )
 
     # create Transport Interface object for Diagnostics on CAN communication
     can_ti = PythonCanTransportInterface(
-        network_manager=can_interface,
-        addressing_information=addressing_information,
-        can_version=CanVersion.CLASSIC_CAN)  # send all diagnostic packets as Classic CAN frames
+        network_manager=can_interface, addressing_information=addressing_information, can_version=CanVersion.CLASSIC_CAN
+    )  # send all diagnostic packets as Classic CAN frames
 
     # define UDS Message
     message = UdsMessage(addressing_type=AddressingType.PHYSICAL, payload=[0x10, 0x03])

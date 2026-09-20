@@ -16,8 +16,7 @@ def main():
     client = Client(transport_interface=transport_interface)
 
     # define an example request message
-    request = UdsMessage(payload=[0x14, 0xFF, 0xFF, 0xFF],
-                         addressing_type=AddressingType.PHYSICAL)
+    request = UdsMessage(payload=[0x14, 0xFF, 0xFF, 0xFF], addressing_type=AddressingType.PHYSICAL)
 
     # send the request and collect all responses
     request_record, responses_records = client.send_request_receive_responses(request)

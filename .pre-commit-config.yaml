@@ -8,4 +8,4 @@ repos:
     rev: v0.16.8
     hooks:
       - id: ruff-format
-        args: [tests]
+        args: [tests, examples, docs]
