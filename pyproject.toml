@@ -175,6 +175,8 @@ ignore-path-errors = [
 
 [tool.ruff]
 line-length = 120
+extend-exclude = ["./uds/**"]
+force-exclude = true
 
 [tool.ruff.format]
 quote-style = "double"
