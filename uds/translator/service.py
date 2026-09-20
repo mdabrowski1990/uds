@@ -22,10 +22,10 @@ from uds.utilities import Endianness, InconsistencyError, RawBytesAlias, bytes_t
 from .data_record import (
     AbstractConditionalDataRecord,
     AbstractDataRecord,
-    AbstractDataRecordInfo,
+    AbstractDataRecordOccurrences,
     ChildrenValuesAlias,
     MessageStructureAlias,
-    SingleOccurrenceInfo,
+    SingleOccurrence,
 )
 
 SingleDataRecordValueAlias = int | ChildrenValuesAlias | None
@@ -44,7 +44,7 @@ Mapping keys are Data Records names.
 Mapping values are corresponding Data Records values.
 """
 
-DecodedMessageAlias = tuple[AbstractDataRecordInfo, ...]
+DecodedMessageAlias = tuple[AbstractDataRecordOccurrences, ...]
 """Alias for decoded information about a Diagnostic Message."""
 
 
@@ -174,7 +174,7 @@ class Service:
         """Get name of this service."""
         return self.request_sid.name  # type: ignore
 
-    def _get_rsid_info(self, positive: bool = True) -> SingleOccurrenceInfo:
+    def _get_rsid_info(self, positive: bool = True) -> SingleOccurrence:
         """
         Get detailed information about Response Service Identifier.
 
@@ -183,13 +183,13 @@ class Service:
         :return: Detailed information about RSID value.
         """
         rsid = self.response_sid if positive else ResponseSID.NegativeResponse
-        return SingleOccurrenceInfo(
+        return SingleOccurrence(
             name="RSID", length=8, raw_value=rsid.value, physical_value=rsid.name, children=tuple(), unit=None
         )
 
-    def _get_sid_info(self) -> SingleOccurrenceInfo:
+    def _get_sid_info(self) -> SingleOccurrence:
         """Get detailed information about Service Identifier."""
-        return SingleOccurrenceInfo(
+        return SingleOccurrence(
             name="SID",
             length=8,
             raw_value=self.request_sid.value,
@@ -199,7 +199,7 @@ class Service:
         )
 
     @staticmethod
-    def _get_nrc_info(nrc: NRC) -> SingleOccurrenceInfo:
+    def _get_nrc_info(nrc: NRC) -> SingleOccurrence:
         """
         Get detailed information about Negative Response Code.
 
@@ -208,7 +208,7 @@ class Service:
         :return: Detailed information for single occurrence of NRC Data Record.
         """
         nrc = NRC.validate_member(nrc)
-        return SingleOccurrenceInfo(
+        return SingleOccurrence(
             name="NRC", length=8, raw_value=nrc.value, physical_value=nrc.name, children=tuple(), unit=None
         )
 

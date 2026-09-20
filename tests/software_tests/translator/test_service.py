@@ -13,7 +13,7 @@ from uds.translator.service import (
     ResponseSID,
     Sequence,
     Service,
-    SingleOccurrenceInfo,
+    SingleOccurrence,
 )
 
 SCRIPT_LOCATION = "uds.translator.service"
@@ -208,7 +208,7 @@ class TestService:
     # _get_rsid_info
 
     def test_get_rsid_info__positive(self):
-        assert Service._get_rsid_info(self.mock_service) == SingleOccurrenceInfo(
+        assert Service._get_rsid_info(self.mock_service) == SingleOccurrence(
             name="RSID",
             length=8,
             raw_value=self.mock_service.response_sid.value,
@@ -218,7 +218,7 @@ class TestService:
         )
 
     def test_get_rsid_info__negative(self):
-        assert Service._get_rsid_info(self.mock_service, positive=False) == SingleOccurrenceInfo(
+        assert Service._get_rsid_info(self.mock_service, positive=False) == SingleOccurrence(
             name="RSID",
             length=8,
             raw_value=ResponseSID.NegativeResponse.value,
@@ -230,7 +230,7 @@ class TestService:
     # _get_sid_info
 
     def test_get_sid_info(self):
-        assert Service._get_sid_info(self.mock_service) == SingleOccurrenceInfo(
+        assert Service._get_sid_info(self.mock_service) == SingleOccurrence(
             name="SID",
             length=8,
             raw_value=self.mock_service.request_sid.value,
@@ -243,7 +243,7 @@ class TestService:
 
     @pytest.mark.parametrize("nrc", [Mock(), NRC.AuthenticationRequired])
     def test_get_nrc_info(self, nrc):
-        assert Service._get_nrc_info(nrc) == SingleOccurrenceInfo(
+        assert Service._get_nrc_info(nrc) == SingleOccurrence(
             name="NRC",
             length=8,
             raw_value=self.mock_nrc_validate_member.return_value.value,

@@ -8,9 +8,10 @@ from collections.abc import Callable, Mapping, Sequence
 from copy import deepcopy
 from types import MappingProxyType
 from typing import Any
+from warnings import warn
 
 from uds.message import RequestSID
-from uds.utilities import DID_BIT_LENGTH, REPEATED_DATA_RECORDS_NUMBER
+from uds.utilities import DID_BIT_LENGTH, REPEATED_DATA_RECORDS_NUMBER, find_element
 
 from .data_record import (
     AbstractDataRecord,
@@ -21,16 +22,21 @@ from .data_record import (
     RawDataRecord,
 )
 from .data_record_definitions import (
+    COMMUNICATION_TYPE,
     DIAGNOSTIC_SESSION_TYPE,
     DID_COUNT_RECORDS,
     DTC_AND_STATUS,
     DTC_STORED_DATA_RECORD_NUMBERS_LIST,
     DTCS_AND_STATUSES_LIST,
+    EVENT_TYPE_RECORD_08_2020,
+    EVENT_TYPE_RECORD_09_2020,
     INPUT_OUTPUT_CONTROL_PARAMETER,
     MEMORY_SELECTION,
     NUMBER_OF_ACTIVATED_EVENTS,
     OPTIONAL_DTC_SNAPSHOT_RECORDS_NUMBERS_LIST,
+    REPORT_TYPE_2013,
     RESERVED_BIT,
+    RESET_TYPE,
 )
 from .data_record_definitions.formula import get_event_type_record_01, get_service_to_respond
 from .translator import Translator
@@ -51,7 +57,7 @@ class ConfigurableTranslator(Translator):
     """
 
     def __init__(
-        self,  # pylint: disable=too-many-branches
+        self,  # pylint: disable=too-many-branches  # noqa: MC0001
         base: Translator = BASE_TRANSLATOR,
         *,
         diagnostic_session_type_mapping: Mapping[int, str] | None = None,
@@ -188,8 +194,9 @@ class ConfigurableTranslator(Translator):
         diagnostic_session_control = self.services_mapping.get(RequestSID.DiagnosticSessionControl, None)
         if diagnostic_session_control is None:
             return None
-        sub_function: MappingDataRecord = diagnostic_session_control.request_structure[0][DIAGNOSTIC_SESSION_TYPE.name]  # type: ignore  # TODO: propagate the change
-        return sub_function.values_mapping
+        subfunction_byte: RawDataRecord = diagnostic_session_control.request_structure[0]  # type: ignore
+        subfunction_parameter: MappingDataRecord = subfunction_byte[DIAGNOSTIC_SESSION_TYPE.name]  # type: ignore
+        return subfunction_parameter.values_mapping
 
     @diagnostic_session_type_mapping.setter
     def diagnostic_session_type_mapping(self, value: Mapping[int, str]) -> None:
@@ -199,8 +206,16 @@ class ConfigurableTranslator(Translator):
         :param value: Mapping value to set.
         """
         diagnostic_session_control = self.services_mapping[RequestSID.DiagnosticSessionControl]
-        diagnostic_session_control.request_structure[0][DIAGNOSTIC_SESSION_TYPE.name].values_mapping = value  # type: ignore
-        diagnostic_session_control.response_structure[0][DIAGNOSTIC_SESSION_TYPE.name].values_mapping = value  # type: ignore
+        request_subfunction_byte: RawDataRecord = diagnostic_session_control.request_structure[0]  # type: ignore
+        response_subfunction_byte: RawDataRecord = diagnostic_session_control.response_structure[0]  # type: ignore
+        request_subfunction_parameter: MappingDataRecord = (  # type: ignore
+            request_subfunction_byte
+        )[DIAGNOSTIC_SESSION_TYPE.name]
+        response_subfunction_parameter: MappingDataRecord = (  # type: ignore
+            response_subfunction_byte
+        )[DIAGNOSTIC_SESSION_TYPE.name]
+        request_subfunction_parameter.values_mapping = value
+        response_subfunction_parameter.values_mapping = value
 
     @property
     def reset_type_mapping(self) -> Mapping[int, str] | None:
@@ -208,8 +223,9 @@ class ConfigurableTranslator(Translator):
         ecu_reset = self.services_mapping.get(RequestSID.ECUReset, None)
         if ecu_reset is None:
             return None
-        sub_function: MappingDataRecord = ecu_reset.request_structure[0].children[1]  # type: ignore
-        return sub_function.values_mapping
+        subfunction_byte: RawDataRecord = ecu_reset.request_structure[0]  # type: ignore
+        subfunction_parameter: MappingDataRecord = subfunction_byte[RESET_TYPE.name]  # type: ignore
+        return subfunction_parameter.values_mapping
 
     @reset_type_mapping.setter
     def reset_type_mapping(self, value: Mapping[int, str]) -> None:
@@ -219,8 +235,12 @@ class ConfigurableTranslator(Translator):
         :param value: Mapping value to set.
         """
         ecu_reset = self.services_mapping[RequestSID.ECUReset]
-        ecu_reset.request_structure[0].children[1].values_mapping = value  # type: ignore
-        ecu_reset.response_structure[0].children[1].values_mapping = value  # type: ignore
+        request_subfunction_byte: RawDataRecord = ecu_reset.request_structure[0]  # type: ignore
+        response_subfunction_byte: RawDataRecord = ecu_reset.response_structure[0]  # type: ignore
+        request_subfunction_parameter: MappingDataRecord = request_subfunction_byte[RESET_TYPE.name]  # type: ignore
+        response_subfunction_parameter: MappingDataRecord = response_subfunction_byte[RESET_TYPE.name]  # type: ignore
+        request_subfunction_parameter.values_mapping = value
+        response_subfunction_parameter.values_mapping = value
 
     @property
     def report_type_mapping(self) -> Mapping[int, str] | None:
@@ -228,8 +248,9 @@ class ConfigurableTranslator(Translator):
         read_dtc_information = self.services_mapping.get(RequestSID.ReadDTCInformation, None)
         if read_dtc_information is None:
             return None
-        sub_function: MappingDataRecord = read_dtc_information.request_structure[0].children[1]  # type: ignore
-        return sub_function.values_mapping
+        subfunction_byte: RawDataRecord = read_dtc_information.request_structure[0]  # type: ignore
+        subfunction_parameter: MappingDataRecord = subfunction_byte[REPORT_TYPE_2013.name]  # type: ignore
+        return subfunction_parameter.values_mapping
 
     @report_type_mapping.setter
     def report_type_mapping(self, value: Mapping[int, str]) -> None:
@@ -238,23 +259,99 @@ class ConfigurableTranslator(Translator):
 
         :param value: Mapping value to set.
         """
+        # SID 0x19 (ReadDTCInformation)
         read_dtc_information = self.services_mapping[RequestSID.ReadDTCInformation]
-        read_dtc_information.request_structure[0].children[1].values_mapping = value  # type: ignore
-        read_dtc_information.response_structure[0].children[1].values_mapping = value  # type: ignore
+        request_subfunction_byte: RawDataRecord = read_dtc_information.request_structure[0]  # type: ignore
+        response_subfunction_byte: RawDataRecord = read_dtc_information.response_structure[0]  # type: ignore
+        request_subfunction_parameter: MappingDataRecord = (  # type: ignore
+            request_subfunction_byte
+        )[REPORT_TYPE_2013.name]
+        response_subfunction_parameter: MappingDataRecord = (  # type: ignore
+            response_subfunction_byte
+        )[REPORT_TYPE_2013.name]
+        request_subfunction_parameter.values_mapping = value
+        response_subfunction_parameter.values_mapping = value
+        # SID 0x86 (ResponseOnEvent)
         response_on_event = self.services_mapping.get(RequestSID.ResponseOnEvent, None)
         if response_on_event is not None:
-            subfunction_08_request_continuation = response_on_event.request_structure[1].mapping.get(0x08, None)  # type: ignore
-            if subfunction_08_request_continuation is not None:
-                subfunction_08_request_continuation[1].children[1].values_mapping = value
-            subfunction_09_request_continuation = response_on_event.request_structure[1].mapping.get(0x09, None)  # type: ignore
-            if subfunction_09_request_continuation is not None:
-                subfunction_09_request_continuation[1].children[2].values_mapping = value
-            subfunction_08_response_continuation = response_on_event.response_structure[1].mapping.get(0x08, None)  # type: ignore
-            if subfunction_08_response_continuation is not None:
-                subfunction_08_response_continuation[2].children[1].values_mapping = value
-            subfunction_09_response_continuation = response_on_event.response_structure[1].mapping.get(0x09, None)  # type: ignore
-            if subfunction_09_response_continuation is not None:
-                subfunction_09_response_continuation[2].children[2].values_mapping = value
+            request_conditional_continuation: ConditionalMappingDataRecord = (  # type: ignore
+                response_on_event.request_structure
+            )[1]
+            response_conditional_continuation: ConditionalMappingDataRecord = (  # type: ignore
+                response_on_event.response_structure
+            )[1]
+            request_continuation_08 = request_conditional_continuation.mapping.get(0x08, None)
+            response_continuation_08 = response_conditional_continuation.mapping.get(0x08, None)
+            request_continuation_09 = request_conditional_continuation.mapping.get(0x09, None)
+            response_continuation_09 = response_conditional_continuation.mapping.get(0x09, None)
+            if request_continuation_08 is not None:
+                event_type_record_08: RawDataRecord | None = find_element(
+                    request_continuation_08,  # type: ignore
+                    name=EVENT_TYPE_RECORD_08_2020.name,
+                    length=EVENT_TYPE_RECORD_08_2020.length,
+                )
+                if event_type_record_08 is not None:
+                    subfunction_parameter: MappingDataRecord = (  # type: ignore
+                        event_type_record_08
+                    )[REPORT_TYPE_2013.name]
+                    subfunction_parameter.values_mapping = value
+                else:
+                    warn(
+                        message="ResponseOnEvent service has incompatible request structure definition for "
+                        "SubFunction 0x08.",
+                        category=UserWarning,
+                    )
+            if response_continuation_08 is not None:
+                event_type_record_08: RawDataRecord | None = find_element(
+                    response_continuation_08,  # type: ignore
+                    name=EVENT_TYPE_RECORD_08_2020.name,
+                    length=EVENT_TYPE_RECORD_08_2020.length,
+                )
+                if event_type_record_08 is not None:
+                    subfunction_parameter: MappingDataRecord = (  # type: ignore
+                        event_type_record_08
+                    )[REPORT_TYPE_2013.name]
+                    subfunction_parameter.values_mapping = value
+                else:
+                    warn(
+                        message="ResponseOnEvent service has incompatible response structure definition for "
+                        "SubFunction 0x08.",
+                        category=UserWarning,
+                    )
+            if request_continuation_09 is not None:
+                event_type_record_09: RawDataRecord | None = find_element(
+                    request_continuation_09,  # type: ignore
+                    name=EVENT_TYPE_RECORD_09_2020.name,
+                    length=EVENT_TYPE_RECORD_09_2020.length,
+                )
+                if event_type_record_09 is not None:
+                    subfunction_parameter: MappingDataRecord = (  # type: ignore
+                        event_type_record_09
+                    )[REPORT_TYPE_2013.name]
+                    subfunction_parameter.values_mapping = value
+                else:
+                    warn(
+                        message="ResponseOnEvent service has incompatible request structure definition for "
+                        "SubFunction 0x09.",
+                        category=UserWarning,
+                    )
+            if response_continuation_09 is not None:
+                event_type_record_09: RawDataRecord | None = find_element(
+                    response_continuation_09,  # type: ignore
+                    name=EVENT_TYPE_RECORD_08_2020.name,
+                    length=EVENT_TYPE_RECORD_08_2020.length,
+                )
+                if event_type_record_09 is not None:
+                    subfunction_parameter: MappingDataRecord = (  # type: ignore
+                        event_type_record_09
+                    )[REPORT_TYPE_2013.name]
+                    subfunction_parameter.values_mapping = value
+                else:
+                    warn(
+                        message="ResponseOnEvent service has incompatible response structure definition for "
+                        "SubFunction 0x09.",
+                        category=UserWarning,
+                    )
 
     @property
     def security_access_type_mapping(self) -> Mapping[int, str] | None:

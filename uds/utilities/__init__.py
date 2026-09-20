@@ -102,4 +102,4 @@ from .custom_warnings import (
     ValueWarning,
 )
 from .enums import ByteEnum, Endianness, ExtendableEnum, NibbleEnum, ValidatedEnum
-from .helpers import validate_time, validate_timeout
+from .helpers import find_element, validate_time, validate_timeout

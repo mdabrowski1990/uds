@@ -8,9 +8,9 @@ from uds.translator.data_record import (
     ConditionalMappingDataRecord,
     LinearFormulaDataRecord,
     MappingDataRecord,
-    MultipleOccurrencesInfo,
+    MultipleOccurrences,
     RawDataRecord,
-    SingleOccurrenceInfo,
+    SingleOccurrence,
     TextDataRecord,
     TextEncoding,
 )
@@ -573,7 +573,7 @@ class TestTranslatorIntegration:
                 # Diagnostic Session Control
                 [0x10, 0x40],
                 (
-                    SingleOccurrenceInfo(
+                    SingleOccurrence(
                         name="SID",
                         length=8,
                         raw_value=0x10,
@@ -581,16 +581,16 @@ class TestTranslatorIntegration:
                         children=tuple(),
                         unit=None,
                     ),
-                    SingleOccurrenceInfo(
+                    SingleOccurrence(
                         name="subFunction",
                         length=8,
                         raw_value=0x40,
                         physical_value=0x40,
                         children=(
-                            SingleOccurrenceInfo(
+                            SingleOccurrence(
                                 name="SPRMIB", length=1, raw_value=0, physical_value="no", children=tuple(), unit=None
                             ),
-                            SingleOccurrenceInfo(
+                            SingleOccurrence(
                                 name="diagnosticSessionType",
                                 length=7,
                                 raw_value=0x40,
@@ -606,7 +606,7 @@ class TestTranslatorIntegration:
             (
                 [0x50, 0x83, 0x12, 0x34, 0x56, 0x78],
                 (
-                    SingleOccurrenceInfo(
+                    SingleOccurrence(
                         name="RSID",
                         length=8,
                         raw_value=0x50,
@@ -614,16 +614,16 @@ class TestTranslatorIntegration:
                         children=tuple(),
                         unit=None,
                     ),
-                    SingleOccurrenceInfo(
+                    SingleOccurrence(
                         name="subFunction",
                         length=8,
                         raw_value=0x83,
                         physical_value=0x83,
                         children=(
-                            SingleOccurrenceInfo(
+                            SingleOccurrence(
                                 name="SPRMIB", length=1, raw_value=1, physical_value="yes", children=tuple(), unit=None
                             ),
-                            SingleOccurrenceInfo(
+                            SingleOccurrence(
                                 name="diagnosticSessionType",
                                 length=7,
                                 raw_value=0x03,
@@ -634,13 +634,13 @@ class TestTranslatorIntegration:
                         ),
                         unit=None,
                     ),
-                    SingleOccurrenceInfo(
+                    SingleOccurrence(
                         name="sessionParameterRecord",
                         length=32,
                         raw_value=0x12345678,
                         physical_value=0x12345678,
                         children=(
-                            SingleOccurrenceInfo(
+                            SingleOccurrence(
                                 name="P2Server_max",
                                 length=16,
                                 raw_value=0x1234,
@@ -648,7 +648,7 @@ class TestTranslatorIntegration:
                                 children=tuple(),
                                 unit="ms",
                             ),
-                            SingleOccurrenceInfo(
+                            SingleOccurrence(
                                 name="P2*Server_max",
                                 length=16,
                                 raw_value=0x5678,
@@ -664,7 +664,7 @@ class TestTranslatorIntegration:
             (
                 b"\x7f\x10\x84",
                 (
-                    SingleOccurrenceInfo(
+                    SingleOccurrence(
                         name="RSID",
                         length=8,
                         raw_value=0x7F,
@@ -672,7 +672,7 @@ class TestTranslatorIntegration:
                         children=tuple(),
                         unit=None,
                     ),
-                    SingleOccurrenceInfo(
+                    SingleOccurrence(
                         name="SID",
                         length=8,
                         raw_value=0x10,
@@ -680,7 +680,7 @@ class TestTranslatorIntegration:
                         children=tuple(),
                         unit=None,
                     ),
-                    SingleOccurrenceInfo(
+                    SingleOccurrence(
                         name="NRC",
                         length=8,
                         raw_value=0x84,
@@ -694,7 +694,7 @@ class TestTranslatorIntegration:
             (
                 [0x22, 0x12, 0x34, 0xF1, 0x86, 0xF1, 0x91],
                 (
-                    SingleOccurrenceInfo(
+                    SingleOccurrence(
                         name="SID",
                         length=8,
                         raw_value=0x22,
@@ -702,7 +702,7 @@ class TestTranslatorIntegration:
                         children=tuple(),
                         unit=None,
                     ),
-                    MultipleOccurrencesInfo(
+                    MultipleOccurrences(
                         name="DID",
                         length=16,
                         raw_value=(0x1234, 0xF186, 0xF191),
@@ -719,7 +719,7 @@ class TestTranslatorIntegration:
             (
                 b"\x62\xf1\x86\x01\xf1\x88\x52\x49\xf1\x87\x49\x30\x41\x31\x42\x39",
                 (
-                    SingleOccurrenceInfo(
+                    SingleOccurrence(
                         name="RSID",
                         length=8,
                         raw_value=0x62,
@@ -727,7 +727,7 @@ class TestTranslatorIntegration:
                         children=tuple(),
                         unit=None,
                     ),
-                    SingleOccurrenceInfo(
+                    SingleOccurrence(
                         name="DID #1",
                         length=16,
                         raw_value=0xF186,
@@ -735,7 +735,7 @@ class TestTranslatorIntegration:
                         children=tuple(),
                         unit=None,
                     ),
-                    SingleOccurrenceInfo(
+                    SingleOccurrence(
                         name="diagnosticSessionType",
                         length=8,
                         raw_value=0x01,
@@ -743,7 +743,7 @@ class TestTranslatorIntegration:
                         children=tuple(),
                         unit=None,
                     ),
-                    SingleOccurrenceInfo(
+                    SingleOccurrence(
                         name="DID #2",
                         length=16,
                         raw_value=0xF188,
@@ -751,7 +751,7 @@ class TestTranslatorIntegration:
                         children=tuple(),
                         unit=None,
                     ),
-                    MultipleOccurrencesInfo(
+                    MultipleOccurrences(
                         name="ECU Software Number",
                         length=4,
                         raw_value=(5, 2, 4, 9),
@@ -759,7 +759,7 @@ class TestTranslatorIntegration:
                         children=(tuple(),) * 4,
                         unit=None,
                     ),
-                    SingleOccurrenceInfo(
+                    SingleOccurrence(
                         name="DID #3",
                         length=16,
                         raw_value=0xF187,
@@ -767,7 +767,7 @@ class TestTranslatorIntegration:
                         children=tuple(),
                         unit=None,
                     ),
-                    MultipleOccurrencesInfo(
+                    MultipleOccurrences(
                         name="Spare Part Number",
                         length=8,
                         raw_value=(0x49, 0x30, 0x41, 0x31, 0x42, 0x39),
@@ -780,7 +780,7 @@ class TestTranslatorIntegration:
             (
                 b"\x7f\x22\x10",
                 (
-                    SingleOccurrenceInfo(
+                    SingleOccurrence(
                         name="RSID",
                         length=8,
                         raw_value=0x7F,
@@ -788,7 +788,7 @@ class TestTranslatorIntegration:
                         children=tuple(),
                         unit=None,
                     ),
-                    SingleOccurrenceInfo(
+                    SingleOccurrence(
                         name="SID",
                         length=8,
                         raw_value=0x22,
@@ -796,7 +796,7 @@ class TestTranslatorIntegration:
                         children=tuple(),
                         unit=None,
                     ),
-                    SingleOccurrenceInfo(
+                    SingleOccurrence(
                         name="NRC",
                         length=8,
                         raw_value=0x10,
@@ -810,7 +810,7 @@ class TestTranslatorIntegration:
             (
                 [0x23, 0x24, 0x20, 0x48, 0x13, 0x92, 0x01, 0x03],
                 (
-                    SingleOccurrenceInfo(
+                    SingleOccurrence(
                         name="SID",
                         length=8,
                         raw_value=0x23,
@@ -818,13 +818,13 @@ class TestTranslatorIntegration:
                         children=tuple(),
                         unit=None,
                     ),
-                    SingleOccurrenceInfo(
+                    SingleOccurrence(
                         name="addressAndLengthFormatIdentifier",
                         length=8,
                         raw_value=0x24,
                         physical_value=0x24,
                         children=(
-                            SingleOccurrenceInfo(
+                            SingleOccurrence(
                                 name="memorySizeLength",
                                 length=4,
                                 raw_value=0x2,
@@ -832,7 +832,7 @@ class TestTranslatorIntegration:
                                 children=tuple(),
                                 unit=None,
                             ),
-                            SingleOccurrenceInfo(
+                            SingleOccurrence(
                                 name="memoryAddressLength",
                                 length=4,
                                 raw_value=0x4,
@@ -843,7 +843,7 @@ class TestTranslatorIntegration:
                         ),
                         unit=None,
                     ),
-                    SingleOccurrenceInfo(
+                    SingleOccurrence(
                         name="memoryAddress",
                         length=32,
                         raw_value=0x20481392,
@@ -851,7 +851,7 @@ class TestTranslatorIntegration:
                         children=tuple(),
                         unit=None,
                     ),
-                    SingleOccurrenceInfo(
+                    SingleOccurrence(
                         name="memorySize",
                         length=16,
                         raw_value=0x0103,
@@ -864,7 +864,7 @@ class TestTranslatorIntegration:
             (
                 b"\x63\xf0\xe1\xd2\xc3\xb4\xa5\x96\x87\x78\x69\x5a\x4b\x3c\x2d\x1e\x0f",
                 (
-                    SingleOccurrenceInfo(
+                    SingleOccurrence(
                         name="RSID",
                         length=8,
                         raw_value=0x63,
@@ -872,7 +872,7 @@ class TestTranslatorIntegration:
                         children=tuple(),
                         unit=None,
                     ),
-                    MultipleOccurrencesInfo(
+                    MultipleOccurrences(
                         name="data",
                         length=8,
                         raw_value=(
@@ -919,7 +919,7 @@ class TestTranslatorIntegration:
             (
                 b"\x7f\x23\x7f",
                 (
-                    SingleOccurrenceInfo(
+                    SingleOccurrence(
                         name="RSID",
                         length=8,
                         raw_value=0x7F,
@@ -927,7 +927,7 @@ class TestTranslatorIntegration:
                         children=tuple(),
                         unit=None,
                     ),
-                    SingleOccurrenceInfo(
+                    SingleOccurrence(
                         name="SID",
                         length=8,
                         raw_value=0x23,
@@ -935,7 +935,7 @@ class TestTranslatorIntegration:
                         children=tuple(),
                         unit=None,
                     ),
-                    SingleOccurrenceInfo(
+                    SingleOccurrence(
                         name="NRC",
                         length=8,
                         raw_value=0x7F,

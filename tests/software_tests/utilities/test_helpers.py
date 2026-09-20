@@ -2,7 +2,7 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-from uds.utilities.helpers import validate_time, validate_timeout
+from uds.utilities.helpers import find_element, validate_time, validate_timeout
 
 SCRIPT_LOCATION = "uds.utilities.helpers"
 
@@ -54,3 +54,42 @@ class TestFunctions:
     @pytest.mark.parametrize("value", [None, 0.1, 543])
     def test_validate_timeout__valid(self, value):
         assert validate_timeout(value) is None
+
+    # find_element
+
+    @pytest.mark.parametrize(
+        "sequence, attributes, match_index",
+        [
+            ((Mock(a=1), Mock(a=2), Mock(a=3)), {"a": 2}, 1),
+            (
+                (
+                    Mock(param_1="a", param_2=100),
+                    Mock(param_1="b", param_2=100),
+                    Mock(param_1="c", param_2=101),
+                    Mock(param_1="d", param_2=101),
+                ),
+                {"param_1": "d", "param_2": 101},
+                3,
+            ),
+        ],
+    )
+    def test_find_element__valid(self, sequence, attributes, match_index):
+        assert find_element(sequence, **attributes) == sequence[match_index]
+
+    @pytest.mark.parametrize(
+        "sequence, attributes",
+        [
+            ((Mock(a=1), Mock(a=2), Mock(a=3)), {"a": 0}),
+            (
+                (
+                    Mock(param_1="a", param_2=100),
+                    Mock(param_1="b", param_2=100),
+                    Mock(param_1="c", param_2=101),
+                    Mock(param_1="d", param_2=101),
+                ),
+                {"param_1": "d", "param_2": 100},
+            ),
+        ],
+    )
+    def test_find_element__valid(self, sequence, attributes):
+        assert find_element(sequence, **attributes) is None

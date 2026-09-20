@@ -6,13 +6,13 @@ from uds.translator.data_record.abstract_data_record import (
     AbstractDataRecord,
     InconsistencyError,
     Mapping,
+    MultipleOccurrences,
     MultipleOccurrencesDict,
-    MultipleOccurrencesInfo,
     OrderedDict,
     ReassignmentError,
     Sequence,
+    SingleOccurrence,
     SingleOccurrenceDict,
-    SingleOccurrenceInfo,
 )
 
 SCRIPT_LOCATION = "uds.translator.data_record.abstract_data_record"
@@ -20,35 +20,34 @@ SCRIPT_LOCATION = "uds.translator.data_record.abstract_data_record"
 
 class TestSingleOccurrenceInfo:
     def setup_method(self):
-        self.mock_info = Mock(spec=SingleOccurrenceInfo)
+        self.mock_info = Mock(spec=SingleOccurrence)
+        # patching
+        self._patcher_find_element = patch(f"{SCRIPT_LOCATION}.find_element")
+        self.mock_find_element = self._patcher_find_element.start()
 
-    @pytest.mark.parametrize(
-        "children",
-        [
-            (
-                MagicMock(name="abc"),
-                MagicMock(name="def"),
-            ),
-            (
-                MagicMock(name="Param 1"),
-                MagicMock(name="Param 2"),
-                MagicMock(name="Some other parameter"),
-            ),
-        ],
-    )
-    def test_getitem__valid(self, children):
-        self.mock_info.children = children
-        assert all(SingleOccurrenceInfo.__getitem__(self.mock_info, child.name) == child for child in children)
+    def teardown_method(self):
+        self._patcher_find_element.stop()
+
+    # __getitem__
+
+    def test_getitem__valid(self):
+        mock_name = Mock()
+        assert SingleOccurrence.__getitem__(self.mock_info, mock_name) == self.mock_find_element.return_value
+        self.mock_find_element.assert_called_once_with(self.mock_info.children, name=mock_name)
 
     def test_getitem__value_error(self):
-        self.mock_info.children = ()
+        self.mock_find_element.return_value = None
+        mock_name = Mock()
         with pytest.raises(ValueError):
-            SingleOccurrenceInfo.__getitem__(self.mock_info, "Some name")
+            SingleOccurrence.__getitem__(self.mock_info, mock_name)
+        self.mock_find_element.assert_called_once_with(self.mock_info.children, name=mock_name)
+
+    # to_dict
 
     @pytest.mark.parametrize("children_count", [0, 3])
     def test_to_dict(self, children_count):
         self.mock_info.children = [Mock()] * children_count
-        assert SingleOccurrenceInfo.to_dict(self.mock_info) == SingleOccurrenceDict(
+        assert SingleOccurrence.to_dict(self.mock_info) == SingleOccurrenceDict(
             name=self.mock_info.name,
             length=self.mock_info.length,
             raw_value=self.mock_info.raw_value,
@@ -60,55 +59,36 @@ class TestSingleOccurrenceInfo:
 
 class TestMultipleOccurrencesInfo:
     def setup_method(self):
-        self.mock_info = Mock(spec=MultipleOccurrencesInfo)
+        self.mock_info = Mock(spec=MultipleOccurrences)
+        # patching
+        self._patcher_find_element = patch(f"{SCRIPT_LOCATION}.find_element")
+        self.mock_find_element = self._patcher_find_element.start()
 
-    @pytest.mark.parametrize(
-        "children",
-        [
-            (
-                (
-                    MagicMock(name="abc"),
-                    MagicMock(name="def"),
-                ),
-                (
-                    MagicMock(name="abc"),
-                    MagicMock(name="def"),
-                ),
-            ),
-            (
-                (
-                    MagicMock(name="Param 1"),
-                    MagicMock(name="Param 2"),
-                    MagicMock(name="Some other parameter"),
-                ),
-                (
-                    MagicMock(name="Param 1"),
-                    MagicMock(name="Param 2"),
-                    MagicMock(name="Some other parameter"),
-                ),
-                (
-                    MagicMock(name="Param 1"),
-                    MagicMock(name="Param 2"),
-                    MagicMock(name="Some other parameter"),
-                ),
-            ),
-        ],
-    )
-    def test_getitem__valid(self, children):
-        for occurrence_data in children:
-            for child in occurrence_data:
-                child.name = child._extract_mock_name()
-        self.mock_info.children = children
-        for child in children[0]:
-            found_children = MultipleOccurrencesInfo.__getitem__(self.mock_info, child.name)
-            assert isinstance(found_children, tuple)
-            assert len(found_children) == len(children)
-            assert all(found_child.name == child.name for found_child in found_children)
+    def teardown_method(self):
+        self._patcher_find_element.stop()
+
+    # __getitem__
+
+    @pytest.mark.parametrize("occurrences_count", [1, 5])
+    def test_getitem__valid(self, occurrences_count):
+        mock_name = Mock()
+        self.mock_info.children = [Mock()] * occurrences_count
+        assert MultipleOccurrences.__getitem__(self.mock_info, mock_name) == occurrences_count * (
+            self.mock_find_element.return_value,
+        )
+        self.mock_find_element.assert_has_calls(
+            [call(child_occurrences, name=mock_name) for child_occurrences in self.mock_info.children], any_order=True
+        )
 
     def test_getitem__value_error(self):
-        self.mock_info.children = ()
+        self.mock_find_element.return_value = None
+        mock_name = Mock()
+        self.mock_info.children = [Mock()] * 10
         with pytest.raises(ValueError):
-            MultipleOccurrencesInfo.__getitem__(self.mock_info, "Some name")
+            MultipleOccurrences.__getitem__(self.mock_info, mock_name)
+        self.mock_find_element.assert_called_once_with(self.mock_info.children[0], name=mock_name)
+
+    # to_dict
 
     @pytest.mark.parametrize(
         "children_count, occurrence_count",
@@ -121,7 +101,7 @@ class TestMultipleOccurrencesInfo:
     )
     def test_to_dict(self, children_count, occurrence_count):
         self.mock_info.children = [[Mock()] * children_count] * occurrence_count
-        assert MultipleOccurrencesInfo.to_dict(self.mock_info) == MultipleOccurrencesDict(
+        assert MultipleOccurrences.to_dict(self.mock_info) == MultipleOccurrencesDict(
             name=self.mock_info.name,
             length=self.mock_info.length,
             raw_value=self.mock_info.raw_value,
@@ -139,6 +119,12 @@ class TestMultipleOccurrencesInfo:
 class TestAbstractDataRecord:
     def setup_method(self):
         self.mock_data_record = Mock(spec=AbstractDataRecord)
+        # patching
+        self._patcher_find_element = patch(f"{SCRIPT_LOCATION}.find_element")
+        self.mock_find_element = self._patcher_find_element.start()
+
+    def teardown_method(self):
+        self._patcher_find_element.stop()
 
     # __init__
 
@@ -197,17 +183,17 @@ class TestAbstractDataRecord:
 
     # __getitem__
 
-    def test_getitem__value_error(self):
-        self.mock_data_record.children = [Mock()] * 10
-        with pytest.raises(ValueError):
-            AbstractDataRecord.__getitem__(self.mock_data_record, "Not a child name")
-
     def test_getitem__valid(self):
-        self.mock_data_record.children = [Mock()] * 10
-        assert all(
-            AbstractDataRecord.__getitem__(self.mock_data_record, child.name) == child
-            for child in self.mock_data_record.children
-        )
+        mock_name = Mock()
+        assert AbstractDataRecord.__getitem__(self.mock_data_record, mock_name) == self.mock_find_element.return_value
+        self.mock_find_element.assert_called_once_with(self.mock_data_record.children, name=mock_name)
+
+    def test_getitem__value_error(self):
+        self.mock_find_element.return_value = None
+        mock_name = Mock()
+        with pytest.raises(ValueError):
+            AbstractDataRecord.__getitem__(self.mock_data_record, mock_name)
+        self.mock_find_element.assert_called_once_with(self.mock_data_record.children, name=mock_name)
 
     # _validate_raw_value
 
@@ -689,7 +675,7 @@ class TestAbstractDataRecord:
         mock_raw_value = Mock()
         self.mock_data_record.is_reoccurring = False
         output = AbstractDataRecord.get_occurrence_info(self.mock_data_record, mock_raw_value)
-        assert isinstance(output, SingleOccurrenceInfo)
+        assert isinstance(output, SingleOccurrence)
         assert output.name == self.mock_data_record.name
         assert output.raw_value == mock_raw_value
         assert output.physical_value == self.mock_data_record.get_physical_value.return_value
@@ -701,7 +687,7 @@ class TestAbstractDataRecord:
     def test_get_occurrence_info__multiple_occurrences(self, raw_values):
         self.mock_data_record.is_reoccurring = True
         output = AbstractDataRecord.get_occurrence_info(self.mock_data_record, *raw_values)
-        assert isinstance(output, MultipleOccurrencesInfo)
+        assert isinstance(output, MultipleOccurrences)
         assert output.name == self.mock_data_record.name
         assert output.raw_value == tuple(raw_values)
         assert output.physical_value == self.mock_data_record.get_physical_values.return_value
