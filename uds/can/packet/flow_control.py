@@ -9,29 +9,16 @@ This module contains implementation of :ref:`Flow Control CAN packet <knowledge-
 
 from __future__ import annotations
 
-__all__ = [
-    "FLOW_CONTROL_N_PCI",
-    "FS_BYTES_USED",
-    "BS_BYTE_POSITION",
-    "ST_MIN_BYTE_POSITION",
-    "CanFlowStatus",
-    "CanOverflowFlowStatus",
-    "CanSTminTranslator",
-    "UnrecognizedSTminWarning",
-    "AbstractFlowControlParametersGenerator",
-    "DefaultFlowControlParametersGenerator",
-    "FlowControlParametersAlias",
-    "is_flow_control",
-    "validate_flow_control_data",
-    "create_flow_control_data",
-    "generate_flow_control_data",
-    "extract_flow_status",
-    "extract_block_size",
-    "extract_st_min",
-    "get_flow_control_min_dlc",
-    "encode_flow_status",
-    "generate_flow_status",
-]
+__all__ = ["FLOW_CONTROL_N_PCI", "FS_BYTES_USED", "BS_BYTE_POSITION", "ST_MIN_BYTE_POSITION",
+           "CanFlowStatus", "CanOverflowFlowStatus",
+           "CanSTminTranslator", "UnrecognizedSTminWarning",
+           "AbstractFlowControlParametersGenerator", "DefaultFlowControlParametersGenerator",
+           "FlowControlParametersAlias",
+           "is_flow_control", "validate_flow_control_data",
+           "create_flow_control_data", "generate_flow_control_data",
+           "extract_flow_status", "extract_block_size", "extract_st_min",
+           "get_flow_control_min_dlc",
+           "encode_flow_status", "generate_flow_status"]
 
 from abc import ABC, abstractmethod
 from copy import deepcopy
@@ -136,10 +123,8 @@ class CanSTminTranslator:
             return raw_value
         if cls.MIN_RAW_VALUE_100US_RANGE <= raw_value <= cls.MAX_RAW_VALUE_100US_RANGE:
             return (raw_value - 0xF0) * 0.1
-        warn(
-            message=f"STmin 0x{raw_value:X} is not recognized by this version of the package.",
-            category=UnrecognizedSTminWarning,
-        )
+        warn(message=f"STmin 0x{raw_value:X} is not recognized by this version of the package.",
+             category=UnrecognizedSTminWarning)
         return cls.MAX_STMIN_TIME
 
     @classmethod
@@ -237,22 +222,18 @@ def validate_flow_control_data(addressing_format: CanAddressingFormat, raw_frame
     if min_dlc > dlc:
         raise InconsistencyError("Provided `raw_frame_data` is too short.")
     if dlc < CanDlcHandler.MIN_BASE_UDS_DLC and dlc != min_dlc:
-        raise InconsistencyError(
-            "Data padding was used for CAN frame with "
-            f"DLC lesser than {CanDlcHandler.MIN_BASE_UDS_DLC}. Actual value: DLC={dlc}."
-        )
+        raise InconsistencyError("Data padding was used for CAN frame with "
+                                 f"DLC lesser than {CanDlcHandler.MIN_BASE_UDS_DLC}. Actual value: DLC={dlc}.")
 
 
-def create_flow_control_data(
-    addressing_format: CanAddressingFormat,
-    flow_status: CanFlowStatus,
-    block_size: int | None = None,
-    st_min: int | None = None,
-    dlc: int | None = None,
-    filler_byte: int = DEFAULT_FILLER_BYTE,
-    target_address: int | None = None,
-    address_extension: int | None = None,
-) -> bytearray:
+def create_flow_control_data(addressing_format: CanAddressingFormat,
+                             flow_status: CanFlowStatus,
+                             block_size: int | None = None,
+                             st_min: int | None = None,
+                             dlc: int | None = None,
+                             filler_byte: int = DEFAULT_FILLER_BYTE,
+                             target_address: int | None = None,
+                             address_extension: int | None = None) -> bytearray:
     """
     Create a data field of a CAN frame that carries a valid Flow Control packet.
 
@@ -284,9 +265,9 @@ def create_flow_control_data(
     :return: Raw data bytes of a CAN frame.
     """
     validate_raw_byte(filler_byte)
-    ai_data_bytes = CanAddressingInformation.encode_ai_data_bytes(
-        addressing_format=addressing_format, target_address=target_address, address_extension=address_extension
-    )
+    ai_data_bytes = CanAddressingInformation.encode_ai_data_bytes(addressing_format=addressing_format,
+                                                                  target_address=target_address,
+                                                                  address_extension=address_extension)
     frame_dlc = get_flow_control_min_dlc(addressing_format) if dlc is None else dlc
     frame_data_bytes_number = CanDlcHandler.decode_dlc(frame_dlc)
     fs_data_bytes = encode_flow_status(flow_status=flow_status)
@@ -306,23 +287,19 @@ def create_flow_control_data(
     data_bytes_to_pad = frame_data_bytes_number - len(fc_bytes)
     if data_bytes_to_pad > 0:
         if dlc is not None and dlc < CanDlcHandler.MIN_BASE_UDS_DLC:
-            raise InconsistencyError(
-                "CAN Frame Data Padding shall not be used for CAN frames with "
-                f"DLC < {CanDlcHandler.MIN_BASE_UDS_DLC}. Actual value: DLC={dlc}."
-            )
+            raise InconsistencyError("CAN Frame Data Padding shall not be used for CAN frames with "
+                                     f"DLC < {CanDlcHandler.MIN_BASE_UDS_DLC}. Actual value: DLC={dlc}.")
     return fc_bytes + data_bytes_to_pad * bytearray([filler_byte])
 
 
-def generate_flow_control_data(
-    addressing_format: CanAddressingFormat,
-    flow_status: int,
-    dlc: int,
-    block_size: int | None = None,
-    st_min: int | None = None,
-    filler_byte: int = DEFAULT_FILLER_BYTE,
-    target_address: int | None = None,
-    address_extension: int | None = None,
-) -> bytearray:
+def generate_flow_control_data(addressing_format: CanAddressingFormat,
+                               flow_status: int,
+                               dlc: int,
+                               block_size: int | None = None,
+                               st_min: int | None = None,
+                               filler_byte: int = DEFAULT_FILLER_BYTE,
+                               target_address: int | None = None,
+                               address_extension: int | None = None) -> bytearray:
     """
     Generate CAN frame data field that carries any combination of Flow Control packet data parameters.
 
@@ -349,9 +326,9 @@ def generate_flow_control_data(
     :return: Raw data bytes of a CAN frame.
     """
     validate_raw_byte(filler_byte)
-    ai_data_bytes = CanAddressingInformation.encode_ai_data_bytes(
-        addressing_format=addressing_format, target_address=target_address, address_extension=address_extension
-    )
+    ai_data_bytes = CanAddressingInformation.encode_ai_data_bytes(addressing_format=addressing_format,
+                                                                  target_address=target_address,
+                                                                  address_extension=address_extension)
     frame_data_bytes_number = CanDlcHandler.decode_dlc(dlc)
     fs_data_bytes = generate_flow_status(flow_status=flow_status)
     fc_bytes = ai_data_bytes + fs_data_bytes

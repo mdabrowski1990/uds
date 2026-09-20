@@ -1,24 +1,11 @@
 """Implementation of handlers for :ref:`First Frame <knowledge-base-can-first-frame>` CAN packet."""
 
-__all__ = [
-    "FIRST_FRAME_N_PCI",
-    "MAX_SHORT_FF_DL_VALUE",
-    "MAX_LONG_FF_DL_VALUE",
-    "SHORT_FF_DL_BYTES_USED",
-    "SHORT_FF_DL_BYTES_USED",
-    "LONG_FF_DL_BYTES_USED",
-    "is_first_frame",
-    "validate_first_frame_data",
-    "create_first_frame_data",
-    "generate_first_frame_data",
-    "extract_first_frame_payload",
-    "extract_ff_dl",
-    "get_first_frame_payload_size",
-    "extract_ff_dl_data_bytes",
-    "encode_ff_dl",
-    "generate_ff_dl_bytes",
-    "validate_ff_dl",
-]
+__all__ = ["FIRST_FRAME_N_PCI", "MAX_SHORT_FF_DL_VALUE", "MAX_LONG_FF_DL_VALUE", "SHORT_FF_DL_BYTES_USED",
+           "SHORT_FF_DL_BYTES_USED", "LONG_FF_DL_BYTES_USED",
+           "is_first_frame", "validate_first_frame_data",
+           "create_first_frame_data", "generate_first_frame_data",
+           "extract_first_frame_payload", "extract_ff_dl", "get_first_frame_payload_size",
+           "extract_ff_dl_data_bytes", "encode_ff_dl", "generate_ff_dl_bytes", "validate_ff_dl"]
 
 
 from uds.can.frame import CanDlcHandler
@@ -73,19 +60,21 @@ def validate_first_frame_data(addressing_format: CanAddressingFormat, raw_frame_
     if not is_first_frame(addressing_format=addressing_format, raw_frame_data=raw_frame_data):
         raise ValueError("Provided `raw_frame_data` value does not carry a First Frame packet.")
     ff_dl = extract_ff_dl(addressing_format=addressing_format, raw_frame_data=raw_frame_data)
-    ff_dl_data_bytes = extract_ff_dl_data_bytes(addressing_format=addressing_format, raw_frame_data=raw_frame_data)
+    ff_dl_data_bytes = extract_ff_dl_data_bytes(addressing_format=addressing_format,
+                                                raw_frame_data=raw_frame_data)
     dlc = CanDlcHandler.encode_dlc(len(raw_frame_data))
-    validate_ff_dl(addressing_format=addressing_format, dlc=dlc, ff_dl=ff_dl, ff_dl_bytes_number=len(ff_dl_data_bytes))
+    validate_ff_dl(addressing_format=addressing_format,
+                   dlc=dlc,
+                   ff_dl=ff_dl,
+                   ff_dl_bytes_number=len(ff_dl_data_bytes))
 
 
-def create_first_frame_data(
-    addressing_format: CanAddressingFormat,
-    payload: RawBytesAlias,
-    dlc: int,
-    data_length: int,
-    target_address: int | None = None,
-    address_extension: int | None = None,
-) -> bytearray:
+def create_first_frame_data(addressing_format: CanAddressingFormat,
+                            payload: RawBytesAlias,
+                            dlc: int,
+                            data_length: int,
+                            target_address: int | None = None,
+                            address_extension: int | None = None) -> bytearray:
     """
     Create a data field of a CAN frame that carries a valid First Frame packet.
 
@@ -110,28 +99,25 @@ def create_first_frame_data(
     :return: Raw bytes of CAN frame data for the provided First Frame packet information.
     """
     validate_raw_bytes(payload, allow_empty=False)
-    ai_data_bytes = CanAddressingInformation.encode_ai_data_bytes(
-        addressing_format=addressing_format, target_address=target_address, address_extension=address_extension
-    )
+    ai_data_bytes = CanAddressingInformation.encode_ai_data_bytes(addressing_format=addressing_format,
+                                                                  target_address=target_address,
+                                                                  address_extension=address_extension)
     ff_dl_data_bytes = encode_ff_dl(addressing_format=addressing_format, dlc=dlc, ff_dl=data_length)
     ff_data_bytes = ai_data_bytes + ff_dl_data_bytes + bytearray(payload)
     frame_length = CanDlcHandler.decode_dlc(dlc)
     if len(ff_data_bytes) != frame_length:
-        raise InconsistencyError(
-            "Provided value of `payload` contains incorrect number of bytes for a First Frame with provided DLC."
-        )
+        raise InconsistencyError("Provided value of `payload` contains incorrect number of bytes for a First Frame "
+                                 "with provided DLC.")
     return ff_data_bytes
 
 
-def generate_first_frame_data(
-    addressing_format: CanAddressingFormat,
-    payload: RawBytesAlias,
-    dlc: int,
-    ff_dl: int,
-    long_ff_dl_format: bool = False,
-    target_address: int | None = None,
-    address_extension: int | None = None,
-) -> bytearray:
+def generate_first_frame_data(addressing_format: CanAddressingFormat,
+                              payload: RawBytesAlias,
+                              dlc: int,
+                              ff_dl: int,
+                              long_ff_dl_format: bool = False,
+                              target_address: int | None = None,
+                              address_extension: int | None = None) -> bytearray:
     """
     Generate CAN frame data field that carries any combination of First Frame packet data parameters.
 
@@ -156,16 +142,15 @@ def generate_first_frame_data(
     :return: Raw bytes of CAN frame data for the provided First Frame packet information.
     """
     validate_raw_bytes(payload, allow_empty=True)
-    ai_data_bytes = CanAddressingInformation.encode_ai_data_bytes(
-        addressing_format=addressing_format, target_address=target_address, address_extension=address_extension
-    )
+    ai_data_bytes = CanAddressingInformation.encode_ai_data_bytes(addressing_format=addressing_format,
+                                                                  target_address=target_address,
+                                                                  address_extension=address_extension)
     ff_dl_data_bytes = generate_ff_dl_bytes(ff_dl=ff_dl, long_ff_dl_format=long_ff_dl_format)
     ff_data_bytes = ai_data_bytes + ff_dl_data_bytes + bytearray(payload)
     frame_length = CanDlcHandler.decode_dlc(dlc)
     if len(ff_data_bytes) != frame_length:
-        raise InconsistencyError(
-            "Provided value of `payload` contains incorrect number of bytes for a First Frame with provided DLC."
-        )
+        raise InconsistencyError("Provided value of `payload` contains incorrect number of bytes for a First Frame "
+                                 "with provided DLC.")
     return ff_data_bytes
 
 
@@ -183,8 +168,9 @@ def extract_first_frame_payload(addressing_format: CanAddressingFormat, raw_fram
     :return: Payload bytes carried by the provided Single Frame data.
     """
     ai_bytes_number = CanAddressingInformation.get_ai_data_bytes_number(addressing_format)
-    ff_dl_data_bytes = extract_ff_dl_data_bytes(addressing_format=addressing_format, raw_frame_data=raw_frame_data)
-    return bytearray(raw_frame_data[ai_bytes_number + len(ff_dl_data_bytes) :])
+    ff_dl_data_bytes = extract_ff_dl_data_bytes(addressing_format=addressing_format,
+                                                raw_frame_data=raw_frame_data)
+    return bytearray(raw_frame_data[ai_bytes_number + len(ff_dl_data_bytes):])
 
 
 def extract_ff_dl(addressing_format: CanAddressingFormat, raw_frame_data: RawBytesAlias) -> int:
@@ -210,7 +196,9 @@ def extract_ff_dl(addressing_format: CanAddressingFormat, raw_frame_data: RawByt
     raise NotImplementedError("Unknown format of First Frame Data Length was found.")
 
 
-def get_first_frame_payload_size(addressing_format: CanAddressingFormat, dlc: int, long_ff_dl_format: bool) -> int:
+def get_first_frame_payload_size(addressing_format: CanAddressingFormat,
+                                 dlc: int,
+                                 long_ff_dl_format: bool) -> int:
     """
     Get the number of payload bytes that could be carried by First Frame.
 
@@ -230,7 +218,8 @@ def get_first_frame_payload_size(addressing_format: CanAddressingFormat, dlc: in
     return data_bytes_number - ai_data_bytes_number - ff_dl_data_bytes_number
 
 
-def extract_ff_dl_data_bytes(addressing_format: CanAddressingFormat, raw_frame_data: RawBytesAlias) -> bytearray:
+def extract_ff_dl_data_bytes(addressing_format: CanAddressingFormat,
+                             raw_frame_data: RawBytesAlias) -> bytearray:
     """
     Extract data bytes that carry CAN Packet Type and First Frame Data Length parameters.
 
@@ -248,7 +237,9 @@ def extract_ff_dl_data_bytes(addressing_format: CanAddressingFormat, raw_frame_d
     return bytearray(raw_frame_data[ai_bytes_number:][:LONG_FF_DL_BYTES_USED])
 
 
-def encode_ff_dl(addressing_format: CanAddressingFormat, dlc: int, ff_dl: int) -> bytearray:
+def encode_ff_dl(addressing_format: CanAddressingFormat,
+                 dlc: int,
+                 ff_dl: int) -> bytearray:
     """
     Create valid First Frame data bytes that contain First Frame Data Length and N_PCI values.
 
@@ -278,27 +269,21 @@ def generate_ff_dl_bytes(ff_dl: int, long_ff_dl_format: bool) -> bytearray:
     :return: First Frame data bytes containing CAN Packet Type and First Frame Data Length parameters.
     """
     if long_ff_dl_format and ff_dl > MAX_LONG_FF_DL_VALUE:
-        raise ValueError(
-            f"Value of First Frame Data Length must be not be greater than {MAX_LONG_FF_DL_VALUE} "
-            f"to fit into long FF_DL format. Actual value: {ff_dl}"
-        )
+        raise ValueError(f"Value of First Frame Data Length must be not be greater than {MAX_LONG_FF_DL_VALUE} "
+                         f"to fit into long FF_DL format. Actual value: {ff_dl}")
     if not long_ff_dl_format and ff_dl > MAX_SHORT_FF_DL_VALUE:
-        raise ValueError(
-            f"Value of First Frame Data Length must be not be greater than {MAX_SHORT_FF_DL_VALUE} "
-            f"to fit into short FF_DL format. Actual value: {ff_dl}"
-        )
+        raise ValueError(f"Value of First Frame Data Length must be not be greater than {MAX_SHORT_FF_DL_VALUE} "
+                         f"to fit into short FF_DL format. Actual value: {ff_dl}")
     ff_dl_bytes_number = LONG_FF_DL_BYTES_USED if long_ff_dl_format else SHORT_FF_DL_BYTES_USED
     ff_dl_bytes = bytearray(int_to_bytes(int_value=ff_dl, size=ff_dl_bytes_number))
-    ff_dl_bytes[0] ^= FIRST_FRAME_N_PCI << 4
+    ff_dl_bytes[0] ^= (FIRST_FRAME_N_PCI << 4)
     return ff_dl_bytes
 
 
-def validate_ff_dl(
-    ff_dl: int,
-    ff_dl_bytes_number: int | None = None,
-    dlc: int | None = None,
-    addressing_format: CanAddressingFormat | None = None,
-) -> None:
+def validate_ff_dl(ff_dl: int,
+                   ff_dl_bytes_number: int | None = None,
+                   dlc: int | None = None,
+                   addressing_format: CanAddressingFormat | None = None) -> None:
     """
     Validate a value of First Frame Data Length.
 
@@ -323,16 +308,12 @@ def validate_ff_dl(
     if not isinstance(ff_dl, int):
         raise TypeError(f"Provided value of First Frame Data Length is not int type. Actual type: {type(ff_dl)}.")
     if not 0 <= ff_dl <= MAX_LONG_FF_DL_VALUE:
-        raise ValueError(
-            "Provided value of First Frame Data Length is out of range. "
-            f"Expected: 0 <= ff_dl <= {MAX_LONG_FF_DL_VALUE}. Actual value: {ff_dl}"
-        )
+        raise ValueError("Provided value of First Frame Data Length is out of range. "
+                         f"Expected: 0 <= ff_dl <= {MAX_LONG_FF_DL_VALUE}. Actual value: {ff_dl}")
     if dlc is not None and addressing_format is not None:
         if dlc < CanDlcHandler.MIN_BASE_UDS_DLC:
-            raise ValueError(
-                "Provided value of DLC cannot be used with First Frame. "
-                f"Expected: DLC >= {CanDlcHandler.MIN_BASE_UDS_DLC}. Actual value: {dlc}"
-            )
+            raise ValueError("Provided value of DLC cannot be used with First Frame. "
+                             f"Expected: DLC >= {CanDlcHandler.MIN_BASE_UDS_DLC}. Actual value: {dlc}")
         max_sf_dl = get_max_sf_dl(addressing_format=addressing_format, dlc=dlc)
         if ff_dl <= max_sf_dl:
             raise InconsistencyError("Single Frame shall be used instead of First Frame to carry this.")
@@ -343,7 +324,5 @@ def validate_ff_dl(
         if ff_dl > MAX_SHORT_FF_DL_VALUE:
             raise InconsistencyError("Long format of First Frame Data Length shall be used.")
     elif ff_dl_bytes_number is not None:
-        raise ValueError(
-            "Incorrect value of ff_dl_bytes was provided. It should be equal to either "
-            f"{SHORT_FF_DL_BYTES_USED} or {LONG_FF_DL_BYTES_USED}. Actual value: {ff_dl_bytes_number}"
-        )
+        raise ValueError("Incorrect value of ff_dl_bytes was provided. It should be equal to either "
+                         f"{SHORT_FF_DL_BYTES_USED} or {LONG_FF_DL_BYTES_USED}. Actual value: {ff_dl_bytes_number}")

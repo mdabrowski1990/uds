@@ -1,14 +1,8 @@
 """Abstract definition of packets that is common for all bus/network types."""
 
-__all__ = [
-    "AbstractPacketContainer",
-    "AbstractPacket",
-    "AbstractPacketRecord",
-    "PacketsContainersSequenceAlias",
-    "PacketsTupleAlias",
-    "PacketsRecordsTupleAlias",
-    "PacketsRecordsSequenceAlias",
-]
+__all__ = ["AbstractPacketContainer", "AbstractPacket", "AbstractPacketRecord",
+           "PacketsContainersSequenceAlias", "PacketsTupleAlias", "PacketsRecordsTupleAlias",
+           "PacketsRecordsSequenceAlias"]
 
 from abc import ABC, abstractmethod
 from collections.abc import Sequence
@@ -28,13 +22,11 @@ class AbstractPacketContainer(ABC):
 
     def __str__(self) -> str:
         """Present object in string format."""
-        return (
-            f"{self.__class__.__name__}("
-            f"raw_frame_data={bytes_to_hex(self.raw_frame_data)}, "
-            f"payload={None if self.payload is None else bytes_to_hex(self.payload)}, "
-            f"addressing_type={self.addressing_type}, "
-            f"packet_type={self.packet_type})"
-        )
+        return (f"{self.__class__.__name__}("
+                f"raw_frame_data={bytes_to_hex(self.raw_frame_data)}, "
+                f"payload={None if self.payload is None else bytes_to_hex(self.payload)}, "
+                f"addressing_type={self.addressing_type}, "
+                f"packet_type={self.packet_type})")
 
     @property
     @abstractmethod
@@ -70,14 +62,12 @@ class AbstractPacketRecord(AbstractPacketContainer, ABC):
     """Abstract container for historical information about transmitted or received packets."""
 
     @abstractmethod
-    def __init__(
-        self,
-        frame: Any,
-        direction: TransmissionDirection,
-        transmission_time: datetime,
-        transmission_timestamp: float,
-        transmission_native_timestamp: float | None,
-    ) -> None:
+    def __init__(self,
+                 frame: Any,
+                 direction: TransmissionDirection,
+                 transmission_time: datetime,
+                 transmission_timestamp: float,
+                 transmission_native_timestamp: float | None) -> None:
         """
         Create a record of historic information about a packet.
 
@@ -96,17 +86,15 @@ class AbstractPacketRecord(AbstractPacketContainer, ABC):
 
     def __str__(self) -> str:
         """Present object in string format."""
-        return (
-            f"{self.__class__.__name__}("
-            f"raw_frame_data={bytes_to_hex(self.raw_frame_data)}, "
-            f"addressing_type={self.addressing_type}, "
-            f"direction={self.direction}, "
-            f"payload={None if self.payload is None else bytes_to_hex(self.payload)}, "
-            f"packet_type={self.packet_type}, "
-            f"transmission_time={self.transmission_time}, "
-            f"transmission_timestamp={self.transmission_timestamp}, "
-            f"transmission_native_timestamp={self.transmission_native_timestamp})"
-        )
+        return (f"{self.__class__.__name__}("
+                f"raw_frame_data={bytes_to_hex(self.raw_frame_data)}, "
+                f"addressing_type={self.addressing_type}, "
+                f"direction={self.direction}, "
+                f"payload={None if self.payload is None else bytes_to_hex(self.payload)}, "
+                f"packet_type={self.packet_type}, "
+                f"transmission_time={self.transmission_time}, "
+                f"transmission_timestamp={self.transmission_timestamp}, "
+                f"transmission_native_timestamp={self.transmission_native_timestamp})")
 
     @property
     def frame(self) -> Any:
@@ -171,11 +159,9 @@ class AbstractPacketRecord(AbstractPacketContainer, ABC):
         if hasattr(self, "_AbstractPacketRecord__transmission_time"):
             raise ReassignmentError("Value of 'transmission_time' attribute cannot be changed once set.")
         if value > time_now:
-            warn(
-                message="Future time provided as `transmission_time` to a packet record. "
-                "Current time was used instead.",
-                category=RuntimeWarning,
-            )
+            warn(message="Future time provided as `transmission_time` to a packet record. "
+                         "Current time was used instead.",
+                 category=RuntimeWarning)
             value = time_now
         self.__transmission_time = value
 
@@ -208,11 +194,9 @@ class AbstractPacketRecord(AbstractPacketContainer, ABC):
         if hasattr(self, "_AbstractPacketRecord__transmission_timestamp"):
             raise ReassignmentError("Value of 'transmission_timestamp' attribute cannot be changed once set.")
         if value > timestamp_now:
-            warn(
-                message="Future timestamp provided as `transmission_timestamp` to a packet record. "
-                "Current timestamp was used instead.",
-                category=RuntimeWarning,
-            )
+            warn(message="Future timestamp provided as `transmission_timestamp` to a packet record. "
+                         "Current timestamp was used instead.",
+                 category=RuntimeWarning)
             value = timestamp_now
         self.__transmission_timestamp = value
 

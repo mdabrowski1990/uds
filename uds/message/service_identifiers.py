@@ -6,15 +6,10 @@ Service Identifier (SID) data parameter implementation.
 """
 
 __all__ = [
-    "ALL_REQUEST_SIDS",
-    "ALL_RESPONSE_SIDS",
-    "SidAlias",
-    "SERVICES_WITH_SUBFUNCTION",
-    "SERVICES_WITH_DID",
-    "SERVICES_WITH_RID",
+    "ALL_REQUEST_SIDS", "ALL_RESPONSE_SIDS", "SidAlias",
+    "SERVICES_WITH_SUBFUNCTION", "SERVICES_WITH_DID", "SERVICES_WITH_RID",
     "RESPONSE_REQUEST_SID_DIFF",
-    "RequestSID",
-    "ResponseSID",
+    "RequestSID", "ResponseSID",
     "UnrecognizedSIDWarning",
     "define_service",
 ]
@@ -77,11 +72,9 @@ class RequestSID(ValidatedEnum, ExtendableEnum, ByteEnum):
         """
         if value in ALL_REQUEST_SIDS:
             if not cls.is_member(value):
-                warn(
-                    message=f"SID 0x{value:X} is not recognized by this version of the package. "
-                    "Define it manually using `add_member` method.",
-                    category=UnrecognizedSIDWarning,
-                )
+                warn(message=f"SID 0x{value:X} is not recognized by this version of the package. "
+                             "Define it manually using `add_member` method.",
+                     category=UnrecognizedSIDWarning)
             return True
         return False
 
@@ -140,10 +133,8 @@ class ResponseSID(ValidatedEnum, ExtendableEnum, ByteEnum):
     # Diagnostic and communication management - more information in ISO 14229-1:2013 (obsolete), chapter 9
     AccessTimingParameter: "ResponseSID" = RequestSID.AccessTimingParameter + RESPONSE_REQUEST_SID_DIFF  # type: ignore
     # Diagnostic and communication management - more information in ISO 14229-1:2020, chapter 10
-    DiagnosticSessionControl: "ResponseSID" = (
-        RequestSID.DiagnosticSessionControl  # type: ignore
-        + RESPONSE_REQUEST_SID_DIFF
-    )
+    DiagnosticSessionControl: "ResponseSID" = (RequestSID.DiagnosticSessionControl  # type: ignore
+                                               + RESPONSE_REQUEST_SID_DIFF)
     ECUReset: "ResponseSID" = RequestSID.ECUReset + RESPONSE_REQUEST_SID_DIFF  # type: ignore
     SecurityAccess: "ResponseSID" = RequestSID.SecurityAccess + RESPONSE_REQUEST_SID_DIFF  # type: ignore
     CommunicationControl: "ResponseSID" = RequestSID.CommunicationControl + RESPONSE_REQUEST_SID_DIFF  # type: ignore
@@ -155,31 +146,21 @@ class ResponseSID(ValidatedEnum, ExtendableEnum, ByteEnum):
     # Data transmission - more information in ISO 14229-1:2020, chapter 11
     ReadDataByIdentifier: "ResponseSID" = RequestSID.ReadDataByIdentifier + RESPONSE_REQUEST_SID_DIFF  # type: ignore
     ReadMemoryByAddress: "ResponseSID" = RequestSID.ReadMemoryByAddress + RESPONSE_REQUEST_SID_DIFF  # type: ignore
-    ReadScalingDataByIdentifier: "ResponseSID" = (
-        RequestSID.ReadScalingDataByIdentifier  # type: ignore
-        + RESPONSE_REQUEST_SID_DIFF
-    )
-    ReadDataByPeriodicIdentifier: "ResponseSID" = (
-        RequestSID.ReadDataByPeriodicIdentifier  # type: ignore
-        + RESPONSE_REQUEST_SID_DIFF
-    )
-    DynamicallyDefineDataIdentifier: "ResponseSID" = (
-        RequestSID.DynamicallyDefineDataIdentifier  # type: ignore
-        + RESPONSE_REQUEST_SID_DIFF
-    )
+    ReadScalingDataByIdentifier: "ResponseSID" = (RequestSID.ReadScalingDataByIdentifier  # type: ignore
+                                                  + RESPONSE_REQUEST_SID_DIFF)
+    ReadDataByPeriodicIdentifier: "ResponseSID" = (RequestSID.ReadDataByPeriodicIdentifier  # type: ignore
+                                                   + RESPONSE_REQUEST_SID_DIFF)
+    DynamicallyDefineDataIdentifier: "ResponseSID" = (RequestSID.DynamicallyDefineDataIdentifier  # type: ignore
+                                                      + RESPONSE_REQUEST_SID_DIFF)
     WriteDataByIdentifier: "ResponseSID" = RequestSID.WriteDataByIdentifier + RESPONSE_REQUEST_SID_DIFF  # type: ignore
     WriteMemoryByAddress: "ResponseSID" = RequestSID.WriteMemoryByAddress + RESPONSE_REQUEST_SID_DIFF  # type: ignore
     # Stored data transmission - more information in ISO 14229-1:2020, chapter 12
-    ClearDiagnosticInformation: "ResponseSID" = (
-        RequestSID.ClearDiagnosticInformation  # type: ignore
-        + RESPONSE_REQUEST_SID_DIFF
-    )
+    ClearDiagnosticInformation: "ResponseSID" = (RequestSID.ClearDiagnosticInformation  # type: ignore
+                                                 + RESPONSE_REQUEST_SID_DIFF)
     ReadDTCInformation: "ResponseSID" = RequestSID.ReadDTCInformation + RESPONSE_REQUEST_SID_DIFF  # type: ignore
     # InputOutput control - more information in ISO 14229-1:2020, chapter 13
-    InputOutputControlByIdentifier: "ResponseSID" = (
-        RequestSID.InputOutputControlByIdentifier  # type: ignore
-        + RESPONSE_REQUEST_SID_DIFF
-    )
+    InputOutputControlByIdentifier: "ResponseSID" = (RequestSID.InputOutputControlByIdentifier  # type: ignore
+                                                     + RESPONSE_REQUEST_SID_DIFF)
     # Routine - more information in ISO 14229-1:2020, chapter 14
     RoutineControl: "ResponseSID" = RequestSID.RoutineControl + RESPONSE_REQUEST_SID_DIFF  # type: ignore
     # Upload download - more information in ISO 14229-1:2020, chapter 15
@@ -189,10 +170,8 @@ class ResponseSID(ValidatedEnum, ExtendableEnum, ByteEnum):
     RequestTransferExit: "ResponseSID" = RequestSID.RequestTransferExit + RESPONSE_REQUEST_SID_DIFF  # type: ignore
     RequestFileTransfer: "ResponseSID" = RequestSID.RequestFileTransfer + RESPONSE_REQUEST_SID_DIFF  # type: ignore
     # Security sub-layer - more information in ISO 14229-1:2020, chapter 16
-    SecuredDataTransmission: "ResponseSID" = (
-        RequestSID.SecuredDataTransmission  # type: ignore
-        + RESPONSE_REQUEST_SID_DIFF
-    )
+    SecuredDataTransmission: "ResponseSID" = (RequestSID.SecuredDataTransmission  # type: ignore
+                                              + RESPONSE_REQUEST_SID_DIFF)
 
     @classmethod
     def is_response_sid(cls, value: int) -> bool:
@@ -205,11 +184,9 @@ class ResponseSID(ValidatedEnum, ExtendableEnum, ByteEnum):
         """
         if value in ALL_RESPONSE_SIDS:
             if not cls.is_member(value):
-                warn(
-                    message=f"RSID 0x{value:X} is not recognized by this version of the package. "
-                    "Define it manually using `add_member` method.",
-                    category=UnrecognizedSIDWarning,
-                )
+                warn(message=f"RSID 0x{value:X} is not recognized by this version of the package. "
+                             "Define it manually using `add_member` method.",
+                     category=UnrecognizedSIDWarning)
             return True
         return False
 

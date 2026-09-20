@@ -26,17 +26,14 @@ class CanPacketRecord(AbstractCanPacketContainer, AbstractPacketRecord):
     :ref:`CAN packet <knowledge-base-can-packet>`.
     """
 
-    def __init__(
-        self,
-        *,
-        frame: CanFrameAlias,
-        addressing_format: CanAddressingFormat,
-        addressing_type: AddressingType,
-        direction: TransmissionDirection,
-        transmission_time: datetime,
-        transmission_timestamp: float,
-        transmission_native_timestamp: float | None,
-    ) -> None:
+    def __init__(self, *,
+                 frame: CanFrameAlias,
+                 addressing_format: CanAddressingFormat,
+                 addressing_type: AddressingType,
+                 direction: TransmissionDirection,
+                 transmission_time: datetime,
+                 transmission_timestamp: float,
+                 transmission_native_timestamp: float | None) -> None:
         """
         Create a record of historic information about a CAN packet that was either received or transmitted.
 
@@ -50,29 +47,25 @@ class CanPacketRecord(AbstractCanPacketContainer, AbstractPacketRecord):
         """
         self.addressing_format = addressing_format
         self.addressing_type = addressing_type
-        super().__init__(
-            frame=frame,
-            direction=direction,
-            transmission_time=transmission_time,
-            transmission_timestamp=transmission_timestamp,
-            transmission_native_timestamp=transmission_native_timestamp,
-        )
+        super().__init__(frame=frame,
+                         direction=direction,
+                         transmission_time=transmission_time,
+                         transmission_timestamp=transmission_timestamp,
+                         transmission_native_timestamp=transmission_native_timestamp)
 
     def __str__(self) -> str:
         """Present object in string format."""
-        return (
-            f"{self.__class__.__name__}("
-            f"raw_frame_data={bytes_to_hex(self.raw_frame_data)}, "
-            f"can_id={self.can_id}, "
-            f"addressing_format={self.addressing_format}, "
-            f"addressing_type={self.addressing_type}, "
-            f"direction={self.direction}, "
-            f"packet_type={self.packet_type}, "
-            f"payload={None if self.payload is None else bytes_to_hex(self.payload)}, "
-            f"transmission_time={self.transmission_time}, "
-            f"transmission_timestamp={self.transmission_timestamp}, "
-            f"transmission_native_timestamp={self.transmission_native_timestamp})"
-        )
+        return (f"{self.__class__.__name__}("
+                f"raw_frame_data={bytes_to_hex(self.raw_frame_data)}, "
+                f"can_id={self.can_id}, "
+                f"addressing_format={self.addressing_format}, "
+                f"addressing_type={self.addressing_type}, "
+                f"direction={self.direction}, "
+                f"packet_type={self.packet_type}, "
+                f"payload={None if self.payload is None else bytes_to_hex(self.payload)}, "
+                f"transmission_time={self.transmission_time}, "
+                f"transmission_timestamp={self.transmission_timestamp}, "
+                f"transmission_native_timestamp={self.transmission_native_timestamp})")
 
     @property
     def can_id(self) -> int:
@@ -83,9 +76,8 @@ class CanPacketRecord(AbstractCanPacketContainer, AbstractPacketRecord):
         """
         if isinstance(self.frame, PythonCanFrame):
             return self.frame.arbitration_id
-        raise NotImplementedError(
-            f"Missing implementation for the currently stored CAN frame type: {type(self.frame)}."
-        )
+        raise NotImplementedError("Missing implementation for the currently stored CAN frame type: "
+                                  f"{type(self.frame)}.")
 
     @property
     def raw_frame_data(self) -> bytes:
@@ -96,9 +88,8 @@ class CanPacketRecord(AbstractCanPacketContainer, AbstractPacketRecord):
         """
         if isinstance(self.frame, PythonCanFrame):
             return bytes(self.frame.data)
-        raise NotImplementedError(
-            f"Missing implementation for the currently stored CAN frame type: {type(self.frame)}."
-        )
+        raise NotImplementedError("Missing implementation for the currently stored CAN frame type: "
+                                  f"{type(self.frame)}.")
 
     @property
     def addressing_format(self) -> CanAddressingFormat:
@@ -149,12 +140,10 @@ class CanPacketRecord(AbstractCanPacketContainer, AbstractPacketRecord):
 
     def _validate_attributes(self) -> None:
         """Validate whether attributes that were set are a valid for a CAN Packet record."""
-        CanAddressingInformation.validate_addressing_params(
-            addressing_format=self.addressing_format,
-            addressing_type=self.addressing_type,
-            can_id=self.can_id,
-            target_address=self.target_address,
-            source_address=self.source_address,
-            address_extension=self.address_extension,
-        )
+        CanAddressingInformation.validate_addressing_params(addressing_format=self.addressing_format,
+                                                            addressing_type=self.addressing_type,
+                                                            can_id=self.can_id,
+                                                            target_address=self.target_address,
+                                                            source_address=self.source_address,
+                                                            address_extension=self.address_extension)
         CanPacketType.validate_member(self.packet_type)

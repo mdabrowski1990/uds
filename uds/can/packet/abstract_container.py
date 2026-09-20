@@ -53,9 +53,9 @@ class AbstractCanPacketContainer(AbstractPacketContainer, ABC):
 
         None in other cases.
         """
-        return CanAddressingInformation.decode_frame_ai_params(
-            addressing_format=self.addressing_format, can_id=self.can_id, raw_frame_data=self.raw_frame_data
-        )["target_address"]
+        return CanAddressingInformation.decode_frame_ai_params(addressing_format=self.addressing_format,
+                                                               can_id=self.can_id,
+                                                               raw_frame_data=self.raw_frame_data)["target_address"]
 
     @property
     def source_address(self) -> int | None:
@@ -69,9 +69,9 @@ class AbstractCanPacketContainer(AbstractPacketContainer, ABC):
 
         None in other cases.
         """
-        return CanAddressingInformation.decode_frame_ai_params(
-            addressing_format=self.addressing_format, can_id=self.can_id, raw_frame_data=self.raw_frame_data
-        )["source_address"]
+        return CanAddressingInformation.decode_frame_ai_params(addressing_format=self.addressing_format,
+                                                               can_id=self.can_id,
+                                                               raw_frame_data=self.raw_frame_data)["source_address"]
 
     @property
     def address_extension(self) -> int | None:
@@ -85,9 +85,9 @@ class AbstractCanPacketContainer(AbstractPacketContainer, ABC):
 
         None in other cases.
         """
-        return CanAddressingInformation.decode_frame_ai_params(
-            addressing_format=self.addressing_format, can_id=self.can_id, raw_frame_data=self.raw_frame_data
-        )["address_extension"]
+        return CanAddressingInformation.decode_frame_ai_params(addressing_format=self.addressing_format,
+                                                               can_id=self.can_id,
+                                                               raw_frame_data=self.raw_frame_data)["address_extension"]
 
     @property
     def packet_type(self) -> CanPacketType:
@@ -112,14 +112,16 @@ class AbstractCanPacketContainer(AbstractPacketContainer, ABC):
         :raise NotImplementedError: There is missing implementation for the set CAN Packet Type.
         """
         if self.packet_type == CanPacketType.SINGLE_FRAME:
-            return extract_sf_dl(addressing_format=self.addressing_format, raw_frame_data=self.raw_frame_data)
+            return extract_sf_dl(addressing_format=self.addressing_format,
+                                 raw_frame_data=self.raw_frame_data)
         if self.packet_type == CanPacketType.FIRST_FRAME:
-            return extract_ff_dl(addressing_format=self.addressing_format, raw_frame_data=self.raw_frame_data)
-        if self.packet_type in {CanPacketType.CONSECUTIVE_FRAME, CanPacketType.FLOW_CONTROL}:
+            return extract_ff_dl(addressing_format=self.addressing_format,
+                                 raw_frame_data=self.raw_frame_data)
+        if self.packet_type in {CanPacketType.CONSECUTIVE_FRAME,
+                                CanPacketType.FLOW_CONTROL}:
             return None
-        raise NotImplementedError(
-            f"There is missing implementation for the currently set CAN Packet Type: {self.packet_type}."
-        )
+        raise NotImplementedError("There is missing implementation for the currently set CAN Packet Type: "
+                                  f"{self.packet_type}.")
 
     @property
     def sequence_number(self) -> int | None:
@@ -136,8 +138,11 @@ class AbstractCanPacketContainer(AbstractPacketContainer, ABC):
         :raise NotImplementedError: There is missing implementation for current CAN Packet Type.
         """
         if self.packet_type == CanPacketType.CONSECUTIVE_FRAME:
-            return extract_sequence_number(addressing_format=self.addressing_format, raw_frame_data=self.raw_frame_data)
-        if self.packet_type in {CanPacketType.SINGLE_FRAME, CanPacketType.FIRST_FRAME, CanPacketType.FLOW_CONTROL}:
+            return extract_sequence_number(addressing_format=self.addressing_format,
+                                           raw_frame_data=self.raw_frame_data)
+        if self.packet_type in {CanPacketType.SINGLE_FRAME,
+                                CanPacketType.FIRST_FRAME,
+                                CanPacketType.FLOW_CONTROL}:
             return None
         raise NotImplementedError("No handling for given CAN Packet Packet Type.")
 
@@ -155,8 +160,11 @@ class AbstractCanPacketContainer(AbstractPacketContainer, ABC):
         :raise NotImplementedError: There is missing implementation for current CAN Packet Type.
         """
         if self.packet_type == CanPacketType.FLOW_CONTROL:
-            return extract_flow_status(addressing_format=self.addressing_format, raw_frame_data=self.raw_frame_data)
-        if self.packet_type in {CanPacketType.SINGLE_FRAME, CanPacketType.FIRST_FRAME, CanPacketType.CONSECUTIVE_FRAME}:
+            return extract_flow_status(addressing_format=self.addressing_format,
+                                       raw_frame_data=self.raw_frame_data)
+        if self.packet_type in {CanPacketType.SINGLE_FRAME,
+                                CanPacketType.FIRST_FRAME,
+                                CanPacketType.CONSECUTIVE_FRAME}:
             return None
         raise NotImplementedError("No handling for given CAN Packet Packet Type.")
 
@@ -174,8 +182,11 @@ class AbstractCanPacketContainer(AbstractPacketContainer, ABC):
         :raise NotImplementedError: There is missing implementation for current CAN Packet Type.
         """
         if self.packet_type == CanPacketType.FLOW_CONTROL:
-            return extract_block_size(addressing_format=self.addressing_format, raw_frame_data=self.raw_frame_data)
-        if self.packet_type in {CanPacketType.SINGLE_FRAME, CanPacketType.FIRST_FRAME, CanPacketType.CONSECUTIVE_FRAME}:
+            return extract_block_size(addressing_format=self.addressing_format,
+                                      raw_frame_data=self.raw_frame_data)
+        if self.packet_type in {CanPacketType.SINGLE_FRAME,
+                                CanPacketType.FIRST_FRAME,
+                                CanPacketType.CONSECUTIVE_FRAME}:
             return None
         raise NotImplementedError("No handling for given CAN Packet Packet Type.")
 
@@ -193,8 +204,11 @@ class AbstractCanPacketContainer(AbstractPacketContainer, ABC):
         :raise NotImplementedError: There is missing implementation for current CAN Packet Type.
         """
         if self.packet_type == CanPacketType.FLOW_CONTROL:
-            return extract_st_min(addressing_format=self.addressing_format, raw_frame_data=self.raw_frame_data)
-        if self.packet_type in {CanPacketType.SINGLE_FRAME, CanPacketType.FIRST_FRAME, CanPacketType.CONSECUTIVE_FRAME}:
+            return extract_st_min(addressing_format=self.addressing_format,
+                                  raw_frame_data=self.raw_frame_data)
+        if self.packet_type in {CanPacketType.SINGLE_FRAME,
+                                CanPacketType.FIRST_FRAME,
+                                CanPacketType.CONSECUTIVE_FRAME}:
             return None
         raise NotImplementedError("No handling for given CAN Packet Packet Type.")
 
@@ -225,23 +239,14 @@ class AbstractCanPacketContainer(AbstractPacketContainer, ABC):
         :raise NotImplementedError: There is missing implementation for current CAN Packet Type.
         """
         if self.packet_type == CanPacketType.SINGLE_FRAME:
-            return bytes(
-                extract_single_frame_payload(
-                    addressing_format=self.addressing_format, raw_frame_data=self.raw_frame_data
-                )
-            )
+            return bytes(extract_single_frame_payload(addressing_format=self.addressing_format,
+                                                      raw_frame_data=self.raw_frame_data))
         if self.packet_type == CanPacketType.FIRST_FRAME:
-            return bytes(
-                extract_first_frame_payload(
-                    addressing_format=self.addressing_format, raw_frame_data=self.raw_frame_data
-                )
-            )
+            return bytes(extract_first_frame_payload(addressing_format=self.addressing_format,
+                                                     raw_frame_data=self.raw_frame_data))
         if self.packet_type == CanPacketType.CONSECUTIVE_FRAME:
-            return bytes(
-                extract_consecutive_frame_payload(
-                    addressing_format=self.addressing_format, raw_frame_data=self.raw_frame_data
-                )
-            )
+            return bytes(extract_consecutive_frame_payload(addressing_format=self.addressing_format,
+                                                           raw_frame_data=self.raw_frame_data))
         if self.packet_type == CanPacketType.FLOW_CONTROL:
             return None
         raise NotImplementedError("No handling for given CAN Packet Packet Type.")

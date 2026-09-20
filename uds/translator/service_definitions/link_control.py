@@ -7,9 +7,7 @@ from uds.message import RequestSID
 from ..data_record_definitions import CONDITIONAL_LINK_CONTROL_REQUEST, LINK_CONTROL_SUBFUNCTION
 from ..service import Service
 
-LINK_CONTROL = Service(
-    request_sid=RequestSID.LinkControl,
-    request_structure=(LINK_CONTROL_SUBFUNCTION, CONDITIONAL_LINK_CONTROL_REQUEST),
-    response_structure=(LINK_CONTROL_SUBFUNCTION,),
-)
+LINK_CONTROL = Service(request_sid=RequestSID.LinkControl,
+                       request_structure=(LINK_CONTROL_SUBFUNCTION, CONDITIONAL_LINK_CONTROL_REQUEST),
+                       response_structure=(LINK_CONTROL_SUBFUNCTION,))
 """Default translator for :ref:`LinkControl <knowledge-base-service-link-control>` service."""

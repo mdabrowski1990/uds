@@ -28,19 +28,16 @@ class CanPacket(AbstractCanPacketContainer, AbstractPacket):
     :class:`~uds.can.packet.can_packet_record.CanPacketRecord`.
     """
 
-    def __init__(
-        self,
-        *,
-        addressing_format: CanAddressingFormat,
-        packet_type: CanPacketType,
-        addressing_type: AddressingType,
-        can_id: int | None = None,
-        target_address: int | None = None,
-        source_address: int | None = None,
-        address_extension: int | None = None,
-        dlc: int | None = None,
-        **packet_type_specific_kwargs: Any,
-    ) -> None:
+    def __init__(self, *,
+                 addressing_format: CanAddressingFormat,
+                 packet_type: CanPacketType,
+                 addressing_type: AddressingType,
+                 can_id: int | None = None,
+                 target_address: int | None = None,
+                 source_address: int | None = None,
+                 address_extension: int | None = None,
+                 dlc: int | None = None,
+                 **packet_type_specific_kwargs: Any) -> None:
         """
         Create a storage for a single CAN packet.
 
@@ -84,26 +81,24 @@ class CanPacket(AbstractCanPacketContainer, AbstractPacket):
         self.__raw_frame_data: bytes = b""  # Initialize empty value as it might be used by
         # set_addressing_information method. Teh final value will be set by set_packet_data.
         self.addressing_format = addressing_format
-        self.set_addressing_information(
-            addressing_type=addressing_type,
-            can_id=can_id,
-            target_address=target_address,
-            source_address=source_address,
-            address_extension=address_extension,
-        )
-        self.set_packet_data(packet_type=packet_type, dlc=dlc, **packet_type_specific_kwargs)
+        self.set_addressing_information(addressing_type=addressing_type,
+                                        can_id=can_id,
+                                        target_address=target_address,
+                                        source_address=source_address,
+                                        address_extension=address_extension)
+        self.set_packet_data(packet_type=packet_type,
+                             dlc=dlc,
+                             **packet_type_specific_kwargs)
 
     def __str__(self) -> str:
         """Present object in string format."""
-        return (
-            f"{self.__class__.__name__}("
-            f"payload={None if self.payload is None else bytes_to_hex(self.payload)}, "
-            f"addressing_type={self.addressing_type}, "
-            f"addressing_format={self.addressing_format}, "
-            f"packet_type={self.packet_type}, "
-            f"raw_frame_data={bytes_to_hex(self.raw_frame_data)}, "
-            f"can_id={self.can_id})"
-        )
+        return (f"{self.__class__.__name__}("
+                f"payload={None if self.payload is None else bytes_to_hex(self.payload)}, "
+                f"addressing_type={self.addressing_type}, "
+                f"addressing_format={self.addressing_format}, "
+                f"packet_type={self.packet_type}, "
+                f"raw_frame_data={bytes_to_hex(self.raw_frame_data)}, "
+                f"can_id={self.can_id})")
 
     @property
     def can_id(self) -> int:
@@ -138,15 +133,12 @@ class CanPacket(AbstractCanPacketContainer, AbstractPacket):
         """Addressing type for which this CAN packet is relevant."""
         return self.__addressing_type
 
-    def set_addressing_information(
-        self,
-        *,
-        addressing_type: AddressingType,
-        can_id: int | None = None,
-        target_address: int | None = None,
-        source_address: int | None = None,
-        address_extension: int | None = None,
-    ) -> None:
+    def set_addressing_information(self, *,
+                                   addressing_type: AddressingType,
+                                   can_id: int | None = None,
+                                   target_address: int | None = None,
+                                   source_address: int | None = None,
+                                   address_extension: int | None = None) -> None:
         """
         Change addressing information for this CAN packet.
 
@@ -164,26 +156,23 @@ class CanPacket(AbstractCanPacketContainer, AbstractPacket):
         :param address_extension: Address Extension value carried by this CAN packet.
             Leave None if provided `addressing_format` does not use Address Extension parameter.
         """
-        ai_params = CanAddressingInformation.validate_addressing_params(
-            addressing_format=self.addressing_format,
-            addressing_type=addressing_type,
-            can_id=can_id,
-            target_address=target_address,
-            source_address=source_address,
-            address_extension=address_extension,
-        )
+        ai_params = CanAddressingInformation.validate_addressing_params(addressing_format=self.addressing_format,
+                                                                        addressing_type=addressing_type,
+                                                                        can_id=can_id,
+                                                                        target_address=target_address,
+                                                                        source_address=source_address,
+                                                                        address_extension=address_extension)
         self.__can_id = ai_params["can_id"]
         self.__addressing_type = ai_params["addressing_type"]
-        ai_data_bytes = CanAddressingInformation.encode_ai_data_bytes(
-            addressing_format=self.addressing_format,
-            target_address=ai_params["target_address"],
-            address_extension=ai_params["address_extension"],
-        )
-        self.__raw_frame_data = bytes(ai_data_bytes) + self.__raw_frame_data[len(ai_data_bytes) :]
+        ai_data_bytes = CanAddressingInformation.encode_ai_data_bytes(addressing_format=self.addressing_format,
+                                                                      target_address=ai_params["target_address"],
+                                                                      address_extension=ai_params["address_extension"])
+        self.__raw_frame_data = bytes(ai_data_bytes) + self.__raw_frame_data[len(ai_data_bytes):]
 
-    def set_packet_data(
-        self, *, packet_type: CanPacketType, dlc: int | None = None, **packet_type_specific_kwargs: Any
-    ) -> None:
+    def set_packet_data(self, *,
+                        packet_type: CanPacketType,
+                        dlc: int | None = None,
+                        **packet_type_specific_kwargs: Any) -> None:
         """
         Change packet type and data field of this CAN packet.
 
@@ -220,46 +209,29 @@ class CanPacket(AbstractCanPacketContainer, AbstractPacket):
         """
         CanPacketType.validate_member(packet_type)
         if packet_type == CanPacketType.SINGLE_FRAME:
-            self.__raw_frame_data = bytes(
-                create_single_frame_data(
-                    addressing_format=self.addressing_format,
-                    target_address=self.target_address,
-                    address_extension=self.address_extension,
-                    dlc=dlc,
-                    **packet_type_specific_kwargs,
-                )
-            )
+            self.__raw_frame_data = bytes(create_single_frame_data(addressing_format=self.addressing_format,
+                                                                   target_address=self.target_address,
+                                                                   address_extension=self.address_extension,
+                                                                   dlc=dlc,
+                                                                   **packet_type_specific_kwargs))
         elif packet_type == CanPacketType.FIRST_FRAME:
-            self.__raw_frame_data = bytes(
-                create_first_frame_data(
-                    addressing_format=self.addressing_format,
-                    target_address=self.target_address,
-                    address_extension=self.address_extension,
-                    dlc=dlc,  # type: ignore
-                    **packet_type_specific_kwargs,
-                )
-            )
+            self.__raw_frame_data = bytes(create_first_frame_data(addressing_format=self.addressing_format,
+                                                                  target_address=self.target_address,
+                                                                  address_extension=self.address_extension,
+                                                                  dlc=dlc,  # type: ignore
+                                                                  **packet_type_specific_kwargs))
         elif packet_type == CanPacketType.CONSECUTIVE_FRAME:
-            self.__raw_frame_data = bytes(
-                create_consecutive_frame_data(
-                    addressing_format=self.addressing_format,
-                    target_address=self.target_address,
-                    address_extension=self.address_extension,
-                    dlc=dlc,
-                    **packet_type_specific_kwargs,
-                )
-            )
+            self.__raw_frame_data = bytes(create_consecutive_frame_data(addressing_format=self.addressing_format,
+                                                                        target_address=self.target_address,
+                                                                        address_extension=self.address_extension,
+                                                                        dlc=dlc,
+                                                                        **packet_type_specific_kwargs))
         elif packet_type == CanPacketType.FLOW_CONTROL:
-            self.__raw_frame_data = bytes(
-                create_flow_control_data(
-                    addressing_format=self.addressing_format,
-                    target_address=self.target_address,
-                    address_extension=self.address_extension,
-                    dlc=dlc,
-                    **packet_type_specific_kwargs,
-                )
-            )
+            self.__raw_frame_data = bytes(create_flow_control_data(addressing_format=self.addressing_format,
+                                                                   target_address=self.target_address,
+                                                                   address_extension=self.address_extension,
+                                                                   dlc=dlc,
+                                                                   **packet_type_specific_kwargs))
         else:
-            raise NotImplementedError(
-                f"There is missing implementation for the provided CAN Packet Type: {self.packet_type}."
-            )
+            raise NotImplementedError("There is missing implementation for the provided CAN Packet Type: "
+                                      f"{self.packet_type}.")

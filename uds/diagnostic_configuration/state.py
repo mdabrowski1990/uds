@@ -51,12 +51,10 @@ class State:
         if not stripped_name:
             raise ValueError("Name must not consist of whitespace characters only.")
         if stripped_name != name:
-            warn(
-                category=UserWarning,
-                message="Given name was containing whitespaces as suffix or prefix. "
-                f"They were removed and {stripped_name!r} is assigned instead.",
-                stacklevel=2,
-            )
+            warn(category=UserWarning,
+                 message="Given name was containing whitespaces as suffix or prefix. "
+                         f"They were removed and {stripped_name!r} is assigned instead.",
+                 stacklevel=2)
         self.__name = stripped_name
 
     @property

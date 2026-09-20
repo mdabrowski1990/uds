@@ -3,13 +3,9 @@
 from __future__ import annotations
 
 __all__ = [
-    "int_to_obd_dtc",
-    "obd_dtc_to_int",
-    "bytes_to_hex",
-    "bytes_to_int",
-    "int_to_bytes",
-    "get_signed_value_decoding_formula",
-    "get_signed_value_encoding_formula",
+    "int_to_obd_dtc", "obd_dtc_to_int",
+    "bytes_to_hex", "bytes_to_int", "int_to_bytes",
+    "get_signed_value_decoding_formula", "get_signed_value_encoding_formula",
     "TimeSync",
 ]
 
@@ -55,7 +51,9 @@ def bytes_to_int(bytes_list: RawBytesAlias, endianness: Endianness = Endianness.
     return int.from_bytes(bytes=bytes_list, byteorder=Endianness.validate_member(endianness).value)
 
 
-def int_to_bytes(int_value: int, size: int | None = None, endianness: Endianness = Endianness.BIG_ENDIAN) -> bytes:
+def int_to_bytes(int_value: int,
+                 size: int | None = None,
+                 endianness: Endianness = Endianness.BIG_ENDIAN) -> bytes:
     """
     Convert integer value to a list of bytes.
 
@@ -84,10 +82,8 @@ def int_to_bytes(int_value: int, size: int | None = None, endianness: Endianness
     bytes_number = max(1, (int_value.bit_length() + 7) // 8)
     size = bytes_number if size is None else size
     if size < bytes_number:
-        raise InconsistencyError(
-            "Provided value of `size` is too small to contain all bytes of int_value. "
-            f"Actual values: int_value={int_value}, size={size}"
-        )
+        raise InconsistencyError("Provided value of `size` is too small to contain all bytes of int_value. "
+                                 f"Actual values: int_value={int_value}, size={size}")
     return int_value.to_bytes(length=size, byteorder=endianness.value)
 
 
@@ -108,12 +104,10 @@ def obd_dtc_to_int(obd_dtc: str) -> int:
     if not match:
         raise ValueError(f"Provided value is not a DTC in OBD format. Example: 'U0F1E-2D'. Actual value: {obd_dtc!r}")
     group_char, specification_number, fault_specification, fault_symptom = match.groups()
-    return (
-        (DTC_CHARACTERS_MAPPING[group_char] << 22)
-        + (int(specification_number, 16) << 20)
-        + (int(fault_specification, 16) << 8)
-        + int(fault_symptom, 16)
-    )
+    return ((DTC_CHARACTERS_MAPPING[group_char] << 22)
+            + (int(specification_number, 16) << 20)
+            + (int(fault_specification, 16) << 8)
+            + int(fault_symptom, 16))
 
 
 def int_to_obd_dtc(dtc: int) -> str:
@@ -155,8 +149,7 @@ def get_signed_value_decoding_formula(bit_length: int) -> Callable[[int], int]:
         msb_value = 1 << (bit_length - 1)
         if not 0 <= value <= max_value:
             raise ValueError(f"Provided value is out of range (0 <= value <= {max_value}): {value}.")
-        return (-(value & msb_value)) + (value & (max_value ^ msb_value))
-
+        return (- (value & msb_value)) + (value & (max_value ^ msb_value))
     return decode_signed_value
 
 
@@ -178,14 +171,13 @@ def get_signed_value_encoding_formula(bit_length: int) -> Callable[[int], int]:
 
     def encode_signed_value(value: int) -> int:
         msb_value = 1 << (bit_length - 1)
-        min_value = -msb_value
+        min_value = - msb_value
         max_value = msb_value - 1
         if not min_value <= value <= max_value:
             raise ValueError(f"Provided value is out of range ({min_value} <= value <= {max_value}): {value}.")
         if value >= 0:
             return value
         return 2 * msb_value + value
-
     return encode_signed_value
 
 
@@ -200,7 +192,9 @@ class TimeSync:
     DEFAULT_SYNC_EXPIRATION_S = 1
     """Default expiration time (in seconds) of the offset calculated during last synchronization."""
 
-    def __init__(self, samples_number: int | None = None, sync_expiration: int | float | None = None) -> None:
+    def __init__(self,
+                 samples_number: int | None = None,
+                 sync_expiration: int | float | None = None) -> None:
         """
         Get time synchronization object.
 
@@ -303,9 +297,10 @@ class TimeSync:
         self.__last_sync_timestamp = perf_counter()
         return self.offset  # type: ignore
 
-    def time_to_perf_counter(
-        self, time_value: float, min_value: float | None = None, max_value: float | None = None
-    ) -> float:
+    def time_to_perf_counter(self,
+                             time_value: float,
+                             min_value: float | None = None,
+                             max_value: float | None = None) -> float:
         """
         Convert wall clock time to performance counter.
 
@@ -324,9 +319,10 @@ class TimeSync:
             return max_value
         return converted_value
 
-    def perf_counter_to_time(
-        self, perf_counter_value: float, min_value: float | None = None, max_value: float | None = None
-    ) -> float:
+    def perf_counter_to_time(self,
+                             perf_counter_value: float,
+                             min_value: float | None = None,
+                             max_value: float | None = None) -> float:
         """
         Convert performance counter to wall clock time.
 

@@ -1,17 +1,8 @@
 """Module with all common types (and its aliases) used in the package and helper functions for these types."""
 
-__all__ = [
-    "TimeMillisecondsAlias",
-    "TimestampAlias",
-    "RawBytesAlias",
-    "RawBytesTupleAlias",
-    "RawBytesListAlias",
-    "RawBytesSetAlias",
-    "validate_nibble",
-    "validate_raw_byte",
-    "validate_raw_2byte_value",
-    "validate_raw_bytes",
-]
+__all__ = ["TimeMillisecondsAlias", "TimestampAlias",
+           "RawBytesAlias", "RawBytesTupleAlias", "RawBytesListAlias", "RawBytesSetAlias",
+           "validate_nibble", "validate_raw_byte", "validate_raw_2byte_value", "validate_raw_bytes"]
 
 TimeMillisecondsAlias = int | float
 """Alias of a time value in milliseconds."""
@@ -83,12 +74,10 @@ def validate_raw_bytes(value: RawBytesAlias, allow_empty: bool = False) -> None:
     :raise ValueError: Provided value does not contain raw bytes (int values between 0x00-0xFF) only.
     """
     if not isinstance(value, (tuple, list, bytearray, bytes)):
-        raise TypeError(
-            f"Provided value must be either tuple, list, bytearray or bytes type. Actual type: {type(value)}"
-        )
+        raise TypeError("Provided value must be either tuple, list, bytearray or bytes type. "
+                        f"Actual type: {type(value)}")
     if not allow_empty and not value:
         raise ValueError("Provided values is an empty sequence.")
     if not all(isinstance(raw_byte, int) and 0x00 <= raw_byte <= 0xFF for raw_byte in value):
-        raise ValueError(
-            f"Provided value does not contain raw bytes (int value between 0x00 and 0xFF) only. Actual value: {value!r}"
-        )
+        raise ValueError("Provided value does not contain raw bytes (int value between 0x00 and 0xFF) only. "
+                         f"Actual value: {value!r}")

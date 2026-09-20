@@ -7,8 +7,7 @@ Module with common implementation of all diagnostic messages (requests and respo
 __all__ = [
     "NEGATIVE_RESPONSE_MESSAGE_LENGTH",
     "AbstractUdsMessageContainer",
-    "UdsMessage",
-    "UdsMessageRecord",
+    "UdsMessage", "UdsMessageRecord",
 ]
 
 from abc import ABC, abstractmethod
@@ -28,9 +27,9 @@ class AbstractUdsMessageContainer(ABC):
 
     def __str__(self) -> str:
         """Present object in string format."""
-        return (
-            f"{self.__class__.__name__}(payload={bytes_to_hex(self.payload)}, addressing_type={self.addressing_type})"
-        )
+        return (f"{self.__class__.__name__}("
+                f"payload={bytes_to_hex(self.payload)}, "
+                f"addressing_type={self.addressing_type})")
 
     @abstractmethod
     def __eq__(self, other: object) -> bool:
@@ -85,9 +84,8 @@ class UdsMessage(AbstractUdsMessageContainer):
         :return: True if other object has the same type and carries the same diagnostic message, otherwise False.
         """
         if not isinstance(other, self.__class__):
-            raise TypeError(
-                f"UDS Message addressing only be compared with another UDS Message. Actual type: {type(other)}."
-            )
+            raise TypeError("UDS Message addressing only be compared with another UDS Message. "
+                            f"Actual type: {type(other)}.")
         return self.addressing_type == other.addressing_type and self.payload == other.payload
 
     @property
@@ -143,30 +141,24 @@ class UdsMessageRecord(AbstractUdsMessageContainer):
         :return: True if other object has the same type and carries the same diagnostic message, otherwise False.
         """
         if not isinstance(other, self.__class__):
-            raise TypeError(
-                "UDS Message Record addressing only be compared with another UDS Message Record. "
-                f"Actual type: {type(other)}."
-            )
-        return (
-            self.addressing_type == other.addressing_type
-            and self.payload == other.payload
+            raise TypeError("UDS Message Record addressing only be compared with another UDS Message Record. "
+                            f"Actual type: {type(other)}.")
+        return self.addressing_type == other.addressing_type \
+            and self.payload == other.payload \
             and self.direction == other.direction
-        )
 
     def __str__(self) -> str:
         """Present object in string format."""
-        return (
-            f"{self.__class__.__name__}("
-            f"payload={bytes_to_hex(self.payload)}, "
-            f"addressing_type={self.addressing_type}, "
-            f"direction={self.direction}, "
-            f"transmission_start_time={self.transmission_start_time}, "
-            f"transmission_start_timestamp={self.transmission_start_timestamp}, "
-            f"transmission_end_time={self.transmission_end_time}, "
-            f"transmission_end_timestamp={self.transmission_end_timestamp}, "
-            f"transmission_start_native_timestamp={self.transmission_start_native_timestamp}, "
-            f"transmission_end_native_timestamp={self.transmission_end_native_timestamp})"
-        )
+        return (f"{self.__class__.__name__}("
+                f"payload={bytes_to_hex(self.payload)}, "
+                f"addressing_type={self.addressing_type}, "
+                f"direction={self.direction}, "
+                f"transmission_start_time={self.transmission_start_time}, "
+                f"transmission_start_timestamp={self.transmission_start_timestamp}, "
+                f"transmission_end_time={self.transmission_end_time}, "
+                f"transmission_end_timestamp={self.transmission_end_timestamp}, "
+                f"transmission_start_native_timestamp={self.transmission_start_native_timestamp}, "
+                f"transmission_end_native_timestamp={self.transmission_end_native_timestamp})")
 
     @staticmethod
     def __validate_packets_records(value: PacketsRecordsSequenceAlias) -> None:
@@ -182,9 +174,8 @@ class UdsMessageRecord(AbstractUdsMessageContainer):
         if not isinstance(value, Sequence):
             raise TypeError(f"Provided value is not a sequence. Actual type: {type(value)}")
         if not value or any(not isinstance(element, AbstractPacketRecord) for element in value):
-            raise ValueError(
-                f"Provided value must contain only instances of AbstractPacketRecord class. Actual value: {value}."
-            )
+            raise ValueError("Provided value must contain only instances of AbstractPacketRecord class. "
+                             f"Actual value: {value}.")
 
     @property
     def packets_records(self) -> PacketsRecordsTupleAlias:

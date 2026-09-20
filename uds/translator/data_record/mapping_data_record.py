@@ -49,15 +49,12 @@ class AbstractMappingDataRecord(ABC):
         if not isinstance(value, Mapping):
             raise TypeError(f"Provided value is not Mapping. Actual type: {type(value)}.")
         if not all(isinstance(key, int) and self.min_raw_value <= key <= self.max_raw_value for key in value.keys()):
-            raise ValueError(
-                "Provided values mapping contains values that are out of raw values range. "
-                f"Expected: {self.min_raw_value} <= key <= {self.max_raw_value}. "
-                f"Actual keys: {list(value.keys())}."
-            )
+            raise ValueError("Provided values mapping contains values that are out of raw values range. "
+                             f"Expected: {self.min_raw_value} <= key <= {self.max_raw_value}. "
+                             f"Actual keys: {list(value.keys())}.")
         if not all(isinstance(_value, str) for _value in value.values()):
-            raise ValueError(
-                f"Provided values mapping contains labels that are not str type. Actual values: {list(value.values())}."
-            )
+            raise ValueError("Provided values mapping contains labels that are not str type. "
+                             f"Actual values: {list(value.values())}.")
         self.__values_mapping = MappingProxyType(value)
         self.__labels_mapping = MappingProxyType({v: k for k, v in self.__values_mapping.items()})
 
@@ -97,17 +94,15 @@ class MappingDataRecord(RawDataRecord, AbstractMappingDataRecord):
      - Complex bit-fields with individual bit meanings
     """
 
-    def __init__(
-        self,
-        name: str,
-        length: int,
-        values_mapping: Mapping[int, str],
-        children: Sequence[AbstractDataRecord] = tuple(),
-        min_occurrences: int = 1,
-        max_occurrences: int | None = 1,
-        unit: str | None = None,
-        enforce_reoccurring: bool = False,
-    ) -> None:
+    def __init__(self,
+                 name: str,
+                 length: int,
+                 values_mapping: Mapping[int, str],
+                 children: Sequence[AbstractDataRecord] = tuple(),
+                 min_occurrences: int = 1,
+                 max_occurrences: int | None = 1,
+                 unit: str | None = None,
+                 enforce_reoccurring: bool = False) -> None:
         """
         Create Mapping Data Record.
 
@@ -122,34 +117,31 @@ class MappingDataRecord(RawDataRecord, AbstractMappingDataRecord):
         :param unit: Unit in which values without mapping are represented.
         :param enforce_reoccurring: Decide whether to enforce this DataRecord to be treated as re-occurring.
         """
-        RawDataRecord.__init__(
-            self,
-            name=name,
-            length=length,
-            children=children,
-            unit=unit,
-            min_occurrences=min_occurrences,
-            max_occurrences=max_occurrences,
-            enforce_reoccurring=enforce_reoccurring,
-        )
-        AbstractMappingDataRecord.__init__(self, values_mapping=values_mapping)
+        RawDataRecord.__init__(self,
+                               name=name,
+                               length=length,
+                               children=children,
+                               unit=unit,
+                               min_occurrences=min_occurrences,
+                               max_occurrences=max_occurrences,
+                               enforce_reoccurring=enforce_reoccurring)
+        AbstractMappingDataRecord.__init__(self,
+                                           values_mapping=values_mapping)
 
     def __deepcopy__(self, memo: dict[int, Any]) -> MappingDataRecord:
         """Get deep copy of this Data Record."""
         cls = self.__class__
         self_copy = cls.__new__(cls)
         memo[id(self)] = self_copy
-        MappingDataRecord.__init__(
-            self_copy,
-            name=self.name,
-            length=self.length,
-            values_mapping=self.values_mapping,
-            children=deepcopy(self.children, memo=memo),
-            min_occurrences=self.min_occurrences,
-            max_occurrences=self.max_occurrences,
-            unit=self.unit,
-            enforce_reoccurring=self.enforce_reoccurring,
-        )
+        MappingDataRecord.__init__(self_copy,
+                                   name=self.name,
+                                   length=self.length,
+                                   values_mapping=self.values_mapping,
+                                   children=deepcopy(self.children, memo=memo),
+                                   min_occurrences=self.min_occurrences,
+                                   max_occurrences=self.max_occurrences,
+                                   unit=self.unit,
+                                   enforce_reoccurring=self.enforce_reoccurring)
         return self_copy
 
     def get_physical_value(self, raw_value: int) -> str | int:  # type: ignore
@@ -162,7 +154,9 @@ class MappingDataRecord(RawDataRecord, AbstractMappingDataRecord):
         """
         if raw_value in self.values_mapping:
             return self.values_mapping[raw_value]
-        warn(message=f"No label defined for raw value {raw_value} in mapping", category=ValueWarning, stacklevel=2)
+        warn(message=f"No label defined for raw value {raw_value} in mapping",
+             category=ValueWarning,
+             stacklevel=2)
         return super().get_physical_value(raw_value)
 
     def get_raw_value(self, physical_value: str | int) -> int:  # type: ignore
@@ -202,18 +196,16 @@ class MappingAndLinearFormulaDataRecord(LinearFormulaDataRecord, AbstractMapping
      - Complex protocol parameters that can be expressed both categorically and numerically
     """
 
-    def __init__(
-        self,
-        name: str,
-        length: int,
-        values_mapping: Mapping[int, str],
-        factor: float | int,
-        offset: float | int,
-        min_occurrences: int = 1,
-        max_occurrences: int | None = 1,
-        unit: str | None = None,
-        enforce_reoccurring: bool = False,
-    ) -> None:
+    def __init__(self,
+                 name: str,
+                 length: int,
+                 values_mapping: Mapping[int, str],
+                 factor: float | int,
+                 offset: float | int,
+                 min_occurrences: int = 1,
+                 max_occurrences: int | None = 1,
+                 unit: str | None = None,
+                 enforce_reoccurring: bool = False) -> None:
         """
         Create Mapping and Linear Formula Data Record.
 
@@ -229,36 +221,33 @@ class MappingAndLinearFormulaDataRecord(LinearFormulaDataRecord, AbstractMapping
         :param unit: Unit in which values without mapping are represented.
         :param enforce_reoccurring: Decide whether to enforce this DataRecord to be treated as re-occurring.
         """
-        LinearFormulaDataRecord.__init__(
-            self,
-            name=name,
-            length=length,
-            factor=factor,
-            offset=offset,
-            unit=unit,
-            min_occurrences=min_occurrences,
-            max_occurrences=max_occurrences,
-            enforce_reoccurring=enforce_reoccurring,
-        )
-        AbstractMappingDataRecord.__init__(self, values_mapping=values_mapping)
+        LinearFormulaDataRecord.__init__(self,
+                                         name=name,
+                                         length=length,
+                                         factor=factor,
+                                         offset=offset,
+                                         unit=unit,
+                                         min_occurrences=min_occurrences,
+                                         max_occurrences=max_occurrences,
+                                         enforce_reoccurring=enforce_reoccurring)
+        AbstractMappingDataRecord.__init__(self,
+                                           values_mapping=values_mapping)
 
     def __deepcopy__(self, memo: dict[int, Any]) -> MappingAndLinearFormulaDataRecord:
         """Get deep copy of this Data Record."""
         cls = self.__class__
         self_copy = cls.__new__(cls)
         memo[id(self)] = self_copy
-        MappingAndLinearFormulaDataRecord.__init__(
-            self_copy,
-            name=self.name,
-            length=self.length,
-            values_mapping=self.values_mapping,
-            factor=self.factor,
-            offset=self.offset,
-            min_occurrences=self.min_occurrences,
-            max_occurrences=self.max_occurrences,
-            unit=self.unit,
-            enforce_reoccurring=self.enforce_reoccurring,
-        )
+        MappingAndLinearFormulaDataRecord.__init__(self_copy,
+                                                   name=self.name,
+                                                   length=self.length,
+                                                   values_mapping=self.values_mapping,
+                                                   factor=self.factor,
+                                                   offset=self.offset,
+                                                   min_occurrences=self.min_occurrences,
+                                                   max_occurrences=self.max_occurrences,
+                                                   unit=self.unit,
+                                                   enforce_reoccurring=self.enforce_reoccurring)
         memo[id(self)] = self_copy
         return self_copy
 
@@ -286,10 +275,8 @@ class MappingAndLinearFormulaDataRecord(LinearFormulaDataRecord, AbstractMapping
             return self.labels_mapping[physical_value]  # type: ignore
         raw_value = super().get_raw_value(physical_value)  # type: ignore
         if raw_value in self.values_mapping:
-            warn(
-                message="Numeric physical value was provided for a value with a label: "
-                f"{raw_value} ({self.values_mapping[raw_value]}).",
-                category=UserWarning,
-                stacklevel=2,
-            )
+            warn(message="Numeric physical value was provided for a value with a label: "
+                         f"{raw_value} ({self.values_mapping[raw_value]}).",
+                 category=UserWarning,
+                 stacklevel=2)
         return raw_value

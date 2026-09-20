@@ -70,10 +70,8 @@ class AbstractSegmenter(ABC):
         :raise TypeError: Provided value is not Addressing Information type compatible with this segmenter.
         """
         if not isinstance(value, self.supported_addressing_information_class):
-            raise TypeError(
-                "Provided value is not an object of Addressing Information class "
-                f"supported by this segmenter. Actual type: {type(value)}."
-            )
+            raise TypeError("Provided value is not an object of Addressing Information class "
+                            f"supported by this segmenter. Actual type: {type(value)}.")
         self.__addressing_information = value
 
     def is_supported_packet_type(self, packet: AbstractPacketContainer) -> bool:

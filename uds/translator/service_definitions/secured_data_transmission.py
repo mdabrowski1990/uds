@@ -15,29 +15,21 @@ from ..data_record_definitions import (
 )
 from ..service import Service
 
-SECURED_DATA_TRANSMISSION_2020 = Service(
-    request_sid=RequestSID.SecuredDataTransmission,
-    request_structure=(
-        ADMINISTRATIVE_PARAMETER,
-        SIGNATURE_ENCRYPTION_CALCULATION,
-        SIGNATURE_LENGTH,
-        CONDITIONAL_SECURED_DATA_TRANSMISSION_REQUEST,
-    ),
-    response_structure=(
-        ADMINISTRATIVE_PARAMETER,
-        SIGNATURE_ENCRYPTION_CALCULATION,
-        SIGNATURE_LENGTH,
-        CONDITIONAL_SECURED_DATA_TRANSMISSION_RESPONSE,
-    ),
-)
+SECURED_DATA_TRANSMISSION_2020 = Service(request_sid=RequestSID.SecuredDataTransmission,
+                                         request_structure=(ADMINISTRATIVE_PARAMETER,
+                                                            SIGNATURE_ENCRYPTION_CALCULATION,
+                                                            SIGNATURE_LENGTH,
+                                                            CONDITIONAL_SECURED_DATA_TRANSMISSION_REQUEST),
+                                         response_structure=(ADMINISTRATIVE_PARAMETER,
+                                                             SIGNATURE_ENCRYPTION_CALCULATION,
+                                                             SIGNATURE_LENGTH,
+                                                             CONDITIONAL_SECURED_DATA_TRANSMISSION_RESPONSE))
 """Translator for :ref:`SecuredDataTransmission <knowledge-base-service-secured-data-transmission>` service
 compatible with ISO 14229-1:2020."""
 
-SECURED_DATA_TRANSMISSION_2013 = Service(
-    request_sid=RequestSID.SecuredDataTransmission,
-    request_structure=(SECURITY_DATA_REQUEST_RECORD_2013,),
-    response_structure=(SECURITY_DATA_RESPONSE_RECORD_2013,),
-)
+SECURED_DATA_TRANSMISSION_2013 = Service(request_sid=RequestSID.SecuredDataTransmission,
+                                         request_structure=(SECURITY_DATA_REQUEST_RECORD_2013,),
+                                         response_structure=(SECURITY_DATA_RESPONSE_RECORD_2013,))
 """Translator for :ref:`SecuredDataTransmission <knowledge-base-service-secured-data-transmission>` service
 compatible with ISO 14229-1:2013."""
 

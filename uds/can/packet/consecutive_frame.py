@@ -1,19 +1,11 @@
 """Implementation of handlers for :ref:`Consecutive Frame <knowledge-base-can-consecutive-frame>` CAN packet."""
 
-__all__ = [
-    "CONSECUTIVE_FRAME_N_PCI",
-    "SN_BYTES_USED",
-    "CanUnexpectedSequenceNumber",
-    "is_consecutive_frame",
-    "validate_consecutive_frame_data",
-    "create_consecutive_frame_data",
-    "generate_consecutive_frame_data",
-    "extract_consecutive_frame_payload",
-    "get_consecutive_frame_min_dlc",
-    "get_consecutive_frame_max_payload_size",
-    "extract_sequence_number",
-    "encode_sequence_number",
-]
+__all__ = ["CONSECUTIVE_FRAME_N_PCI", "SN_BYTES_USED",
+           "CanUnexpectedSequenceNumber",
+           "is_consecutive_frame", "validate_consecutive_frame_data",
+           "create_consecutive_frame_data", "generate_consecutive_frame_data", "extract_consecutive_frame_payload",
+           "get_consecutive_frame_min_dlc", "get_consecutive_frame_max_payload_size",
+           "extract_sequence_number", "encode_sequence_number"]
 
 from uds.utilities import InconsistencyError, RawBytesAlias, validate_nibble, validate_raw_byte, validate_raw_bytes
 
@@ -67,15 +59,13 @@ def validate_consecutive_frame_data(addressing_format: CanAddressingFormat, raw_
         raise InconsistencyError("Provided `raw_frame_data` does not contain any payload bytes.")
 
 
-def create_consecutive_frame_data(
-    addressing_format: CanAddressingFormat,
-    payload: RawBytesAlias,
-    sequence_number: int,
-    dlc: int | None = None,
-    filler_byte: int = DEFAULT_FILLER_BYTE,
-    target_address: int | None = None,
-    address_extension: int | None = None,
-) -> bytearray:
+def create_consecutive_frame_data(addressing_format: CanAddressingFormat,
+                                  payload: RawBytesAlias,
+                                  sequence_number: int,
+                                  dlc: int | None = None,
+                                  filler_byte: int = DEFAULT_FILLER_BYTE,
+                                  target_address: int | None = None,
+                                  address_extension: int | None = None) -> bytearray:
     """
     Create a data field of a CAN frame that carries a valid Consecutive Frame packet.
 
@@ -110,35 +100,30 @@ def create_consecutive_frame_data(
         frame_dlc = get_consecutive_frame_min_dlc(addressing_format=addressing_format, payload_length=len(payload))
     else:
         frame_dlc = dlc
-    ai_data_bytes = CanAddressingInformation.encode_ai_data_bytes(
-        addressing_format=addressing_format, target_address=target_address, address_extension=address_extension
-    )
+    ai_data_bytes = CanAddressingInformation.encode_ai_data_bytes(addressing_format=addressing_format,
+                                                                  target_address=target_address,
+                                                                  address_extension=address_extension)
     frame_data_bytes_number = CanDlcHandler.decode_dlc(frame_dlc)
     sn_data_bytes = encode_sequence_number(sequence_number=sequence_number)
     cf_bytes = ai_data_bytes + sn_data_bytes + bytearray(payload)
     if len(cf_bytes) > frame_data_bytes_number:
-        raise InconsistencyError(
-            "Provided value of `payload` contains of too many bytes. "
-            "Consider increasing DLC value or shortening the payload."
-        )
+        raise InconsistencyError("Provided value of `payload` contains of too many bytes. "
+                                 "Consider increasing DLC value or shortening the payload.")
     data_bytes_to_pad = frame_data_bytes_number - len(cf_bytes)
     if data_bytes_to_pad > 0:
         if dlc is not None and dlc < CanDlcHandler.MIN_BASE_UDS_DLC:
-            raise InconsistencyError(
-                f"CAN Frame Data Padding shall not be used for CAN frames with DLC < {CanDlcHandler.MIN_BASE_UDS_DLC}."
-            )
+            raise InconsistencyError("CAN Frame Data Padding shall not be used for CAN frames with "
+                                     f"DLC < {CanDlcHandler.MIN_BASE_UDS_DLC}.")
     return cf_bytes + data_bytes_to_pad * bytearray([filler_byte])
 
 
-def generate_consecutive_frame_data(
-    addressing_format: CanAddressingFormat,
-    payload: RawBytesAlias,
-    sequence_number: int,
-    dlc: int,
-    filler_byte: int = DEFAULT_FILLER_BYTE,
-    target_address: int | None = None,
-    address_extension: int | None = None,
-) -> bytearray:
+def generate_consecutive_frame_data(addressing_format: CanAddressingFormat,
+                                    payload: RawBytesAlias,
+                                    sequence_number: int,
+                                    dlc: int,
+                                    filler_byte: int = DEFAULT_FILLER_BYTE,
+                                    target_address: int | None = None,
+                                    address_extension: int | None = None) -> bytearray:
     """
     Generate CAN frame data field that carries any combination of Consecutive Frame packet data parameters.
 
@@ -164,23 +149,20 @@ def generate_consecutive_frame_data(
     validate_raw_byte(filler_byte)
     validate_raw_bytes(payload, allow_empty=True)
     frame_data_bytes_number = CanDlcHandler.decode_dlc(dlc)
-    ai_data_bytes = CanAddressingInformation.encode_ai_data_bytes(
-        addressing_format=addressing_format, target_address=target_address, address_extension=address_extension
-    )
+    ai_data_bytes = CanAddressingInformation.encode_ai_data_bytes(addressing_format=addressing_format,
+                                                                  target_address=target_address,
+                                                                  address_extension=address_extension)
     sn_data_bytes = encode_sequence_number(sequence_number=sequence_number)
     cf_bytes = ai_data_bytes + sn_data_bytes + bytearray(payload)
     if len(cf_bytes) > frame_data_bytes_number:
-        raise InconsistencyError(
-            "Provided value of `payload` contains of too many bytes. "
-            "Consider increasing DLC value or shortening the payload."
-        )
-    data_padding = (frame_data_bytes_number - len(cf_bytes)) * bytearray([filler_byte])
+        raise InconsistencyError("Provided value of `payload` contains of too many bytes. "
+                                 "Consider increasing DLC value or shortening the payload.")
+    data_padding = ((frame_data_bytes_number - len(cf_bytes)) * bytearray([filler_byte]))
     return cf_bytes + data_padding
 
 
-def extract_consecutive_frame_payload(
-    addressing_format: CanAddressingFormat, raw_frame_data: RawBytesAlias
-) -> bytearray:
+def extract_consecutive_frame_payload(addressing_format: CanAddressingFormat,
+                                      raw_frame_data: RawBytesAlias) -> bytearray:
     """
     Extract diagnostic message payload from Consecutive Frame data bytes.
 
@@ -199,7 +181,7 @@ def extract_consecutive_frame_payload(
     :return: Payload bytes (with potential Filler Bytes) carried by the provided Consecutive Frame data.
     """
     ai_bytes_number = CanAddressingInformation.get_ai_data_bytes_number(addressing_format)
-    return bytearray(raw_frame_data[ai_bytes_number + SN_BYTES_USED :])
+    return bytearray(raw_frame_data[ai_bytes_number + SN_BYTES_USED:])
 
 
 def get_consecutive_frame_min_dlc(addressing_format: CanAddressingFormat, payload_length: int = 1) -> int:
@@ -219,14 +201,13 @@ def get_consecutive_frame_min_dlc(addressing_format: CanAddressingFormat, payloa
     ai_data_bytes_number = CanAddressingInformation.get_ai_data_bytes_number(addressing_format)
     max_payload_length = CanDlcHandler.MAX_DATA_BYTES_NUMBER - SN_BYTES_USED - ai_data_bytes_number
     if not 1 <= payload_length <= max_payload_length:
-        raise ValueError(
-            "Provided `payload_length` value is out of range. "
-            f"Expected: 1 <= payload_length <= {max_payload_length}. Actual value: {payload_length}"
-        )
+        raise ValueError("Provided `payload_length` value is out of range. "
+                         f"Expected: 1 <= payload_length <= {max_payload_length}. Actual value: {payload_length}")
     return CanDlcHandler.get_min_dlc(ai_data_bytes_number + SN_BYTES_USED + payload_length)
 
 
-def get_consecutive_frame_max_payload_size(addressing_format: CanAddressingFormat, dlc: int | None = None) -> int:
+def get_consecutive_frame_max_payload_size(addressing_format: CanAddressingFormat,
+                                           dlc: int | None = None) -> int:
     """
     Get the maximum payload size that could be carried by a Consecutive Frame.
 
@@ -246,10 +227,8 @@ def get_consecutive_frame_max_payload_size(addressing_format: CanAddressingForma
     ai_data_bytes_number = CanAddressingInformation.get_ai_data_bytes_number(addressing_format)
     output = frame_data_bytes_number - ai_data_bytes_number - SN_BYTES_USED
     if output <= 0:
-        raise InconsistencyError(
-            "Provided values cannot be used to transmit a valid Consecutive Frame packet. "
-            "Consider using greater DLC value."
-        )
+        raise InconsistencyError("Provided values cannot be used to transmit a valid Consecutive Frame packet. "
+                                 "Consider using greater DLC value.")
     return output
 
 

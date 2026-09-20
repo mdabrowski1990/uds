@@ -96,21 +96,26 @@ class TextDataRecord(AbstractDataRecord):
         max_raw_value: int
 
     __ENCODINGS: dict[TextEncoding, _EncodingInfo] = {
-        TextEncoding.ASCII: _EncodingInfo(length=8, encode=chr, decode=decode_ascii, max_raw_value=0x7F),
-        TextEncoding.BCD: _EncodingInfo(length=4, encode=str, decode=decode_bcd, max_raw_value=9),
-        TextEncoding.DTC_OBD_FORMAT: _EncodingInfo(
-            length=24, encode=int_to_obd_dtc, decode=obd_dtc_to_int, max_raw_value=MAX_DTC_VALUE
-        ),
+        TextEncoding.ASCII: _EncodingInfo(length=8,
+                                          encode=chr,
+                                          decode=decode_ascii,
+                                          max_raw_value=0x7F),
+        TextEncoding.BCD: _EncodingInfo(length=4,
+                                        encode=str,
+                                        decode=decode_bcd,
+                                        max_raw_value=9),
+        TextEncoding.DTC_OBD_FORMAT: _EncodingInfo(length=24,
+                                                   encode=int_to_obd_dtc,
+                                                   decode=obd_dtc_to_int,
+                                                   max_raw_value=MAX_DTC_VALUE),
     }
 
-    def __init__(
-        self,
-        name: str,
-        encoding: TextEncoding,
-        min_occurrences: int = 1,
-        max_occurrences: int | None = None,
-        enforce_reoccurring: bool = True,
-    ) -> None:
+    def __init__(self,
+                 name: str,
+                 encoding: TextEncoding,
+                 min_occurrences: int = 1,
+                 max_occurrences: int | None = None,
+                 enforce_reoccurring: bool = True) -> None:
         """
         Configure Text Data Record.
 
@@ -122,28 +127,24 @@ class TextDataRecord(AbstractDataRecord):
         :param enforce_reoccurring: Decide whether to enforce this DataRecord to be treated as re-occurring.
         """
         self.encoding = encoding
-        super().__init__(
-            name=name,
-            length=self.__ENCODINGS[self.encoding]["length"],
-            children=tuple(),
-            min_occurrences=min_occurrences,
-            max_occurrences=max_occurrences,
-            enforce_reoccurring=enforce_reoccurring,
-        )
+        super().__init__(name=name,
+                         length=self.__ENCODINGS[self.encoding]["length"],
+                         children=tuple(),
+                         min_occurrences=min_occurrences,
+                         max_occurrences=max_occurrences,
+                         enforce_reoccurring=enforce_reoccurring)
 
     def __deepcopy__(self, memo: dict[int, Any]) -> TextDataRecord:
         """Get deep copy of this Data Record."""
         cls = self.__class__
         self_copy = cls.__new__(cls)
         memo[id(self)] = self_copy
-        TextDataRecord.__init__(
-            self_copy,
-            name=self.name,
-            encoding=self.encoding,
-            min_occurrences=self.min_occurrences,
-            max_occurrences=self.max_occurrences,
-            enforce_reoccurring=self.enforce_reoccurring,
-        )
+        TextDataRecord.__init__(self_copy,
+                                name=self.name,
+                                encoding=self.encoding,
+                                min_occurrences=self.min_occurrences,
+                                max_occurrences=self.max_occurrences,
+                                enforce_reoccurring=self.enforce_reoccurring)
         memo[id(self)] = self_copy
         return self_copy
 
