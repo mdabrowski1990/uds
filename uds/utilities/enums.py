@@ -7,8 +7,7 @@ named values. This module provides extension to `aenum <https://pypi.org/project
 
 from __future__ import annotations
 
-__all__ = ["ExtendableEnum", "ValidatedEnum", "ByteEnum", "NibbleEnum",
-           "Endianness"]
+__all__ = ["ExtendableEnum", "ValidatedEnum", "ByteEnum", "NibbleEnum", "Endianness"]
 
 from typing import Any
 
@@ -41,7 +40,7 @@ class ExtendableEnum(AEnum):  # type: ignore
             if member.value == value:
                 raise ValueError(f"Value '{value}' is already in use.")
         extend_enum(cls, name, value)
-        return cls[name]    # type: ignore
+        return cls[name]  # type: ignore
 
 
 class ValidatedEnum(AEnum):  # type: ignore

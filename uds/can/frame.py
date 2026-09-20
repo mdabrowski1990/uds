@@ -50,7 +50,7 @@ class CanIdHandler:
     MAX_EXTENDED_VALUE: int = (1 << 29) - 1
     """Maximum value of Extended (29-bit) CAN ID."""
 
-    ADDRESSING_MASK: int = 0x3ff0000
+    ADDRESSING_MASK: int = 0x3FF0000
     """CAN ID mask for bits enforced by SAE J1939 (Normal Fixed of Mixed 29bit addressing formats)."""
     NORMAL_FIXED_PHYSICAL_ADDRESSING_MASKED_VALUE: int = 0xDA0000
     """Masked value of physically addressed CAN ID in Normal Fixed Addressing format."""
@@ -125,19 +125,25 @@ class CanIdHandler:
             raise TypeError(f"Provided value is not int type. Actual type: {type(value)}.")
         if extended_can_id is None:
             if not cls.is_can_id(value):
-                raise ValueError("Provided value is out of CAN Identifier values range. "
-                                 f"Expected: {cls.MIN_STANDARD_VALUE} <= CAN ID <= {cls.MAX_EXTENDED_VALUE}. "
-                                 f"Actual value: {value}")
+                raise ValueError(
+                    "Provided value is out of CAN Identifier values range. "
+                    f"Expected: {cls.MIN_STANDARD_VALUE} <= CAN ID <= {cls.MAX_EXTENDED_VALUE}. "
+                    f"Actual value: {value}"
+                )
         elif extended_can_id:
             if not cls.is_extended_can_id(value):
-                raise ValueError("Provided value is out of Extended (29-bit) CAN Identifier values range. "
-                                 f"Expected: {cls.MIN_EXTENDED_VALUE} <= CAN ID <= {cls.MAX_EXTENDED_VALUE}. "
-                                 f"Actual value: {value}")
+                raise ValueError(
+                    "Provided value is out of Extended (29-bit) CAN Identifier values range. "
+                    f"Expected: {cls.MIN_EXTENDED_VALUE} <= CAN ID <= {cls.MAX_EXTENDED_VALUE}. "
+                    f"Actual value: {value}"
+                )
         else:
             if not cls.is_standard_can_id(value):
-                raise ValueError("Provided value is out of Standard (11-bit) CAN Identifier values range."
-                                 f"Expected: {cls.MIN_STANDARD_VALUE} <= CAN ID <= {cls.MAX_STANDARD_VALUE}. "
-                                 f"Actual value: {value}")
+                raise ValueError(
+                    "Provided value is out of Standard (11-bit) CAN Identifier values range."
+                    f"Expected: {cls.MIN_STANDARD_VALUE} <= CAN ID <= {cls.MAX_STANDARD_VALUE}. "
+                    f"Actual value: {value}"
+                )
 
     @classmethod
     def validate_priority(cls, value: int) -> None:
@@ -152,9 +158,11 @@ class CanIdHandler:
         if not isinstance(value, int):
             raise TypeError(f"Provided value is not int type. Actual type: {type(value)}.")
         if not cls.MIN_PRIORITY_VALUE <= value <= cls.MAX_PRIORITY_VALUE:
-            raise ValueError("Provided Priority value is out of range. "
-                             f"Expected: {cls.MIN_PRIORITY_VALUE} <= Priority <= {cls.MAX_PRIORITY_VALUE}. "
-                             f"Actual value: {value}")
+            raise ValueError(
+                "Provided Priority value is out of range. "
+                f"Expected: {cls.MIN_PRIORITY_VALUE} <= Priority <= {cls.MAX_PRIORITY_VALUE}. "
+                f"Actual value: {value}"
+            )
 
 
 class CanDlcHandler:
@@ -170,12 +178,10 @@ class CanDlcHandler:
 
     __DLC_VALUES: tuple[int, ...] = tuple(range(0x10))
     __DATA_BYTES_NUMBERS: tuple[int, ...] = (0, 1, 2, 3, 4, 5, 6, 7, 8, 12, 16, 20, 24, 32, 48, 64)
-    __DLC_MAPPING: Mapping[int, int] = MappingProxyType(dict(zip(__DLC_VALUES,
-                                                                 __DATA_BYTES_NUMBERS,
-                                                                 strict=True)))
-    __DATA_BYTES_NUMBER_MAPPING: Mapping[int, int] = MappingProxyType(dict(zip(__DATA_BYTES_NUMBERS,
-                                                                               __DLC_VALUES,
-                                                                               strict=True)))
+    __DLC_MAPPING: Mapping[int, int] = MappingProxyType(dict(zip(__DLC_VALUES, __DATA_BYTES_NUMBERS, strict=True)))
+    __DATA_BYTES_NUMBER_MAPPING: Mapping[int, int] = MappingProxyType(
+        dict(zip(__DATA_BYTES_NUMBERS, __DLC_VALUES, strict=True))
+    )
     __DLC_SPECIFIC_FOR_CAN_FD: frozenset[int] = frozenset(dlc for dlc in __DLC_VALUES if dlc > 8)
 
     MIN_DATA_BYTES_NUMBER: int = min(__DATA_BYTES_NUMBERS)
@@ -253,8 +259,10 @@ class CanDlcHandler:
         if not isinstance(value, int):
             raise TypeError(f"Provided value is not int type. Actual type: {type(value)}.")
         if not cls.MIN_DLC_VALUE <= value <= cls.MAX_DLC_VALUE:
-            raise ValueError("Provided DLC value is out of range. "
-                             f"Expected: {cls.MIN_DLC_VALUE} <= DLC <= {cls.MAX_DLC_VALUE}. Actual value: {value}")
+            raise ValueError(
+                "Provided DLC value is out of range. "
+                f"Expected: {cls.MIN_DLC_VALUE} <= DLC <= {cls.MAX_DLC_VALUE}. Actual value: {value}"
+            )
 
     @classmethod
     def validate_data_bytes_number(cls, value: int, exact_value: bool = True) -> None:
@@ -278,6 +286,8 @@ class CanDlcHandler:
                 raise ValueError(f"Provided value is not a valid CAN Frame data bytes number. Actual value: {value}")
         else:
             if not cls.MIN_DATA_BYTES_NUMBER <= value <= cls.MAX_DATA_BYTES_NUMBER:
-                raise ValueError("Provided data bytes number of a CAN frame is out of range. "
-                                 f"Expected: {cls.MIN_DATA_BYTES_NUMBER} <= DLC <= {cls.MAX_DATA_BYTES_NUMBER}. "
-                                 f"Actual value: {value}")
+                raise ValueError(
+                    "Provided data bytes number of a CAN frame is out of range. "
+                    f"Expected: {cls.MIN_DATA_BYTES_NUMBER} <= DLC <= {cls.MAX_DATA_BYTES_NUMBER}. "
+                    f"Actual value: {value}"
+                )

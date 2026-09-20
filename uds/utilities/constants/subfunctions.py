@@ -2,19 +2,22 @@
 
 __all__ = [
     "SPRMIB_MASK",
-    "DIAGNOSTIC_SESSION_TYPE_MAPPING",  # SID 0x10
-    "RESET_TYPE_MAPPING",  # SID 0x11
-    "REPORT_TYPE_MAPPING_2020", "REPORT_TYPE_MAPPING_2013",  # SID 0x19
-    "SECURITY_ACCESS_TYPE_MAPPING",  # SID 0x27
-    "CONTROL_TYPE_MAPPING",  # SID 0x28
-    "AUTHENTICATION_TASK_MAPPING",  # SID 0x29
-    "DEFINITION_TYPE_MAPPING",  # SID 0x2C
-    "ROUTINE_CONTROL_TYPE_MAPPING",  # SID 0x31
-    "ZERO_SUBFUNCTION_MAPPING",  # SID 0x3E
-    "TIMING_PARAMETER_ACCESS_TYPE_MAPPING_2013",  # SID 0x83
-    "DTC_SETTING_TYPE_MAPPING",  # SID 0x85
-    "EVENT_MAPPING_2020", "EVENT_MAPPING_2013", "STORAGE_STATE_MAPPING",  # SID 0x86
-    "LINK_CONTROL_TYPE_MAPPING",  # SID 0x87
+    "DIAGNOSTIC_SESSION_TYPE_MAPPING",
+    "RESET_TYPE_MAPPING",
+    "REPORT_TYPE_MAPPING_2020",
+    "REPORT_TYPE_MAPPING_2013",
+    "SECURITY_ACCESS_TYPE_MAPPING",
+    "CONTROL_TYPE_MAPPING",
+    "AUTHENTICATION_TASK_MAPPING",
+    "DEFINITION_TYPE_MAPPING",
+    "ROUTINE_CONTROL_TYPE_MAPPING",
+    "ZERO_SUBFUNCTION_MAPPING",
+    "TIMING_PARAMETER_ACCESS_TYPE_MAPPING_2013",
+    "DTC_SETTING_TYPE_MAPPING",
+    "EVENT_MAPPING_2020",
+    "EVENT_MAPPING_2013",
+    "STORAGE_STATE_MAPPING",
+    "LINK_CONTROL_TYPE_MAPPING",
 ]
 
 
@@ -110,24 +113,28 @@ REPORT_TYPE_MAPPING_2013: dict[int, str] = {
 
 # SID 0x27
 
-SECURITY_ACCESS_TYPE_MAPPING = {
-    subfunction_value: subfunction_description
-    for i in range(1, 0x42, 2)
-    for subfunction_value, subfunction_description in {
-        i: f"Request Seed - level {i} (vehicle manufacturer specific)",
-        i + 1: f"Send Key - level {i} (vehicle manufacturer specific)",
-    }.items()
-} | {
-    subfunction_value: subfunction_description
-    for i in range(0x61, 0x7E, 2)
-    for subfunction_value, subfunction_description in {
-        i: f"Request Seed - level {i} (system supplier specific)",
-        i + 1: f"Send Key - level {i} (system supplier specific)"
-    }.items()
-} | {
-    0x5F: "Request Seed - level 95, end of life (ISO 26021-2)",
-    0x60: "Send Key - level 95, end of life (ISO 26021-2)",
-}
+SECURITY_ACCESS_TYPE_MAPPING = (
+    {
+        subfunction_value: subfunction_description
+        for i in range(1, 0x42, 2)
+        for subfunction_value, subfunction_description in {
+            i: f"Request Seed - level {i} (vehicle manufacturer specific)",
+            i + 1: f"Send Key - level {i} (vehicle manufacturer specific)",
+        }.items()
+    }
+    | {
+        subfunction_value: subfunction_description
+        for i in range(0x61, 0x7E, 2)
+        for subfunction_value, subfunction_description in {
+            i: f"Request Seed - level {i} (system supplier specific)",
+            i + 1: f"Send Key - level {i} (system supplier specific)",
+        }.items()
+    }
+    | {
+        0x5F: "Request Seed - level 95, end of life (ISO 26021-2)",
+        0x60: "Send Key - level 95, end of life (ISO 26021-2)",
+    }
+)
 """Values mapping for `securityAccessType` Data Record that is part of
 :ref:`SecurityAccess <knowledge-base-service-security-access>` SubFunction."""
 

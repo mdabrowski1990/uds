@@ -29,13 +29,14 @@ class CanAddressingInformation:
     }
     """Dictionary with CAN Addressing Formats mapped to Addressing Information handler classes."""
 
-    def __new__(cls,  # type: ignore
-                addressing_format: CanAddressingFormat,
-                rx_physical_params: AbstractCanAddressingInformation.InputAIParams,
-                tx_physical_params: AbstractCanAddressingInformation.InputAIParams,
-                rx_functional_params: AbstractCanAddressingInformation.InputAIParams,
-                tx_functional_params: AbstractCanAddressingInformation.InputAIParams
-                ) -> AbstractCanAddressingInformation:
+    def __new__(
+        cls,  # type: ignore
+        addressing_format: CanAddressingFormat,
+        rx_physical_params: AbstractCanAddressingInformation.InputAIParams,
+        tx_physical_params: AbstractCanAddressingInformation.InputAIParams,
+        rx_functional_params: AbstractCanAddressingInformation.InputAIParams,
+        tx_functional_params: AbstractCanAddressingInformation.InputAIParams,
+    ) -> AbstractCanAddressingInformation:
         """
         Create UDS Addressing Information for a CAN node.
 
@@ -50,10 +51,12 @@ class CanAddressingInformation:
             addressed communication.
         """
         ai_class = cls.ADDRESSING_INFORMATION_MAPPING[addressing_format]
-        return ai_class(rx_physical_params=rx_physical_params,
-                        tx_physical_params=tx_physical_params,
-                        rx_functional_params=rx_functional_params,
-                        tx_functional_params=tx_functional_params)
+        return ai_class(
+            rx_physical_params=rx_physical_params,
+            tx_physical_params=tx_physical_params,
+            rx_functional_params=rx_functional_params,
+            tx_functional_params=tx_functional_params,
+        )
 
     @classmethod
     def get_ai_data_bytes_number(cls, addressing_format: CanAddressingFormat) -> int:
@@ -82,19 +85,23 @@ class CanAddressingInformation:
         validate_raw_bytes(ai_data_bytes, allow_empty=True)
         expected_ai_bytes_number = cls.get_ai_data_bytes_number(addressing_format)
         if expected_ai_bytes_number != len(ai_data_bytes):
-            raise InconsistencyError("Number of Addressing Information data bytes does not match provided "
-                                     f"CAN Addressing Format. CAN Addressing Format: {addressing_format}. "
-                                     f"Provided AI Data Bytes number: {len(ai_data_bytes)}. "
-                                     f"Expected AI Data Bytes number: {expected_ai_bytes_number}.")
+            raise InconsistencyError(
+                "Number of Addressing Information data bytes does not match provided "
+                f"CAN Addressing Format. CAN Addressing Format: {addressing_format}. "
+                f"Provided AI Data Bytes number: {len(ai_data_bytes)}. "
+                f"Expected AI Data Bytes number: {expected_ai_bytes_number}."
+            )
 
     @classmethod
-    def validate_addressing_params(cls,
-                                   addressing_format: CanAddressingFormat,
-                                   addressing_type: AddressingType,
-                                   can_id: int | None = None,
-                                   target_address: int | None = None,
-                                   source_address: int | None = None,
-                                   address_extension: int | None = None) -> CANAddressingParams:
+    def validate_addressing_params(
+        cls,
+        addressing_format: CanAddressingFormat,
+        addressing_type: AddressingType,
+        can_id: int | None = None,
+        target_address: int | None = None,
+        source_address: int | None = None,
+        address_extension: int | None = None,
+    ) -> CANAddressingParams:
         """
         Validate Addressing Information parameters of a CAN packet.
 
@@ -114,13 +121,13 @@ class CanAddressingInformation:
             can_id=can_id,
             target_address=target_address,
             source_address=source_address,
-            address_extension=address_extension)
+            address_extension=address_extension,
+        )
 
     @classmethod
-    def is_compatible_can_id(cls,
-                             addressing_format: CanAddressingFormat,
-                             can_id: int,
-                             addressing_type: AddressingType | None = None) -> bool:
+    def is_compatible_can_id(
+        cls, addressing_format: CanAddressingFormat, can_id: int, addressing_type: AddressingType | None = None
+    ) -> bool:
         """
         Check whether provided CAN ID is consistent the provided CAN Addressing Format.
 
@@ -133,12 +140,13 @@ class CanAddressingInformation:
         """
         CanAddressingFormat.validate_member(addressing_format)
         return cls.ADDRESSING_INFORMATION_MAPPING[addressing_format].is_compatible_can_id(
-            can_id=can_id, addressing_type=addressing_type)
+            can_id=can_id, addressing_type=addressing_type
+        )
 
     @classmethod
-    def decode_can_id_ai_params(cls,
-                                addressing_format: CanAddressingFormat,
-                                can_id: int) -> AbstractCanAddressingInformation.CanIdAIParams:
+    def decode_can_id_ai_params(
+        cls, addressing_format: CanAddressingFormat, can_id: int
+    ) -> AbstractCanAddressingInformation.CanIdAIParams:
         """
         Decode Addressing Information parameters from CAN Identifier.
 
@@ -151,10 +159,9 @@ class CanAddressingInformation:
         return cls.ADDRESSING_INFORMATION_MAPPING[addressing_format].decode_can_id_ai_params(can_id)
 
     @classmethod
-    def decode_data_bytes_ai_params(cls,
-                                    addressing_format: CanAddressingFormat,
-                                    ai_data_bytes: RawBytesAlias
-                                    ) -> AbstractCanAddressingInformation.DataBytesAIParamsAlias:
+    def decode_data_bytes_ai_params(
+        cls, addressing_format: CanAddressingFormat, ai_data_bytes: RawBytesAlias
+    ) -> AbstractCanAddressingInformation.DataBytesAIParamsAlias:
         """
         Decode Addressing Information parameters from CAN data bytes.
 
@@ -167,10 +174,9 @@ class CanAddressingInformation:
         return cls.ADDRESSING_INFORMATION_MAPPING[addressing_format].decode_data_bytes_ai_params(ai_data_bytes)
 
     @classmethod
-    def decode_frame_ai_params(cls,
-                               addressing_format: CanAddressingFormat,
-                               can_id: int,
-                               raw_frame_data: RawBytesAlias) -> AbstractCanAddressingInformation.DecodedAIParamsAlias:
+    def decode_frame_ai_params(
+        cls, addressing_format: CanAddressingFormat, can_id: int, raw_frame_data: RawBytesAlias
+    ) -> AbstractCanAddressingInformation.DecodedAIParamsAlias:
         """
         Decode Addressing Information parameters from a CAN Frame.
 
@@ -182,15 +188,18 @@ class CanAddressingInformation:
         """
         CanAddressingFormat.validate_member(addressing_format)
         return cls.ADDRESSING_INFORMATION_MAPPING[addressing_format].decode_frame_ai_params(
-            can_id=can_id, raw_frame_data=raw_frame_data)
+            can_id=can_id, raw_frame_data=raw_frame_data
+        )
 
     @classmethod
-    def encode_can_id(cls,
-                      addressing_format: CanAddressingFormat,
-                      addressing_type: AddressingType,
-                      target_address: int,
-                      source_address: int,
-                      priority: int = CanIdHandler.DEFAULT_PRIORITY_VALUE) -> int:
+    def encode_can_id(
+        cls,
+        addressing_format: CanAddressingFormat,
+        addressing_type: AddressingType,
+        target_address: int,
+        source_address: int,
+        priority: int = CanIdHandler.DEFAULT_PRIORITY_VALUE,
+    ) -> int:
         """
         Generate CAN ID value for Normal Fixed CAN Addressing format.
 
@@ -206,23 +215,31 @@ class CanAddressingInformation:
             the provided values.
         """
         if addressing_format == CanAddressingFormat.NORMAL_FIXED_ADDRESSING:
-            return NormalFixedCanAddressingInformation.encode_can_id(addressing_type=addressing_type,
-                                                                     target_address=target_address,
-                                                                     source_address=source_address,
-                                                                     priority=priority)
+            return NormalFixedCanAddressingInformation.encode_can_id(
+                addressing_type=addressing_type,
+                target_address=target_address,
+                source_address=source_address,
+                priority=priority,
+            )
         if addressing_format == CanAddressingFormat.MIXED_29BIT_ADDRESSING:
-            return Mixed29BitCanAddressingInformation.encode_can_id(addressing_type=addressing_type,
-                                                                    target_address=target_address,
-                                                                    source_address=source_address,
-                                                                    priority=priority)
-        raise ValueError("Provided CAN Addressing Format does not offer utility of CAN ID encoding. "
-                         f"Actual value: {addressing_format}")
+            return Mixed29BitCanAddressingInformation.encode_can_id(
+                addressing_type=addressing_type,
+                target_address=target_address,
+                source_address=source_address,
+                priority=priority,
+            )
+        raise ValueError(
+            "Provided CAN Addressing Format does not offer utility of CAN ID encoding. "
+            f"Actual value: {addressing_format}"
+        )
 
     @classmethod
-    def encode_ai_data_bytes(cls,
-                             addressing_format: CanAddressingFormat,
-                             target_address: int | None = None,
-                             address_extension: int | None = None) -> bytearray:
+    def encode_ai_data_bytes(
+        cls,
+        addressing_format: CanAddressingFormat,
+        target_address: int | None = None,
+        address_extension: int | None = None,
+    ) -> bytearray:
         """
         Generate data bytes that carry Addressing Information.
 
@@ -234,4 +251,5 @@ class CanAddressingInformation:
         """
         CanAddressingFormat.validate_member(addressing_format)
         return cls.ADDRESSING_INFORMATION_MAPPING[addressing_format].encode_ai_data_bytes(
-            target_address=target_address, address_extension=address_extension)
+            target_address=target_address, address_extension=address_extension
+        )

@@ -14,19 +14,19 @@ from ..data_record_definitions import (
 )
 from ..service import Service
 
-REQUEST_FILE_TRANSFER_2020 = Service(request_sid=RequestSID.RequestFileTransfer,
-                                     request_structure=(MODE_OF_OPERATION_2020,
-                                                        CONDITIONAL_REQUEST_FILE_TRANSFER_REQUEST_2020),
-                                     response_structure=(MODE_OF_OPERATION_2020,
-                                                         CONDITIONAL_REQUEST_FILE_TRANSFER_RESPONSE_2020))
+REQUEST_FILE_TRANSFER_2020 = Service(
+    request_sid=RequestSID.RequestFileTransfer,
+    request_structure=(MODE_OF_OPERATION_2020, CONDITIONAL_REQUEST_FILE_TRANSFER_REQUEST_2020),
+    response_structure=(MODE_OF_OPERATION_2020, CONDITIONAL_REQUEST_FILE_TRANSFER_RESPONSE_2020),
+)
 """Translator for :ref:`RequestFileTransfer <knowledge-base-service-request-file-transfer>` service
 compatible with ISO 14229-1:2020."""
 
-REQUEST_FILE_TRANSFER_2013 = Service(request_sid=RequestSID.RequestFileTransfer,
-                                     request_structure=(MODE_OF_OPERATION_2013,
-                                                        CONDITIONAL_REQUEST_FILE_TRANSFER_REQUEST_2013),
-                                     response_structure=(MODE_OF_OPERATION_2013,
-                                                         CONDITIONAL_REQUEST_FILE_TRANSFER_RESPONSE_2013))
+REQUEST_FILE_TRANSFER_2013 = Service(
+    request_sid=RequestSID.RequestFileTransfer,
+    request_structure=(MODE_OF_OPERATION_2013, CONDITIONAL_REQUEST_FILE_TRANSFER_REQUEST_2013),
+    response_structure=(MODE_OF_OPERATION_2013, CONDITIONAL_REQUEST_FILE_TRANSFER_RESPONSE_2013),
+)
 """Translator for :ref:`RequestFileTransfer <knowledge-base-service-request-file-transfer>` service
 compatible with ISO 14229-1:2013."""
 

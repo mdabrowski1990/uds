@@ -64,8 +64,10 @@ class Translator:
             if not isinstance(service, Service):
                 raise ValueError("At least one collection element is not instance of Service class.")
             if service.request_sid in services_mapping or service.response_sid in services_mapping:
-                raise InconsistencyError("Multiple translators were provided for Service with "
-                                         f"SID = {service.request_sid} or RSID = {service.response_sid}.")
+                raise InconsistencyError(
+                    "Multiple translators were provided for Service with "
+                    f"SID = {service.request_sid} or RSID = {service.response_sid}."
+                )
             services_mapping[service.request_sid] = service
             services_mapping[service.response_sid] = service
         self.__services = frozenset(value)
@@ -76,10 +78,12 @@ class Translator:
         """Get mapping from SID/RSID values to corresponding Service Translators."""
         return self.__services_mapping
 
-    def encode(self,
-               data_records_values: DataRecordsValuesAlias,
-               sid: RequestSID | None = None,
-               rsid: ResponseSID | None = None) -> bytearray:
+    def encode(
+        self,
+        data_records_values: DataRecordsValuesAlias,
+        sid: RequestSID | None = None,
+        rsid: ResponseSID | None = None,
+    ) -> bytearray:
         """
         Encode diagnostic message payload from data records values.
 
@@ -98,11 +102,13 @@ class Translator:
             return self.services_mapping[sid].encode_negative_response(nrc=data_records_values["NRC"])  # type: ignore
         if rsid in self.services_mapping and sid is None:
             return self.services_mapping[rsid].encode_positive_response(  # type: ignore
-                data_records_values=data_records_values)
+                data_records_values=data_records_values
+            )
         if sid in self.services_mapping and rsid is None:
             return self.services_mapping[sid].encode_request(data_records_values=data_records_values)  # type: ignore
-        raise ValueError("Either SID or RSID value is missing or incorrect. "
-                         f"Provided values: SID = {sid}. RSID = {rsid}.")
+        raise ValueError(
+            f"Either SID or RSID value is missing or incorrect. Provided values: SID = {sid}. RSID = {rsid}."
+        )
 
     def decode(self, payload: RawBytesAlias) -> DecodedMessageAlias:
         """
@@ -117,10 +123,12 @@ class Translator:
         validate_raw_bytes(payload, allow_empty=False)
         if payload[0] == ResponseSID.NegativeResponse:
             if len(payload) != NEGATIVE_RESPONSE_MESSAGE_LENGTH:
-                raise ValueError(f"Negative response message payload has unexpected length. "
-                                 f"Expected length: {NEGATIVE_RESPONSE_MESSAGE_LENGTH}. "
-                                 f"Actual length: {len(payload)}. "
-                                 f"Payload: {bytes_to_hex(payload)}.")
+                raise ValueError(
+                    f"Negative response message payload has unexpected length. "
+                    f"Expected length: {NEGATIVE_RESPONSE_MESSAGE_LENGTH}. "
+                    f"Actual length: {len(payload)}. "
+                    f"Payload: {bytes_to_hex(payload)}."
+                )
             sid = payload[1]
             if sid not in self.services_mapping:
                 raise ValueError("Database has no decoding defined for SID/RSID value of the provided message.")

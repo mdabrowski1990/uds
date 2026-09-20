@@ -34,12 +34,15 @@ class CanSegmentationError(SegmentationError):
 class CanSegmenter(AbstractSegmenter):
     """Segmenter class that provides utilities for segmentation and desegmentation specific for CAN bus."""
 
-    def __init__(self, *,
-                 addressing_information: AbstractCanAddressingInformation,
-                 dlc: int = CanDlcHandler.MIN_BASE_UDS_DLC,
-                 min_dlc: int | None = None,
-                 use_data_optimization: bool = False,
-                 filler_byte: int = DEFAULT_FILLER_BYTE) -> None:
+    def __init__(
+        self,
+        *,
+        addressing_information: AbstractCanAddressingInformation,
+        dlc: int = CanDlcHandler.MIN_BASE_UDS_DLC,
+        min_dlc: int | None = None,
+        use_data_optimization: bool = False,
+        filler_byte: int = DEFAULT_FILLER_BYTE,
+    ) -> None:
         """
         Configure CAN Segmenter.
 
@@ -102,12 +105,14 @@ class CanSegmenter(AbstractSegmenter):
         """
         CanDlcHandler.validate_dlc(value)
         if value < CanDlcHandler.MIN_BASE_UDS_DLC:
-            raise ValueError(f"Provided value is too small. Expected: DLC >= {CanDlcHandler.MIN_BASE_UDS_DLC}. "
-                             f"Actual value: {value}")
+            raise ValueError(
+                f"Provided value is too small. Expected: DLC >= {CanDlcHandler.MIN_BASE_UDS_DLC}. Actual value: {value}"
+            )
         self.__dlc: int = value
         if hasattr(self, "_CanSegmenter__min_dlc") and self.min_dlc is not None and self.min_dlc > value:
-            warn(message="Min DLC value had to be decreased, cause it was greater than base DLC.",
-                 category=ValueWarning)
+            warn(
+                message="Min DLC value had to be decreased, cause it was greater than base DLC.", category=ValueWarning
+            )
             self.min_dlc = value
 
     @property
@@ -133,8 +138,9 @@ class CanSegmenter(AbstractSegmenter):
         if value is not None:
             CanDlcHandler.validate_dlc(value)
             if value > self.dlc:
-                raise ValueError(f"Min DLC must be less or equal than base DLC. DLC = {self.dlc}. "
-                                 f"Actual value: {value}")
+                raise ValueError(
+                    f"Min DLC must be less or equal than base DLC. DLC = {self.dlc}. Actual value: {value}"
+                )
         self.__min_dlc: int | None = value
 
     @property
@@ -178,12 +184,15 @@ class CanSegmenter(AbstractSegmenter):
         """
         message_payload_size = len(message.payload)
         if message_payload_size > MAX_LONG_FF_DL_VALUE:
-            raise CanSegmentationError("Provided diagnostic message cannot be segmented to CAN Packet as it is too big "
-                                       "to transmit it over CAN bus. "
-                                       f"Maximal diagnostic message length: {MAX_LONG_FF_DL_VALUE}")
+            raise CanSegmentationError(
+                "Provided diagnostic message cannot be segmented to CAN Packet as it is too big "
+                "to transmit it over CAN bus. "
+                f"Maximal diagnostic message length: {MAX_LONG_FF_DL_VALUE}"
+            )
         try:
-            min_sf_dlc = get_single_frame_min_dlc(addressing_format=self.addressing_format,
-                                                  payload_length=message_payload_size)
+            min_sf_dlc = get_single_frame_min_dlc(
+                addressing_format=self.addressing_format, payload_length=message_payload_size
+            )
         except ValueError:
             min_sf_dlc = CanDlcHandler.MAX_DLC_VALUE + 1
         if min_sf_dlc <= self.dlc:
@@ -191,20 +200,26 @@ class CanSegmenter(AbstractSegmenter):
                 dlc = None if self.min_dlc is None else max(min_sf_dlc, self.min_dlc)
             else:
                 dlc = self.dlc
-            single_frame = CanPacket(packet_type=CanPacketType.SINGLE_FRAME,
-                                     payload=message.payload,
-                                     filler_byte=self.filler_byte,
-                                     dlc=dlc,
-                                     **self.addressing_information.tx_physical_params)
+            single_frame = CanPacket(
+                packet_type=CanPacketType.SINGLE_FRAME,
+                payload=message.payload,
+                filler_byte=self.filler_byte,
+                dlc=dlc,
+                **self.addressing_information.tx_physical_params,
+            )
             return (single_frame,)
-        ff_payload_size = get_first_frame_payload_size(addressing_format=self.addressing_format,
-                                                       dlc=self.dlc,
-                                                       long_ff_dl_format=message_payload_size > MAX_SHORT_FF_DL_VALUE)
-        first_frame = CanPacket(packet_type=CanPacketType.FIRST_FRAME,
-                                payload=message.payload[:ff_payload_size],
-                                dlc=self.dlc,
-                                data_length=message_payload_size,
-                                **self.addressing_information.tx_physical_params)
+        ff_payload_size = get_first_frame_payload_size(
+            addressing_format=self.addressing_format,
+            dlc=self.dlc,
+            long_ff_dl_format=message_payload_size > MAX_SHORT_FF_DL_VALUE,
+        )
+        first_frame = CanPacket(
+            packet_type=CanPacketType.FIRST_FRAME,
+            payload=message.payload[:ff_payload_size],
+            dlc=self.dlc,
+            data_length=message_payload_size,
+            **self.addressing_information.tx_physical_params,
+        )
         cf_payload_size = get_consecutive_frame_max_payload_size(addressing_format=self.addressing_format, dlc=self.dlc)
         total_cfs_number = (message_payload_size - ff_payload_size + cf_payload_size - 1) // cf_payload_size
         consecutive_frames = []
@@ -214,18 +229,27 @@ class CanSegmenter(AbstractSegmenter):
             payload_i_stop = payload_i_start + cf_payload_size
             last_cf = cf_index == total_cfs_number - 1
             if last_cf and self.use_data_optimization:
-                dlc = None if self.min_dlc is None else max(
-                    self.min_dlc,
-                    get_consecutive_frame_min_dlc(addressing_format=self.addressing_format,
-                                                  payload_length=len(message.payload[payload_i_start:])))
+                dlc = (
+                    None
+                    if self.min_dlc is None
+                    else max(
+                        self.min_dlc,
+                        get_consecutive_frame_min_dlc(
+                            addressing_format=self.addressing_format,
+                            payload_length=len(message.payload[payload_i_start:]),
+                        ),
+                    )
+                )
             else:
                 dlc = self.dlc
-            consecutive_frame = CanPacket(packet_type=CanPacketType.CONSECUTIVE_FRAME,
-                                          payload=message.payload[payload_i_start:payload_i_stop],
-                                          dlc=dlc,
-                                          sequence_number=sequence_number,
-                                          filler_byte=self.filler_byte,
-                                          **self.addressing_information.tx_physical_params)
+            consecutive_frame = CanPacket(
+                packet_type=CanPacketType.CONSECUTIVE_FRAME,
+                payload=message.payload[payload_i_start:payload_i_stop],
+                dlc=dlc,
+                sequence_number=sequence_number,
+                filler_byte=self.filler_byte,
+                **self.addressing_information.tx_physical_params,
+            )
             consecutive_frames.append(consecutive_frame)
         return first_frame, *consecutive_frames
 
@@ -241,22 +265,27 @@ class CanSegmenter(AbstractSegmenter):
         """
         message_payload_size = len(message.payload)
         try:
-            min_sf_dlc = get_single_frame_min_dlc(addressing_format=self.addressing_format,
-                                                  payload_length=message_payload_size)
+            min_sf_dlc = get_single_frame_min_dlc(
+                addressing_format=self.addressing_format, payload_length=message_payload_size
+            )
         except ValueError:
             min_sf_dlc = CanDlcHandler.MAX_DLC_VALUE + 1
         if min_sf_dlc > self.dlc:
-            raise CanSegmentationError("Provided diagnostic message cannot be segmented using functional addressing "
-                                       "as it will not fit into a Single Frame.")
+            raise CanSegmentationError(
+                "Provided diagnostic message cannot be segmented using functional addressing "
+                "as it will not fit into a Single Frame."
+            )
         if self.use_data_optimization:
             dlc = None if self.min_dlc is None else max(min_sf_dlc, self.min_dlc)
         else:
             dlc = self.dlc
-        single_frame = CanPacket(packet_type=CanPacketType.SINGLE_FRAME,
-                                 payload=message.payload,
-                                 filler_byte=self.filler_byte,
-                                 dlc=dlc,
-                                 **self.addressing_information.tx_functional_params)
+        single_frame = CanPacket(
+            packet_type=CanPacketType.SINGLE_FRAME,
+            payload=message.payload,
+            filler_byte=self.filler_byte,
+            dlc=dlc,
+            **self.addressing_information.tx_functional_params,
+        )
         return (single_frame,)
 
     def is_desegmented_message(self, packets: CanPacketsContainersSequenceAlias) -> bool:
@@ -294,13 +323,13 @@ class CanSegmenter(AbstractSegmenter):
                 else:
                     return False
             return payload_bytes_found >= total_payload_size
-        raise NotImplementedError("There is missing implementation for the CAN Packet of provided type: "
-                                  f"{packets[0].packet_type}.")
+        raise NotImplementedError(
+            f"There is missing implementation for the CAN Packet of provided type: {packets[0].packet_type}."
+        )
 
-    def get_flow_control_packet(self,
-                                flow_status: CanFlowStatus,
-                                block_size: int | None = None,
-                                st_min: int | None = None) -> CanPacket:
+    def get_flow_control_packet(
+        self, flow_status: CanFlowStatus, block_size: int | None = None, st_min: int | None = None
+    ) -> CanPacket:
         """
         Create Flow Control CAN packet.
 
@@ -312,13 +341,15 @@ class CanSegmenter(AbstractSegmenter):
 
         :return: Flow Control CAN packet with provided parameters.
         """
-        return CanPacket(packet_type=CanPacketType.FLOW_CONTROL,
-                         flow_status=flow_status,
-                         block_size=block_size,
-                         st_min=st_min,
-                         filler_byte=self.filler_byte,
-                         dlc=None if self.use_data_optimization else self.dlc,
-                         **self.addressing_information.tx_physical_params)
+        return CanPacket(
+            packet_type=CanPacketType.FLOW_CONTROL,
+            flow_status=flow_status,
+            block_size=block_size,
+            st_min=st_min,
+            filler_byte=self.filler_byte,
+            dlc=None if self.use_data_optimization else self.dlc,
+            **self.addressing_information.tx_physical_params,
+        )
 
     def desegmentation(self, packets: CanPacketsContainersSequenceAlias) -> UdsMessage | UdsMessageRecord:
         """
@@ -338,15 +369,18 @@ class CanSegmenter(AbstractSegmenter):
             return UdsMessageRecord(packets)  # type: ignore
         if isinstance(packets[0], CanPacket):
             if packets[0].packet_type == CanPacketType.SINGLE_FRAME and len(packets) == 1:
-                return UdsMessage(payload=packets[0].payload,  # type: ignore
-                                  addressing_type=packets[0].addressing_type)
+                return UdsMessage(
+                    payload=packets[0].payload,  # type: ignore
+                    addressing_type=packets[0].addressing_type,
+                )
             if packets[0].packet_type == CanPacketType.FIRST_FRAME:
                 payload_bytes = bytearray()
                 for packet in packets:
                     if packet.payload is not None:
                         payload_bytes += bytearray(packet.payload)
-                return UdsMessage(payload=payload_bytes[:packets[0].data_length],
-                                  addressing_type=packets[0].addressing_type)
+                return UdsMessage(
+                    payload=payload_bytes[: packets[0].data_length], addressing_type=packets[0].addressing_type
+                )
             raise CanSegmentationError("Unexpectedly, something went wrong...")
         raise NotImplementedError("Missing implementation for the provided CAN Packet type.")
 

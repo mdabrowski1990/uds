@@ -20,11 +20,13 @@ class AbstractAddressingInformation(ABC):
     ADDRESSING_TYPE_NAME: str = "addressing_type"
     """Name of :ref:`Addressing Type <knowledge-base-addressing>` parameter in Addressing Information."""
 
-    def __init__(self,
-                 rx_physical_params: Mapping[str, Any],
-                 tx_physical_params: Mapping[str, Any],
-                 rx_functional_params: Mapping[str, Any],
-                 tx_functional_params: Mapping[str, Any]) -> None:
+    def __init__(
+        self,
+        rx_physical_params: Mapping[str, Any],
+        tx_physical_params: Mapping[str, Any],
+        rx_functional_params: Mapping[str, Any],
+        tx_functional_params: Mapping[str, Any],
+    ) -> None:
         """
         Configure Addresses of UDS Entity (either a server or a client).
 
@@ -49,10 +51,12 @@ class AbstractAddressingInformation(ABC):
         """
         if not isinstance(other, AbstractAddressingInformation):
             return False
-        return (self.rx_physical_params == other.rx_physical_params
-                and self.tx_physical_params == other.tx_physical_params
-                and self.rx_functional_params == other.rx_functional_params
-                and self.tx_functional_params == other.tx_functional_params)
+        return (
+            self.rx_physical_params == other.rx_physical_params
+            and self.tx_physical_params == other.tx_physical_params
+            and self.rx_functional_params == other.rx_functional_params
+            and self.tx_functional_params == other.tx_functional_params
+        )
 
     @property
     def rx_physical_params(self) -> Mapping[str, Any]:
@@ -72,8 +76,9 @@ class AbstractAddressingInformation(ABC):
             raise ReassignmentError("Value of 'rx_physical_params' attribute cannot be changed once set.")
         params = dict(addressing_params)
         params[self.ADDRESSING_TYPE_NAME] = AddressingType.PHYSICAL
-        self.__rx_physical_params: MappingProxyType[str, Any] \
-            = MappingProxyType(self.validate_addressing_params(**params))
+        self.__rx_physical_params: MappingProxyType[str, Any] = MappingProxyType(
+            self.validate_addressing_params(**params)
+        )
 
     @property
     def tx_physical_params(self) -> Mapping[str, Any]:
@@ -93,8 +98,9 @@ class AbstractAddressingInformation(ABC):
             raise ReassignmentError("Value of 'tx_physical_params' attribute cannot be changed once set.")
         params = dict(addressing_params)
         params[self.ADDRESSING_TYPE_NAME] = AddressingType.PHYSICAL
-        self.__tx_physical_params: MappingProxyType[str, Any] \
-            = MappingProxyType(self.validate_addressing_params(**params))
+        self.__tx_physical_params: MappingProxyType[str, Any] = MappingProxyType(
+            self.validate_addressing_params(**params)
+        )
 
     @property
     def rx_functional_params(self) -> Mapping[str, Any]:
@@ -114,8 +120,9 @@ class AbstractAddressingInformation(ABC):
             raise ReassignmentError("Value of 'rx_functional_params' attribute cannot be changed once set.")
         params = dict(addressing_params)
         params[self.ADDRESSING_TYPE_NAME] = AddressingType.FUNCTIONAL
-        self.__rx_functional_params: MappingProxyType[str, Any] \
-            = MappingProxyType(self.validate_addressing_params(**params))
+        self.__rx_functional_params: MappingProxyType[str, Any] = MappingProxyType(
+            self.validate_addressing_params(**params)
+        )
 
     @property
     def tx_functional_params(self) -> Mapping[str, Any]:
@@ -135,8 +142,9 @@ class AbstractAddressingInformation(ABC):
             raise ReassignmentError("Value of 'tx_functional_params' attribute cannot be changed once set.")
         params = dict(addressing_params)
         params[self.ADDRESSING_TYPE_NAME] = AddressingType.FUNCTIONAL
-        self.__tx_functional_params: MappingProxyType[str, Any] \
-            = MappingProxyType(self.validate_addressing_params(**params))
+        self.__tx_functional_params: MappingProxyType[str, Any] = MappingProxyType(
+            self.validate_addressing_params(**params)
+        )
 
     @abstractmethod
     def _validate_addressing_information(self) -> None:
@@ -162,7 +170,9 @@ class AbstractAddressingInformation(ABC):
 
         :return: UDS Addressing Information of a UDS entity that this one communicates with.
         """
-        return self.__class__(rx_physical_params=self.tx_physical_params,
-                              tx_physical_params=self.rx_physical_params,
-                              rx_functional_params=self.tx_functional_params,
-                              tx_functional_params=self.rx_functional_params)
+        return self.__class__(
+            rx_physical_params=self.tx_physical_params,
+            tx_physical_params=self.rx_physical_params,
+            rx_functional_params=self.tx_functional_params,
+            tx_functional_params=self.rx_functional_params,
+        )

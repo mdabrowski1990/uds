@@ -12,10 +12,9 @@ from ..data_record_definitions import (
 )
 from ..service import Service
 
-ROUTINE_CONTROL = Service(request_sid=RequestSID.RoutineControl,
-                          request_structure=(ROUTINE_CONTROL_SUBFUNCTION,
-                                             RID,
-                                             ROUTINE_CONTROL_OPTION),
-                          response_structure=(ROUTINE_CONTROL_SUBFUNCTION,
-                                              CONDITIONAL_ROUTINE_CONTROL_RESPONSE))
+ROUTINE_CONTROL = Service(
+    request_sid=RequestSID.RoutineControl,
+    request_structure=(ROUTINE_CONTROL_SUBFUNCTION, RID, ROUTINE_CONTROL_OPTION),
+    response_structure=(ROUTINE_CONTROL_SUBFUNCTION, CONDITIONAL_ROUTINE_CONTROL_RESPONSE),
+)
 """Default translator for :ref:`RoutineControl <knowledge-base-service-routine-control>` service."""

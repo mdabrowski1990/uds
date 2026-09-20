@@ -10,14 +10,10 @@ from typing import Any
 
 from .abstract_data_record import AbstractDataRecord
 
-AliasPhysicalValueEncodingFormula = (Callable[[int], int]
-                                     | Callable[[float], int]
-                                     | Callable[[int | float], int])
+AliasPhysicalValueEncodingFormula = Callable[[int], int] | Callable[[float], int] | Callable[[int | float], int]
 """Type alias for encoding formulas that convert physical values to raw values."""
 
-AliasPhysicalValueDecodingFormula = (Callable[[int], int]
-                                     | Callable[[int], float]
-                                     | Callable[[int], int | float])
+AliasPhysicalValueDecodingFormula = Callable[[int], int] | Callable[[int], float] | Callable[[int], int | float]
 """Type alias for decoding formulas that convert raw values to physical values."""
 
 
@@ -41,15 +37,17 @@ class LinearFormulaDataRecord(AbstractDataRecord):
      - Presenting sensor values
     """
 
-    def __init__(self,
-                 name: str,
-                 length: int,
-                 factor: float | int,
-                 offset: float | int,
-                 min_occurrences: int = 1,
-                 max_occurrences: int | None = 1,
-                 unit: str | None = None,
-                 enforce_reoccurring: bool = False) -> None:
+    def __init__(
+        self,
+        name: str,
+        length: int,
+        factor: float | int,
+        offset: float | int,
+        min_occurrences: int = 1,
+        max_occurrences: int | None = 1,
+        unit: str | None = None,
+        enforce_reoccurring: bool = False,
+    ) -> None:
         """
         Configure Linear Formula Data Record.
 
@@ -65,28 +63,32 @@ class LinearFormulaDataRecord(AbstractDataRecord):
         """
         self.factor = factor
         self.offset = offset
-        super().__init__(name=name,
-                         length=length,
-                         children=tuple(),
-                         unit=unit,
-                         min_occurrences=min_occurrences,
-                         max_occurrences=max_occurrences,
-                         enforce_reoccurring=enforce_reoccurring)
+        super().__init__(
+            name=name,
+            length=length,
+            children=tuple(),
+            unit=unit,
+            min_occurrences=min_occurrences,
+            max_occurrences=max_occurrences,
+            enforce_reoccurring=enforce_reoccurring,
+        )
 
     def __deepcopy__(self, memo: dict[int, Any]) -> LinearFormulaDataRecord:
         """Get deep copy of this Data Record."""
         cls = self.__class__
         self_copy = cls.__new__(cls)
         memo[id(self)] = self_copy
-        LinearFormulaDataRecord.__init__(self_copy,
-                                         name=self.name,
-                                         length=self.length,
-                                         factor=self.factor,
-                                         offset=self.offset,
-                                         min_occurrences=self.min_occurrences,
-                                         max_occurrences=self.max_occurrences,
-                                         unit=self.unit,
-                                         enforce_reoccurring=self.enforce_reoccurring)
+        LinearFormulaDataRecord.__init__(
+            self_copy,
+            name=self.name,
+            length=self.length,
+            factor=self.factor,
+            offset=self.offset,
+            min_occurrences=self.min_occurrences,
+            max_occurrences=self.max_occurrences,
+            unit=self.unit,
+            enforce_reoccurring=self.enforce_reoccurring,
+        )
         return self_copy
 
     @property
@@ -200,16 +202,18 @@ class CustomFormulaDataRecord(AbstractDataRecord):
         transformations.
     """
 
-    def __init__(self,
-                 name: str,
-                 length: int,
-                 encoding_formula: AliasPhysicalValueEncodingFormula,
-                 decoding_formula: AliasPhysicalValueDecodingFormula,
-                 children: Sequence[AbstractDataRecord] = tuple(),
-                 min_occurrences: int = 1,
-                 max_occurrences: int | None = 1,
-                 unit: str | None = None,
-                 enforce_reoccurring: bool = False) -> None:
+    def __init__(
+        self,
+        name: str,
+        length: int,
+        encoding_formula: AliasPhysicalValueEncodingFormula,
+        decoding_formula: AliasPhysicalValueDecodingFormula,
+        children: Sequence[AbstractDataRecord] = tuple(),
+        min_occurrences: int = 1,
+        max_occurrences: int | None = 1,
+        unit: str | None = None,
+        enforce_reoccurring: bool = False,
+    ) -> None:
         """
         Configure custom formula Data Record.
 
@@ -223,13 +227,15 @@ class CustomFormulaDataRecord(AbstractDataRecord):
         :param unit: Unit in which a physical value is represented.
         :param enforce_reoccurring: Decide whether to enforce this DataRecord to be treated as re-occurring.
         """
-        super().__init__(name=name,
-                         length=length,
-                         children=children,
-                         unit=unit,
-                         min_occurrences=min_occurrences,
-                         max_occurrences=max_occurrences,
-                         enforce_reoccurring=enforce_reoccurring)
+        super().__init__(
+            name=name,
+            length=length,
+            children=children,
+            unit=unit,
+            min_occurrences=min_occurrences,
+            max_occurrences=max_occurrences,
+            enforce_reoccurring=enforce_reoccurring,
+        )
         self.encoding_formula = encoding_formula
         self.decoding_formula = decoding_formula
 
@@ -238,16 +244,18 @@ class CustomFormulaDataRecord(AbstractDataRecord):
         cls = self.__class__
         self_copy = cls.__new__(cls)
         memo[id(self)] = self_copy
-        CustomFormulaDataRecord.__init__(self_copy,
-                                         name=self.name,
-                                         length=self.length,
-                                         encoding_formula=deepcopy(self.encoding_formula, memo=memo),
-                                         decoding_formula=deepcopy(self.decoding_formula, memo=memo),
-                                         children=deepcopy(self.children, memo=memo),
-                                         min_occurrences=self.min_occurrences,
-                                         max_occurrences=self.max_occurrences,
-                                         unit=self.unit,
-                                         enforce_reoccurring=self.enforce_reoccurring)
+        CustomFormulaDataRecord.__init__(
+            self_copy,
+            name=self.name,
+            length=self.length,
+            encoding_formula=deepcopy(self.encoding_formula, memo=memo),
+            decoding_formula=deepcopy(self.decoding_formula, memo=memo),
+            children=deepcopy(self.children, memo=memo),
+            min_occurrences=self.min_occurrences,
+            max_occurrences=self.max_occurrences,
+            unit=self.unit,
+            enforce_reoccurring=self.enforce_reoccurring,
+        )
         return self_copy
 
     @property

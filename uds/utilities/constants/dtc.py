@@ -1,8 +1,10 @@
 """:ref:`DTC <knowledge-base-dtc>` related constants."""
 
 __all__ = [
-    "MIN_DTC_VALUE", "MAX_DTC_VALUE",
-    "DTC_CHARACTERS_MAPPING", "BITS_TO_DTC_CHARACTER_MAPPING",
+    "MIN_DTC_VALUE",
+    "MAX_DTC_VALUE",
+    "DTC_CHARACTERS_MAPPING",
+    "BITS_TO_DTC_CHARACTER_MAPPING",
     "DTC_SNAPSHOT_RECORD_NUMBER_MAPPING",
     "DTC_EXTENDED_DATA_RECORD_NUMBER_MAPPING",
     "DTC_STORED_DATA_RECORD_NUMBER_MAPPING",
@@ -25,14 +27,10 @@ DTC_CHARACTERS_MAPPING: dict[str, int] = {
 }
 """Mapping of the first DTC character in :ref:`OBD format <knowledge-base-dtc-obd-format>` to bits."""
 
-BITS_TO_DTC_CHARACTER_MAPPING: dict[int, str] = {
-    value: key for key, value in DTC_CHARACTERS_MAPPING.items()
-}
+BITS_TO_DTC_CHARACTER_MAPPING: dict[int, str] = {value: key for key, value in DTC_CHARACTERS_MAPPING.items()}
 """Mapping of the first two DTC bits to :ref:`OBD format <knowledge-base-dtc-obd-format>` character."""
 
-DTC_SNAPSHOT_RECORD_NUMBER_MAPPING: dict[int, str] = {
-    0xFF: "all"
-}
+DTC_SNAPSHOT_RECORD_NUMBER_MAPPING: dict[int, str] = {0xFF: "all"}
 """Values mapping for `DTCSnapshotRecordNumber` Data Record."""
 
 DTC_EXTENDED_DATA_RECORD_NUMBER_MAPPING: dict[int, str] = {
@@ -59,7 +57,7 @@ DTC_FORMAT_IDENTIFIER_MAPPING: dict[int, str] = {
     0x01: "ISO 14229-1 DTC Format",
     0x02: "SAE J1939-73 DTC Format",
     0x03: "ISO 11992-4 DTC Format",
-    0x04: "SAE J2012-DA DTC Format 04"
+    0x04: "SAE J2012-DA DTC Format 04",
 }
 """Values mapping for `DTCFormatIdentifier` Data Record."""
 
@@ -67,6 +65,6 @@ DTC_FUNCTIONAL_GROUP_IDENTIFIER_MAPPING = {
     0x33: "Emissions-system group",
     0xD0: "Safety-system group",
     0xFE: "VOBD system",
-    0xFF: "all"
+    0xFF: "all",
 }
 """Values mapping for `FunctionalGroupIdentifier` Data Record."""

@@ -45,7 +45,7 @@ __credits__ = [
     "Przemysław Nieścior (https://www.linkedin.com/in/przemys%C5%82aw-nie%C5%9Bcior-33631021b/)",
     "Igor Jabłoński (https://www.linkedin.com/in/igor-jab%C5%82o%C5%84ski/)"
     # sponsors
-    "Merit Automotive (https://merit-automotive.com/)"
+    "Merit Automotive (https://merit-automotive.com/)",
 ]
 __email__ = "uds-package-development@googlegroups.com"
 __license__ = "MIT"

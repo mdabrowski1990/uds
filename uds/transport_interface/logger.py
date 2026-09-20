@@ -27,15 +27,17 @@ class TransportLogger:
     DEFAULT_LOG_FORMAT: str = "{record.direction.name} {record}"
     """Default format of log messages."""
 
-    def __init__(self,
-                 *,
-                 logger_name: str | None = None,
-                 message_logging_level: int | None = INFO,
-                 packet_logging_level: int | None = INFO,
-                 log_sending: bool = True,
-                 log_receiving: bool = True,
-                 message_log_format: str = DEFAULT_LOG_FORMAT,
-                 packet_log_format: str = DEFAULT_LOG_FORMAT) -> None:
+    def __init__(
+        self,
+        *,
+        logger_name: str | None = None,
+        message_logging_level: int | None = INFO,
+        packet_logging_level: int | None = INFO,
+        log_sending: bool = True,
+        log_receiving: bool = True,
+        message_log_format: str = DEFAULT_LOG_FORMAT,
+        packet_log_format: str = DEFAULT_LOG_FORMAT,
+    ) -> None:
         """
         Configure transport logging.
 
@@ -61,8 +63,10 @@ class TransportLogger:
             return self._decorate_instance(transport_interface)
         if isinstance(transport_interface, type) and issubclass(transport_interface, AbstractTransportInterface):
             return self._decorate_class(transport_interface)
-        raise TypeError("Provided value is not an instance neither subclass of AbstractTransportInterface. "
-                        f"Actual type: {type(transport_interface)}.")
+        raise TypeError(
+            "Provided value is not an instance neither subclass of AbstractTransportInterface. "
+            f"Actual type: {type(transport_interface)}."
+        )
 
     @property
     def logger(self) -> Logger:
@@ -176,8 +180,9 @@ class TransportLogger:
         if self.log_receiving:
             if self.message_logging_level is not None:
                 attributes_to_overwrite["receive_message"] = self._decorate_message_method(cls.receive_message)
-                attributes_to_overwrite["async_receive_message"] \
-                    = self._decorate_message_method(cls.async_receive_message)
+                attributes_to_overwrite["async_receive_message"] = self._decorate_message_method(
+                    cls.async_receive_message
+                )
             if self.packet_logging_level is not None:
                 attributes_to_overwrite["receive_packet"] = self._decorate_packet_method(cls.receive_packet)
                 attributes_to_overwrite["async_receive_packet"] = self._decorate_packet_method(cls.async_receive_packet)
@@ -190,76 +195,90 @@ class TransportLogger:
         decorated = copy(instance)
         if self.log_sending:
             if self.message_logging_level is not None:
-                setattr(decorated,
-                        "send_message",
-                        self._decorate_message_method(cls.send_message).__get__(decorated, cls))
-                setattr(decorated,
-                        "async_send_message",
-                        self._decorate_message_method(cls.async_send_message).__get__(decorated, cls))
+                setattr(
+                    decorated, "send_message", self._decorate_message_method(cls.send_message).__get__(decorated, cls)
+                )
+                setattr(
+                    decorated,
+                    "async_send_message",
+                    self._decorate_message_method(cls.async_send_message).__get__(decorated, cls),
+                )
             if self.packet_logging_level is not None:
-                setattr(decorated,
-                        "send_packet",
-                        self._decorate_packet_method(cls.send_packet).__get__(decorated, cls))
-                setattr(decorated,
-                        "async_send_packet",
-                        self._decorate_packet_method(cls.async_send_packet).__get__(decorated, cls))
+                setattr(decorated, "send_packet", self._decorate_packet_method(cls.send_packet).__get__(decorated, cls))
+                setattr(
+                    decorated,
+                    "async_send_packet",
+                    self._decorate_packet_method(cls.async_send_packet).__get__(decorated, cls),
+                )
         if self.log_receiving:
             if self.message_logging_level is not None:
-                setattr(decorated,
-                        "receive_message",
-                        self._decorate_message_method(cls.receive_message).__get__(decorated, cls))
-                setattr(decorated,
-                        "async_receive_message",
-                        self._decorate_message_method(cls.async_receive_message).__get__(decorated, cls))
+                setattr(
+                    decorated,
+                    "receive_message",
+                    self._decorate_message_method(cls.receive_message).__get__(decorated, cls),
+                )
+                setattr(
+                    decorated,
+                    "async_receive_message",
+                    self._decorate_message_method(cls.async_receive_message).__get__(decorated, cls),
+                )
             if self.packet_logging_level is not None:
-                setattr(decorated,
-                        "receive_packet",
-                        self._decorate_packet_method(cls.receive_packet).__get__(decorated, cls))
-                setattr(decorated,
-                        "async_receive_packet",
-                        self._decorate_packet_method(cls.async_receive_packet).__get__(decorated, cls))
+                setattr(
+                    decorated,
+                    "receive_packet",
+                    self._decorate_packet_method(cls.receive_packet).__get__(decorated, cls),
+                )
+                setattr(
+                    decorated,
+                    "async_receive_packet",
+                    self._decorate_packet_method(cls.async_receive_packet).__get__(decorated, cls),
+                )
         return decorated
 
     def _decorate_message_method(self, method: Callable) -> Callable:  # type: ignore
         """Decorate method that either transmits or receives UDS Message."""
         if iscoroutinefunction(method):
+
             @wraps(method)
             async def decorated_method(*args: Any, **kwargs: Any) -> UdsMessageRecord:
                 message_record: UdsMessageRecord = await method(*args, **kwargs)
                 self.log_message(message_record)
                 return message_record
         else:
+
             @wraps(method)
             def decorated_method(*args: Any, **kwargs: Any) -> UdsMessageRecord:
                 message_record: UdsMessageRecord = method(*args, **kwargs)
                 self.log_message(message_record)
                 return message_record
+
         return decorated_method
 
     def _decorate_packet_method(self, method: Callable) -> Callable:  # type: ignore
         """Decorate method that either transmits or receives Packet."""
         if iscoroutinefunction(method):
+
             @wraps(method)
             async def decorated_method(*args: Any, **kwargs: Any) -> AbstractPacketRecord:
                 packet_record: AbstractPacketRecord = await method(*args, **kwargs)
                 self.log_packet(packet_record)
                 return packet_record
         else:
+
             @wraps(method)
             def decorated_method(*args: Any, **kwargs: Any) -> AbstractPacketRecord:
                 packet_record: AbstractPacketRecord = method(*args, **kwargs)
                 self.log_packet(packet_record)
                 return packet_record
+
         return decorated_method
 
     def log_message(self, record: UdsMessageRecord) -> None:
         """Log a message after receiving/transmitting UDS Message."""
         if self.message_logging_level is not None:
-            self.logger.log(level=self.message_logging_level,
-                            msg=self.message_log_format.format(record=record))
+            self.logger.log(level=self.message_logging_level, msg=self.message_log_format.format(record=record))
 
     def log_packet(self, record: AbstractPacketRecord) -> None:
         """Log a message after receiving/transmitting Packet."""
         if self.packet_logging_level is not None:
-            self.logger.log(level=self.packet_logging_level,
-                            msg=self.packet_log_format.format(record=record))
+            self.logger.log(level=self.packet_logging_level, msg=self.packet_log_format.format(record=record))

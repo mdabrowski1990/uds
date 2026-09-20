@@ -45,15 +45,17 @@ class Client:
     tester_present_storage_size = 5
     """Tester Present records number to store."""
 
-    def __init__(self,
-                 transport_interface: AbstractTransportInterface,
-                 p2_client_timeout: TimeMillisecondsAlias = DEFAULT_P2_CLIENT_TIMEOUT,
-                 p2_ext_client_timeout: TimeMillisecondsAlias = DEFAULT_P2_EXT_CLIENT_TIMEOUT,
-                 p3_client_physical: TimeMillisecondsAlias = DEFAULT_P3_CLIENT,
-                 p3_client_functional: TimeMillisecondsAlias = DEFAULT_P3_CLIENT,
-                 p6_client_timeout: TimeMillisecondsAlias = DEFAULT_P6_CLIENT_TIMEOUT,
-                 p6_ext_client_timeout: TimeMillisecondsAlias = DEFAULT_P6_EXT_CLIENT_TIMEOUT,
-                 s3_client: TimeMillisecondsAlias = DEFAULT_S3_CLIENT) -> None:
+    def __init__(
+        self,
+        transport_interface: AbstractTransportInterface,
+        p2_client_timeout: TimeMillisecondsAlias = DEFAULT_P2_CLIENT_TIMEOUT,
+        p2_ext_client_timeout: TimeMillisecondsAlias = DEFAULT_P2_EXT_CLIENT_TIMEOUT,
+        p3_client_physical: TimeMillisecondsAlias = DEFAULT_P3_CLIENT,
+        p3_client_functional: TimeMillisecondsAlias = DEFAULT_P3_CLIENT,
+        p6_client_timeout: TimeMillisecondsAlias = DEFAULT_P6_CLIENT_TIMEOUT,
+        p6_ext_client_timeout: TimeMillisecondsAlias = DEFAULT_P6_EXT_CLIENT_TIMEOUT,
+        s3_client: TimeMillisecondsAlias = DEFAULT_S3_CLIENT,
+    ) -> None:
         """
         Configure Client for UDS communication.
 
@@ -138,8 +140,9 @@ class Client:
         :raise ReassignmentError: An attempt to change the value after object creation.
         """
         if not isinstance(value, AbstractTransportInterface):
-            raise TypeError("Provided value is not an instance of AbstractTransportInterface class. "
-                            f"Actual type: {type(value)}.")
+            raise TypeError(
+                f"Provided value is not an instance of AbstractTransportInterface class. Actual type: {type(value)}."
+            )
         if hasattr(self, "_Client__transport_interface"):
             raise ReassignmentError("Value of 'transport_interface' attribute cannot be changed once set.")
         self.__transport_interface = value
@@ -159,16 +162,22 @@ class Client:
         validate_time(value, accept_zero=False)
         self.__p2_client_timeout = value
         if self.__p2_client_timeout > self.p3_client_physical:
-            warn(message="P3Client_Phys had to be updated as its values become less than P2Client timeout.",
-                 category=UserWarning)
+            warn(
+                message="P3Client_Phys had to be updated as its values become less than P2Client timeout.",
+                category=UserWarning,
+            )
             self.p3_client_physical = value
         if self.__p2_client_timeout > self.p3_client_functional:
-            warn(message="P3Client_Func had to be updated as its values become less than P2Client timeout.",
-                 category=UserWarning)
+            warn(
+                message="P3Client_Func had to be updated as its values become less than P2Client timeout.",
+                category=UserWarning,
+            )
             self.p3_client_functional = value
         if self.__p2_client_timeout > self.p6_client_timeout:
-            warn(message="P6Client timeout had to be updated as its values become less than P2Client timeout.",
-                 category=UserWarning)
+            warn(
+                message="P6Client timeout had to be updated as its values become less than P2Client timeout.",
+                category=UserWarning,
+            )
             self.p6_client_timeout = value
 
     @property  # noqa: vulture
@@ -195,8 +204,10 @@ class Client:
         validate_time(value, accept_zero=False)
         self.__p2_ext_client_timeout = value
         if self.__p2_ext_client_timeout > self.p6_ext_client_timeout:
-            warn(message="P6*Client timeout had to be updated as its values become less than P2*Client timeout.",
-                 category=UserWarning)
+            warn(
+                message="P6*Client timeout had to be updated as its values become less than P2*Client timeout.",
+                category=UserWarning,
+            )
             self.p6_ext_client_timeout = value
 
     @property  # noqa: vulture
@@ -224,12 +235,14 @@ class Client:
         """
         validate_time(value, accept_zero=False)
         if value < self.p2_client_timeout:
-            raise InconsistencyError("P3Client timeout value must be greater or equal than "
-                                     f"P2Client timeout ({self.p2_client_timeout} ms).")
+            raise InconsistencyError(
+                f"P3Client timeout value must be greater or equal than P2Client timeout ({self.p2_client_timeout} ms)."
+            )
         self.__p3_client_physical = value
         if self.__p3_client_physical > self.s3_client:
-            warn(message="S3Client had to be updated as its values become less than P3Client_Phys.",
-                 category=UserWarning)
+            warn(
+                message="S3Client had to be updated as its values become less than P3Client_Phys.", category=UserWarning
+            )
             self.s3_client = value
 
     @property
@@ -248,12 +261,14 @@ class Client:
         """
         validate_time(value, accept_zero=False)
         if value < self.p2_client_timeout:
-            raise InconsistencyError("P3Client timeout value must be greater or equal than "
-                                     f"P2Client timeout ({self.p2_client_timeout} ms).")
+            raise InconsistencyError(
+                f"P3Client timeout value must be greater or equal than P2Client timeout ({self.p2_client_timeout} ms)."
+            )
         self.__p3_client_functional = value
         if self.__p3_client_functional > self.s3_client:
-            warn(message="S3Client had to be updated as its values become less than P3Client_Func.",
-                 category=UserWarning)
+            warn(
+                message="S3Client had to be updated as its values become less than P3Client_Func.", category=UserWarning
+            )
             self.s3_client = value
 
     @property
@@ -272,12 +287,15 @@ class Client:
         """
         validate_time(value, accept_zero=False)
         if value < self.p2_client_timeout:
-            raise InconsistencyError("P6Client timeout value must be greater or equal than "
-                                     f"P2Client timeout ({self.p2_client_timeout} ms).")
+            raise InconsistencyError(
+                f"P6Client timeout value must be greater or equal than P2Client timeout ({self.p2_client_timeout} ms)."
+            )
         self.__p6_client_timeout = value
         if self.__p6_client_timeout > self.p6_ext_client_timeout:
-            warn(message="P6*Client timeout had to be updated as its values become less than P6Client timeout.",
-                 category=UserWarning)
+            warn(
+                message="P6*Client timeout had to be updated as its values become less than P6Client timeout.",
+                category=UserWarning,
+            )
             self.p6_ext_client_timeout = value
 
     @property  # noqa: vulture
@@ -306,9 +324,11 @@ class Client:
         """
         validate_time(value, accept_zero=False)
         if value < self.p6_client_timeout or value < self.p2_ext_client_timeout:
-            raise InconsistencyError("P6*Client timeout value must be greater or equal than "
-                                     f"P2*Client timeout ({self.p2_ext_client_timeout} ms) and "
-                                     f"P6Client timeout ({self.p6_client_timeout} ms).")
+            raise InconsistencyError(
+                "P6*Client timeout value must be greater or equal than "
+                f"P2*Client timeout ({self.p2_ext_client_timeout} ms) and "
+                f"P6Client timeout ({self.p6_client_timeout} ms)."
+            )
         self.__p6_ext_client_timeout = value
 
     @property  # noqa: vulture
@@ -336,11 +356,13 @@ class Client:
         """
         validate_time(value, accept_zero=False)
         if value < self.p3_client_physical:
-            raise InconsistencyError("S3Client value must be greater or equal than "
-                                     f"P3Client_Phys ({self.p3_client_physical} ms).")
+            raise InconsistencyError(
+                f"S3Client value must be greater or equal than P3Client_Phys ({self.p3_client_physical} ms)."
+            )
         if value < self.p3_client_functional:
-            raise InconsistencyError("S3Client value must be greater or equal than "
-                                     f"P3Client_Func ({self.p3_client_functional} ms).")
+            raise InconsistencyError(
+                f"S3Client value must be greater or equal than P3Client_Func ({self.p3_client_functional} ms)."
+            )
         self.__s3_client = value
 
     @property  # noqa: vulture
@@ -396,12 +418,16 @@ class Client:
         :return: True if no message is currently transmitted or received and the last physically addressed request
             was either received or timed-out (P2, P3 or P6), False otherwise.
         """
-        return (self.__transmission_not_in_progress_event.is_set()
-                and self.__receiving_not_in_progress_event.is_set()
-                and (self.__last_physical_request is None
-                     or self.__last_physical_response is not None
-                     or perf_counter() > self.__last_physical_request.transmission_end_timestamp
-                     + self.p3_client_physical / 1000.))
+        return (
+            self.__transmission_not_in_progress_event.is_set()
+            and self.__receiving_not_in_progress_event.is_set()
+            and (
+                self.__last_physical_request is None
+                or self.__last_physical_response is not None
+                or perf_counter()
+                > self.__last_physical_request.transmission_end_timestamp + self.p3_client_physical / 1000.0
+            )
+        )
 
     @property
     def is_ready_for_functional_transmission(self) -> bool:
@@ -411,10 +437,11 @@ class Client:
         :return: True if no message is currently transmitted and
             P3Client_Func timeout was exceeded for the last functionally addressed request.
         """
-        return (self.__transmission_not_in_progress_event.is_set()
-                and (self.__last_functional_request is None
-                     or perf_counter() > self.__last_functional_request.transmission_end_timestamp
-                     + self.p3_client_functional / 1000.))
+        return self.__transmission_not_in_progress_event.is_set() and (
+            self.__last_functional_request is None
+            or perf_counter()
+            > self.__last_functional_request.transmission_end_timestamp + self.p3_client_functional / 1000.0
+        )
 
     def __update_p2_client_measured(self, value: TimeMillisecondsAlias) -> None:
         """
@@ -424,8 +451,7 @@ class Client:
         """
         validate_time(value, accept_zero=True)
         if value > self.p2_client_timeout:
-            warn("Measured value of P2Client was greater than P2Client timeout.",
-                 category=ValueWarning)
+            warn("Measured value of P2Client was greater than P2Client timeout.", category=ValueWarning)
         self.__p2_client_measured = value
 
     def __update_p2_ext_client_measured(self, *values: TimeMillisecondsAlias) -> None:
@@ -441,8 +467,7 @@ class Client:
         for value in values:
             validate_time(value, accept_zero=True)
             if value > self.p2_ext_client_timeout:
-                warn("Measured value of P2*Client was greater than P2*Client timeout.",
-                     category=ValueWarning)
+                warn("Measured value of P2*Client was greater than P2*Client timeout.", category=ValueWarning)
         self.__p2_ext_client_measured = tuple(values)
 
     def __update_p6_client_measured(self, value: TimeMillisecondsAlias) -> None:
@@ -453,8 +478,7 @@ class Client:
         """
         validate_time(value, accept_zero=True)
         if value > self.p6_client_timeout:
-            warn("Measured value of P6Client was greater than P6Client timeout.",
-                 category=ValueWarning)
+            warn("Measured value of P6Client was greater than P6Client timeout.", category=ValueWarning)
         self.__p6_client_measured = value
 
     def __update_p6_ext_client_measured(self, value: TimeMillisecondsAlias) -> None:
@@ -465,8 +489,7 @@ class Client:
         """
         validate_time(value, accept_zero=True)
         if value > self.p6_ext_client_timeout:
-            warn("Measured value of P6*Client was greater than P6*Client timeout.",
-                 category=ValueWarning)
+            warn("Measured value of P6*Client was greater than P6*Client timeout.", category=ValueWarning)
         self.__p6_ext_client_measured = value
 
     def __receiving_task(self, cycle: TimeMillisecondsAlias) -> None:
@@ -476,14 +499,13 @@ class Client:
         :param cycle: Time (in milliseconds) used for this task cycle.
         """
         while self.is_background_receiving:
-            sleep(cycle / 1000.)
+            sleep(cycle / 1000.0)
             if not self.__send_and_receive_not_in_progress_event.is_set():
                 self.__break_in_background_receiving_event.set()
                 self.__send_and_receive_not_in_progress_event.wait()
                 self.__break_in_background_receiving_event.clear()
             try:
-                response_record = self._receive_response(start_timeout=cycle,
-                                                         end_timeout=self.p6_ext_client_timeout)
+                response_record = self._receive_response(start_timeout=cycle, end_timeout=self.p6_ext_client_timeout)
             except TimeoutError:
                 pass
             else:
@@ -499,14 +521,16 @@ class Client:
         next_call = perf_counter() + period_s
         sleep(period_s)
         while self.is_tester_present_sent:
-            if (self.__send_and_receive_not_in_progress_event.is_set()
-                    or (self.last_sent_request is not None
-                        and self.last_sent_request.addressing_type != tester_present_request.addressing_type)):
+            if self.__send_and_receive_not_in_progress_event.is_set() or (
+                self.last_sent_request is not None
+                and self.last_sent_request.addressing_type != tester_present_request.addressing_type
+            ):
                 # avoid collision of message with the same addressing type
                 tp_record = self._send_request(tester_present_request)
                 self.__last_tester_present_requests.insert(0, tp_record)
-                self.__last_tester_present_requests \
-                    = self.__last_tester_present_requests[:self.tester_present_storage_size]
+                self.__last_tester_present_requests = self.__last_tester_present_requests[
+                    : self.tester_present_storage_size
+                ]
             next_call += period_s
             remaining_wait_s = next_call - perf_counter()
             if remaining_wait_s > 0:
@@ -520,65 +544,82 @@ class Client:
         """
         if self.__last_physical_request is not None and self.__last_physical_response is None:
             sid = RequestSID(self.__last_physical_request.payload[0])
-            if (self.is_response_to_request(response_message=response_record,
-                                            request_message=self.__last_physical_request)
-                    and not self.is_response_pending_message(response_message=response_record,
-                                                             request_sid=sid)):
+            if self.is_response_to_request(
+                response_message=response_record, request_message=self.__last_physical_request
+            ) and not self.is_response_pending_message(response_message=response_record, request_sid=sid):
                 self.__last_physical_response = response_record
         if self.__last_functional_request is not None and self.__last_functional_response is None:
             sid = RequestSID(self.__last_functional_request.payload[0])
-            if (self.is_response_to_request(response_message=response_record,
-                                            request_message=self.__last_functional_request)
-                    and not self.is_response_pending_message(response_message=response_record,
-                                                             request_sid=sid)):
+            if self.is_response_to_request(
+                response_message=response_record, request_message=self.__last_functional_request
+            ) and not self.is_response_pending_message(response_message=response_record, request_sid=sid):
                 self.__last_functional_response = response_record
 
-    def _update_measured_client_values(self,
-                                       request_record: UdsMessageRecord,
-                                       response_records: Sequence[UdsMessageRecord]) -> None:
+    def _update_measured_client_values(
+        self, request_record: UdsMessageRecord, response_records: Sequence[UdsMessageRecord]
+    ) -> None:
         """
         Update measured timing parameters on Client side (P2Client, P2*Client, P6Client and P6*Client).
 
         :param request_record: Record of the last transmitted request message.
         :param response_records: Records of received responses to provided message.
         """
-        if (response_records[0].transmission_start_native_timestamp is not None
-                and request_record.transmission_end_native_timestamp is not None):
-            p2_measured = (response_records[0].transmission_start_native_timestamp
-                           - request_record.transmission_end_native_timestamp)
+        if (
+            response_records[0].transmission_start_native_timestamp is not None
+            and request_record.transmission_end_native_timestamp is not None
+        ):
+            p2_measured = (
+                response_records[0].transmission_start_native_timestamp
+                - request_record.transmission_end_native_timestamp
+            )
         else:
             p2_measured = response_records[0].transmission_start_timestamp - request_record.transmission_end_timestamp
-        self.__update_p2_client_measured(round(p2_measured * 1000., 3))
+        self.__update_p2_client_measured(round(p2_measured * 1000.0, 3))
         if len(response_records) > 1:
             p2_ext_measured_list = []
             for i, response_record in enumerate(response_records[1:]):
                 previous_response = response_records[i]
-                if (response_record.transmission_end_native_timestamp is not None
-                        and previous_response.transmission_end_native_timestamp is not None):
-                    _p2_ext_measured = (response_record.transmission_end_native_timestamp
-                                        - previous_response.transmission_end_native_timestamp)
+                if (
+                    response_record.transmission_end_native_timestamp is not None
+                    and previous_response.transmission_end_native_timestamp is not None
+                ):
+                    _p2_ext_measured = (
+                        response_record.transmission_end_native_timestamp
+                        - previous_response.transmission_end_native_timestamp
+                    )
                 else:
-                    _p2_ext_measured = (response_record.transmission_end_timestamp
-                                        - previous_response.transmission_end_timestamp)
-                p2_ext_measured_list.append(round(_p2_ext_measured * 1000., 3))
-            if (response_records[-1].transmission_end_native_timestamp is not None
-                    and request_record.transmission_end_native_timestamp is not None):
-                p6_ext_measured = (response_records[-1].transmission_end_native_timestamp
-                                   - request_record.transmission_end_native_timestamp)
+                    _p2_ext_measured = (
+                        response_record.transmission_end_timestamp - previous_response.transmission_end_timestamp
+                    )
+                p2_ext_measured_list.append(round(_p2_ext_measured * 1000.0, 3))
+            if (
+                response_records[-1].transmission_end_native_timestamp is not None
+                and request_record.transmission_end_native_timestamp is not None
+            ):
+                p6_ext_measured = (
+                    response_records[-1].transmission_end_native_timestamp
+                    - request_record.transmission_end_native_timestamp
+                )
             else:
-                p6_ext_measured = (response_records[-1].transmission_end_timestamp
-                                   - request_record.transmission_end_timestamp)
+                p6_ext_measured = (
+                    response_records[-1].transmission_end_timestamp - request_record.transmission_end_timestamp
+                )
             self.__update_p2_ext_client_measured(*p2_ext_measured_list)
-            self.__update_p6_ext_client_measured(round(p6_ext_measured * 1000., 3))
+            self.__update_p6_ext_client_measured(round(p6_ext_measured * 1000.0, 3))
         else:
-            if (response_records[-1].transmission_end_native_timestamp is not None
-                    and request_record.transmission_end_native_timestamp is not None):
-                p6_measured = (response_records[-1].transmission_end_native_timestamp
-                               - request_record.transmission_end_native_timestamp)
+            if (
+                response_records[-1].transmission_end_native_timestamp is not None
+                and request_record.transmission_end_native_timestamp is not None
+            ):
+                p6_measured = (
+                    response_records[-1].transmission_end_native_timestamp
+                    - request_record.transmission_end_native_timestamp
+                )
             else:
-                p6_measured = (response_records[-1].transmission_end_timestamp
-                               - request_record.transmission_end_timestamp)
-            self.__update_p6_client_measured(round(p6_measured * 1000., 3))
+                p6_measured = (
+                    response_records[-1].transmission_end_timestamp - request_record.transmission_end_timestamp
+                )
+            self.__update_p6_client_measured(round(p6_measured * 1000.0, 3))
 
     def _send_request(self, request: UdsMessage) -> UdsMessageRecord:
         """
@@ -593,8 +634,10 @@ class Client:
         elif request.addressing_type == AddressingType.FUNCTIONAL:
             addressing_lock = self.__functional_transmission_lock
         else:
-            raise NotImplementedError("Request message with unexpected `addressing_type` attribute value was provided: "
-                                      f"{request.addressing_type!r}")
+            raise NotImplementedError(
+                "Request message with unexpected `addressing_type` attribute value was provided: "
+                f"{request.addressing_type!r}"
+            )
         with addressing_lock:  # avoid queueing two request of the same addressing straight after each other
             self.wait_till_ready_for_transmission(request)
             with self.__transmission_lock:  # avoid two requests being transmitted at the same time
@@ -613,9 +656,9 @@ class Client:
             pass  # pragma: no cover
         return request_record
 
-    def _receive_response(self,
-                          start_timeout: TimeMillisecondsAlias,
-                          end_timeout: TimeMillisecondsAlias) -> UdsMessageRecord:
+    def _receive_response(
+        self, start_timeout: TimeMillisecondsAlias, end_timeout: TimeMillisecondsAlias
+    ) -> UdsMessageRecord:
         """
         Receive UDS response message to previously sent request.
 
@@ -631,7 +674,8 @@ class Client:
             try:
                 response_record = self.transport_interface.receive_message(
                     start_timeout=min(remaining_start_timeout_ms, remaining_end_timeout_ms),
-                    end_timeout=remaining_end_timeout_ms)
+                    end_timeout=remaining_end_timeout_ms,
+                )
             finally:
                 self.__receiving_not_in_progress_event.set()
             self._update_last_response(response_record)
@@ -649,41 +693,44 @@ class Client:
             None if legitimately (either Functionally addressed request or with SPRMIB set) no response was received.
         """
         sid = RequestSID(request_record.payload[0])
-        timestamp_start_timeout = request_record.transmission_end_timestamp + self.p2_client_timeout / 1000.
-        timestamp_end_timeout = request_record.transmission_end_timestamp + self.p6_client_timeout / 1000.
+        timestamp_start_timeout = request_record.transmission_end_timestamp + self.p2_client_timeout / 1000.0
+        timestamp_end_timeout = request_record.transmission_end_timestamp + self.p6_client_timeout / 1000.0
         timestamp_now = perf_counter()
         while timestamp_now < timestamp_start_timeout:
-            start_timeout_ms = (timestamp_start_timeout - timestamp_now) * 1000.
-            end_timeout_ms = (timestamp_end_timeout - timestamp_now) * 1000.
+            start_timeout_ms = (timestamp_start_timeout - timestamp_now) * 1000.0
+            end_timeout_ms = (timestamp_end_timeout - timestamp_now) * 1000.0
             try:
-                response_record = self._receive_response(start_timeout=start_timeout_ms,
-                                                         end_timeout=end_timeout_ms)
+                response_record = self._receive_response(start_timeout=start_timeout_ms, end_timeout=end_timeout_ms)
             except MessageTransmissionNotStartedError as exception:
                 if request_record.addressing_type == AddressingType.FUNCTIONAL:
                     return None
-                if (sid in SERVICES_WITH_SUBFUNCTION
-                        and len(request_record.payload) >= 2
-                        and request_record.payload[1] & SPRMIB_MASK):
+                if (
+                    sid in SERVICES_WITH_SUBFUNCTION
+                    and len(request_record.payload) >= 2
+                    and request_record.payload[1] & SPRMIB_MASK
+                ):
                     return None
                 raise TimeoutError("P2Client timeout exceeded.") from exception
             except TimeoutError as exception:
                 raise TimeoutError("P6Client timeout exceeded.") from exception
-            if self.is_response_to_request(response_message=response_record,
-                                           request_message=request_record):
-                p2_client = (response_record.transmission_start_timestamp
-                             - request_record.transmission_end_timestamp) * 1000.
+            if self.is_response_to_request(response_message=response_record, request_message=request_record):
+                p2_client = (
+                    response_record.transmission_start_timestamp - request_record.transmission_end_timestamp
+                ) * 1000.0
                 if p2_client < self.p2_client_timeout:
                     return response_record
-                warn(message="Response message was received just after P2Client timeout was exceeded. "
-                             "It was put into response_queue.",
-                     category=RuntimeWarning)
+                warn(
+                    message="Response message was received just after P2Client timeout was exceeded. "
+                    "It was put into response_queue.",
+                    category=RuntimeWarning,
+                )
             self.__response_queue.put_nowait(response_record)
             timestamp_now = perf_counter()
         raise TimeoutError("P2Client timeout exceeded.")
 
-    def _receive_following_response(self,
-                                    request_record: UdsMessageRecord,
-                                    previous_response_record: UdsMessageRecord) -> UdsMessageRecord:
+    def _receive_following_response(
+        self, request_record: UdsMessageRecord, previous_response_record: UdsMessageRecord
+    ) -> UdsMessageRecord:
         """
         Receive the following (not the first one) UDS response to a request message.
 
@@ -694,29 +741,27 @@ class Client:
 
         :return: Received UDS Response Message.
         """
-        timestamp_start_timeout = (previous_response_record.transmission_end_timestamp
-                                   + self.p2_ext_client_timeout / 1000.)
-        timestamp_end_timeout = request_record.transmission_end_timestamp + self.p6_ext_client_timeout / 1000.
+        timestamp_start_timeout = (
+            previous_response_record.transmission_end_timestamp + self.p2_ext_client_timeout / 1000.0
+        )
+        timestamp_end_timeout = request_record.transmission_end_timestamp + self.p6_ext_client_timeout / 1000.0
         timestamp_now = perf_counter()
         while timestamp_now < timestamp_end_timeout:
-            start_timeout_ms = (timestamp_start_timeout - timestamp_now) * 1000.
-            end_timeout_ms = (timestamp_end_timeout - timestamp_now) * 1000.
+            start_timeout_ms = (timestamp_start_timeout - timestamp_now) * 1000.0
+            end_timeout_ms = (timestamp_end_timeout - timestamp_now) * 1000.0
             try:
-                response_record = self._receive_response(start_timeout=start_timeout_ms,
-                                                         end_timeout=end_timeout_ms)
+                response_record = self._receive_response(start_timeout=start_timeout_ms, end_timeout=end_timeout_ms)
             except TimeoutError as exception:
                 if timestamp_end_timeout <= timestamp_start_timeout:
                     raise TimeoutError("P6*Client timeout exceeded.") from exception
                 raise TimeoutError("P2*Client timeout exceeded.") from exception
-            if self.is_response_to_request(response_message=response_record,
-                                           request_message=request_record):
+            if self.is_response_to_request(response_message=response_record, request_message=request_record):
                 return response_record
             self.__response_queue.put_nowait(response_record)
         raise TimeoutError("P6*Client timeout exceeded.")
 
     @staticmethod
-    def is_response_pending_message(response_message: UdsMessage | UdsMessageRecord,
-                                    request_sid: RequestSID) -> bool:
+    def is_response_pending_message(response_message: UdsMessage | UdsMessageRecord, request_sid: RequestSID) -> bool:
         """
         Check if provided UDS message is Response Pending Message to a diagnostic service of given SID.
 
@@ -730,18 +775,22 @@ class Client:
             False otherwise.
         """
         if not isinstance(response_message, (UdsMessage, UdsMessageRecord)):
-            raise TypeError("Provided message value is not an instance of UdsMessageRecord class. "
-                            f"Actual type: {type(response_message)}.")
+            raise TypeError(
+                "Provided message value is not an instance of UdsMessageRecord class. "
+                f"Actual type: {type(response_message)}."
+            )
         request_sid = RequestSID.validate_member(request_sid)
         if len(response_message.payload) != 3:
             return False
-        return (response_message.payload[0] == ResponseSID.NegativeResponse
-                and response_message.payload[1] == request_sid
-                and response_message.payload[2] == NRC.RequestCorrectlyReceived_ResponsePending)
+        return (
+            response_message.payload[0] == ResponseSID.NegativeResponse
+            and response_message.payload[1] == request_sid
+            and response_message.payload[2] == NRC.RequestCorrectlyReceived_ResponsePending
+        )
 
-    def is_response_to_request(self,
-                               response_message: UdsMessage | UdsMessageRecord,
-                               request_message: UdsMessage | UdsMessageRecord) -> bool:
+    def is_response_to_request(
+        self, response_message: UdsMessage | UdsMessageRecord, request_message: UdsMessage | UdsMessageRecord
+    ) -> bool:
         """
         Check if provided UDS message is a response message to a diagnostic service of given SID.
 
@@ -754,16 +803,24 @@ class Client:
             False otherwise.
         """
         if not isinstance(response_message, (UdsMessage, UdsMessageRecord)):
-            raise TypeError("Provided response message value is not an instance of UdsMessageRecord class. "
-                            f"Actual type: {type(response_message)}.")
+            raise TypeError(
+                "Provided response message value is not an instance of UdsMessageRecord class. "
+                f"Actual type: {type(response_message)}."
+            )
         if not isinstance(request_message, (UdsMessage, UdsMessageRecord)):
-            raise TypeError("Provided request message value is not an instance of UdsMessageRecord class. "
-                            f"Actual type: {type(response_message)}.")
+            raise TypeError(
+                "Provided request message value is not an instance of UdsMessageRecord class. "
+                f"Actual type: {type(response_message)}."
+            )
         if isinstance(request_message, UdsMessageRecord) and isinstance(response_message, UdsMessageRecord):
-            if (response_message.transmission_start_native_timestamp is not None
-                    and request_message.transmission_end_native_timestamp is not None):
-                if (response_message.transmission_start_native_timestamp
-                        < request_message.transmission_end_native_timestamp):
+            if (
+                response_message.transmission_start_native_timestamp is not None
+                and request_message.transmission_end_native_timestamp is not None
+            ):
+                if (
+                    response_message.transmission_start_native_timestamp
+                    < request_message.transmission_end_native_timestamp
+                ):
                     return False
             else:
                 if response_message.transmission_start_timestamp < request_message.transmission_end_timestamp:
@@ -779,14 +836,18 @@ class Client:
         if ResponseSID.is_member(response_message.payload[0]):
             response_sid = ResponseSID(response_message.payload[0])
         else:
-            warn(message=f"Response with undefined RSID value (0x{response_message.payload[0]:02X}) was provided.",
-                 category=RuntimeWarning)
+            warn(
+                message=f"Response with undefined RSID value (0x{response_message.payload[0]:02X}) was provided.",
+                category=RuntimeWarning,
+            )
             return False
         if request_sid.name == response_sid.name:  # Positive Response
             return True
-        return (len(response_message.payload) == 3
-                and response_sid == ResponseSID.NegativeResponse
-                and response_message.payload[1] == request_sid)  # True if Negative Response, False otherwise
+        return (
+            len(response_message.payload) == 3
+            and response_sid == ResponseSID.NegativeResponse
+            and response_message.payload[1] == request_sid
+        )  # True if Negative Response, False otherwise
 
     def wait_till_ready_for_physical_transmission(self) -> None:
         """Wait till the client is ready to transmit physically addressed request message."""
@@ -795,8 +856,9 @@ class Client:
             self.__receiving_not_in_progress_event.wait()
             if self.__last_physical_request is not None and self.__last_physical_response is None:
                 timestamp_now = perf_counter()
-                timestamp_p3_timeout = (self.__last_physical_request.transmission_end_timestamp
-                                        + self.p3_client_physical / 1000.)
+                timestamp_p3_timeout = (
+                    self.__last_physical_request.transmission_end_timestamp + self.p3_client_physical / 1000.0
+                )
                 if timestamp_now < timestamp_p3_timeout:
                     sleep(timestamp_p3_timeout - timestamp_now)
 
@@ -806,8 +868,9 @@ class Client:
             self.__transmission_not_in_progress_event.wait()
             if self.__last_functional_request is not None:
                 timestamp_now = perf_counter()
-                timestamp_p3_timeout = (self.__last_functional_request.transmission_end_timestamp
-                                        + self.p3_client_functional / 1000.)
+                timestamp_p3_timeout = (
+                    self.__last_functional_request.transmission_end_timestamp + self.p3_client_functional / 1000.0
+                )
                 if timestamp_now < timestamp_p3_timeout:
                     sleep(timestamp_p3_timeout - timestamp_now)
 
@@ -821,8 +884,10 @@ class Client:
             return self.wait_till_ready_for_physical_transmission()
         if request.addressing_type == AddressingType.FUNCTIONAL:
             return self.wait_till_ready_for_functional_transmission()
-        raise NotImplementedError("Request message with unexpected `addressing_type` attribute value was provided: "
-                                  f"{request.addressing_type!r}")
+        raise NotImplementedError(
+            "Request message with unexpected `addressing_type` attribute value was provided: "
+            f"{request.addressing_type!r}"
+        )
 
     def clear_measurements(self) -> None:
         """Clear measured values of Session Layer communication parameters."""
@@ -849,7 +914,7 @@ class Client:
         """
         validate_timeout(timeout)
         try:
-            return self.__response_queue.get(timeout=None if timeout is None else timeout / 1000.)
+            return self.__response_queue.get(timeout=None if timeout is None else timeout / 1000.0)
         except Empty:
             return None
 
@@ -876,9 +941,9 @@ class Client:
         while not self.__response_queue.empty():
             self.__response_queue.get_nowait()
 
-    def start_tester_present(self,
-                             addressing_type: AddressingType = AddressingType.FUNCTIONAL,
-                             sprmib: bool = True) -> None:
+    def start_tester_present(
+        self, addressing_type: AddressingType = AddressingType.FUNCTIONAL, sprmib: bool = True
+    ) -> None:
         """
         Start sending Tester Present cyclically.
 
@@ -886,20 +951,18 @@ class Client:
         :param sprmib: Whether to use Suppress Positive Response Message Indication Bit.
         """
         if self.is_tester_present_sent:
-            warn("Tester Present is already transmitted cyclically.",
-                 category=UserWarning)
+            warn("Tester Present is already transmitted cyclically.", category=UserWarning)
         else:
             self.__tester_present_task_event.set()
-            payload = TESTER_PRESENT.encode_request({
-                "SubFunction": {
-                    "suppressPosRspMsgIndicationBit": sprmib,
-                    "zeroSubFunction": 0x00}
-            })
-            tester_present_message = UdsMessage(payload=payload,
-                                                addressing_type=AddressingType.validate_member(addressing_type))
-            self.__tester_present_thread = Thread(target=self.__send_tester_present_task,
-                                                  args=(tester_present_message, ),
-                                                  daemon=True)
+            payload = TESTER_PRESENT.encode_request(
+                {"SubFunction": {"suppressPosRspMsgIndicationBit": sprmib, "zeroSubFunction": 0x00}}
+            )
+            tester_present_message = UdsMessage(
+                payload=payload, addressing_type=AddressingType.validate_member(addressing_type)
+            )
+            self.__tester_present_thread = Thread(
+                target=self.__send_tester_present_task, args=(tester_present_message,), daemon=True
+            )
             self.__tester_present_thread.start()
 
     def stop_tester_present(self) -> None:
@@ -907,11 +970,10 @@ class Client:
         if self.is_tester_present_sent:
             self.__tester_present_task_event.clear()
             if self.__tester_present_thread is not None:
-                self.__tester_present_thread.join(timeout=self.s3_client / 1000.)
+                self.__tester_present_thread.join(timeout=self.s3_client / 1000.0)
             self.__tester_present_thread = None
         else:
-            warn("Cyclical sending of Tester Present is already stopped.",
-                 category=UserWarning)
+            warn("Cyclical sending of Tester Present is already stopped.", category=UserWarning)
 
     def start_background_receiving(self, cycle: TimeMillisecondsAlias = DEFAULT_RECEIVING_TASK_CYCLE) -> None:
         """
@@ -922,13 +984,12 @@ class Client:
             and :meth:`~uds.client.Client.get_response_no_wait` methods.
         """
         if self.is_background_receiving:
-            warn("Background receiving is already active.",
-                 category=UserWarning)
+            warn("Background receiving is already active.", category=UserWarning)
         else:
             self.__background_receiving_task_event.set()
-            self.__background_receiving_thread = Thread(target=self.__receiving_task,
-                                                        kwargs={"cycle": cycle},
-                                                        daemon=True)
+            self.__background_receiving_thread = Thread(
+                target=self.__receiving_task, kwargs={"cycle": cycle}, daemon=True
+            )
             self.__background_receiving_thread.start()
 
     def stop_background_receiving(self) -> None:
@@ -939,11 +1000,11 @@ class Client:
                 self.__background_receiving_thread.join()
             self.__background_receiving_thread = None
         else:
-            warn("Receiving is already stopped.",
-                 category=UserWarning)
+            warn("Receiving is already stopped.", category=UserWarning)
 
-    def send_request_receive_responses(self,
-                                       request: UdsMessage) -> tuple[UdsMessageRecord, tuple[UdsMessageRecord, ...]]:
+    def send_request_receive_responses(
+        self, request: UdsMessage
+    ) -> tuple[UdsMessageRecord, tuple[UdsMessageRecord, ...]]:
         """
         Send diagnostic request and receive all responses (till the final one).
 
@@ -958,8 +1019,9 @@ class Client:
             - tuple with diagnostic response messages that were received in the response
         """
         if not isinstance(request, UdsMessage):
-            raise TypeError(f"Provided request value is not an instance of UdsMessage class. "
-                            f"Actual type: {type(request)}.")
+            raise TypeError(
+                f"Provided request value is not an instance of UdsMessage class. Actual type: {type(request)}."
+            )
         sid = RequestSID(request.payload[0])
         response_records: list[UdsMessageRecord] = []
         self.__send_and_receive_not_in_progress_event.clear()
@@ -973,8 +1035,9 @@ class Client:
                 return request_record, tuple()
             response_records.append(initial_response)
             while self.is_response_pending_message(response_message=response_records[-1], request_sid=sid):
-                following_response = self._receive_following_response(request_record=request_record,
-                                                                      previous_response_record=response_records[-1])
+                following_response = self._receive_following_response(
+                    request_record=request_record, previous_response_record=response_records[-1]
+                )
                 response_records.append(following_response)
             self._update_measured_client_values(request_record=request_record, response_records=response_records)
         finally:

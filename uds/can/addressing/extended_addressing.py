@@ -27,20 +27,24 @@ class ExtendedCanAddressingInformation(AbstractCanAddressingInformation):
         """
         rx_can_ids = {self.rx_physical_params["can_id"], self.rx_functional_params["can_id"]}
         tx_can_ids = {self.tx_physical_params["can_id"], self.tx_functional_params["can_id"]}
-        if (self.rx_physical_params["can_id"] in tx_can_ids
-                or self.tx_physical_params["can_id"] in rx_can_ids
-                or self.rx_functional_params["can_id"] in tx_can_ids
-                or self.tx_functional_params["can_id"] in rx_can_ids):
+        if (
+            self.rx_physical_params["can_id"] in tx_can_ids
+            or self.tx_physical_params["can_id"] in rx_can_ids
+            or self.rx_functional_params["can_id"] in tx_can_ids
+            or self.tx_functional_params["can_id"] in rx_can_ids
+        ):
             raise InconsistencyError("CAN ID used for transmission cannot be used for receiving too.")
 
     @classmethod
-    def validate_addressing_params(cls,  # type: ignore
-                                   addressing_type: AddressingType,
-                                   addressing_format: CanAddressingFormat = ADDRESSING_FORMAT,
-                                   can_id: int | None = None,
-                                   target_address: int | None = None,
-                                   source_address: int | None = None,
-                                   address_extension: int | None = None) -> CANAddressingParams:
+    def validate_addressing_params(
+        cls,  # type: ignore
+        addressing_type: AddressingType,
+        addressing_format: CanAddressingFormat = ADDRESSING_FORMAT,
+        can_id: int | None = None,
+        target_address: int | None = None,
+        source_address: int | None = None,
+        address_extension: int | None = None,
+    ) -> CANAddressingParams:
         """
         Validate Addressing Information parameters of a CAN packet that uses Extended Addressing format.
 
@@ -58,25 +62,30 @@ class ExtendedCanAddressingInformation(AbstractCanAddressingInformation):
         :return: Normalized dictionary with the provided Addressing Information.
         """
         if addressing_format != cls.ADDRESSING_FORMAT:
-            raise ValueError(f"This class handles only one CAN Addressing format: {cls.ADDRESSING_FORMAT}. "
-                             f"Actual value: {addressing_format}")
+            raise ValueError(
+                f"This class handles only one CAN Addressing format: {cls.ADDRESSING_FORMAT}. "
+                f"Actual value: {addressing_format}"
+            )
         if (source_address, address_extension) != (None, None):
-            raise UnusedArgumentError("Values of Source Address and Address Extension are not supported by "
-                                      "Extended Addressing format and must be equal None.")
+            raise UnusedArgumentError(
+                "Values of Source Address and Address Extension are not supported by "
+                "Extended Addressing format and must be equal None."
+            )
         addressing_type = AddressingType.validate_member(addressing_type)
         validate_raw_byte(target_address)  # type: ignore
         if not cls.is_compatible_can_id(can_id=can_id, addressing_type=addressing_type):  # type: ignore
             raise InconsistencyError("Provided value of CAN ID is incompatible with Extended Addressing format.")
-        return CANAddressingParams(addressing_format=cls.ADDRESSING_FORMAT,
-                                   addressing_type=addressing_type,
-                                   can_id=can_id,  # type: ignore
-                                   target_address=target_address,
-                                   source_address=source_address,
-                                   address_extension=address_extension)
+        return CANAddressingParams(
+            addressing_format=cls.ADDRESSING_FORMAT,
+            addressing_type=addressing_type,
+            can_id=can_id,  # type: ignore
+            target_address=target_address,
+            source_address=source_address,
+            address_extension=address_extension,
+        )
 
     @staticmethod
-    def is_compatible_can_id(can_id: int,
-                             addressing_type: AddressingType | None = None) -> bool:
+    def is_compatible_can_id(can_id: int, addressing_type: AddressingType | None = None) -> bool:
         """
         Check whether provided CAN ID is consistent with Extended Addressing format.
 
@@ -91,14 +100,14 @@ class ExtendedCanAddressingInformation(AbstractCanAddressingInformation):
     @staticmethod
     def decode_can_id_ai_params(can_id: int) -> AbstractCanAddressingInformation.CanIdAIParams:
         """Decode Addressing Information parameters from CAN Identifier."""
-        return AbstractCanAddressingInformation.CanIdAIParams(addressing_type=None,
-                                                              target_address=None,
-                                                              source_address=None,
-                                                              priority=None)
+        return AbstractCanAddressingInformation.CanIdAIParams(
+            addressing_type=None, target_address=None, source_address=None, priority=None
+        )
 
     @staticmethod
     def decode_data_bytes_ai_params(
-            ai_data_bytes: RawBytesAlias) -> AbstractCanAddressingInformation.DataBytesAIParamsAlias:
+        ai_data_bytes: RawBytesAlias,
+    ) -> AbstractCanAddressingInformation.DataBytesAIParamsAlias:
         """
         Decode Addressing Information parameters from CAN data bytes.
 
@@ -110,9 +119,7 @@ class ExtendedCanAddressingInformation(AbstractCanAddressingInformation):
         return AbstractCanAddressingInformation.DataBytesAIParamsAlias(target_address=ai_data_bytes[0])
 
     @classmethod
-    def encode_ai_data_bytes(cls,
-                             target_address: int | None = None,
-                             address_extension: int | None = None) -> bytearray:
+    def encode_ai_data_bytes(cls, target_address: int | None = None, address_extension: int | None = None) -> bytearray:
         """
         Generate data bytes that carry Addressing Information.
 

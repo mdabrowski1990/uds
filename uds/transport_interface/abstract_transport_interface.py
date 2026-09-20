@@ -21,8 +21,7 @@ class AbstractTransportInterface(ABC):
     Transport Interfaces are meant to handle middle layers (Transport and Network) of UDS OSI Model.
     """
 
-    def __init__(self,
-                 network_manager: Any) -> None:
+    def __init__(self, network_manager: Any) -> None:
         """
         Create Transport Interface (an object for handling UDS Transport and Network layers).
 
@@ -129,10 +128,12 @@ class AbstractTransportInterface(ABC):
         :param suppress_warning: Do not warn about mixing Synchronous and Asynchronous implementation.
         """
         if self.is_sync_active and not suppress_warning:
-            warn(message="Synchronous (send_packet, receive_packet, send_message and receive_message) and "
-                         "Asynchronous (async_send_packet, async_receive_packet, async_send_message, "
-                         "async_receive_message) communication cannot be used together.",
-                 category=UserWarning)
+            warn(
+                message="Synchronous (send_packet, receive_packet, send_message and receive_message) and "
+                "Asynchronous (async_send_packet, async_receive_packet, async_send_message, "
+                "async_receive_message) communication cannot be used together.",
+                category=UserWarning,
+            )
 
     @abstractmethod
     def teardown_async(self, suppress_warning: bool = False) -> None:
@@ -142,10 +143,12 @@ class AbstractTransportInterface(ABC):
         :param suppress_warning: Do not warn about mixing Synchronous and Asynchronous implementation.
         """
         if self.is_async_active and not suppress_warning:
-            warn(message="Synchronous (send_packet, receive_packet, send_message and receive_message) and "
-                         "Asynchronous (async_send_packet, async_receive_packet, async_send_message, "
-                         "async_receive_message) communication cannot be used together.",
-                 category=UserWarning)
+            warn(
+                message="Synchronous (send_packet, receive_packet, send_message and receive_message) and "
+                "Asynchronous (async_send_packet, async_receive_packet, async_send_message, "
+                "async_receive_message) communication cannot be used together.",
+                category=UserWarning,
+            )
 
     @staticmethod
     @abstractmethod
@@ -169,9 +172,9 @@ class AbstractTransportInterface(ABC):
         """
 
     @abstractmethod
-    async def async_send_packet(self,
-                                packet: AbstractPacket,
-                                loop: AbstractEventLoop | None = None) -> AbstractPacketRecord:
+    async def async_send_packet(
+        self, packet: AbstractPacket, loop: AbstractEventLoop | None = None
+    ) -> AbstractPacketRecord:
         """
         Transmit packet asynchronously.
 
@@ -195,9 +198,9 @@ class AbstractTransportInterface(ABC):
         """
 
     @abstractmethod
-    async def async_receive_packet(self,
-                                   timeout: TimeMillisecondsAlias | None = None,
-                                   loop: AbstractEventLoop | None = None) -> AbstractPacketRecord:
+    async def async_receive_packet(
+        self, timeout: TimeMillisecondsAlias | None = None, loop: AbstractEventLoop | None = None
+    ) -> AbstractPacketRecord:
         """
         Receive packet asynchronously.
 
@@ -222,9 +225,7 @@ class AbstractTransportInterface(ABC):
         """
 
     @abstractmethod
-    async def async_send_message(self,
-                                 message: UdsMessage,
-                                 loop: AbstractEventLoop | None = None) -> UdsMessageRecord:
+    async def async_send_message(self, message: UdsMessage, loop: AbstractEventLoop | None = None) -> UdsMessageRecord:
         """
         Transmit asynchronously UDS message.
 
@@ -235,9 +236,9 @@ class AbstractTransportInterface(ABC):
         """
 
     @abstractmethod
-    def receive_message(self,
-                        start_timeout: TimeMillisecondsAlias | None = None,
-                        end_timeout: TimeMillisecondsAlias | None = None) -> UdsMessageRecord:
+    def receive_message(
+        self, start_timeout: TimeMillisecondsAlias | None = None, end_timeout: TimeMillisecondsAlias | None = None
+    ) -> UdsMessageRecord:
         """
         Receive UDS message.
 
@@ -255,10 +256,12 @@ class AbstractTransportInterface(ABC):
         """
 
     @abstractmethod
-    async def async_receive_message(self,
-                                    start_timeout: TimeMillisecondsAlias | None = None,
-                                    end_timeout: TimeMillisecondsAlias | None = None,
-                                    loop: AbstractEventLoop | None = None) -> UdsMessageRecord:
+    async def async_receive_message(
+        self,
+        start_timeout: TimeMillisecondsAlias | None = None,
+        end_timeout: TimeMillisecondsAlias | None = None,
+        loop: AbstractEventLoop | None = None,
+    ) -> UdsMessageRecord:
         """
         Receive asynchronously UDS message.
 

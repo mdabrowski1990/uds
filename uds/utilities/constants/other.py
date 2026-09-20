@@ -3,17 +3,22 @@
 __all__ = [
     # Shared
     "REPEATED_DATA_RECORDS_NUMBER",
-    "NO_YES_MAPPING", "OFF_ON_MAPPING",
-    "COMPRESSION_METHOD_MAPPING", "ENCRYPTION_METHOD_MAPPING",
+    "NO_YES_MAPPING",
+    "OFF_ON_MAPPING",
+    "COMPRESSION_METHOD_MAPPING",
+    "ENCRYPTION_METHOD_MAPPING",
     # SID 0x11
     "POWER_DOWN_TIME_MAPPING",
     # SID 0x24
-    "EXPONENT_BIT_LENGTH", "MANTISSA_BIT_LENGTH",
+    "EXPONENT_BIT_LENGTH",
+    "MANTISSA_BIT_LENGTH",
     "SCALING_BYTE_TYPE_MAPPING",
     "FORMULA_IDENTIFIER_MAPPING",
     "UNIT_OR_FORMAT_MAPPING",
-    "STATE_AND_CONNECTION_TYPE_TYPE_MAPPING", "STATE_AND_CONNECTION_TYPE_DIRECTION_MAPPING",
-    "STATE_AND_CONNECTION_TYPE_LEVEL_MAPPING", "STATE_AND_CONNECTION_TYPE_STATE_MAPPING",
+    "STATE_AND_CONNECTION_TYPE_TYPE_MAPPING",
+    "STATE_AND_CONNECTION_TYPE_DIRECTION_MAPPING",
+    "STATE_AND_CONNECTION_TYPE_LEVEL_MAPPING",
+    "STATE_AND_CONNECTION_TYPE_STATE_MAPPING",
     # SID 0x28
     "MESSAGE_TYPE_MAPPING",
     "NETWORKS_MAPPING",
@@ -25,9 +30,11 @@ __all__ = [
     # SID 0x2F
     "INPUT_OUTPUT_CONTROL_PARAMETER_MAPPING",
     # SID 0x38
-    "MODE_OF_OPERATION_MAPPING_2020", "MODE_OF_OPERATION_MAPPING_2013",
+    "MODE_OF_OPERATION_MAPPING_2020",
+    "MODE_OF_OPERATION_MAPPING_2013",
     # SID 0x86
-    "EVENT_WINDOW_TIME_MAPPING_2020", "EVENT_WINDOW_TIME_MAPPING_2013",
+    "EVENT_WINDOW_TIME_MAPPING_2020",
+    "EVENT_WINDOW_TIME_MAPPING_2013",
     "COMPARISON_LOGIC_MAPPING",
     "COMPARE_SIGN_MAPPING",
     "TIMER_SCHEDULE_MAPPING_2013",
@@ -46,19 +53,19 @@ NO_YES_MAPPING: dict[int, str] = {0: "no", 1: "yes"}
 OFF_ON_MAPPING: dict[int, str] = {0: "OFF", 1: "ON"}
 """Generic `OFF` and `ON` values mapping."""
 
-COMPRESSION_METHOD_MAPPING: dict[int, str] = ({0: "no compression"}
-                                              | {value: f"compression #{value}" for value in range(1, 0x10)})
+COMPRESSION_METHOD_MAPPING: dict[int, str] = {0: "no compression"} | {
+    value: f"compression #{value}" for value in range(1, 0x10)
+}
 """Values mapping for compressionMethod Data Record that is part of messages for multiple services."""
 
-ENCRYPTION_METHOD_MAPPING: dict[int, str] = ({0: "no encryption"}
-                                             | {value: f"encryption #{value}" for value in range(1, 0x10)})
+ENCRYPTION_METHOD_MAPPING: dict[int, str] = {0: "no encryption"} | {
+    value: f"encryption #{value}" for value in range(1, 0x10)
+}
 """Values mapping for encryptingMethod Data Record that is part of messages for multiple services."""
 
 # SID 0x11
 
-POWER_DOWN_TIME_MAPPING: dict[int, str] = {
-    0xFF: "failure or time unavailable"
-}
+POWER_DOWN_TIME_MAPPING: dict[int, str] = {0xFF: "failure or time unavailable"}
 """Values mapping for `powerDownTime` Data Record that is part of
 :ref:`ECUReset <knowledge-base-service-ecu-reset>` message."""
 
@@ -191,11 +198,9 @@ UNIT_OR_FORMAT_MAPPING: dict[int, str] = {
     0x54: "UTC Hour/Minute/Second - time",
     0x55: "Hour/Minute/Second - time",
     0x56: "Second/Minute/Hour/Day/Month/Year - date and time",
-    0x57: "Second/Minute/Hour/Day/Month/Year/Local minute offset/Local hour offset "
-          "- date and time",
+    0x57: "Second/Minute/Hour/Day/Month/Year/Local minute offset/Local hour offset - date and time",
     0x58: "Second/Minute/Hour/Month/Day/Year - date and time",
-    0x59: "Second/Minute/Hour/Month/Day/Year/Local minute offset/Local hour offset "
-          "- date and time",
+    0x59: "Second/Minute/Hour/Month/Day/Year/Local minute offset/Local hour offset - date and time",
 }
 """Values mapping for `unit/format` Data Record that is part of
 :ref:`ReadScalingDataByIdentifier <knowledge-base-service-read-scaling-data-by-identifier>` message."""
@@ -245,15 +250,13 @@ MESSAGE_TYPE_MAPPING: dict[int, str] = {
 """Values mapping for `messagesType` Data Record that is part of
 :ref:`CommunicationControl <knowledge-base-service-communication-control>` message."""
 
-NETWORKS_MAPPING: dict[int, str] = ({0x0: "all connected networks",
-                                     0xF: "network on which this request is received"}
-                                    | {raw_value: f"subnet {raw_value}" for raw_value in range(1, 0xF)})
+NETWORKS_MAPPING: dict[int, str] = {0x0: "all connected networks", 0xF: "network on which this request is received"} | {
+    raw_value: f"subnet {raw_value}" for raw_value in range(1, 0xF)
+}
 """Values mapping for `networks` Data Record that is part of
 :ref:`CommunicationControl <knowledge-base-service-communication-control>` message."""
 
-NODE_IDENTIFICATION_NUMBER_MAPPING: dict[int, str] = {
-    0: "reserved"
-}
+NODE_IDENTIFICATION_NUMBER_MAPPING: dict[int, str] = {0: "reserved"}
 """Values mapping for `nodeIdentificationNumber` Data Record that is part of
 :ref:`CommunicationControl <knowledge-base-service-communication-control>` message."""
 
@@ -326,13 +329,11 @@ EVENT_WINDOW_TIME_MAPPING_2020: dict[int, str] = {
     0x05: "longEventWindowTime",
     0x06: "powerWindowTime",
     0x07: "ignitionWindowTime",
-    0x08: "manufacturerTriggerEventWindowTime"
+    0x08: "manufacturerTriggerEventWindowTime",
 }
 """Values mapping for `eventWindowTime` Data Record (compatible with ISO 14229-1:2020) that is part of
 :ref:`ResponseOnEvent <knowledge-base-service-response-on-event>` message."""
-EVENT_WINDOW_TIME_MAPPING_2013: dict[int, str] = {
-    0x02: "infiniteTimeToResponse"
-}
+EVENT_WINDOW_TIME_MAPPING_2013: dict[int, str] = {0x02: "infiniteTimeToResponse"}
 """Values mapping for `eventWindowTime` Data Record (compatible with ISO 14229-1:2013) that is part of
 :ref:`ResponseOnEvent <knowledge-base-service-response-on-event>` message."""
 

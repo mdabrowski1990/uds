@@ -11,9 +11,9 @@ from ..data_record_definitions import (
 )
 from ..service import Service
 
-AUTHENTICATION = Service(request_sid=RequestSID.Authentication,
-                         request_structure=(AUTHENTICATION_SUBFUNCTION,
-                                            CONDITIONAL_AUTHENTICATION_REQUEST),
-                         response_structure=(AUTHENTICATION_SUBFUNCTION,
-                                             CONDITIONAL_AUTHENTICATION_RESPONSE))
+AUTHENTICATION = Service(
+    request_sid=RequestSID.Authentication,
+    request_structure=(AUTHENTICATION_SUBFUNCTION, CONDITIONAL_AUTHENTICATION_REQUEST),
+    response_structure=(AUTHENTICATION_SUBFUNCTION, CONDITIONAL_AUTHENTICATION_RESPONSE),
+)
 """Default translator for :ref:`Authentication <knowledge-base-service-authentication>` service."""
