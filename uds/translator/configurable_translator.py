@@ -284,9 +284,11 @@ class ConfigurableTranslator(Translator):
         response_on_event = self.services_mapping.get(RequestSID.ResponseOnEvent, None)
         if response_on_event is not None:
             request_conditional_continuation: ConditionalMappingDataRecord = (  # type: ignore
-                response_on_event.request_structure)[1]
+                response_on_event.request_structure
+            )[1]
             response_conditional_continuation: ConditionalMappingDataRecord = (  # type: ignore
-                response_on_event.response_structure)[1]
+                response_on_event.response_structure
+            )[1]
             request_continuation_08 = request_conditional_continuation.mapping.get(0x08, None)
             response_continuation_08 = response_conditional_continuation.mapping.get(0x08, None)
             request_continuation_09 = request_conditional_continuation.mapping.get(0x09, None)
@@ -295,10 +297,12 @@ class ConfigurableTranslator(Translator):
                 request_event_type_record_08: RawDataRecord | None = find_element(  # type: ignore
                     request_continuation_08,
                     name=EVENT_TYPE_RECORD_08_2020.name,
-                    length=EVENT_TYPE_RECORD_08_2020.length)
+                    length=EVENT_TYPE_RECORD_08_2020.length,
+                )
                 if request_event_type_record_08 is not None:
                     subfunction_parameter: MappingDataRecord = (  # type: ignore
-                        request_event_type_record_08)[REPORT_TYPE_2013.name]
+                        request_event_type_record_08
+                    )[REPORT_TYPE_2013.name]
                     subfunction_parameter.values_mapping = value
                 else:
                     warn(
@@ -314,7 +318,8 @@ class ConfigurableTranslator(Translator):
                 )
                 if response_event_type_record_08 is not None:
                     subfunction_parameter: MappingDataRecord = (  # type: ignore
-                        response_event_type_record_08)[REPORT_TYPE_2013.name]
+                        response_event_type_record_08
+                    )[REPORT_TYPE_2013.name]
                     subfunction_parameter.values_mapping = value
                 else:
                     warn(
@@ -330,7 +335,8 @@ class ConfigurableTranslator(Translator):
                 )
                 if request_event_type_record_09 is not None:
                     subfunction_parameter: MappingDataRecord = (  # type: ignore
-                        request_event_type_record_09)[REPORT_TYPE_2013.name]
+                        request_event_type_record_09
+                    )[REPORT_TYPE_2013.name]
                     subfunction_parameter.values_mapping = value
                 else:
                     warn(
@@ -346,7 +352,8 @@ class ConfigurableTranslator(Translator):
                 )
                 if response_event_type_record_09 is not None:
                     subfunction_parameter: MappingDataRecord = (  # type: ignore
-                        response_event_type_record_09)[REPORT_TYPE_2013.name]
+                        response_event_type_record_09
+                    )[REPORT_TYPE_2013.name]
                     subfunction_parameter.values_mapping = value
                 else:
                     warn(
