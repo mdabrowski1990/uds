@@ -22,21 +22,31 @@ from .data_record import (
     RawDataRecord,
 )
 from .data_record_definitions import (
-    COMMUNICATION_TYPE,
+    AUTHENTICATION_TASK,
+    CONTROL_TYPE,
+    DEFINITION_TYPE,
     DIAGNOSTIC_SESSION_TYPE,
     DID_COUNT_RECORDS,
     DTC_AND_STATUS,
+    DTC_SETTING_TYPE,
     DTC_STORED_DATA_RECORD_NUMBERS_LIST,
     DTCS_AND_STATUSES_LIST,
+    EVENT_2013,
+    EVENT_TYPE_2013,
     EVENT_TYPE_RECORD_08_2020,
     EVENT_TYPE_RECORD_09_2020,
     INPUT_OUTPUT_CONTROL_PARAMETER,
+    LINK_CONTROL_TYPE,
     MEMORY_SELECTION,
     NUMBER_OF_ACTIVATED_EVENTS,
     OPTIONAL_DTC_SNAPSHOT_RECORDS_NUMBERS_LIST,
     REPORT_TYPE_2013,
     RESERVED_BIT,
     RESET_TYPE,
+    ROUTINE_CONTROL_TYPE,
+    SECURITY_ACCESS_TYPE,
+    TIMING_PARAMETER_ACCESS_TYPE_2013,
+    ZERO_SUBFUNCTION,
 )
 from .data_record_definitions.formula import get_event_type_record_01, get_service_to_respond
 from .translator import Translator
@@ -351,8 +361,9 @@ class ConfigurableTranslator(Translator):
         security_access = self.services_mapping.get(RequestSID.SecurityAccess, None)
         if security_access is None:
             return None
-        sub_function: MappingDataRecord = security_access.request_structure[0].children[1]  # type: ignore
-        return sub_function.values_mapping
+        subfunction_byte: RawDataRecord = security_access.request_structure[0]  # type: ignore
+        subfunction_parameter: MappingDataRecord = subfunction_byte[SECURITY_ACCESS_TYPE.name]  # type: ignore
+        return subfunction_parameter.values_mapping
 
     @security_access_type_mapping.setter
     def security_access_type_mapping(self, value: Mapping[int, str]) -> None:
@@ -362,8 +373,16 @@ class ConfigurableTranslator(Translator):
         :param value: Mapping value to set.
         """
         security_access = self.services_mapping[RequestSID.SecurityAccess]
-        security_access.request_structure[0].children[1].values_mapping = value  # type: ignore
-        security_access.response_structure[0].children[1].values_mapping = value  # type: ignore
+        request_subfunction_byte: RawDataRecord = security_access.request_structure[0]  # type: ignore
+        response_subfunction_byte: RawDataRecord = security_access.response_structure[0]  # type: ignore
+        request_subfunction_parameter: MappingDataRecord = (  # type: ignore
+            request_subfunction_byte
+        )[SECURITY_ACCESS_TYPE.name]
+        response_subfunction_parameter: MappingDataRecord = (  # type: ignore
+            response_subfunction_byte
+        )[SECURITY_ACCESS_TYPE.name]
+        request_subfunction_parameter.values_mapping = value
+        response_subfunction_parameter.values_mapping = value
 
     @property
     def control_type_type_mapping(self) -> Mapping[int, str] | None:
@@ -371,8 +390,9 @@ class ConfigurableTranslator(Translator):
         communication_control = self.services_mapping.get(RequestSID.CommunicationControl, None)
         if communication_control is None:
             return None
-        sub_function: MappingDataRecord = communication_control.request_structure[0].children[1]  # type: ignore
-        return sub_function.values_mapping
+        subfunction_byte: RawDataRecord = communication_control.request_structure[0]  # type: ignore
+        subfunction_parameter: MappingDataRecord = subfunction_byte[CONTROL_TYPE.name]  # type: ignore
+        return subfunction_parameter.values_mapping
 
     @control_type_type_mapping.setter
     def control_type_type_mapping(self, value: Mapping[int, str]) -> None:
@@ -382,8 +402,16 @@ class ConfigurableTranslator(Translator):
         :param value: Mapping value to set.
         """
         communication_control = self.services_mapping[RequestSID.CommunicationControl]
-        communication_control.request_structure[0].children[1].values_mapping = value  # type: ignore
-        communication_control.response_structure[0].children[1].values_mapping = value  # type: ignore
+        request_subfunction_byte: RawDataRecord = communication_control.request_structure[0]  # type: ignore
+        response_subfunction_byte: RawDataRecord = communication_control.response_structure[0]  # type: ignore
+        request_subfunction_parameter: MappingDataRecord = (  # type: ignore
+            request_subfunction_byte
+        )[CONTROL_TYPE.name]
+        response_subfunction_parameter: MappingDataRecord = (  # type: ignore
+            response_subfunction_byte
+        )[CONTROL_TYPE.name]
+        request_subfunction_parameter.values_mapping = value
+        response_subfunction_parameter.values_mapping = value
 
     @property
     def authentication_task_mapping(self) -> Mapping[int, str] | None:
@@ -391,8 +419,9 @@ class ConfigurableTranslator(Translator):
         authentication = self.services_mapping.get(RequestSID.Authentication, None)
         if authentication is None:
             return None
-        sub_function: MappingDataRecord = authentication.request_structure[0].children[1]  # type: ignore
-        return sub_function.values_mapping
+        subfunction_byte: RawDataRecord = authentication.request_structure[0]  # type: ignore
+        subfunction_parameter: MappingDataRecord = subfunction_byte[AUTHENTICATION_TASK.name]  # type: ignore
+        return subfunction_parameter.values_mapping
 
     @authentication_task_mapping.setter
     def authentication_task_mapping(self, value: Mapping[int, str]) -> None:
@@ -402,8 +431,16 @@ class ConfigurableTranslator(Translator):
         :param value: Mapping value to set.
         """
         authentication = self.services_mapping[RequestSID.Authentication]
-        authentication.request_structure[0].children[1].values_mapping = value  # type: ignore
-        authentication.response_structure[0].children[1].values_mapping = value  # type: ignore
+        request_subfunction_byte: RawDataRecord = authentication.request_structure[0]  # type: ignore
+        response_subfunction_byte: RawDataRecord = authentication.response_structure[0]  # type: ignore
+        request_subfunction_parameter: MappingDataRecord = (  # type: ignore
+            request_subfunction_byte
+        )[AUTHENTICATION_TASK.name]
+        response_subfunction_parameter: MappingDataRecord = (  # type: ignore
+            response_subfunction_byte
+        )[AUTHENTICATION_TASK.name]
+        request_subfunction_parameter.values_mapping = value
+        response_subfunction_parameter.values_mapping = value
 
     @property
     def definition_type_mapping(self) -> Mapping[int, str] | None:
@@ -411,8 +448,9 @@ class ConfigurableTranslator(Translator):
         dynamically_define_data_identifier = self.services_mapping.get(RequestSID.DynamicallyDefineDataIdentifier, None)
         if dynamically_define_data_identifier is None:
             return None
-        sub_function: MappingDataRecord = dynamically_define_data_identifier.request_structure[0].children[1]  # type: ignore
-        return sub_function.values_mapping
+        subfunction_byte: RawDataRecord = dynamically_define_data_identifier.request_structure[0]  # type: ignore
+        subfunction_parameter: MappingDataRecord = subfunction_byte[DEFINITION_TYPE.name]  # type: ignore
+        return subfunction_parameter.values_mapping
 
     @definition_type_mapping.setter
     def definition_type_mapping(self, value: Mapping[int, str]) -> None:
@@ -422,8 +460,16 @@ class ConfigurableTranslator(Translator):
         :param value: Mapping value to set.
         """
         dynamically_define_data_identifier = self.services_mapping[RequestSID.DynamicallyDefineDataIdentifier]
-        dynamically_define_data_identifier.request_structure[0].children[1].values_mapping = value  # type: ignore
-        dynamically_define_data_identifier.response_structure[0].children[1].values_mapping = value  # type: ignore
+        request_subfunction_byte: RawDataRecord = dynamically_define_data_identifier.request_structure[0]  # type: ignore
+        response_subfunction_byte: RawDataRecord = dynamically_define_data_identifier.response_structure[0]  # type: ignore
+        request_subfunction_parameter: MappingDataRecord = (  # type: ignore
+            request_subfunction_byte
+        )[DEFINITION_TYPE.name]
+        response_subfunction_parameter: MappingDataRecord = (  # type: ignore
+            response_subfunction_byte
+        )[DEFINITION_TYPE.name]
+        request_subfunction_parameter.values_mapping = value
+        response_subfunction_parameter.values_mapping = value
 
     @property
     def routine_control_type_mapping(self) -> Mapping[int, str] | None:
@@ -431,8 +477,9 @@ class ConfigurableTranslator(Translator):
         routine_control = self.services_mapping.get(RequestSID.RoutineControl, None)
         if routine_control is None:
             return None
-        sub_function: MappingDataRecord = routine_control.request_structure[0].children[1]  # type: ignore
-        return sub_function.values_mapping
+        subfunction_byte: RawDataRecord = routine_control.request_structure[0]  # type: ignore
+        subfunction_parameter: MappingDataRecord = subfunction_byte[ROUTINE_CONTROL_TYPE.name]  # type: ignore
+        return subfunction_parameter.values_mapping
 
     @routine_control_type_mapping.setter
     def routine_control_type_mapping(self, value: Mapping[int, str]) -> None:
@@ -442,8 +489,16 @@ class ConfigurableTranslator(Translator):
         :param value: Mapping value to set.
         """
         routine_control = self.services_mapping[RequestSID.RoutineControl]
-        routine_control.request_structure[0].children[1].values_mapping = value  # type: ignore
-        routine_control.response_structure[0].children[1].values_mapping = value  # type: ignore
+        request_subfunction_byte: RawDataRecord = routine_control.request_structure[0]  # type: ignore
+        response_subfunction_byte: RawDataRecord = routine_control.response_structure[0]  # type: ignore
+        request_subfunction_parameter: MappingDataRecord = (  # type: ignore
+            request_subfunction_byte
+        )[ROUTINE_CONTROL_TYPE.name]
+        response_subfunction_parameter: MappingDataRecord = (  # type: ignore
+            response_subfunction_byte
+        )[ROUTINE_CONTROL_TYPE.name]
+        request_subfunction_parameter.values_mapping = value
+        response_subfunction_parameter.values_mapping = value
 
     @property
     def zero_subfunction_mapping(self) -> Mapping[int, str] | None:
@@ -451,8 +506,9 @@ class ConfigurableTranslator(Translator):
         tester_present = self.services_mapping.get(RequestSID.TesterPresent, None)
         if tester_present is None:
             return None
-        sub_function: MappingDataRecord = tester_present.request_structure[0].children[1]  # type: ignore
-        return sub_function.values_mapping
+        subfunction_byte: RawDataRecord = tester_present.request_structure[0]  # type: ignore
+        subfunction_parameter: MappingDataRecord = subfunction_byte[ZERO_SUBFUNCTION.name]  # type: ignore
+        return subfunction_parameter.values_mapping
 
     @zero_subfunction_mapping.setter
     def zero_subfunction_mapping(self, value: Mapping[int, str]) -> None:
@@ -462,8 +518,16 @@ class ConfigurableTranslator(Translator):
         :param value: Mapping value to set.
         """
         tester_present = self.services_mapping[RequestSID.TesterPresent]
-        tester_present.request_structure[0].children[1].values_mapping = value  # type: ignore
-        tester_present.response_structure[0].children[1].values_mapping = value  # type: ignore
+        request_subfunction_byte: RawDataRecord = tester_present.request_structure[0]  # type: ignore
+        response_subfunction_byte: RawDataRecord = tester_present.response_structure[0]  # type: ignore
+        request_subfunction_parameter: MappingDataRecord = (  # type: ignore
+            request_subfunction_byte
+        )[ZERO_SUBFUNCTION.name]
+        response_subfunction_parameter: MappingDataRecord = (  # type: ignore
+            response_subfunction_byte
+        )[ZERO_SUBFUNCTION.name]
+        request_subfunction_parameter.values_mapping = value
+        response_subfunction_parameter.values_mapping = value
 
     @property
     def timing_parameter_access_type_mapping(self) -> Mapping[int, str] | None:
@@ -471,8 +535,9 @@ class ConfigurableTranslator(Translator):
         access_timing_parameter = self.services_mapping.get(RequestSID.AccessTimingParameter, None)
         if access_timing_parameter is None:
             return None
-        sub_function: MappingDataRecord = access_timing_parameter.request_structure[0].children[1]  # type: ignore
-        return sub_function.values_mapping
+        subfunction_byte: RawDataRecord = access_timing_parameter.request_structure[0]  # type: ignore
+        subfunction_parameter: MappingDataRecord = subfunction_byte[TIMING_PARAMETER_ACCESS_TYPE_2013.name]  # type: ignore
+        return subfunction_parameter.values_mapping
 
     @timing_parameter_access_type_mapping.setter
     def timing_parameter_access_type_mapping(self, value: Mapping[int, str]) -> None:
@@ -482,8 +547,16 @@ class ConfigurableTranslator(Translator):
         :param value: Mapping value to set.
         """
         access_timing_parameter = self.services_mapping[RequestSID.AccessTimingParameter]
-        access_timing_parameter.request_structure[0].children[1].values_mapping = value  # type: ignore
-        access_timing_parameter.response_structure[0].children[1].values_mapping = value  # type: ignore
+        request_subfunction_byte: RawDataRecord = access_timing_parameter.request_structure[0]  # type: ignore
+        response_subfunction_byte: RawDataRecord = access_timing_parameter.response_structure[0]  # type: ignore
+        request_subfunction_parameter: MappingDataRecord = (  # type: ignore
+            request_subfunction_byte
+        )[TIMING_PARAMETER_ACCESS_TYPE_2013.name]
+        response_subfunction_parameter: MappingDataRecord = (  # type: ignore
+            response_subfunction_byte
+        )[TIMING_PARAMETER_ACCESS_TYPE_2013.name]
+        request_subfunction_parameter.values_mapping = value
+        response_subfunction_parameter.values_mapping = value
 
     @property
     def dtc_setting_type_mapping(self) -> Mapping[int, str] | None:
@@ -491,8 +564,9 @@ class ConfigurableTranslator(Translator):
         control_dtc_setting = self.services_mapping.get(RequestSID.ControlDTCSetting, None)
         if control_dtc_setting is None:
             return None
-        sub_function: MappingDataRecord = control_dtc_setting.request_structure[0].children[1]  # type: ignore
-        return sub_function.values_mapping
+        subfunction_byte: RawDataRecord = control_dtc_setting.request_structure[0]  # type: ignore
+        subfunction_parameter: MappingDataRecord = subfunction_byte[DTC_SETTING_TYPE.name]  # type: ignore
+        return subfunction_parameter.values_mapping
 
     @dtc_setting_type_mapping.setter
     def dtc_setting_type_mapping(self, value: Mapping[int, str]) -> None:
@@ -502,8 +576,16 @@ class ConfigurableTranslator(Translator):
         :param value: Mapping value to set.
         """
         control_dtc_setting = self.services_mapping[RequestSID.ControlDTCSetting]
-        control_dtc_setting.request_structure[0].children[1].values_mapping = value  # type: ignore
-        control_dtc_setting.response_structure[0].children[1].values_mapping = value  # type: ignore
+        request_subfunction_byte: RawDataRecord = control_dtc_setting.request_structure[0]  # type: ignore
+        response_subfunction_byte: RawDataRecord = control_dtc_setting.response_structure[0]  # type: ignore
+        request_subfunction_parameter: MappingDataRecord = (  # type: ignore
+            request_subfunction_byte
+        )[DTC_SETTING_TYPE.name]
+        response_subfunction_parameter: MappingDataRecord = (  # type: ignore
+            response_subfunction_byte
+        )[DTC_SETTING_TYPE.name]
+        request_subfunction_parameter.values_mapping = value
+        response_subfunction_parameter.values_mapping = value
 
     @property
     def event_type_mapping(self) -> Mapping[int, str] | None:
@@ -516,8 +598,11 @@ class ConfigurableTranslator(Translator):
         response_on_event = self.services_mapping.get(RequestSID.ResponseOnEvent, None)
         if response_on_event is None:
             return None
-        sub_function: MappingDataRecord = response_on_event.request_structure[0].children[1].children[1]  # type: ignore
-        return sub_function.values_mapping
+        subfunction_byte: RawDataRecord = response_on_event.request_structure[0]  # type: ignore
+        subfunction_parameter: MappingDataRecord = (  # type: ignore
+            subfunction_byte
+        )[EVENT_TYPE_2013.name][EVENT_2013.name]
+        return subfunction_parameter.values_mapping
 
     @event_type_mapping.setter
     def event_type_mapping(self, value: Mapping[int, str]) -> None:
@@ -530,8 +615,16 @@ class ConfigurableTranslator(Translator):
         :param value: Mapping value to set.
         """
         response_on_event = self.services_mapping[RequestSID.ResponseOnEvent]
-        response_on_event.request_structure[0].children[1].children[1].values_mapping = value  # type: ignore
-        response_on_event.response_structure[0].children[1].children[1].values_mapping = value  # type: ignore
+        request_subfunction_byte: RawDataRecord = response_on_event.request_structure[0]  # type: ignore
+        response_subfunction_byte: RawDataRecord = response_on_event.response_structure[0]  # type: ignore
+        request_subfunction_parameter: MappingDataRecord = (  # type: ignore
+            request_subfunction_byte
+        )[EVENT_TYPE_2013.name][EVENT_2013.name]
+        response_subfunction_parameter: MappingDataRecord = (  # type: ignore
+            response_subfunction_byte
+        )[EVENT_TYPE_2013.name][EVENT_2013.name]
+        request_subfunction_parameter.values_mapping = value
+        response_subfunction_parameter.values_mapping = value
 
     @property
     def link_control_type_mapping(self) -> Mapping[int, str] | None:
@@ -539,8 +632,9 @@ class ConfigurableTranslator(Translator):
         link_control = self.services_mapping.get(RequestSID.LinkControl, None)
         if link_control is None:
             return None
-        sub_function: MappingDataRecord = link_control.request_structure[0].children[1]  # type: ignore
-        return sub_function.values_mapping
+        subfunction_byte: RawDataRecord = link_control.request_structure[0]  # type: ignore
+        subfunction_parameter: MappingDataRecord = subfunction_byte[LINK_CONTROL_TYPE.name]  # type: ignore
+        return subfunction_parameter.values_mapping
 
     @link_control_type_mapping.setter
     def link_control_type_mapping(self, value: Mapping[int, str]) -> None:
@@ -550,8 +644,16 @@ class ConfigurableTranslator(Translator):
         :param value: Mapping value to set.
         """
         link_control = self.services_mapping[RequestSID.LinkControl]
-        link_control.request_structure[0].children[1].values_mapping = value  # type: ignore
-        link_control.response_structure[0].children[1].values_mapping = value  # type: ignore
+        request_subfunction_byte: RawDataRecord = link_control.request_structure[0]  # type: ignore
+        response_subfunction_byte: RawDataRecord = link_control.response_structure[0]  # type: ignore
+        request_subfunction_parameter: MappingDataRecord = (  # type: ignore
+            request_subfunction_byte
+        )[LINK_CONTROL_TYPE.name]
+        response_subfunction_parameter: MappingDataRecord = (  # type: ignore
+            response_subfunction_byte
+        )[LINK_CONTROL_TYPE.name]
+        request_subfunction_parameter.values_mapping = value
+        response_subfunction_parameter.values_mapping = value
 
     @property
     def rid_mapping(self) -> Mapping[int, str] | None:

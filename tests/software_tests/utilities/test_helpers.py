@@ -60,11 +60,11 @@ class TestFunctions:
     @pytest.mark.parametrize(
         "sequence, attributes, match_index",
         [
-            ((Mock(a=1), Mock(a=2), Mock(a=3)), {"a": 2}, 1),
+            ((Mock(), Mock(a=2), Mock(a=3)), {"a": 2}, 1),
             (
                 (
                     Mock(param_1="a", param_2=100),
-                    Mock(param_1="b", param_2=100),
+                    Mock(param_2=100),
                     Mock(param_1="c", param_2=101),
                     Mock(param_1="d", param_2=101),
                 ),
@@ -79,12 +79,12 @@ class TestFunctions:
     @pytest.mark.parametrize(
         "sequence, attributes",
         [
-            ((Mock(a=1), Mock(a=2), Mock(a=3)), {"a": 0}),
+            ((Mock(a=1), Mock(a=2), Mock()), {"a": 0}),
             (
                 (
                     Mock(param_1="a", param_2=100),
-                    Mock(param_1="b", param_2=100),
-                    Mock(param_1="c", param_2=101),
+                    Mock(param_1="b"),
+                    Mock(param_2=101),
                     Mock(param_1="d", param_2=101),
                 ),
                 {"param_1": "d", "param_2": 100},

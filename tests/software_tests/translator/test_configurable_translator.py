@@ -33,13 +33,20 @@ from uds.translator import (
     RawDataRecord,
 )
 from uds.translator.configurable_translator import (
+    AUTHENTICATION_TASK,
+    CONTROL_TYPE,
+    DEFINITION_TYPE,
     DIAGNOSTIC_SESSION_TYPE,
     DID_BIT_LENGTH,
     DID_COUNT_RECORDS,
     DTC_AND_STATUS,
+    DTC_SETTING_TYPE,
     DTC_STORED_DATA_RECORD_NUMBERS_LIST,
     DTCS_AND_STATUSES_LIST,
+    EVENT_2013,
+    EVENT_TYPE_2013,
     INPUT_OUTPUT_CONTROL_PARAMETER,
+    LINK_CONTROL_TYPE,
     MEMORY_SELECTION,
     NUMBER_OF_ACTIVATED_EVENTS,
     OPTIONAL_DTC_SNAPSHOT_RECORDS_NUMBERS_LIST,
@@ -47,6 +54,10 @@ from uds.translator.configurable_translator import (
     REPORT_TYPE_2013,
     RESERVED_BIT,
     RESET_TYPE,
+    ROUTINE_CONTROL_TYPE,
+    SECURITY_ACCESS_TYPE,
+    TIMING_PARAMETER_ACCESS_TYPE_2013,
+    ZERO_SUBFUNCTION,
     AbstractDataRecord,
     ConfigurableTranslator,
     RequestSID,
@@ -451,13 +462,14 @@ class TestConfigurableTranslator:
     # security_access_type_mapping
 
     def test_security_access_type_mapping_mapping__get(self):
+        mock_get_request_subfunction_parameter = Mock()
+        security_access = self.mock_translator.services_mapping[RequestSID.SecurityAccess]
+        security_access.request_structure[0].__getitem__ = mock_get_request_subfunction_parameter
         assert (
             ConfigurableTranslator.security_access_type_mapping.fget(self.mock_translator)
-            == self.mock_translator.services_mapping[RequestSID.SecurityAccess]
-            .request_structure[0]
-            .children[1]
-            .values_mapping
+            == mock_get_request_subfunction_parameter.return_value.values_mapping
         )
+        mock_get_request_subfunction_parameter.assert_called_once_with(SECURITY_ACCESS_TYPE.name)
 
     def test_security_access_type_mapping_mapping__get__none(self):
         mock_get = Mock(return_value=None)
@@ -467,32 +479,28 @@ class TestConfigurableTranslator:
 
     def test_security_access_type_mapping_mapping__set(self):
         mock_value = {Mock(): Mock()}
+        mock_get_request_subfunction_parameter = Mock()
+        mock_get_response_subfunction_parameter = Mock()
+        security_access = self.mock_translator.services_mapping[RequestSID.SecurityAccess]
+        security_access.request_structure[0].__getitem__ = mock_get_request_subfunction_parameter
+        security_access.response_structure[0].__getitem__ = mock_get_response_subfunction_parameter
         assert ConfigurableTranslator.security_access_type_mapping.fset(self.mock_translator, mock_value) is None
-        assert (
-            self.mock_translator.services_mapping[RequestSID.SecurityAccess]
-            .request_structure[0]
-            .children[1]
-            .values_mapping
-            == mock_value
-        )
-        assert (
-            self.mock_translator.services_mapping[RequestSID.SecurityAccess]
-            .response_structure[0]
-            .children[1]
-            .values_mapping
-            == mock_value
-        )
+        assert mock_get_request_subfunction_parameter.return_value.values_mapping == mock_value
+        assert mock_get_response_subfunction_parameter.return_value.values_mapping == mock_value
+        mock_get_request_subfunction_parameter.assert_called_once_with(SECURITY_ACCESS_TYPE.name)
+        mock_get_response_subfunction_parameter.assert_called_once_with(SECURITY_ACCESS_TYPE.name)
 
     # control_type_type_mapping
 
     def test_control_type_type_mapping_mapping__get(self):
+        mock_get_request_subfunction_parameter = Mock()
+        communication_control = self.mock_translator.services_mapping[RequestSID.CommunicationControl]
+        communication_control.request_structure[0].__getitem__ = mock_get_request_subfunction_parameter
         assert (
             ConfigurableTranslator.control_type_type_mapping.fget(self.mock_translator)
-            == self.mock_translator.services_mapping[RequestSID.CommunicationControl]
-            .request_structure[0]
-            .children[1]
-            .values_mapping
+            == mock_get_request_subfunction_parameter.return_value.values_mapping
         )
+        mock_get_request_subfunction_parameter.assert_called_once_with(CONTROL_TYPE.name)
 
     def test_control_type_type_mapping_mapping__get__none(self):
         mock_get = Mock(return_value=None)
@@ -502,32 +510,28 @@ class TestConfigurableTranslator:
 
     def test_control_type_type_mapping_mapping__set(self):
         mock_value = {Mock(): Mock()}
+        mock_get_request_subfunction_parameter = Mock()
+        mock_get_response_subfunction_parameter = Mock()
+        communication_control = self.mock_translator.services_mapping[RequestSID.CommunicationControl]
+        communication_control.request_structure[0].__getitem__ = mock_get_request_subfunction_parameter
+        communication_control.response_structure[0].__getitem__ = mock_get_response_subfunction_parameter
         assert ConfigurableTranslator.control_type_type_mapping.fset(self.mock_translator, mock_value) is None
-        assert (
-            self.mock_translator.services_mapping[RequestSID.CommunicationControl]
-            .request_structure[0]
-            .children[1]
-            .values_mapping
-            == mock_value
-        )
-        assert (
-            self.mock_translator.services_mapping[RequestSID.CommunicationControl]
-            .response_structure[0]
-            .children[1]
-            .values_mapping
-            == mock_value
-        )
+        assert mock_get_request_subfunction_parameter.return_value.values_mapping == mock_value
+        assert mock_get_response_subfunction_parameter.return_value.values_mapping == mock_value
+        mock_get_request_subfunction_parameter.assert_called_once_with(CONTROL_TYPE.name)
+        mock_get_response_subfunction_parameter.assert_called_once_with(CONTROL_TYPE.name)
 
     # authentication_task_mapping
 
     def test_authentication_task_mapping_mapping__get(self):
+        mock_get_request_subfunction_parameter = Mock()
+        authentication = self.mock_translator.services_mapping[RequestSID.Authentication]
+        authentication.request_structure[0].__getitem__ = mock_get_request_subfunction_parameter
         assert (
             ConfigurableTranslator.authentication_task_mapping.fget(self.mock_translator)
-            == self.mock_translator.services_mapping[RequestSID.Authentication]
-            .request_structure[0]
-            .children[1]
-            .values_mapping
+            == mock_get_request_subfunction_parameter.return_value.values_mapping
         )
+        mock_get_request_subfunction_parameter.assert_called_once_with(AUTHENTICATION_TASK.name)
 
     def test_authentication_task_mapping_mapping__get__none(self):
         mock_get = Mock(return_value=None)
@@ -537,32 +541,30 @@ class TestConfigurableTranslator:
 
     def test_authentication_task_mapping_mapping__set(self):
         mock_value = {Mock(): Mock()}
+        mock_get_request_subfunction_parameter = Mock()
+        mock_get_response_subfunction_parameter = Mock()
+        authentication = self.mock_translator.services_mapping[RequestSID.Authentication]
+        authentication.request_structure[0].__getitem__ = mock_get_request_subfunction_parameter
+        authentication.response_structure[0].__getitem__ = mock_get_response_subfunction_parameter
         assert ConfigurableTranslator.authentication_task_mapping.fset(self.mock_translator, mock_value) is None
-        assert (
-            self.mock_translator.services_mapping[RequestSID.Authentication]
-            .request_structure[0]
-            .children[1]
-            .values_mapping
-            == mock_value
-        )
-        assert (
-            self.mock_translator.services_mapping[RequestSID.Authentication]
-            .response_structure[0]
-            .children[1]
-            .values_mapping
-            == mock_value
-        )
+        assert mock_get_request_subfunction_parameter.return_value.values_mapping == mock_value
+        assert mock_get_response_subfunction_parameter.return_value.values_mapping == mock_value
+        mock_get_request_subfunction_parameter.assert_called_once_with(AUTHENTICATION_TASK.name)
+        mock_get_response_subfunction_parameter.assert_called_once_with(AUTHENTICATION_TASK.name)
 
     # definition_type_mapping
 
     def test_definition_type_mapping_mapping__get(self):
+        mock_get_request_subfunction_parameter = Mock()
+        dynamically_define_data_identifier = self.mock_translator.services_mapping[
+            RequestSID.DynamicallyDefineDataIdentifier
+        ]
+        dynamically_define_data_identifier.request_structure[0].__getitem__ = mock_get_request_subfunction_parameter
         assert (
             ConfigurableTranslator.definition_type_mapping.fget(self.mock_translator)
-            == self.mock_translator.services_mapping[RequestSID.DynamicallyDefineDataIdentifier]
-            .request_structure[0]
-            .children[1]
-            .values_mapping
+            == mock_get_request_subfunction_parameter.return_value.values_mapping
         )
+        mock_get_request_subfunction_parameter.assert_called_once_with(DEFINITION_TYPE.name)
 
     def test_definition_type_mapping_mapping__get__none(self):
         mock_get = Mock(return_value=None)
@@ -572,32 +574,30 @@ class TestConfigurableTranslator:
 
     def test_definition_type_mapping_mapping__set(self):
         mock_value = {Mock(): Mock()}
+        mock_get_request_subfunction_parameter = Mock()
+        mock_get_response_subfunction_parameter = Mock()
+        dynamically_define_data_identifier = self.mock_translator.services_mapping[
+            RequestSID.DynamicallyDefineDataIdentifier
+        ]
+        dynamically_define_data_identifier.request_structure[0].__getitem__ = mock_get_request_subfunction_parameter
+        dynamically_define_data_identifier.response_structure[0].__getitem__ = mock_get_response_subfunction_parameter
         assert ConfigurableTranslator.definition_type_mapping.fset(self.mock_translator, mock_value) is None
-        assert (
-            self.mock_translator.services_mapping[RequestSID.DynamicallyDefineDataIdentifier]
-            .request_structure[0]
-            .children[1]
-            .values_mapping
-            == mock_value
-        )
-        assert (
-            self.mock_translator.services_mapping[RequestSID.DynamicallyDefineDataIdentifier]
-            .response_structure[0]
-            .children[1]
-            .values_mapping
-            == mock_value
-        )
+        assert mock_get_request_subfunction_parameter.return_value.values_mapping == mock_value
+        assert mock_get_response_subfunction_parameter.return_value.values_mapping == mock_value
+        mock_get_request_subfunction_parameter.assert_called_once_with(DEFINITION_TYPE.name)
+        mock_get_response_subfunction_parameter.assert_called_once_with(DEFINITION_TYPE.name)
 
     # routine_control_type_mapping
 
     def test_routine_control_type_mapping_mapping__get(self):
+        mock_get_request_subfunction_parameter = Mock()
+        routine_control = self.mock_translator.services_mapping[RequestSID.RoutineControl]
+        routine_control.request_structure[0].__getitem__ = mock_get_request_subfunction_parameter
         assert (
             ConfigurableTranslator.routine_control_type_mapping.fget(self.mock_translator)
-            == self.mock_translator.services_mapping[RequestSID.RoutineControl]
-            .request_structure[0]
-            .children[1]
-            .values_mapping
+            == mock_get_request_subfunction_parameter.return_value.values_mapping
         )
+        mock_get_request_subfunction_parameter.assert_called_once_with(ROUTINE_CONTROL_TYPE.name)
 
     def test_routine_control_type_mapping_mapping__get__none(self):
         mock_get = Mock(return_value=None)
@@ -607,32 +607,28 @@ class TestConfigurableTranslator:
 
     def test_routine_control_type_mapping_mapping__set(self):
         mock_value = {Mock(): Mock()}
+        mock_get_request_subfunction_parameter = Mock()
+        mock_get_response_subfunction_parameter = Mock()
+        routine_control = self.mock_translator.services_mapping[RequestSID.RoutineControl]
+        routine_control.request_structure[0].__getitem__ = mock_get_request_subfunction_parameter
+        routine_control.response_structure[0].__getitem__ = mock_get_response_subfunction_parameter
         assert ConfigurableTranslator.routine_control_type_mapping.fset(self.mock_translator, mock_value) is None
-        assert (
-            self.mock_translator.services_mapping[RequestSID.RoutineControl]
-            .request_structure[0]
-            .children[1]
-            .values_mapping
-            == mock_value
-        )
-        assert (
-            self.mock_translator.services_mapping[RequestSID.RoutineControl]
-            .response_structure[0]
-            .children[1]
-            .values_mapping
-            == mock_value
-        )
+        assert mock_get_request_subfunction_parameter.return_value.values_mapping == mock_value
+        assert mock_get_response_subfunction_parameter.return_value.values_mapping == mock_value
+        mock_get_request_subfunction_parameter.assert_called_once_with(ROUTINE_CONTROL_TYPE.name)
+        mock_get_response_subfunction_parameter.assert_called_once_with(ROUTINE_CONTROL_TYPE.name)
 
     # zero_subfunction_mapping
 
     def test_zero_subfunction_mapping_mapping__get(self):
+        mock_get_request_subfunction_parameter = Mock()
+        tester_present = self.mock_translator.services_mapping[RequestSID.TesterPresent]
+        tester_present.request_structure[0].__getitem__ = mock_get_request_subfunction_parameter
         assert (
             ConfigurableTranslator.zero_subfunction_mapping.fget(self.mock_translator)
-            == self.mock_translator.services_mapping[RequestSID.TesterPresent]
-            .request_structure[0]
-            .children[1]
-            .values_mapping
+            == mock_get_request_subfunction_parameter.return_value.values_mapping
         )
+        mock_get_request_subfunction_parameter.assert_called_once_with(ZERO_SUBFUNCTION.name)
 
     def test_zero_subfunction_mapping_mapping__get__none(self):
         mock_get = Mock(return_value=None)
@@ -642,32 +638,28 @@ class TestConfigurableTranslator:
 
     def test_zero_subfunction_mapping_mapping__set(self):
         mock_value = {Mock(): Mock()}
+        mock_get_request_subfunction_parameter = Mock()
+        mock_get_response_subfunction_parameter = Mock()
+        tester_present = self.mock_translator.services_mapping[RequestSID.TesterPresent]
+        tester_present.request_structure[0].__getitem__ = mock_get_request_subfunction_parameter
+        tester_present.response_structure[0].__getitem__ = mock_get_response_subfunction_parameter
         assert ConfigurableTranslator.zero_subfunction_mapping.fset(self.mock_translator, mock_value) is None
-        assert (
-            self.mock_translator.services_mapping[RequestSID.TesterPresent]
-            .request_structure[0]
-            .children[1]
-            .values_mapping
-            == mock_value
-        )
-        assert (
-            self.mock_translator.services_mapping[RequestSID.TesterPresent]
-            .response_structure[0]
-            .children[1]
-            .values_mapping
-            == mock_value
-        )
+        assert mock_get_request_subfunction_parameter.return_value.values_mapping == mock_value
+        assert mock_get_response_subfunction_parameter.return_value.values_mapping == mock_value
+        mock_get_request_subfunction_parameter.assert_called_once_with(ZERO_SUBFUNCTION.name)
+        mock_get_response_subfunction_parameter.assert_called_once_with(ZERO_SUBFUNCTION.name)
 
     # timing_parameter_access_type_mapping
 
     def test_timing_parameter_access_type_mapping_mapping__get(self):
+        mock_get_request_subfunction_parameter = Mock()
+        access_timing_parameter = self.mock_translator.services_mapping[RequestSID.AccessTimingParameter]
+        access_timing_parameter.request_structure[0].__getitem__ = mock_get_request_subfunction_parameter
         assert (
             ConfigurableTranslator.timing_parameter_access_type_mapping.fget(self.mock_translator)
-            == self.mock_translator.services_mapping[RequestSID.AccessTimingParameter]
-            .request_structure[0]
-            .children[1]
-            .values_mapping
+            == mock_get_request_subfunction_parameter.return_value.values_mapping
         )
+        mock_get_request_subfunction_parameter.assert_called_once_with(TIMING_PARAMETER_ACCESS_TYPE_2013.name)
 
     def test_timing_parameter_access_type_mapping_mapping__get__none(self):
         mock_get = Mock(return_value=None)
@@ -677,34 +669,30 @@ class TestConfigurableTranslator:
 
     def test_timing_parameter_access_type_mapping_mapping__set(self):
         mock_value = {Mock(): Mock()}
+        mock_get_request_subfunction_parameter = Mock()
+        mock_get_response_subfunction_parameter = Mock()
+        access_timing_parameter = self.mock_translator.services_mapping[RequestSID.AccessTimingParameter]
+        access_timing_parameter.request_structure[0].__getitem__ = mock_get_request_subfunction_parameter
+        access_timing_parameter.response_structure[0].__getitem__ = mock_get_response_subfunction_parameter
         assert (
             ConfigurableTranslator.timing_parameter_access_type_mapping.fset(self.mock_translator, mock_value) is None
         )
-        assert (
-            self.mock_translator.services_mapping[RequestSID.AccessTimingParameter]
-            .request_structure[0]
-            .children[1]
-            .values_mapping
-            == mock_value
-        )
-        assert (
-            self.mock_translator.services_mapping[RequestSID.AccessTimingParameter]
-            .response_structure[0]
-            .children[1]
-            .values_mapping
-            == mock_value
-        )
+        assert mock_get_request_subfunction_parameter.return_value.values_mapping == mock_value
+        assert mock_get_response_subfunction_parameter.return_value.values_mapping == mock_value
+        mock_get_request_subfunction_parameter.assert_called_once_with(TIMING_PARAMETER_ACCESS_TYPE_2013.name)
+        mock_get_response_subfunction_parameter.assert_called_once_with(TIMING_PARAMETER_ACCESS_TYPE_2013.name)
 
     # dtc_setting_type_mapping
 
     def test_dtc_setting_type_mapping_mapping__get(self):
+        mock_get_request_subfunction_parameter = Mock()
+        control_dtc_setting = self.mock_translator.services_mapping[RequestSID.ControlDTCSetting]
+        control_dtc_setting.request_structure[0].__getitem__ = mock_get_request_subfunction_parameter
         assert (
             ConfigurableTranslator.dtc_setting_type_mapping.fget(self.mock_translator)
-            == self.mock_translator.services_mapping[RequestSID.ControlDTCSetting]
-            .request_structure[0]
-            .children[1]
-            .values_mapping
+            == mock_get_request_subfunction_parameter.return_value.values_mapping
         )
+        mock_get_request_subfunction_parameter.assert_called_once_with(DTC_SETTING_TYPE.name)
 
     def test_dtc_setting_type_mapping_mapping__get__none(self):
         mock_get = Mock(return_value=None)
@@ -714,33 +702,31 @@ class TestConfigurableTranslator:
 
     def test_dtc_setting_type_mapping_mapping__set(self):
         mock_value = {Mock(): Mock()}
+        mock_get_request_subfunction_parameter = Mock()
+        mock_get_response_subfunction_parameter = Mock()
+        control_dtc_setting = self.mock_translator.services_mapping[RequestSID.ControlDTCSetting]
+        control_dtc_setting.request_structure[0].__getitem__ = mock_get_request_subfunction_parameter
+        control_dtc_setting.response_structure[0].__getitem__ = mock_get_response_subfunction_parameter
         assert ConfigurableTranslator.dtc_setting_type_mapping.fset(self.mock_translator, mock_value) is None
-        assert (
-            self.mock_translator.services_mapping[RequestSID.ControlDTCSetting]
-            .request_structure[0]
-            .children[1]
-            .values_mapping
-            == mock_value
-        )
-        assert (
-            self.mock_translator.services_mapping[RequestSID.ControlDTCSetting]
-            .response_structure[0]
-            .children[1]
-            .values_mapping
-            == mock_value
-        )
+        assert mock_get_request_subfunction_parameter.return_value.values_mapping == mock_value
+        assert mock_get_response_subfunction_parameter.return_value.values_mapping == mock_value
+        mock_get_request_subfunction_parameter.assert_called_once_with(DTC_SETTING_TYPE.name)
+        mock_get_response_subfunction_parameter.assert_called_once_with(DTC_SETTING_TYPE.name)
 
     # event_type_mapping
 
     def test_event_type_mapping_mapping__get(self):
+        mock_get_request_subfunction_parameter = MagicMock()
+        mock_get_request_subfunction_subparameter = Mock()
+        response_on_event = self.mock_translator.services_mapping[RequestSID.ResponseOnEvent]
+        response_on_event.request_structure[0].__getitem__ = mock_get_request_subfunction_parameter
+        mock_get_request_subfunction_parameter.return_value.__getitem__ = mock_get_request_subfunction_subparameter
         assert (
             ConfigurableTranslator.event_type_mapping.fget(self.mock_translator)
-            == self.mock_translator.services_mapping[RequestSID.ResponseOnEvent]
-            .request_structure[0]
-            .children[1]
-            .children[1]
-            .values_mapping
+            == mock_get_request_subfunction_subparameter.return_value.values_mapping
         )
+        mock_get_request_subfunction_parameter.assert_called_once_with(EVENT_TYPE_2013.name)
+        mock_get_request_subfunction_subparameter.assert_called_once_with(EVENT_2013.name)
 
     def test_event_type_mapping_mapping__get__none(self):
         mock_get = Mock(return_value=None)
@@ -750,34 +736,34 @@ class TestConfigurableTranslator:
 
     def test_event_type_mapping_mapping__set(self):
         mock_value = {Mock(): Mock()}
+        mock_get_request_subfunction_parameter = MagicMock()
+        mock_get_response_subfunction_parameter = MagicMock()
+        mock_get_request_subfunction_subparameter = Mock()
+        mock_get_response_subfunction_subparameter = Mock()
+        response_on_event = self.mock_translator.services_mapping[RequestSID.ResponseOnEvent]
+        response_on_event.request_structure[0].__getitem__ = mock_get_request_subfunction_parameter
+        response_on_event.response_structure[0].__getitem__ = mock_get_response_subfunction_parameter
+        mock_get_request_subfunction_parameter.return_value.__getitem__ = mock_get_request_subfunction_subparameter
+        mock_get_response_subfunction_parameter.return_value.__getitem__ = mock_get_response_subfunction_subparameter
         assert ConfigurableTranslator.event_type_mapping.fset(self.mock_translator, mock_value) is None
-        assert (
-            self.mock_translator.services_mapping[RequestSID.ResponseOnEvent]
-            .request_structure[0]
-            .children[1]
-            .children[1]
-            .values_mapping
-            == mock_value
-        )
-        assert (
-            self.mock_translator.services_mapping[RequestSID.ResponseOnEvent]
-            .response_structure[0]
-            .children[1]
-            .children[1]
-            .values_mapping
-            == mock_value
-        )
+        assert mock_get_request_subfunction_subparameter.return_value.values_mapping == mock_value
+        assert mock_get_response_subfunction_subparameter.return_value.values_mapping == mock_value
+        mock_get_request_subfunction_parameter.assert_called_once_with(EVENT_TYPE_2013.name)
+        mock_get_response_subfunction_parameter.assert_called_once_with(EVENT_TYPE_2013.name)
+        mock_get_request_subfunction_subparameter.assert_called_once_with(EVENT_2013.name)
+        mock_get_response_subfunction_subparameter.assert_called_once_with(EVENT_2013.name)
 
     # link_control_type_mapping
 
     def test_link_control_type_mapping_mapping__get(self):
+        mock_get_request_subfunction_parameter = Mock()
+        link_control = self.mock_translator.services_mapping[RequestSID.LinkControl]
+        link_control.request_structure[0].__getitem__ = mock_get_request_subfunction_parameter
         assert (
             ConfigurableTranslator.link_control_type_mapping.fget(self.mock_translator)
-            == self.mock_translator.services_mapping[RequestSID.LinkControl]
-            .request_structure[0]
-            .children[1]
-            .values_mapping
+            == mock_get_request_subfunction_parameter.return_value.values_mapping
         )
+        mock_get_request_subfunction_parameter.assert_called_once_with(LINK_CONTROL_TYPE.name)
 
     def test_link_control_type_mapping_mapping__get__none(self):
         mock_get = Mock(return_value=None)
@@ -787,21 +773,16 @@ class TestConfigurableTranslator:
 
     def test_link_control_type_mapping_mapping__set(self):
         mock_value = {Mock(): Mock()}
+        mock_get_request_subfunction_parameter = Mock()
+        mock_get_response_subfunction_parameter = Mock()
+        link_control = self.mock_translator.services_mapping[RequestSID.LinkControl]
+        link_control.request_structure[0].__getitem__ = mock_get_request_subfunction_parameter
+        link_control.response_structure[0].__getitem__ = mock_get_response_subfunction_parameter
         assert ConfigurableTranslator.link_control_type_mapping.fset(self.mock_translator, mock_value) is None
-        assert (
-            self.mock_translator.services_mapping[RequestSID.LinkControl]
-            .request_structure[0]
-            .children[1]
-            .values_mapping
-            == mock_value
-        )
-        assert (
-            self.mock_translator.services_mapping[RequestSID.LinkControl]
-            .response_structure[0]
-            .children[1]
-            .values_mapping
-            == mock_value
-        )
+        assert mock_get_request_subfunction_parameter.return_value.values_mapping == mock_value
+        assert mock_get_response_subfunction_parameter.return_value.values_mapping == mock_value
+        mock_get_request_subfunction_parameter.assert_called_once_with(LINK_CONTROL_TYPE.name)
+        mock_get_response_subfunction_parameter.assert_called_once_with(LINK_CONTROL_TYPE.name)
 
     # rid_mapping
 

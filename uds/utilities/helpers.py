@@ -50,10 +50,11 @@ def find_element(sequence: Sequence[T], **attributes: Any) -> T | None:
 
     :param sequence: Sequence of elements to look in.
     :param attributes: Attributes of an object.
+        If an element does not have an attribute, None value is assumed.
 
     :return: An object that was found or None if not found.
     """
     for element in sequence:
-        if all(getattr(element, attr_name) == attr_value for attr_name, attr_value in attributes.items()):
+        if all(getattr(element, attr_name, None) == attr_value for attr_name, attr_value in attributes.items()):
             return element
     return None  # not found
