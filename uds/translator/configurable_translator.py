@@ -43,6 +43,7 @@ from .data_record_definitions import (
     REPORT_TYPE_2013,
     RESERVED_BIT,
     RESET_TYPE,
+    RID,
     ROUTINE_CONTROL_TYPE,
     SECURITY_ACCESS_TYPE,
     TIMING_PARAMETER_ACCESS_TYPE_2013,
@@ -668,7 +669,7 @@ class ConfigurableTranslator(Translator):
         routine_control = self.services_mapping.get(RequestSID.RoutineControl, None)
         if routine_control is None:
             return None
-        rid: MappingDataRecord = routine_control.request_structure[1]  # type: ignore
+        rid: MappingDataRecord = find_element(routine_control.request_structure, name=RID.name)  # type: ignore
         return rid.values_mapping
 
     @rid_mapping.setter
@@ -679,8 +680,13 @@ class ConfigurableTranslator(Translator):
         :param value: Mapping value to set.
         """
         routine_control = self.services_mapping[RequestSID.RoutineControl]
-        rid: MappingDataRecord = routine_control.request_structure[1]  # type: ignore
+        rid: MappingDataRecord = find_element(routine_control.request_structure, name=RID.name)  # type: ignore
         rid.values_mapping = value
+        conditional_response: ConditionalMappingDataRecord = routine_control.response_structure[1]  # type: ignore
+        for response_continuation in conditional_response.mapping.values():
+            _rid: MappingDataRecord | None = find_element(response_continuation, name=RID.name)  # type: ignore
+            if _rid is not None:
+                _rid.values_mapping = value
 
     @property
     def did_mapping(self) -> Mapping[int, str] | None:

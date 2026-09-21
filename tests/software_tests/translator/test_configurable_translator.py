@@ -54,6 +54,7 @@ from uds.translator.configurable_translator import (
     REPORT_TYPE_2013,
     RESERVED_BIT,
     RESET_TYPE,
+    RID,
     ROUTINE_CONTROL_TYPE,
     SECURITY_ACCESS_TYPE,
     TIMING_PARAMETER_ACCESS_TYPE_2013,
@@ -787,10 +788,12 @@ class TestConfigurableTranslator:
     # rid_mapping
 
     def test_rid_mapping__get(self):
+        routine_control = self.mock_translator.services_mapping[RequestSID.RoutineControl]
         assert (
             ConfigurableTranslator.rid_mapping.fget(self.mock_translator)
-            == self.mock_translator.services_mapping[RequestSID.RoutineControl].request_structure[1].values_mapping
+            == self.mock_find_element.return_value.values_mapping
         )
+        self.mock_find_element.assert_called_once_with(routine_control.request_structure, name=RID.name)
 
     def test_rid_mapping__get__none(self):
         mock_get = Mock(return_value=None)
@@ -798,12 +801,40 @@ class TestConfigurableTranslator:
         assert ConfigurableTranslator.rid_mapping.fget(self.mock_translator) is None
         mock_get.assert_called_once_with(RequestSID.RoutineControl, None)
 
-    def test_rid_mapping__set(self):
+    def test_rid_mapping__set__continuation_with_rid(self):
         mock_value = {Mock(): Mock()}
+        mock_mapping_values = Mock(return_value=5 * [Mock()])
+        found_elements = [Mock()] + len(mock_mapping_values.return_value) * [Mock()]
+        self.mock_find_element.side_effect = found_elements
+        mock_conditional_response_data_record = Mock(mapping=Mock(values=mock_mapping_values))
+        routine_control = self.mock_translator.services_mapping[RequestSID.RoutineControl]
+        routine_control.response_structure = (Mock(), mock_conditional_response_data_record)
         assert ConfigurableTranslator.rid_mapping.fset(self.mock_translator, mock_value) is None
-        assert (
-            self.mock_translator.services_mapping[RequestSID.RoutineControl].request_structure[1].values_mapping
-            == mock_value
+        assert all(found_element.values_mapping == mock_value for found_element in found_elements)
+        self.mock_find_element.assert_has_calls(
+            [call(routine_control.request_structure, name=RID.name)]
+            + [
+                call(response_continuation, name=RID.name) for response_continuation in mock_mapping_values.return_value
+            ],
+            any_order=True,
+        )
+
+    def test_rid_mapping__set__continuation_without_rid(self):
+        mock_value = {Mock(): Mock()}
+        mock_mapping_values = Mock(return_value=5 * [Mock()])
+        found_elements = [Mock()] + len(mock_mapping_values.return_value) * [None]
+        self.mock_find_element.side_effect = found_elements
+        mock_conditional_response_data_record = Mock(mapping=Mock(values=mock_mapping_values))
+        routine_control = self.mock_translator.services_mapping[RequestSID.RoutineControl]
+        routine_control.response_structure = (Mock(), mock_conditional_response_data_record)
+        assert ConfigurableTranslator.rid_mapping.fset(self.mock_translator, mock_value) is None
+        assert found_elements[0].values_mapping == mock_value
+        self.mock_find_element.assert_has_calls(
+            [call(routine_control.request_structure, name=RID.name)]
+            + [
+                call(response_continuation, name=RID.name) for response_continuation in mock_mapping_values.return_value
+            ],
+            any_order=True,
         )
 
     # did_mapping
