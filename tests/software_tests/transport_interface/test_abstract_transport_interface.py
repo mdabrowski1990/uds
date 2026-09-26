@@ -24,13 +24,17 @@ class TestAbstractTransportInterface:
 
     # __init__
 
-    @pytest.mark.parametrize("network_manager, network_manager_receives_own_frames", [
-        (Mock(), Mock()),
-        ("some network manager", False),
-    ])
+    @pytest.mark.parametrize(
+        "network_manager, network_manager_receives_own_frames",
+        [
+            (Mock(), Mock()),
+            ("some network manager", False),
+        ],
+    )
     def test_init__valid(self, network_manager, network_manager_receives_own_frames):
-        assert AbstractTransportInterface.__init__(self.mock_transport_interface,
-                                                   network_manager=network_manager) is None
+        assert (
+            AbstractTransportInterface.__init__(self.mock_transport_interface, network_manager=network_manager) is None
+        )
         assert self.mock_transport_interface.network_manager == network_manager
         assert self.mock_transport_interface._AbstractTransportInterface__time_sync == self.mock_time_sync.return_value
 
@@ -50,26 +54,32 @@ class TestAbstractTransportInterface:
 
     def test_time_sync__get(self):
         self.mock_transport_interface._AbstractTransportInterface__time_sync = Mock()
-        assert (AbstractTransportInterface.time_sync.fget(self.mock_transport_interface)
-                == self.mock_transport_interface._AbstractTransportInterface__time_sync)
+        assert (
+            AbstractTransportInterface.time_sync.fget(self.mock_transport_interface)
+            == self.mock_transport_interface._AbstractTransportInterface__time_sync
+        )
 
     # addressing_information
 
     def test_addressing_information__get(self):
-        assert (AbstractTransportInterface.addressing_information.fget(self.mock_transport_interface)
-                == self.mock_transport_interface.segmenter.addressing_information)
+        assert (
+            AbstractTransportInterface.addressing_information.fget(self.mock_transport_interface)
+            == self.mock_transport_interface.segmenter.addressing_information
+        )
 
     @pytest.mark.parametrize("value", [Mock(), "some addressing information"])
     def test_addressing_information__set(self, value):
-        assert (AbstractTransportInterface.addressing_information.fset(self.mock_transport_interface, value) is None)
+        assert AbstractTransportInterface.addressing_information.fset(self.mock_transport_interface, value) is None
         assert self.mock_transport_interface.segmenter.addressing_information == value
 
     # network_manager
 
     def test_network_manager__get(self):
         self.mock_transport_interface._AbstractTransportInterface__network_manager = Mock()
-        assert (AbstractTransportInterface.network_manager.fget(self.mock_transport_interface)
-                == self.mock_transport_interface._AbstractTransportInterface__network_manager)
+        assert (
+            AbstractTransportInterface.network_manager.fget(self.mock_transport_interface)
+            == self.mock_transport_interface._AbstractTransportInterface__network_manager
+        )
 
     @pytest.mark.parametrize("value", [Mock(), "some network manager"])
     def test_network_manager__set(self, value):
@@ -95,38 +105,46 @@ class TestAbstractTransportInterface:
 
     # teardown_sync
 
-    @pytest.mark.parametrize("is_sync_active, suppress_warning", [
-        (True, True),
-        (False, True),
-        (False, False),
-    ])
+    @pytest.mark.parametrize(
+        "is_sync_active, suppress_warning",
+        [
+            (True, True),
+            (False, True),
+            (False, False),
+        ],
+    )
     def test_teardown_sync__no_warning(self, is_sync_active, suppress_warning):
         self.mock_transport_interface.is_sync_active = is_sync_active
-        assert AbstractTransportInterface.teardown_sync(self.mock_transport_interface,
-                                                        suppress_warning=suppress_warning) is None
+        assert (
+            AbstractTransportInterface.teardown_sync(self.mock_transport_interface, suppress_warning=suppress_warning)
+            is None
+        )
         self.mock_warn.assert_not_called()
 
     def test_teardown_sync__warning(self):
         self.mock_transport_interface.is_sync_active = True
-        assert AbstractTransportInterface.teardown_sync(self.mock_transport_interface,
-                                                        suppress_warning=False) is None
+        assert AbstractTransportInterface.teardown_sync(self.mock_transport_interface, suppress_warning=False) is None
         self.mock_warn.assert_called_once()
-        
+
     # teardown_async
 
-    @pytest.mark.parametrize("is_async_active, suppress_warning", [
-        (True, True),
-        (False, True),
-        (False, False),
-    ])
+    @pytest.mark.parametrize(
+        "is_async_active, suppress_warning",
+        [
+            (True, True),
+            (False, True),
+            (False, False),
+        ],
+    )
     def test_teardown_async__no_warning(self, is_async_active, suppress_warning):
         self.mock_transport_interface.is_async_active = is_async_active
-        assert AbstractTransportInterface.teardown_async(self.mock_transport_interface,
-                                                        suppress_warning=suppress_warning) is None
+        assert (
+            AbstractTransportInterface.teardown_async(self.mock_transport_interface, suppress_warning=suppress_warning)
+            is None
+        )
         self.mock_warn.assert_not_called()
 
     def test_teardown_async__warning(self):
         self.mock_transport_interface.is_async_active = True
-        assert AbstractTransportInterface.teardown_async(self.mock_transport_interface,
-                                                        suppress_warning=False) is None
+        assert AbstractTransportInterface.teardown_async(self.mock_transport_interface, suppress_warning=False) is None
         self.mock_warn.assert_called_once()

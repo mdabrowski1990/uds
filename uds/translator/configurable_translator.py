@@ -1,14 +1,17 @@
 """Implementation of translator configurable through typical diagnostic parameters."""
 
+from __future__ import annotations
+
 __all__ = ["ConfigurableTranslator"]
 
-from collections.abc import Callable, Mapping, Sequence
+from collections.abc import Callable, Iterator, Mapping, Sequence
 from copy import deepcopy
 from types import MappingProxyType
 from typing import Any
+from warnings import warn
 
 from uds.message import RequestSID
-from uds.utilities import DID_BIT_LENGTH, REPEATED_DATA_RECORDS_NUMBER
+from uds.utilities import DID_BIT_LENGTH, REPEATED_DATA_RECORDS_NUMBER, find_element
 
 from .data_record import (
     AbstractDataRecord,
@@ -19,15 +22,34 @@ from .data_record import (
     RawDataRecord,
 )
 from .data_record_definitions import (
+    AUTHENTICATION_TASK,
+    CONTROL_TYPE,
+    DEFINITION_TYPE,
+    DIAGNOSTIC_SESSION_TYPE,
+    DID_2013,
     DID_COUNT_RECORDS,
     DTC_AND_STATUS,
+    DTC_SETTING_TYPE,
     DTC_STORED_DATA_RECORD_NUMBERS_LIST,
     DTCS_AND_STATUSES_LIST,
+    DYNAMICALLY_DEFINED_DID_2013,
+    EVENT_2013,
+    EVENT_TYPE_2013,
+    EVENT_TYPE_RECORD_08_2020,
+    EVENT_TYPE_RECORD_09_2020,
     INPUT_OUTPUT_CONTROL_PARAMETER,
+    LINK_CONTROL_TYPE,
     MEMORY_SELECTION,
     NUMBER_OF_ACTIVATED_EVENTS,
     OPTIONAL_DTC_SNAPSHOT_RECORDS_NUMBERS_LIST,
+    REPORT_TYPE_2013,
     RESERVED_BIT,
+    RESET_TYPE,
+    RID,
+    ROUTINE_CONTROL_TYPE,
+    SECURITY_ACCESS_TYPE,
+    TIMING_PARAMETER_ACCESS_TYPE_2013,
+    ZERO_SUBFUNCTION,
 )
 from .data_record_definitions.formula import get_event_type_record_01, get_service_to_respond
 from .translator import Translator
@@ -47,7 +69,7 @@ class ConfigurableTranslator(Translator):
         :class:`~uds.translator.translator.Translator` shall be directly used instead.
     """
 
-    def __init__(self,  # pylint: disable=too-many-branches
+    def __init__(self,  # pylint: disable=too-many-branches  # noqa: MC0001
                  base: Translator = BASE_TRANSLATOR,
                  *,
                  diagnostic_session_type_mapping: Mapping[int, str] | None = None,
@@ -65,7 +87,8 @@ class ConfigurableTranslator(Translator):
                  link_control_type_mapping: Mapping[int, str] | None = None,
                  rid_mapping: Mapping[int, str] | None = None,
                  did_mapping: Mapping[int, str] | None = None,
-                 did_data_mapping: Mapping[int, MessageStructureAlias]) -> None:
+                 did_data_mapping: Mapping[int, MessageStructureAlias],
+                 ) -> None:
         """
         Reconfigure a translator.
 
@@ -150,29 +173,31 @@ class ConfigurableTranslator(Translator):
             self.did_mapping = did_mapping
         self.did_data_mapping = did_data_mapping
 
-    def __deepcopy__(self, memo: dict[int, Any]) -> "ConfigurableTranslator":
+    def __deepcopy__(self, memo: dict[int, Any]) -> ConfigurableTranslator:
         """Get deep copy of the translator."""
         cls = self.__class__
         self_copy = cls.__new__(cls)
         memo[id(self)] = self_copy
-        ConfigurableTranslator.__init__(self_copy,
-                                        base=self,
-                                        diagnostic_session_type_mapping=self.diagnostic_session_type_mapping,
-                                        reset_type_mapping=self.reset_type_mapping,
-                                        report_type_mapping=self.report_type_mapping,
-                                        security_access_type_mapping=self.security_access_type_mapping,
-                                        control_type_type_mapping=self.control_type_type_mapping,
-                                        authentication_task_mapping=self.authentication_task_mapping,
-                                        definition_type_mapping=self.definition_type_mapping,
-                                        routine_control_type_mapping=self.routine_control_type_mapping,
-                                        zero_subfunction_mapping=self.zero_subfunction_mapping,
-                                        timing_parameter_access_type_mapping=self.timing_parameter_access_type_mapping,
-                                        dtc_setting_type_mapping=self.dtc_setting_type_mapping,
-                                        event_type_mapping=self.event_type_mapping,
-                                        link_control_type_mapping=self.link_control_type_mapping,
-                                        rid_mapping=self.rid_mapping,
-                                        did_mapping=self.did_mapping,
-                                        did_data_mapping=deepcopy(dict(self.did_data_mapping), memo=memo))
+        ConfigurableTranslator.__init__(
+            self_copy,
+            base=self,
+            diagnostic_session_type_mapping=self.diagnostic_session_type_mapping,
+            reset_type_mapping=self.reset_type_mapping,
+            report_type_mapping=self.report_type_mapping,
+            security_access_type_mapping=self.security_access_type_mapping,
+            control_type_type_mapping=self.control_type_type_mapping,
+            authentication_task_mapping=self.authentication_task_mapping,
+            definition_type_mapping=self.definition_type_mapping,
+            routine_control_type_mapping=self.routine_control_type_mapping,
+            zero_subfunction_mapping=self.zero_subfunction_mapping,
+            timing_parameter_access_type_mapping=self.timing_parameter_access_type_mapping,
+            dtc_setting_type_mapping=self.dtc_setting_type_mapping,
+            event_type_mapping=self.event_type_mapping,
+            link_control_type_mapping=self.link_control_type_mapping,
+            rid_mapping=self.rid_mapping,
+            did_mapping=self.did_mapping,
+            did_data_mapping=deepcopy(dict(self.did_data_mapping), memo=memo),
+        )
         return self_copy
 
     @property
@@ -181,8 +206,9 @@ class ConfigurableTranslator(Translator):
         diagnostic_session_control = self.services_mapping.get(RequestSID.DiagnosticSessionControl, None)
         if diagnostic_session_control is None:
             return None
-        sub_function: MappingDataRecord = diagnostic_session_control.request_structure[0].children[1]  # type: ignore
-        return sub_function.values_mapping
+        subfunction_byte: RawDataRecord = diagnostic_session_control.request_structure[0]  # type: ignore
+        subfunction_parameter: MappingDataRecord = subfunction_byte[DIAGNOSTIC_SESSION_TYPE.name]  # type: ignore
+        return subfunction_parameter.values_mapping
 
     @diagnostic_session_type_mapping.setter
     def diagnostic_session_type_mapping(self, value: Mapping[int, str]) -> None:
@@ -192,8 +218,16 @@ class ConfigurableTranslator(Translator):
         :param value: Mapping value to set.
         """
         diagnostic_session_control = self.services_mapping[RequestSID.DiagnosticSessionControl]
-        diagnostic_session_control.request_structure[0].children[1].values_mapping = value  # type: ignore
-        diagnostic_session_control.response_structure[0].children[1].values_mapping = value  # type: ignore
+        request_subfunction_byte: RawDataRecord = diagnostic_session_control.request_structure[0]  # type: ignore
+        response_subfunction_byte: RawDataRecord = diagnostic_session_control.response_structure[0]  # type: ignore
+        request_subfunction_parameter: MappingDataRecord = (  # type: ignore
+            request_subfunction_byte
+        )[DIAGNOSTIC_SESSION_TYPE.name]
+        response_subfunction_parameter: MappingDataRecord = (  # type: ignore
+            response_subfunction_byte
+        )[DIAGNOSTIC_SESSION_TYPE.name]
+        request_subfunction_parameter.values_mapping = value
+        response_subfunction_parameter.values_mapping = value
 
     @property
     def reset_type_mapping(self) -> Mapping[int, str] | None:
@@ -201,8 +235,9 @@ class ConfigurableTranslator(Translator):
         ecu_reset = self.services_mapping.get(RequestSID.ECUReset, None)
         if ecu_reset is None:
             return None
-        sub_function: MappingDataRecord = ecu_reset.request_structure[0].children[1]  # type: ignore
-        return sub_function.values_mapping
+        subfunction_byte: RawDataRecord = ecu_reset.request_structure[0]  # type: ignore
+        subfunction_parameter: MappingDataRecord = subfunction_byte[RESET_TYPE.name]  # type: ignore
+        return subfunction_parameter.values_mapping
 
     @reset_type_mapping.setter
     def reset_type_mapping(self, value: Mapping[int, str]) -> None:
@@ -212,8 +247,12 @@ class ConfigurableTranslator(Translator):
         :param value: Mapping value to set.
         """
         ecu_reset = self.services_mapping[RequestSID.ECUReset]
-        ecu_reset.request_structure[0].children[1].values_mapping = value  # type: ignore
-        ecu_reset.response_structure[0].children[1].values_mapping = value  # type: ignore
+        request_subfunction_byte: RawDataRecord = ecu_reset.request_structure[0]  # type: ignore
+        response_subfunction_byte: RawDataRecord = ecu_reset.response_structure[0]  # type: ignore
+        request_subfunction_parameter: MappingDataRecord = request_subfunction_byte[RESET_TYPE.name]  # type: ignore
+        response_subfunction_parameter: MappingDataRecord = response_subfunction_byte[RESET_TYPE.name]  # type: ignore
+        request_subfunction_parameter.values_mapping = value
+        response_subfunction_parameter.values_mapping = value
 
     @property
     def report_type_mapping(self) -> Mapping[int, str] | None:
@@ -221,8 +260,9 @@ class ConfigurableTranslator(Translator):
         read_dtc_information = self.services_mapping.get(RequestSID.ReadDTCInformation, None)
         if read_dtc_information is None:
             return None
-        sub_function: MappingDataRecord = read_dtc_information.request_structure[0].children[1]  # type: ignore
-        return sub_function.values_mapping
+        subfunction_byte: RawDataRecord = read_dtc_information.request_structure[0]  # type: ignore
+        subfunction_parameter: MappingDataRecord = subfunction_byte[REPORT_TYPE_2013.name]  # type: ignore
+        return subfunction_parameter.values_mapping
 
     @report_type_mapping.setter
     def report_type_mapping(self, value: Mapping[int, str]) -> None:
@@ -231,27 +271,103 @@ class ConfigurableTranslator(Translator):
 
         :param value: Mapping value to set.
         """
+        # SID 0x19 (ReadDTCInformation)
         read_dtc_information = self.services_mapping[RequestSID.ReadDTCInformation]
-        read_dtc_information.request_structure[0].children[1].values_mapping = value  # type: ignore
-        read_dtc_information.response_structure[0].children[1].values_mapping = value  # type: ignore
+        request_subfunction_byte: RawDataRecord = read_dtc_information.request_structure[0]  # type: ignore
+        response_subfunction_byte: RawDataRecord = read_dtc_information.response_structure[0]  # type: ignore
+        request_subfunction_parameter: MappingDataRecord = (  # type: ignore
+            request_subfunction_byte
+        )[REPORT_TYPE_2013.name]
+        response_subfunction_parameter: MappingDataRecord = (  # type: ignore
+            response_subfunction_byte
+        )[REPORT_TYPE_2013.name]
+        request_subfunction_parameter.values_mapping = value
+        response_subfunction_parameter.values_mapping = value
+        # SID 0x86 (ResponseOnEvent)
         response_on_event = self.services_mapping.get(RequestSID.ResponseOnEvent, None)
         if response_on_event is not None:
-            subfunction_08_request_continuation = (
-                response_on_event.request_structure[1].mapping.get(0x08, None))  # type: ignore
-            if subfunction_08_request_continuation is not None:
-                subfunction_08_request_continuation[1].children[1].values_mapping = value
-            subfunction_09_request_continuation = (
-                response_on_event.request_structure[1].mapping.get(0x09, None))  # type: ignore
-            if subfunction_09_request_continuation is not None:
-                subfunction_09_request_continuation[1].children[2].values_mapping = value
-            subfunction_08_response_continuation = (
-                response_on_event.response_structure[1].mapping.get(0x08, None))  # type: ignore
-            if subfunction_08_response_continuation is not None:
-                subfunction_08_response_continuation[2].children[1].values_mapping = value
-            subfunction_09_response_continuation = (
-                response_on_event.response_structure[1].mapping.get(0x09, None))  # type: ignore
-            if subfunction_09_response_continuation is not None:
-                subfunction_09_response_continuation[2].children[2].values_mapping = value
+            request_conditional_continuation: ConditionalMappingDataRecord = (  # type: ignore
+                response_on_event.request_structure
+            )[1]
+            response_conditional_continuation: ConditionalMappingDataRecord = (  # type: ignore
+                response_on_event.response_structure
+            )[1]
+            request_continuation_08 = request_conditional_continuation.mapping.get(0x08, None)
+            response_continuation_08 = response_conditional_continuation.mapping.get(0x08, None)
+            request_continuation_09 = request_conditional_continuation.mapping.get(0x09, None)
+            response_continuation_09 = response_conditional_continuation.mapping.get(0x09, None)
+            if request_continuation_08 is not None:
+                request_event_type_record_08: RawDataRecord | None = find_element(
+                    request_continuation_08,
+                    element_type=RawDataRecord,
+                    name=EVENT_TYPE_RECORD_08_2020.name,
+                    length=EVENT_TYPE_RECORD_08_2020.length,
+                )
+                if request_event_type_record_08 is not None:
+                    subfunction_parameter: MappingDataRecord = (  # type: ignore
+                        request_event_type_record_08
+                    )[REPORT_TYPE_2013.name]
+                    subfunction_parameter.values_mapping = value
+                else:
+                    warn(
+                        message="ResponseOnEvent service has incompatible request structure definition for "
+                        "SubFunction 0x08.",
+                        category=UserWarning,
+                    )
+            if response_continuation_08 is not None:
+                response_event_type_record_08: RawDataRecord | None = find_element(
+                    response_continuation_08,
+                    element_type=RawDataRecord,
+                    name=EVENT_TYPE_RECORD_08_2020.name,
+                    length=EVENT_TYPE_RECORD_08_2020.length,
+                )
+                if response_event_type_record_08 is not None:
+                    subfunction_parameter: MappingDataRecord = (  # type: ignore
+                        response_event_type_record_08
+                    )[REPORT_TYPE_2013.name]
+                    subfunction_parameter.values_mapping = value
+                else:
+                    warn(
+                        message="ResponseOnEvent service has incompatible response structure definition for "
+                        "SubFunction 0x08.",
+                        category=UserWarning,
+                    )
+            if request_continuation_09 is not None:
+                request_event_type_record_09: RawDataRecord | None = find_element(
+                    request_continuation_09,
+                    element_type=RawDataRecord,
+                    name=EVENT_TYPE_RECORD_09_2020.name,
+                    length=EVENT_TYPE_RECORD_09_2020.length,
+                )
+                if request_event_type_record_09 is not None:
+                    subfunction_parameter: MappingDataRecord = (  # type: ignore
+                        request_event_type_record_09
+                    )[REPORT_TYPE_2013.name]
+                    subfunction_parameter.values_mapping = value
+                else:
+                    warn(
+                        message="ResponseOnEvent service has incompatible request structure definition for "
+                        "SubFunction 0x09.",
+                        category=UserWarning,
+                    )
+            if response_continuation_09 is not None:
+                response_event_type_record_09: RawDataRecord | None = find_element(
+                    response_continuation_09,
+                    element_type=RawDataRecord,
+                    name=EVENT_TYPE_RECORD_08_2020.name,
+                    length=EVENT_TYPE_RECORD_08_2020.length,
+                )
+                if response_event_type_record_09 is not None:
+                    subfunction_parameter: MappingDataRecord = (  # type: ignore
+                        response_event_type_record_09
+                    )[REPORT_TYPE_2013.name]
+                    subfunction_parameter.values_mapping = value
+                else:
+                    warn(
+                        message="ResponseOnEvent service has incompatible response structure definition for "
+                        "SubFunction 0x09.",
+                        category=UserWarning,
+                    )
 
     @property
     def security_access_type_mapping(self) -> Mapping[int, str] | None:
@@ -259,8 +375,9 @@ class ConfigurableTranslator(Translator):
         security_access = self.services_mapping.get(RequestSID.SecurityAccess, None)
         if security_access is None:
             return None
-        sub_function: MappingDataRecord = security_access.request_structure[0].children[1]  # type: ignore
-        return sub_function.values_mapping
+        subfunction_byte: RawDataRecord = security_access.request_structure[0]  # type: ignore
+        subfunction_parameter: MappingDataRecord = subfunction_byte[SECURITY_ACCESS_TYPE.name]  # type: ignore
+        return subfunction_parameter.values_mapping
 
     @security_access_type_mapping.setter
     def security_access_type_mapping(self, value: Mapping[int, str]) -> None:
@@ -270,8 +387,16 @@ class ConfigurableTranslator(Translator):
         :param value: Mapping value to set.
         """
         security_access = self.services_mapping[RequestSID.SecurityAccess]
-        security_access.request_structure[0].children[1].values_mapping = value  # type: ignore
-        security_access.response_structure[0].children[1].values_mapping = value  # type: ignore
+        request_subfunction_byte: RawDataRecord = security_access.request_structure[0]  # type: ignore
+        response_subfunction_byte: RawDataRecord = security_access.response_structure[0]  # type: ignore
+        request_subfunction_parameter: MappingDataRecord = (  # type: ignore
+            request_subfunction_byte
+        )[SECURITY_ACCESS_TYPE.name]
+        response_subfunction_parameter: MappingDataRecord = (  # type: ignore
+            response_subfunction_byte
+        )[SECURITY_ACCESS_TYPE.name]
+        request_subfunction_parameter.values_mapping = value
+        response_subfunction_parameter.values_mapping = value
 
     @property
     def control_type_type_mapping(self) -> Mapping[int, str] | None:
@@ -279,8 +404,9 @@ class ConfigurableTranslator(Translator):
         communication_control = self.services_mapping.get(RequestSID.CommunicationControl, None)
         if communication_control is None:
             return None
-        sub_function: MappingDataRecord = communication_control.request_structure[0].children[1]  # type: ignore
-        return sub_function.values_mapping
+        subfunction_byte: RawDataRecord = communication_control.request_structure[0]  # type: ignore
+        subfunction_parameter: MappingDataRecord = subfunction_byte[CONTROL_TYPE.name]  # type: ignore
+        return subfunction_parameter.values_mapping
 
     @control_type_type_mapping.setter
     def control_type_type_mapping(self, value: Mapping[int, str]) -> None:
@@ -290,8 +416,16 @@ class ConfigurableTranslator(Translator):
         :param value: Mapping value to set.
         """
         communication_control = self.services_mapping[RequestSID.CommunicationControl]
-        communication_control.request_structure[0].children[1].values_mapping = value  # type: ignore
-        communication_control.response_structure[0].children[1].values_mapping = value  # type: ignore
+        request_subfunction_byte: RawDataRecord = communication_control.request_structure[0]  # type: ignore
+        response_subfunction_byte: RawDataRecord = communication_control.response_structure[0]  # type: ignore
+        request_subfunction_parameter: MappingDataRecord = (  # type: ignore
+            request_subfunction_byte
+        )[CONTROL_TYPE.name]
+        response_subfunction_parameter: MappingDataRecord = (  # type: ignore
+            response_subfunction_byte
+        )[CONTROL_TYPE.name]
+        request_subfunction_parameter.values_mapping = value
+        response_subfunction_parameter.values_mapping = value
 
     @property
     def authentication_task_mapping(self) -> Mapping[int, str] | None:
@@ -299,8 +433,9 @@ class ConfigurableTranslator(Translator):
         authentication = self.services_mapping.get(RequestSID.Authentication, None)
         if authentication is None:
             return None
-        sub_function: MappingDataRecord = authentication.request_structure[0].children[1]  # type: ignore
-        return sub_function.values_mapping
+        subfunction_byte: RawDataRecord = authentication.request_structure[0]  # type: ignore
+        subfunction_parameter: MappingDataRecord = subfunction_byte[AUTHENTICATION_TASK.name]  # type: ignore
+        return subfunction_parameter.values_mapping
 
     @authentication_task_mapping.setter
     def authentication_task_mapping(self, value: Mapping[int, str]) -> None:
@@ -310,8 +445,16 @@ class ConfigurableTranslator(Translator):
         :param value: Mapping value to set.
         """
         authentication = self.services_mapping[RequestSID.Authentication]
-        authentication.request_structure[0].children[1].values_mapping = value  # type: ignore
-        authentication.response_structure[0].children[1].values_mapping = value  # type: ignore
+        request_subfunction_byte: RawDataRecord = authentication.request_structure[0]  # type: ignore
+        response_subfunction_byte: RawDataRecord = authentication.response_structure[0]  # type: ignore
+        request_subfunction_parameter: MappingDataRecord = (  # type: ignore
+            request_subfunction_byte
+        )[AUTHENTICATION_TASK.name]
+        response_subfunction_parameter: MappingDataRecord = (  # type: ignore
+            response_subfunction_byte
+        )[AUTHENTICATION_TASK.name]
+        request_subfunction_parameter.values_mapping = value
+        response_subfunction_parameter.values_mapping = value
 
     @property
     def definition_type_mapping(self) -> Mapping[int, str] | None:
@@ -319,9 +462,9 @@ class ConfigurableTranslator(Translator):
         dynamically_define_data_identifier = self.services_mapping.get(RequestSID.DynamicallyDefineDataIdentifier, None)
         if dynamically_define_data_identifier is None:
             return None
-        sub_function: MappingDataRecord = (  # type: ignore
-            dynamically_define_data_identifier.request_structure[0].children)[1]  # type: ignore
-        return sub_function.values_mapping
+        subfunction_byte: RawDataRecord = dynamically_define_data_identifier.request_structure[0]  # type: ignore
+        subfunction_parameter: MappingDataRecord = subfunction_byte[DEFINITION_TYPE.name]  # type: ignore
+        return subfunction_parameter.values_mapping
 
     @definition_type_mapping.setter
     def definition_type_mapping(self, value: Mapping[int, str]) -> None:
@@ -331,8 +474,18 @@ class ConfigurableTranslator(Translator):
         :param value: Mapping value to set.
         """
         dynamically_define_data_identifier = self.services_mapping[RequestSID.DynamicallyDefineDataIdentifier]
-        dynamically_define_data_identifier.request_structure[0].children[1].values_mapping = value  # type: ignore
-        dynamically_define_data_identifier.response_structure[0].children[1].values_mapping = value  # type: ignore
+        request_subfunction_byte: RawDataRecord = (  # type: ignore
+            dynamically_define_data_identifier.request_structure)[0]
+        response_subfunction_byte: RawDataRecord = (  # type: ignore
+            dynamically_define_data_identifier.response_structure)[0]
+        request_subfunction_parameter: MappingDataRecord = (  # type: ignore
+            request_subfunction_byte
+        )[DEFINITION_TYPE.name]
+        response_subfunction_parameter: MappingDataRecord = (  # type: ignore
+            response_subfunction_byte
+        )[DEFINITION_TYPE.name]
+        request_subfunction_parameter.values_mapping = value
+        response_subfunction_parameter.values_mapping = value
 
     @property
     def routine_control_type_mapping(self) -> Mapping[int, str] | None:
@@ -340,8 +493,9 @@ class ConfigurableTranslator(Translator):
         routine_control = self.services_mapping.get(RequestSID.RoutineControl, None)
         if routine_control is None:
             return None
-        sub_function: MappingDataRecord = routine_control.request_structure[0].children[1]  # type: ignore
-        return sub_function.values_mapping
+        subfunction_byte: RawDataRecord = routine_control.request_structure[0]  # type: ignore
+        subfunction_parameter: MappingDataRecord = subfunction_byte[ROUTINE_CONTROL_TYPE.name]  # type: ignore
+        return subfunction_parameter.values_mapping
 
     @routine_control_type_mapping.setter
     def routine_control_type_mapping(self, value: Mapping[int, str]) -> None:
@@ -351,8 +505,16 @@ class ConfigurableTranslator(Translator):
         :param value: Mapping value to set.
         """
         routine_control = self.services_mapping[RequestSID.RoutineControl]
-        routine_control.request_structure[0].children[1].values_mapping = value  # type: ignore
-        routine_control.response_structure[0].children[1].values_mapping = value  # type: ignore
+        request_subfunction_byte: RawDataRecord = routine_control.request_structure[0]  # type: ignore
+        response_subfunction_byte: RawDataRecord = routine_control.response_structure[0]  # type: ignore
+        request_subfunction_parameter: MappingDataRecord = (  # type: ignore
+            request_subfunction_byte
+        )[ROUTINE_CONTROL_TYPE.name]
+        response_subfunction_parameter: MappingDataRecord = (  # type: ignore
+            response_subfunction_byte
+        )[ROUTINE_CONTROL_TYPE.name]
+        request_subfunction_parameter.values_mapping = value
+        response_subfunction_parameter.values_mapping = value
 
     @property
     def zero_subfunction_mapping(self) -> Mapping[int, str] | None:
@@ -360,8 +522,9 @@ class ConfigurableTranslator(Translator):
         tester_present = self.services_mapping.get(RequestSID.TesterPresent, None)
         if tester_present is None:
             return None
-        sub_function: MappingDataRecord = tester_present.request_structure[0].children[1]  # type: ignore
-        return sub_function.values_mapping
+        subfunction_byte: RawDataRecord = tester_present.request_structure[0]  # type: ignore
+        subfunction_parameter: MappingDataRecord = subfunction_byte[ZERO_SUBFUNCTION.name]  # type: ignore
+        return subfunction_parameter.values_mapping
 
     @zero_subfunction_mapping.setter
     def zero_subfunction_mapping(self, value: Mapping[int, str]) -> None:
@@ -371,8 +534,16 @@ class ConfigurableTranslator(Translator):
         :param value: Mapping value to set.
         """
         tester_present = self.services_mapping[RequestSID.TesterPresent]
-        tester_present.request_structure[0].children[1].values_mapping = value  # type: ignore
-        tester_present.response_structure[0].children[1].values_mapping = value  # type: ignore
+        request_subfunction_byte: RawDataRecord = tester_present.request_structure[0]  # type: ignore
+        response_subfunction_byte: RawDataRecord = tester_present.response_structure[0]  # type: ignore
+        request_subfunction_parameter: MappingDataRecord = (  # type: ignore
+            request_subfunction_byte
+        )[ZERO_SUBFUNCTION.name]
+        response_subfunction_parameter: MappingDataRecord = (  # type: ignore
+            response_subfunction_byte
+        )[ZERO_SUBFUNCTION.name]
+        request_subfunction_parameter.values_mapping = value
+        response_subfunction_parameter.values_mapping = value
 
     @property
     def timing_parameter_access_type_mapping(self) -> Mapping[int, str] | None:
@@ -380,8 +551,10 @@ class ConfigurableTranslator(Translator):
         access_timing_parameter = self.services_mapping.get(RequestSID.AccessTimingParameter, None)
         if access_timing_parameter is None:
             return None
-        sub_function: MappingDataRecord = access_timing_parameter.request_structure[0].children[1]  # type: ignore
-        return sub_function.values_mapping
+        subfunction_byte: RawDataRecord = access_timing_parameter.request_structure[0]  # type: ignore
+        subfunction_parameter: MappingDataRecord = (   # type: ignore
+            subfunction_byte)[TIMING_PARAMETER_ACCESS_TYPE_2013.name]
+        return subfunction_parameter.values_mapping
 
     @timing_parameter_access_type_mapping.setter
     def timing_parameter_access_type_mapping(self, value: Mapping[int, str]) -> None:
@@ -391,8 +564,16 @@ class ConfigurableTranslator(Translator):
         :param value: Mapping value to set.
         """
         access_timing_parameter = self.services_mapping[RequestSID.AccessTimingParameter]
-        access_timing_parameter.request_structure[0].children[1].values_mapping = value  # type: ignore
-        access_timing_parameter.response_structure[0].children[1].values_mapping = value  # type: ignore
+        request_subfunction_byte: RawDataRecord = access_timing_parameter.request_structure[0]  # type: ignore
+        response_subfunction_byte: RawDataRecord = access_timing_parameter.response_structure[0]  # type: ignore
+        request_subfunction_parameter: MappingDataRecord = (  # type: ignore
+            request_subfunction_byte
+        )[TIMING_PARAMETER_ACCESS_TYPE_2013.name]
+        response_subfunction_parameter: MappingDataRecord = (  # type: ignore
+            response_subfunction_byte
+        )[TIMING_PARAMETER_ACCESS_TYPE_2013.name]
+        request_subfunction_parameter.values_mapping = value
+        response_subfunction_parameter.values_mapping = value
 
     @property
     def dtc_setting_type_mapping(self) -> Mapping[int, str] | None:
@@ -400,8 +581,9 @@ class ConfigurableTranslator(Translator):
         control_dtc_setting = self.services_mapping.get(RequestSID.ControlDTCSetting, None)
         if control_dtc_setting is None:
             return None
-        sub_function: MappingDataRecord = control_dtc_setting.request_structure[0].children[1]  # type: ignore
-        return sub_function.values_mapping
+        subfunction_byte: RawDataRecord = control_dtc_setting.request_structure[0]  # type: ignore
+        subfunction_parameter: MappingDataRecord = subfunction_byte[DTC_SETTING_TYPE.name]  # type: ignore
+        return subfunction_parameter.values_mapping
 
     @dtc_setting_type_mapping.setter
     def dtc_setting_type_mapping(self, value: Mapping[int, str]) -> None:
@@ -411,8 +593,16 @@ class ConfigurableTranslator(Translator):
         :param value: Mapping value to set.
         """
         control_dtc_setting = self.services_mapping[RequestSID.ControlDTCSetting]
-        control_dtc_setting.request_structure[0].children[1].values_mapping = value  # type: ignore
-        control_dtc_setting.response_structure[0].children[1].values_mapping = value  # type: ignore
+        request_subfunction_byte: RawDataRecord = control_dtc_setting.request_structure[0]  # type: ignore
+        response_subfunction_byte: RawDataRecord = control_dtc_setting.response_structure[0]  # type: ignore
+        request_subfunction_parameter: MappingDataRecord = (  # type: ignore
+            request_subfunction_byte
+        )[DTC_SETTING_TYPE.name]
+        response_subfunction_parameter: MappingDataRecord = (  # type: ignore
+            response_subfunction_byte
+        )[DTC_SETTING_TYPE.name]
+        request_subfunction_parameter.values_mapping = value
+        response_subfunction_parameter.values_mapping = value
 
     @property
     def event_type_mapping(self) -> Mapping[int, str] | None:
@@ -425,8 +615,11 @@ class ConfigurableTranslator(Translator):
         response_on_event = self.services_mapping.get(RequestSID.ResponseOnEvent, None)
         if response_on_event is None:
             return None
-        sub_function: MappingDataRecord = response_on_event.request_structure[0].children[1].children[1]  # type: ignore
-        return sub_function.values_mapping
+        subfunction_byte: RawDataRecord = response_on_event.request_structure[0]  # type: ignore
+        subfunction_parameter: MappingDataRecord = (  # type: ignore
+            subfunction_byte
+        )[EVENT_TYPE_2013.name][EVENT_2013.name]
+        return subfunction_parameter.values_mapping
 
     @event_type_mapping.setter
     def event_type_mapping(self, value: Mapping[int, str]) -> None:
@@ -439,8 +632,16 @@ class ConfigurableTranslator(Translator):
         :param value: Mapping value to set.
         """
         response_on_event = self.services_mapping[RequestSID.ResponseOnEvent]
-        response_on_event.request_structure[0].children[1].children[1].values_mapping = value  # type: ignore
-        response_on_event.response_structure[0].children[1].children[1].values_mapping = value  # type: ignore
+        request_subfunction_byte: RawDataRecord = response_on_event.request_structure[0]  # type: ignore
+        response_subfunction_byte: RawDataRecord = response_on_event.response_structure[0]  # type: ignore
+        request_subfunction_parameter: MappingDataRecord = (  # type: ignore
+            request_subfunction_byte
+        )[EVENT_TYPE_2013.name][EVENT_2013.name]
+        response_subfunction_parameter: MappingDataRecord = (  # type: ignore
+            response_subfunction_byte
+        )[EVENT_TYPE_2013.name][EVENT_2013.name]
+        request_subfunction_parameter.values_mapping = value
+        response_subfunction_parameter.values_mapping = value
 
     @property
     def link_control_type_mapping(self) -> Mapping[int, str] | None:
@@ -448,8 +649,9 @@ class ConfigurableTranslator(Translator):
         link_control = self.services_mapping.get(RequestSID.LinkControl, None)
         if link_control is None:
             return None
-        sub_function: MappingDataRecord = link_control.request_structure[0].children[1]  # type: ignore
-        return sub_function.values_mapping
+        subfunction_byte: RawDataRecord = link_control.request_structure[0]  # type: ignore
+        subfunction_parameter: MappingDataRecord = subfunction_byte[LINK_CONTROL_TYPE.name]  # type: ignore
+        return subfunction_parameter.values_mapping
 
     @link_control_type_mapping.setter
     def link_control_type_mapping(self, value: Mapping[int, str]) -> None:
@@ -459,8 +661,16 @@ class ConfigurableTranslator(Translator):
         :param value: Mapping value to set.
         """
         link_control = self.services_mapping[RequestSID.LinkControl]
-        link_control.request_structure[0].children[1].values_mapping = value  # type: ignore
-        link_control.response_structure[0].children[1].values_mapping = value  # type: ignore
+        request_subfunction_byte: RawDataRecord = link_control.request_structure[0]  # type: ignore
+        response_subfunction_byte: RawDataRecord = link_control.response_structure[0]  # type: ignore
+        request_subfunction_parameter: MappingDataRecord = (  # type: ignore
+            request_subfunction_byte
+        )[LINK_CONTROL_TYPE.name]
+        response_subfunction_parameter: MappingDataRecord = (  # type: ignore
+            response_subfunction_byte
+        )[LINK_CONTROL_TYPE.name]
+        request_subfunction_parameter.values_mapping = value
+        response_subfunction_parameter.values_mapping = value
 
     @property
     def rid_mapping(self) -> Mapping[int, str] | None:
@@ -468,7 +678,7 @@ class ConfigurableTranslator(Translator):
         routine_control = self.services_mapping.get(RequestSID.RoutineControl, None)
         if routine_control is None:
             return None
-        rid: MappingDataRecord = routine_control.request_structure[1]  # type: ignore
+        rid: MappingDataRecord = find_element(routine_control.request_structure, name=RID.name)  # type: ignore
         return rid.values_mapping
 
     @rid_mapping.setter
@@ -479,8 +689,17 @@ class ConfigurableTranslator(Translator):
         :param value: Mapping value to set.
         """
         routine_control = self.services_mapping[RequestSID.RoutineControl]
-        rid: MappingDataRecord = routine_control.request_structure[1]  # type: ignore
+        rid: MappingDataRecord = find_element(routine_control.request_structure,  # type: ignore
+                                              element_type=MappingDataRecord,
+                                              name=RID.name)
         rid.values_mapping = value
+        conditional_response: ConditionalMappingDataRecord = routine_control.response_structure[1]  # type: ignore
+        for response_continuation in conditional_response.mapping.values():
+            _rid: MappingDataRecord | None = find_element(response_continuation,
+                                                          element_type=MappingDataRecord,
+                                                          name=RID.name)
+            if _rid is not None:
+                _rid.values_mapping = value
 
     @property
     def did_mapping(self) -> Mapping[int, str] | None:
@@ -488,11 +707,13 @@ class ConfigurableTranslator(Translator):
         read_data_by_identifier = self.services_mapping.get(RequestSID.ReadDataByIdentifier, None)
         if read_data_by_identifier is None:
             return None
-        did: MappingDataRecord = read_data_by_identifier.request_structure[0]  # type: ignore
+        did: MappingDataRecord = find_element(read_data_by_identifier.request_structure,  # type: ignore
+                                              element_type=MappingDataRecord,
+                                              name=DID_2013.name)
         return did.values_mapping
 
     @did_mapping.setter
-    def did_mapping(self, value: Mapping[int, str]) -> None:
+    def did_mapping(self, value: Mapping[int, str]) -> None:  # pylint: disable=too-many-locals
         """
         Set :ref:`Data Identifier (DID) <knowledge-base-did>` value to name mapping.
 
@@ -500,61 +721,104 @@ class ConfigurableTranslator(Translator):
         """
         # ReadDataByIdentifier
         read_data_by_identifier = self.services_mapping[RequestSID.ReadDataByIdentifier]
-        read_data_by_identifier.request_structure[0].values_mapping = (  # type: ignore
-            value)  # did_mapping value is stored here
-        for did in read_data_by_identifier.response_structure[::2]:
-            did.values_mapping = value  # type: ignore
+        did: MappingDataRecord = find_element(read_data_by_identifier.request_structure,  # type: ignore
+                                              element_type=MappingDataRecord,
+                                              name=DID_2013.name)
+        did.values_mapping = value
+        for did in filter(lambda data_record: isinstance(data_record, MappingDataRecord)  # type: ignore
+                          and data_record.name.startswith(DID_2013.name),
+                          read_data_by_identifier.response_structure):
+            did.values_mapping = value
         # WriteDataByIdentifier
         write_data_by_identifier = self.services_mapping.get(RequestSID.WriteDataByIdentifier, None)
         if write_data_by_identifier is not None:
-            write_data_by_identifier.request_structure[0].values_mapping = value  # type: ignore
-            write_data_by_identifier.response_structure[0].values_mapping = value  # type: ignore
+            wdbi_request_did: MappingDataRecord = find_element(  # type: ignore
+                write_data_by_identifier.request_structure,
+                element_type=MappingDataRecord,
+                name=DID_2013.name)
+            wdbi_response_did: MappingDataRecord = find_element(  # type: ignore
+                write_data_by_identifier.response_structure,
+                element_type=MappingDataRecord,
+                name=DID_2013.name)
+            wdbi_request_did.values_mapping = value
+            wdbi_response_did.values_mapping = value
         # ReadScalingDataByIdentifier
         read_scaling_data_by_identifier = self.services_mapping.get(RequestSID.ReadScalingDataByIdentifier, None)
         if read_scaling_data_by_identifier is not None:
-            read_scaling_data_by_identifier.request_structure[0].values_mapping = value  # type: ignore
-            read_scaling_data_by_identifier.response_structure[0].values_mapping = value  # type: ignore
-        # DynamicallyDefineDataIdentifier
-        dynamically_define_data_identifier = self.services_mapping.get(RequestSID.DynamicallyDefineDataIdentifier, None)
-        if dynamically_define_data_identifier is not None:
-            dynamically_define_data_identifier.request_structure[1].mapping[0x01][0].values_mapping = (  # type: ignore
-                value)
-            dynamically_define_data_identifier.request_structure[1].mapping[0x01][1].children[0].values_mapping = value  # type: ignore  # pylint: disable=line-too-long
-            dynamically_define_data_identifier.request_structure[1].mapping[0x02][0].values_mapping = (  # type: ignore
-                value)
-            dynamically_define_data_identifier.request_structure[1].mapping[0x03][0].values_mapping = (  # type: ignore
-                value)
-            dynamically_define_data_identifier.response_structure[1].mapping[0x01][0].values_mapping = (  # type: ignore
-                value)
-            dynamically_define_data_identifier.response_structure[1].mapping[0x02][0].values_mapping = (  # type: ignore
-                value)
-            dynamically_define_data_identifier.response_structure[1].mapping[0x03][0].values_mapping = (  # type: ignore
-                value)
+            rdsbi_request_did: MappingDataRecord = find_element(  # type: ignore
+                read_scaling_data_by_identifier.request_structure,
+                element_type=MappingDataRecord,
+                name=DID_2013.name)
+            rdsbi_response_did: MappingDataRecord = find_element(  # type: ignore
+                read_scaling_data_by_identifier.response_structure,
+                element_type=MappingDataRecord,
+                name=DID_2013.name)
+            rdsbi_request_did.values_mapping = value
+            rdsbi_response_did.values_mapping = value
         # InputOutputControlByIdentifier
         input_output_control_by_identifier = self.services_mapping.get(RequestSID.InputOutputControlByIdentifier, None)
         if input_output_control_by_identifier is not None:
-            input_output_control_by_identifier.request_structure[0].values_mapping = value  # type: ignore
-            input_output_control_by_identifier.response_structure[0].values_mapping = value  # type: ignore
+            iocbi_request_did: MappingDataRecord = find_element(  # type: ignore
+                input_output_control_by_identifier.request_structure,
+                element_type=MappingDataRecord,
+                name=DID_2013.name)
+            iocbi_response_did: MappingDataRecord = find_element(  # type: ignore
+                input_output_control_by_identifier.response_structure,
+                element_type=MappingDataRecord,
+                name=DID_2013.name)
+            iocbi_request_did.values_mapping = value
+            iocbi_response_did.values_mapping = value
+        # DynamicallyDefineDataIdentifier
+        dynamically_define_data_identifier = self.services_mapping.get(RequestSID.DynamicallyDefineDataIdentifier, None)
+        if dynamically_define_data_identifier is not None:
+            dddi_conditional_request: ConditionalMappingDataRecord = (  # type: ignore
+                dynamically_define_data_identifier.request_structure)[1]
+            dddi_conditional_response: ConditionalMappingDataRecord = (  # type: ignore
+                dynamically_define_data_identifier.response_structure)[1]
+            dddi_did_data_records: Iterator[MappingDataRecord] = filter(
+                lambda data_record: isinstance(data_record, MappingDataRecord)  # type: ignore
+                and data_record.name == DYNAMICALLY_DEFINED_DID_2013.name,
+                [data_record
+                 for message_continuation in tuple(dddi_conditional_request.mapping.values())
+                 + tuple(dddi_conditional_response.mapping.values())
+                 for data_record in message_continuation])
+            for did_data_record in dddi_did_data_records:
+                did_data_record.values_mapping = value
         # ReadDTCInformation
         read_dtc_information = self.services_mapping.get(RequestSID.ReadDTCInformation, None)
         if read_dtc_information is not None:
-            mapping = dict(read_dtc_information.response_structure[1].mapping)  # type: ignore
-            mapping[0x04] = (DTC_AND_STATUS, *self.__dtc_snapshot_records)
-            mapping[0x05] = self.__dtc_stored_data_records
-            mapping[0x18] = (MEMORY_SELECTION,
-                             DTC_AND_STATUS,
-                             *self.__dtc_snapshot_records)
-            read_dtc_information.response_structure[1].mapping = mapping  # type: ignore
+            rdi_conditional_response: ConditionalMappingDataRecord = (  # type: ignore
+                read_dtc_information.response_structure)[1]
+            rdi_conditional_response_mapping = dict(rdi_conditional_response.mapping)
+            rdi_conditional_response_mapping[0x04] = (DTC_AND_STATUS, *self.__dtc_snapshot_records)
+            rdi_conditional_response_mapping[0x05] = self.__dtc_stored_data_records
+            rdi_conditional_response_mapping[0x18] = (MEMORY_SELECTION, DTC_AND_STATUS, *self.__dtc_snapshot_records)
+            rdi_conditional_response.mapping = rdi_conditional_response_mapping
         # ResponseOnEvent
         response_on_event = self.services_mapping.get(RequestSID.ResponseOnEvent, None)
         if response_on_event is not None:
-            response_on_event.request_structure[1].mapping[0x03][1].children[0].values_mapping = value  # type: ignore
-            response_on_event.request_structure[1].mapping[0x07][1].children[0].values_mapping = value  # type: ignore
-            response_on_event.response_structure[1].mapping[0x03][2].children[0].values_mapping = value  # type: ignore
-            response_on_event.response_structure[1].mapping[0x07][2].children[0].values_mapping = value  # type: ignore
-            mapping = dict(response_on_event.response_structure[1].mapping)  # type: ignore
-            mapping[0x04] = (NUMBER_OF_ACTIVATED_EVENTS, self.__conditional_activated_events)
-            response_on_event.response_structure[1].mapping = mapping  # type: ignore
+            roe_conditional_request: ConditionalMappingDataRecord = (  # type: ignore
+                response_on_event.request_structure)[1]
+            roe_conditional_response: ConditionalMappingDataRecord = (  # type: ignore
+                response_on_event.response_structure)[1]
+            event_type_records: Iterator[RawDataRecord] = filter(
+                lambda data_record: isinstance(data_record, RawDataRecord)  # type: ignore
+                and data_record.name == EVENT_TYPE_RECORD_08_2020.name,
+                [data_record
+                 for message_continuation in tuple(roe_conditional_request.mapping.values())
+                 + tuple(roe_conditional_response.mapping.values())
+                 for data_record in message_continuation])
+            roe_did_data_records: Iterator[MappingDataRecord] = filter(
+                lambda data_record: isinstance(data_record, MappingDataRecord)  # type: ignore
+                and data_record.name == DID_2013.name,
+                [child
+                 for event_type_record in event_type_records
+                 for child in event_type_record.children])
+            for did_data_record in roe_did_data_records:
+                did_data_record.values_mapping = value
+            roe_conditional_response_mapping = dict(roe_conditional_response.mapping)
+            roe_conditional_response_mapping[0x04] = (NUMBER_OF_ACTIVATED_EVENTS, self.__conditional_activated_events)
+            roe_conditional_response.mapping = roe_conditional_response_mapping
 
     @property
     def did_data_mapping(self) -> Mapping[int, MessageStructureAlias]:
@@ -568,35 +832,38 @@ class ConfigurableTranslator(Translator):
 
         :param value: Mapping value to set.
         """
+        # TODO: continue here
         self.__did_data_mapping = MappingProxyType(value)
         # ReadDataByIdentifier
         read_data_by_identifier = self.services_mapping.get(RequestSID.ReadDataByIdentifier, None)
         if read_data_by_identifier is not None:
             read_data_by_identifier.response_structure = (
                 *self.__get_did_record(did_count=1, record_number=None, optional=False),
-                *self.__get_did_record(did_count=REPEATED_DATA_RECORDS_NUMBER, record_number=None, optional=True)[2:]
+                *self.__get_did_record(did_count=REPEATED_DATA_RECORDS_NUMBER, record_number=None, optional=True)[2:],
             )
         # WriteDataByIdentifier
         write_data_by_identifier = self.services_mapping.get(RequestSID.WriteDataByIdentifier, None)
         if write_data_by_identifier is not None:
-            write_data_by_identifier.request_structure = (write_data_by_identifier.request_structure[0],
-                                                          self.__get_did_data())
+            write_data_by_identifier.request_structure = (
+                write_data_by_identifier.request_structure[0],
+                self.__get_did_data(),
+            )
         # InputOutputControlByIdentifier
         input_output_control_by_identifier = self.services_mapping.get(RequestSID.InputOutputControlByIdentifier, None)
         if input_output_control_by_identifier is not None:
             input_output_control_by_identifier.request_structure[1].formula = (  # type: ignore
-                self.__get_input_output_control_by_identifier_request)
+                self.__get_input_output_control_by_identifier_request
+            )
             input_output_control_by_identifier.response_structure[1].formula = (  # type: ignore
-                self.__get_input_output_control_by_identifier_response)
+                self.__get_input_output_control_by_identifier_response
+            )
         # ReadDTCInformation
         read_dtc_information = self.services_mapping.get(RequestSID.ReadDTCInformation, None)
         if read_dtc_information is not None:
             mapping = dict(read_dtc_information.response_structure[1].mapping)  # type: ignore
             mapping[0x04] = (DTC_AND_STATUS, *self.__dtc_snapshot_records)
             mapping[0x05] = self.__dtc_stored_data_records
-            mapping[0x18] = (MEMORY_SELECTION,
-                             DTC_AND_STATUS,
-                             *self.__dtc_snapshot_records)
+            mapping[0x18] = (MEMORY_SELECTION, DTC_AND_STATUS, *self.__dtc_snapshot_records)
             read_dtc_information.response_structure[1].mapping = mapping  # type: ignore
 
     @property
@@ -608,8 +875,10 @@ class ConfigurableTranslator(Translator):
             :obj:`~uds.translator.data_record_definitions.conditional._DID_RECORDS_2020` and
             :obj:`~uds.translator.data_record_definitions.conditional._DID_RECORDS_2013`.
         """
-        return tuple(ConditionalFormulaDataRecord(formula=self.__get_did_records_formula(record_number + 1))
-                     for record_number in range(REPEATED_DATA_RECORDS_NUMBER))
+        return tuple(
+            ConditionalFormulaDataRecord(formula=self.__get_did_records_formula(record_number + 1))
+            for record_number in range(REPEATED_DATA_RECORDS_NUMBER)
+        )
 
     @property
     def __dtc_snapshot_records(self) -> tuple[MappingDataRecord | RawDataRecord | ConditionalFormulaDataRecord, ...]:
@@ -620,12 +889,13 @@ class ConfigurableTranslator(Translator):
             :obj:`~uds.translator.data_record_definitions.conditional._DTC_SNAPSHOT_RECORDS_2020` and
             :obj:`~uds.translator.data_record_definitions.conditional._DTC_SNAPSHOT_RECORDS_2013`.
         """
-        return tuple(item
-                     for snapshot_record in zip(OPTIONAL_DTC_SNAPSHOT_RECORDS_NUMBERS_LIST,
-                                                DID_COUNT_RECORDS,
-                                                self.__did_records,
-                                                strict=True)
-                     for item in snapshot_record)
+        return tuple(
+            item
+            for snapshot_record in zip(
+                OPTIONAL_DTC_SNAPSHOT_RECORDS_NUMBERS_LIST, DID_COUNT_RECORDS, self.__did_records, strict=True
+            )
+            for item in snapshot_record
+        )
 
     @property
     def __dtc_stored_data_records(self) -> tuple[MappingDataRecord | RawDataRecord | ConditionalFormulaDataRecord, ...]:
@@ -636,13 +906,17 @@ class ConfigurableTranslator(Translator):
             :obj:`~uds.translator.data_record_definitions.conditional._DTC_STORED_DATA_RECORDS_2020` and
             :obj:`~uds.translator.data_record_definitions.conditional._DTC_STORED_DATA_RECORDS_2013`.
         """
-        return tuple(item
-                     for stored_data_record in zip(DTC_STORED_DATA_RECORD_NUMBERS_LIST,
-                                                   DTCS_AND_STATUSES_LIST,
-                                                   DID_COUNT_RECORDS,
-                                                   self.__did_records,
-                                                   strict=True)
-                     for item in stored_data_record)
+        return tuple(
+            item
+            for stored_data_record in zip(
+                DTC_STORED_DATA_RECORD_NUMBERS_LIST,
+                DTCS_AND_STATUSES_LIST,
+                DID_COUNT_RECORDS,
+                self.__did_records,
+                strict=True,
+            )
+            for item in stored_data_record
+        )
 
     @property
     def __event_window_time(self) -> MappingDataRecord:
@@ -726,11 +1000,13 @@ class ConfigurableTranslator(Translator):
         """
         if self.did_mapping is None:
             raise ValueError("ReadDataByIdentifier service is not defined in this Translator.")
-        return MappingDataRecord(name=name,
-                                 length=DID_BIT_LENGTH,
-                                 values_mapping=self.did_mapping,
-                                 min_occurrences=0 if optional else 1,
-                                 max_occurrences=1)
+        return MappingDataRecord(
+            name=name,
+            length=DID_BIT_LENGTH,
+            values_mapping=self.did_mapping,
+            min_occurrences=0 if optional else 1,
+            max_occurrences=1,
+        )
 
     def __get_did_data(self, name: str = "DID data") -> ConditionalFormulaDataRecord:
         """
@@ -744,10 +1020,7 @@ class ConfigurableTranslator(Translator):
 
         :return: Conditional Data Record for DID data.
         """
-        default_did_data = RawDataRecord(name=name,
-                                         length=8,
-                                         min_occurrences=1,
-                                         max_occurrences=None)
+        default_did_data = RawDataRecord(name=name, length=8, min_occurrences=1, max_occurrences=None)
 
         def _get_did_data(did: int) -> tuple[RawDataRecord]:
             data_records: Sequence[AbstractDataRecord] = self.did_data_mapping.get(did, None)  # type: ignore
@@ -756,17 +1029,18 @@ class ConfigurableTranslator(Translator):
             total_length = 0
             for dr in data_records:
                 if not isinstance(dr, AbstractDataRecord) or not dr.fixed_total_length:
-                    raise ValueError(f"Incorrectly defined data structure for DID 0x{did:04X}. "
-                                     f"Only fixed length data records are supported right now.")
+                    raise ValueError(
+                        f"Incorrectly defined data structure for DID 0x{did:04X}. "
+                        f"Only fixed length data records are supported right now."
+                    )
                 total_length += dr.min_occurrences * dr.length
-            return (RawDataRecord(name=name,
-                                  children=data_records,
-                                  length=total_length,
-                                  min_occurrences=1,
-                                  max_occurrences=1),)
+            return (
+                RawDataRecord(
+                    name=name, children=data_records, length=total_length, min_occurrences=1, max_occurrences=1
+                ),
+            )
 
-        return ConditionalFormulaDataRecord(formula=_get_did_data,
-                                            default_message_continuation=[default_did_data])
+        return ConditionalFormulaDataRecord(formula=_get_did_data, default_message_continuation=[default_did_data])
 
     def __get_did_data_mask(self, name: str, optional: bool) -> ConditionalFormulaDataRecord:
         """
@@ -781,19 +1055,19 @@ class ConfigurableTranslator(Translator):
 
         :return: Conditional Data Record for DID data mask.
         """
-        default_did_data_mask = RawDataRecord(name=name,
-                                              length=8,
-                                              min_occurrences=0 if optional else 1,
-                                              max_occurrences=None)
+        default_did_data_mask = RawDataRecord(
+            name=name, length=8, min_occurrences=0 if optional else 1, max_occurrences=None
+        )
 
         def _get_mask_data_record(data_record: AbstractDataRecord) -> RawDataRecord:
-            return MappingDataRecord(name=f"{data_record.name} (mask)",
-                                     length=data_record.length,
-                                     values_mapping={0: "no",
-                                                     data_record.max_raw_value: "yes"},
-                                     children=[_get_mask_data_record(child) for child in data_record.children],
-                                     min_occurrences=data_record.min_occurrences,
-                                     max_occurrences=data_record.max_occurrences)
+            return MappingDataRecord(
+                name=f"{data_record.name} (mask)",
+                length=data_record.length,
+                values_mapping={0: "no", data_record.max_raw_value: "yes"},
+                children=[_get_mask_data_record(child) for child in data_record.children],
+                min_occurrences=data_record.min_occurrences,
+                max_occurrences=data_record.max_occurrences,
+            )
 
         def _get_did_data_mask(did: int) -> tuple[RawDataRecord]:
             data_records = self.did_data_mapping.get(did, None)
@@ -803,18 +1077,25 @@ class ConfigurableTranslator(Translator):
             mask_data_records = []
             for dr in data_records:
                 if not isinstance(dr, AbstractDataRecord) or not dr.fixed_total_length:
-                    raise ValueError(f"Incorrectly defined data structure for DID 0x{did:04X}. "
-                                     f"Only fixed length data records are supported right now.")
+                    raise ValueError(
+                        f"Incorrectly defined data structure for DID 0x{did:04X}. "
+                        f"Only fixed length data records are supported right now."
+                    )
                 total_length += dr.min_occurrences * dr.length
                 mask_data_records.append(_get_mask_data_record(dr))
-            return (RawDataRecord(name=name,
-                                  children=mask_data_records,
-                                  length=total_length,
-                                  min_occurrences=0 if optional else 1,
-                                  max_occurrences=1),)
+            return (
+                RawDataRecord(
+                    name=name,
+                    children=mask_data_records,
+                    length=total_length,
+                    min_occurrences=0 if optional else 1,
+                    max_occurrences=1,
+                ),
+            )
 
-        return ConditionalFormulaDataRecord(formula=_get_did_data_mask,
-                                            default_message_continuation=[default_did_data_mask])
+        return ConditionalFormulaDataRecord(
+            formula=_get_did_data_mask, default_message_continuation=[default_did_data_mask]
+        )
 
     def __get_did_records_formula(self, record_number: int | None) -> Callable[[int], MessageStructureAlias]:
         """
@@ -831,10 +1112,9 @@ class ConfigurableTranslator(Translator):
         """
         return lambda did_count: self.__get_did_record(did_count=did_count, record_number=record_number)
 
-    def __get_did_record(self,
-                         did_count: int,
-                         record_number: int | None,
-                         optional: bool = False) -> tuple[MappingDataRecord | ConditionalFormulaDataRecord, ...]:
+    def __get_did_record(
+        self, did_count: int, record_number: int | None, optional: bool = False
+    ) -> tuple[MappingDataRecord | ConditionalFormulaDataRecord, ...]:
         """
         Get DID record (e.g. for DTC Snapshot or DTC Stored Data) with DID numbers and data.
 
@@ -870,14 +1150,20 @@ class ConfigurableTranslator(Translator):
 
         :return: Following Data Records.
         """
-        return (INPUT_OUTPUT_CONTROL_PARAMETER,
-                ConditionalMappingDataRecord(mapping={
+        return (
+            INPUT_OUTPUT_CONTROL_PARAMETER,
+            ConditionalMappingDataRecord(
+                mapping={
                     0x00: (),
                     0x01: (),
                     0x02: (),
-                    0x03: (*self.__conditional_control_state.get_message_continuation(did),
-                           *self.__conditional_optional_control_enable_mask.get_message_continuation(did)),
-                }))
+                    0x03: (
+                        *self.__conditional_control_state.get_message_continuation(did),
+                        *self.__conditional_optional_control_enable_mask.get_message_continuation(did),
+                    ),
+                }
+            ),
+        )
 
     def __get_input_output_control_by_identifier_response(self, did: int) -> MessageStructureAlias:
         # pylint: disable=line-too-long
@@ -894,13 +1180,17 @@ class ConfigurableTranslator(Translator):
         :return: Following Data Records.
         """
         control_state_data_records = self.__conditional_control_state.get_message_continuation(did)
-        return (INPUT_OUTPUT_CONTROL_PARAMETER,
-                ConditionalMappingDataRecord(mapping={
+        return (
+            INPUT_OUTPUT_CONTROL_PARAMETER,
+            ConditionalMappingDataRecord(
+                mapping={
                     0x00: control_state_data_records,
                     0x01: control_state_data_records,
                     0x02: control_state_data_records,
                     0x03: control_state_data_records,
-                }))
+                }
+            ),
+        )
 
     def __get_event_window_time(self, event_number: int) -> MappingDataRecord:
         """
@@ -919,9 +1209,9 @@ class ConfigurableTranslator(Translator):
         event_window.name = f"{event_window.name}#{event_number}"
         return event_window
 
-    def __get_activated_events(self, number_of_activated_events: int) -> tuple[RawDataRecord
-                                                                               | MappingDataRecord
-                                                                               | ConditionalMappingDataRecord, ...]:
+    def __get_activated_events(
+        self, number_of_activated_events: int
+    ) -> tuple[RawDataRecord | MappingDataRecord | ConditionalMappingDataRecord, ...]:
         """
         Get activated events.
 
@@ -939,25 +1229,18 @@ class ConfigurableTranslator(Translator):
             service_to_respond = get_service_to_respond(event_number)
             data_records.append(self.__get_event_type_of_active_event(event_number))
             mapping: dict[int, MessageStructureAlias] = {
-                0x01: (event_window_time,
-                       get_event_type_record_01(event_number),
-                       service_to_respond),
+                0x01: (event_window_time, get_event_type_record_01(event_number), service_to_respond),
             }
             for event_type in (0x02, 0x03, 0x07):
-                event_type_record = self.__get_event_type_record(event=event_type,
-                                                                 event_number=event_number)
+                event_type_record = self.__get_event_type_record(event=event_type, event_number=event_number)
                 if event_type_record is None:
                     continue
-                mapping[event_type] = (event_window_time,
-                                       event_type_record,
-                                       service_to_respond)
+                mapping[event_type] = (event_window_time, event_type_record, service_to_respond)
 
-            event_type_record_08 = self.__get_event_type_record(event=0x08,
-                                                                event_number=event_number)
+            event_type_record_08 = self.__get_event_type_record(event=0x08, event_number=event_number)
             if event_type_record_08 is not None:
                 mapping[0x08] = (event_window_time, event_type_record_08)
-            event_type_record_09 = self.__get_event_type_record(event=0x09,
-                                                                event_number=event_number)
+            event_type_record_09 = self.__get_event_type_record(event=0x09, event_number=event_number)
             event_type_record_09_continuation = self.__get_event_type_record_09_continuation(event_number=event_number)
             if event_type_record_09 is not None and event_type_record_09_continuation is not None:
                 mapping[0x09] = (event_window_time, event_type_record_09, event_type_record_09_continuation)
@@ -976,10 +1259,9 @@ class ConfigurableTranslator(Translator):
 
         :return: Created `eventTypeOfActiveEvent` Data Record.
         """
-        return RawDataRecord(name=f"eventTypeOfActiveEvent#{event_number}",
-                             length=8,
-                             children=(RESERVED_BIT,
-                                       self.__event_type))
+        return RawDataRecord(
+            name=f"eventTypeOfActiveEvent#{event_number}", length=8, children=(RESERVED_BIT, self.__event_type)
+        )
 
     def __get_event_type_record(self, event: int, event_number: int) -> RawDataRecord | None:
         """

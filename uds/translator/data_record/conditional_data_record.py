@@ -1,7 +1,14 @@
 """Conditional Data Records implementation."""
 
-__all__ = ["DEFAULT_DIAGNOSTIC_MESSAGE_CONTINUATION", "MessageStructureAlias",
-           "AbstractConditionalDataRecord", "ConditionalMappingDataRecord", "ConditionalFormulaDataRecord"]
+from __future__ import annotations
+
+__all__ = [
+    "DEFAULT_DIAGNOSTIC_MESSAGE_CONTINUATION",
+    "MessageStructureAlias",
+    "AbstractConditionalDataRecord",
+    "ConditionalMappingDataRecord",
+    "ConditionalFormulaDataRecord",
+]
 
 from abc import ABC, abstractmethod
 from copy import deepcopy
@@ -21,10 +28,8 @@ The sequence contains `AbstractDataRecord` instances and may include conditional
 The total length (min/max) must always be divisible by 8."""
 
 DEFAULT_DIAGNOSTIC_MESSAGE_CONTINUATION: MessageStructureAlias = (
-    RawDataRecord(name="Generic Diagnostic Message Continuation",
-                  length=8,
-                  min_occurrences=0,
-                  max_occurrences=None),)
+    RawDataRecord(name="Generic Diagnostic Message Continuation", length=8, min_occurrences=0, max_occurrences=None),
+)
 """Generic Diagnostic Message Continuation that can be used when specific information are not available."""
 
 
@@ -105,8 +110,10 @@ class AbstractConditionalDataRecord(ABC):
         for i, data_record in enumerate(value):
             if isinstance(data_record, AbstractDataRecord):
                 if data_record.name in names:
-                    raise InconsistencyError("Data Records within one message have to have unique names. "
-                                             f"Multiple {data_record.name!r} found.")
+                    raise InconsistencyError(
+                        "Data Records within one message have to have unique names. "
+                        f"Multiple {data_record.name!r} found."
+                    )
                 names.add(data_record.name)
                 min_total_length += data_record.length * data_record.min_occurrences
                 # handle data_record.max_occurrences == None
@@ -117,8 +124,10 @@ class AbstractConditionalDataRecord(ABC):
             else:
                 raise ValueError("Provided sequence contains an element which is not a Data Record.")
         if min_total_length % 8 != 0 or max_total_length % 8:
-            raise InconsistencyError("Total length of diagnostic message continuation must always be divisible by 8. "
-                                     f"Min length: {min_total_length}. Max length: {max_total_length}.")
+            raise InconsistencyError(
+                "Total length of diagnostic message continuation must always be divisible by 8. "
+                f"Min length: {min_total_length}. Max length: {max_total_length}."
+            )
 
     def get_message_continuation(self, raw_value: int) -> MessageStructureAlias:
         """
@@ -147,10 +156,12 @@ class ConditionalMappingDataRecord(AbstractConditionalDataRecord):
      - selection of diagnostic service format after sub-function value was provided
     """
 
-    def __init__(self,
-                 mapping: Mapping[int, MessageStructureAlias],
-                 default_message_continuation: MessageStructureAlias | None = None,
-                 value_mask: int | None = None) -> None:
+    def __init__(
+        self,
+        mapping: Mapping[int, MessageStructureAlias],
+        default_message_continuation: MessageStructureAlias | None = None,
+        value_mask: int | None = None,
+    ) -> None:
         """
         Define logic for this Conditional Data Record.
 
@@ -181,7 +192,7 @@ class ConditionalMappingDataRecord(AbstractConditionalDataRecord):
             raise ValueError(f"Provided value is not a raw value as it is less than 0. Actual value: {raw_value}")
         return self.mapping[raw_value if self.value_mask is None else raw_value & self.value_mask]
 
-    def __deepcopy__(self, memo: dict[int, Any]) -> "ConditionalMappingDataRecord":
+    def __deepcopy__(self, memo: dict[int, Any]) -> ConditionalMappingDataRecord:
         """Get deep copy of this Data Record."""
         cls = self.__class__
         self_copy = cls.__new__(cls)
@@ -190,7 +201,8 @@ class ConditionalMappingDataRecord(AbstractConditionalDataRecord):
             self_copy,
             mapping={key: deepcopy(value, memo=memo) for key, value in self.mapping.items()},
             default_message_continuation=deepcopy(self.default_message_continuation, memo=memo),
-            value_mask=self.value_mask)
+            value_mask=self.value_mask,
+        )
         return self_copy
 
     @property
@@ -247,9 +259,11 @@ class ConditionalFormulaDataRecord(AbstractConditionalDataRecord):
      - Extracting length value for following parameters (e.g. from addressAndLengthFormatIdentifier)
     """
 
-    def __init__(self,
-                 formula: Callable[[int], MessageStructureAlias],
-                 default_message_continuation: MessageStructureAlias | None = None) -> None:
+    def __init__(
+        self,
+        formula: Callable[[int], MessageStructureAlias],
+        default_message_continuation: MessageStructureAlias | None = None,
+    ) -> None:
         """
         Define logic for this Conditional Data Record.
 
@@ -277,7 +291,7 @@ class ConditionalFormulaDataRecord(AbstractConditionalDataRecord):
             raise ValueError(f"Provided value is not a raw value as it is lower than 0. Actual value: {raw_value}")
         return self.formula(raw_value)
 
-    def __deepcopy__(self, memo: dict[int, Any]) -> "ConditionalFormulaDataRecord":
+    def __deepcopy__(self, memo: dict[int, Any]) -> ConditionalFormulaDataRecord:
         """Get deep copy of this Data Record."""
         cls = self.__class__
         self_copy = cls.__new__(cls)
@@ -285,7 +299,8 @@ class ConditionalFormulaDataRecord(AbstractConditionalDataRecord):
         ConditionalFormulaDataRecord.__init__(
             self_copy,
             formula=self.formula,
-            default_message_continuation=deepcopy(self.default_message_continuation, memo=memo))
+            default_message_continuation=deepcopy(self.default_message_continuation, memo=memo),
+        )
         return self_copy
 
     @property
@@ -309,6 +324,10 @@ class ConditionalFormulaDataRecord(AbstractConditionalDataRecord):
         if len(formula_signature.parameters) != 1:
             raise ValueError("Provided formula does not take exactly one parameter.")
         param_annotation = list(formula_signature.parameters.items())[0][-1].annotation
-        if param_annotation != formula_signature.empty and not issubclass(param_annotation, int):
+        if (
+            param_annotation != formula_signature.empty  # not annotated
+            and param_annotation != "int"  # when __future__.annotation is used
+            and not issubclass(param_annotation, int)
+        ):
             raise ValueError("Formula's annotation suggests the formula does not take raw value as an argument.")
         self.__formula = formula

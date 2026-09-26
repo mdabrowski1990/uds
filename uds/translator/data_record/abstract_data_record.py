@@ -1,20 +1,32 @@
 """Implementation of Data Records structure and API."""
 
-__all__ = ["AbstractDataRecord",
-           "SingleOccurrenceInfo", "MultipleOccurrencesInfo", "DataRecordInfoAlias",
-           "SinglePhysicalValueAlias", "MultiplePhysicalValuesAlias", "PhysicalValueAlias",
-           "ChildrenValuesAlias"]
+from __future__ import annotations
+
+__all__ = [
+    "AbstractDataRecord",
+    "SingleOccurrenceDict",
+    "MultipleOccurrencesDict",
+    "DataRecordOccurrenceDict",
+    "SingleOccurrence",
+    "MultipleOccurrences",
+    "AbstractDataRecordOccurrences",
+    "SinglePhysicalValueAlias",
+    "MultiplePhysicalValuesAlias",
+    "PhysicalValueAlias",
+    "ChildrenValuesAlias",
+]
 
 from abc import ABC, abstractmethod
 from collections import OrderedDict
 from collections.abc import Mapping, Sequence
+from dataclasses import dataclass
 from typing import TypedDict
 
-from uds.utilities import InconsistencyError, ReassignmentError
+from uds.utilities import InconsistencyError, ReassignmentError, find_element
 
 SinglePhysicalValueAlias = int | float | str
 """
-Physical value from a single Data Record occurrence.
+Physical value alias for a single Data Record occurrence.
 
 Physical values represent the human-readable interpretation of raw integer values:
 
@@ -22,9 +34,10 @@ Physical values represent the human-readable interpretation of raw integer value
 - float: Scaled/calculated values (e.g., 25.5°C after scaling)
 - str: Mapped labels (e.g., "Active", "Inactive", "Warning")
 """
+
 MultiplePhysicalValuesAlias = str | tuple[SinglePhysicalValueAlias, ...]
 """
-Physical values from multiple Data Record occurrences.
+Physical values alias for multiple Data Record occurrences.
 
 When processing multiple occurrences, physical values are either:
 
@@ -32,15 +45,17 @@ When processing multiple occurrences, physical values are either:
   (e.g. ASCII, UTF-8)
 - tuple: Individual values per occurrence
 """
+
 PhysicalValueAlias = SinglePhysicalValueAlias | MultiplePhysicalValuesAlias
 """Alias for all physical values."""
+
 type ChildrenValuesAlias = Mapping[str, int | ChildrenValuesAlias]
 """Alias for children values mapping."""
 
 
-class SingleOccurrenceInfo(TypedDict, total=True):
+class SingleOccurrenceDict(TypedDict, total=True):
     """
-    Comprehensive information about a single Data Record occurrence.
+    Comprehensive information about a single Data Record occurrence in dict format.
 
     :arg name: Data Record name.
     :arg length: Number of bits used to store this Data Record.
@@ -54,13 +69,13 @@ class SingleOccurrenceInfo(TypedDict, total=True):
     length: int
     raw_value: int
     physical_value: SinglePhysicalValueAlias
-    children: tuple["DataRecordInfoAlias", ...]
+    children: tuple[DataRecordOccurrenceDict, ...]
     unit: str | None
 
 
-class MultipleOccurrencesInfo(TypedDict, total=True):
+class MultipleOccurrencesDict(TypedDict, total=True):
     """
-    Comprehensive information about multiple Data Record occurrences.
+    Comprehensive information about multiple Data Record occurrences in dict format.
 
     :arg name: Data Record name.
     :arg length: Number of bits used to store a single occurrence of this Data Record.
@@ -75,12 +90,160 @@ class MultipleOccurrencesInfo(TypedDict, total=True):
     length: int
     raw_value: tuple[int, ...]
     physical_value: MultiplePhysicalValuesAlias
-    children: tuple[tuple["DataRecordInfoAlias", ...], ...]
+    children: tuple[tuple[DataRecordOccurrenceDict, ...], ...]
     unit: str | None
 
 
-DataRecordInfoAlias = SingleOccurrenceInfo | MultipleOccurrencesInfo
+DataRecordOccurrenceDict = SingleOccurrenceDict | MultipleOccurrencesDict
 """Comprehensive information Data Record occurrence(s)."""
+
+
+class AbstractDataRecordOccurrences(ABC):
+    """Abstract definition of Data Record occurrences storage."""
+
+    @property
+    @abstractmethod
+    def name(self) -> str:
+        """Get Data Record name."""
+
+    @property
+    @abstractmethod
+    def length(self) -> int:
+        """Get number of bits used to store a single occurrence."""
+
+    @property
+    @abstractmethod
+    def raw_value(self) -> int | tuple[int, ...]:
+        """Get raw value(s)."""
+
+    @property
+    @abstractmethod
+    def physical_value(self) -> SinglePhysicalValueAlias | MultiplePhysicalValuesAlias:
+        """Get physical value(s)."""
+
+    @property
+    @abstractmethod
+    def children(
+        self,
+    ) -> tuple[AbstractDataRecordOccurrences, ...] | tuple[tuple[AbstractDataRecordOccurrences, ...], ...]:
+        """Get information about children occurrences."""
+
+    @property
+    @abstractmethod
+    def unit(self) -> str | None:
+        """Get unit in which physical value is represented."""
+
+    @abstractmethod
+    def __getitem__(self, child_name: str) -> AbstractDataRecordOccurrences | tuple[AbstractDataRecordOccurrences, ...]:
+        """
+        Get child Data Record occurrence(s).
+
+        :param child_name: Name of child Data Record.
+
+        :return: Extracted occurrences for child with given name.
+        """
+
+    @abstractmethod
+    def to_dict(self) -> DataRecordOccurrenceDict:
+        """Recursively (this object and its children) convert this occurrence(s) to dict type."""
+
+
+@dataclass(frozen=True, slots=True)
+class SingleOccurrence(AbstractDataRecordOccurrences):
+    """
+    Information about a single Data Record occurrence in object format.
+
+    :arg name: Data Record name.
+    :arg length: Number of bits used to store a single occurrence of this Data Record.
+    :arg raw_value: Raw value for this occurrence.
+    :arg physical_value: Physical value for this occurrence.
+    :arg children: Information about children occurrences.
+    :arg unit: Unit in which physical value is represented.
+    """
+
+    name: str
+    length: int
+    raw_value: int
+    physical_value: SinglePhysicalValueAlias
+    children: tuple[AbstractDataRecordOccurrences, ...]
+    unit: str | None = None
+
+    def __getitem__(self, child_name: str) -> AbstractDataRecordOccurrences:
+        """
+        Get child Data Record occurrence.
+
+        :param child_name: Name of child Data Record.
+
+        :raise ValueError: Child with given name was not found.
+
+        :return: Extracted occurrence for child with given name.
+        """
+        child = find_element(self.children, name=child_name)
+        if child is None:
+            raise ValueError(f"Child with {child_name!r} name was not found.")
+        return child
+
+    def to_dict(self) -> SingleOccurrenceDict:
+        """Recursively (this object and its children) convert this occurrence(s) to dict type."""
+        return SingleOccurrenceDict(
+            name=self.name,
+            length=self.length,
+            raw_value=self.raw_value,
+            physical_value=self.physical_value,
+            children=tuple(child.to_dict() for child in self.children),
+            unit=self.unit,
+        )
+
+
+@dataclass(frozen=True, slots=True)
+class MultipleOccurrences(AbstractDataRecordOccurrences):
+    """
+    Information about multiple Data Record occurrences in object format.
+
+    :arg name: Data Record name.
+    :arg length: Number of bits used to store a single occurrence of this Data Record.
+    :arg raw_value: Raw values for each occurrence.
+    :arg physical_value: Physical values for each occurrence.
+    :arg children: Tuple with a single element for each occurrence.
+        Each element contains information about children occurrences.
+    :arg unit: Unit in which physical value is represented.
+    """
+
+    name: str
+    length: int
+    raw_value: tuple[int, ...]
+    physical_value: MultiplePhysicalValuesAlias
+    children: tuple[tuple[AbstractDataRecordOccurrences, ...], ...]
+    unit: str | None = None
+
+    def __getitem__(self, child_name: str) -> tuple[AbstractDataRecordOccurrences, ...]:
+        """
+        Get child Data Record occurrences.
+
+        :param child_name: Name of child Data Record.
+
+        :raise ValueError: Child with given name was not found.
+
+        :return: Extracted occurrences for child with given name.
+        """
+        child_occurrences: list[AbstractDataRecordOccurrences] = []
+        for occurrence_data in self.children:
+            child = find_element(occurrence_data, name=child_name)
+            if child is None:
+                raise ValueError(f"Child with {child_name!r} name was not found.")
+            child_occurrences.append(child)
+        return tuple(child_occurrences)
+
+    def to_dict(self) -> MultipleOccurrencesDict:
+        """Recursively (this object and its children) convert this occurrence(s) to dict type."""
+        return MultipleOccurrencesDict(
+            name=self.name,
+            length=self.length,
+            raw_value=self.raw_value,
+            physical_value=self.physical_value,
+            children=tuple(tuple(child.to_dict() for child in occurrence_data) for occurrence_data in self.children),
+            unit=self.unit,
+        )
 
 
 class AbstractDataRecord(ABC):
@@ -99,14 +262,16 @@ class AbstractDataRecord(ABC):
     - Comprehensive occurrence information with nested children
     """
 
-    def __init__(self,
-                 name: str,
-                 length: int,
-                 children: Sequence["AbstractDataRecord"],
-                 min_occurrences: int,
-                 max_occurrences: int | None,
-                 unit: str | None = None,
-                 enforce_reoccurring: bool = False) -> None:
+    def __init__(
+        self,
+        name: str,
+        length: int,
+        children: Sequence[AbstractDataRecord],
+        min_occurrences: int,
+        max_occurrences: int | None,
+        unit: str | None = None,
+        enforce_reoccurring: bool = False,
+    ) -> None:
         """
         Initialize common part for all Data Records.
 
@@ -126,6 +291,19 @@ class AbstractDataRecord(ABC):
         self.max_occurrences = max_occurrences
         self.unit = unit
         self.enforce_reoccurring = enforce_reoccurring
+
+    def __getitem__(self, child_name: str) -> AbstractDataRecord:
+        """
+        Get child Data Record.
+
+        :param child_name: Name of child Data Record.
+
+        :return: Child Data Record definition.
+        """
+        child = find_element(self.children, name=child_name)
+        if child is None:
+            raise ValueError(f"Child with {child_name!r} name was not found.")
+        return child
 
     def _validate_raw_value(self, raw_value: int) -> None:
         """
@@ -189,12 +367,12 @@ class AbstractDataRecord(ABC):
         self.__length = value
 
     @property
-    def children(self) -> tuple["AbstractDataRecord", ...]:
+    def children(self) -> tuple[AbstractDataRecord, ...]:
         """Get Data Records contained by this Data Record."""
         return self.__children
 
     @children.setter
-    def children(self, value: Sequence["AbstractDataRecord"]) -> None:
+    def children(self, value: Sequence[AbstractDataRecord]) -> None:
         """
         Set Data Records contained by this Data Record.
 
@@ -269,8 +447,10 @@ class AbstractDataRecord(ABC):
             if not isinstance(value, int):
                 raise TypeError(f"Maximal occurrence number must be int type or None. Actual type: {type(value)}.")
             if value < max(self.min_occurrences, 1):
-                raise ValueError("Maximal occurrence number must be greater or equal minimal occurrences number. "
-                                 f"Actual value: {value}")
+                raise ValueError(
+                    "Maximal occurrence number must be greater or equal minimal occurrences number. "
+                    f"Actual value: {value}"
+                )
         if hasattr(self, "_AbstractDataRecord__max_occurrences"):
             raise ReassignmentError("Value of 'max_occurrences' attribute cannot be changed once set.")
         self.__max_occurrences = value
@@ -373,7 +553,7 @@ class AbstractDataRecord(ABC):
             children_values[child.name] = tuple(child_values)
         return children_values
 
-    def get_children_occurrence_info(self, raw_value: int) -> tuple[DataRecordInfoAlias, ...]:
+    def get_children_occurrence_info(self, raw_value: int) -> tuple[AbstractDataRecordOccurrences, ...]:
         """
         Get occurrence information for all children.
 
@@ -382,11 +562,10 @@ class AbstractDataRecord(ABC):
         :return: Children occurrence information.
         """
         children_values = self.get_children_values(raw_value)
-        children_occurrence_info = [child.get_occurrence_info(*children_values[child.name])
-                                    for child in self.children]
+        children_occurrence_info = [child.get_occurrence_info(*children_values[child.name]) for child in self.children]
         return tuple(children_occurrence_info)
 
-    def get_occurrence_info(self, *raw_values: int) -> DataRecordInfoAlias:
+    def get_occurrence_info(self, *raw_values: int) -> AbstractDataRecordOccurrences:
         """
         Extract comprehensive occurrence information with automatic child extraction.
 
@@ -402,20 +581,24 @@ class AbstractDataRecord(ABC):
             children_values = []
             for raw_value in raw_values:
                 children_values.append(self.get_children_occurrence_info(raw_value))
-            return MultipleOccurrencesInfo(name=self.name,
-                                           length=self.length,
-                                           raw_value=tuple(raw_values),
-                                           physical_value=self.get_physical_values(*raw_values),
-                                           children=tuple(children_values),
-                                           unit=self.unit)
+            return MultipleOccurrences(
+                name=self.name,
+                length=self.length,
+                raw_value=tuple(raw_values),
+                physical_value=self.get_physical_values(*raw_values),
+                children=tuple(children_values),
+                unit=self.unit,
+            )
         if len(raw_values) == 1:
             raw_value = raw_values[0]
-            return SingleOccurrenceInfo(name=self.name,
-                                        length=self.length,
-                                        raw_value=raw_value,
-                                        physical_value=self.get_physical_value(raw_value),
-                                        children=self.get_children_occurrence_info(raw_value),
-                                        unit=self.unit)
+            return SingleOccurrence(
+                name=self.name,
+                length=self.length,
+                raw_value=raw_value,
+                physical_value=self.get_physical_value(raw_value),
+                children=self.get_children_occurrence_info(raw_value),
+                unit=self.unit,
+            )
         raise ValueError("Cannot handle multiple occurrences values for non reoccurring Data Record.")
 
     def get_physical_values(self, *raw_values: int) -> MultiplePhysicalValuesAlias:
@@ -432,9 +615,11 @@ class AbstractDataRecord(ABC):
         if not self.is_reoccurring:
             raise RuntimeError("This method must be called for reoccurring Data Record only.")
         if not self.min_occurrences <= len(raw_values) <= (self.max_occurrences or float("inf")):
-            raise ValueError(f"This Data Record requires from {self.min_occurrences} to "
-                             f"{self.max_occurrences or 'Infinite'} number of occurrences. "
-                             f"Provided {len(raw_values)} occurrences.")
+            raise ValueError(
+                f"This Data Record requires from {self.min_occurrences} to "
+                f"{self.max_occurrences or 'Infinite'} number of occurrences. "
+                f"Provided {len(raw_values)} occurrences."
+            )
         return tuple(self.get_physical_value(raw_value) for raw_value in raw_values)
 
     @abstractmethod
@@ -478,8 +663,10 @@ class AbstractDataRecord(ABC):
         children_names = set(child.name for child in self.children)
         provided_names = set(children_values.keys())
         if provided_names != children_names:
-            raise ValueError("Values for all and only children have to be provided. "
-                             f"Names of all children: {children_names}. Provided names: {provided_names}.")
+            raise ValueError(
+                "Values for all and only children have to be provided. "
+                f"Names of all children: {children_names}. Provided names: {provided_names}."
+            )
         offset = self.length
         raw_value = 0
         for child in self.children:

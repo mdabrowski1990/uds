@@ -5,14 +5,17 @@ from uds.message import NRC, RequestSID, ResponseSID
 from uds.translator import BASE_TRANSLATOR, BASE_TRANSLATOR_2013, BASE_TRANSLATOR_2020
 
 
-class TestTranslatorDefinitions:
-    """Unit tests for translator definitions."""
+@pytest.mark.integration
+class TestTranslatorDefinitionsIntegration:
+    """Integration tests for translator definitions."""
 
     @staticmethod
     def _get_services_definitions_names():
-        return (service_def_name
-                for service_def_name in vars(uds.translator.service_definitions).keys()
-                if service_def_name.isupper() and not service_def_name.startswith("_"))
+        return (
+            service_def_name
+            for service_def_name in vars(uds.translator.service_definitions).keys()
+            if service_def_name.isupper() and not service_def_name.startswith("_")
+        )
 
     def test_services_definition(self):
         """Make sure that all services definition are used in translators."""
@@ -29,174 +32,179 @@ class TestTranslatorDefinitions:
         assert BASE_TRANSLATOR is BASE_TRANSLATOR_2020
 
     @pytest.mark.parametrize("translator", [BASE_TRANSLATOR_2020, BASE_TRANSLATOR_2013])
-    @pytest.mark.parametrize("sid, rsid, data_records_values, payload", [
-        (
-            RequestSID.DiagnosticSessionControl,
-            None,
-            {
-                "SubFunction": 0x81,
-            },
-            bytearray([0x10, 0x81])
-        ),
-        (
-            None,
-            ResponseSID.DiagnosticSessionControl,
-            {
-                "SubFunction": {
-                    "suppressPosRspMsgIndicationBit": False,
-                    "diagnosticSessionType": 0x03,
+    @pytest.mark.parametrize(
+        "sid, rsid, data_records_values, payload",
+        [
+            (
+                RequestSID.DiagnosticSessionControl,
+                None,
+                {
+                    "SubFunction": 0x81,
                 },
-                "sessionParameterRecord": {
-                    "P2Server_max": 0x1234,
-                    "P2*Server_max": 0x5678
-                }
-            },
-            bytearray([0x50, 0x03, 0x12, 0x34, 0x56, 0x78])
-        ),
-        (
-            RequestSID.DiagnosticSessionControl,
-            ResponseSID.NegativeResponse,
-            {
-                "NRC": NRC.ConditionsNotCorrect,
-            },
-            bytearray([0x7F, 0x10, 0x22])
-        ),
-    ])
+                bytearray([0x10, 0x81]),
+            ),
+            (
+                None,
+                ResponseSID.DiagnosticSessionControl,
+                {
+                    "SubFunction": {
+                        "suppressPosRspMsgIndicationBit": False,
+                        "diagnosticSessionType": 0x03,
+                    },
+                    "sessionParameterRecord": {"P2Server_max": 0x1234, "P2*Server_max": 0x5678},
+                },
+                bytearray([0x50, 0x03, 0x12, 0x34, 0x56, 0x78]),
+            ),
+            (
+                RequestSID.DiagnosticSessionControl,
+                ResponseSID.NegativeResponse,
+                {
+                    "NRC": NRC.ConditionsNotCorrect,
+                },
+                bytearray([0x7F, 0x10, 0x22]),
+            ),
+        ],
+    )
     def test_encode(self, translator, sid, rsid, data_records_values, payload):
-        assert translator.encode(sid=sid,
-                                 rsid=rsid,
-                                 data_records_values=data_records_values) == payload
+        assert translator.encode(sid=sid, rsid=rsid, data_records_values=data_records_values) == payload
 
     @pytest.mark.parametrize("translator", [BASE_TRANSLATOR_2020, BASE_TRANSLATOR_2013])
-    @pytest.mark.parametrize("payload, decoded_message", [
-        (
-            [0x10, 0x81],
+    @pytest.mark.parametrize(
+        "payload, decoded_message",
+        [
             (
-                {
-                    'children': (),
-                    'length': 8,
-                    'name': 'SID',
-                    'physical_value': 'DiagnosticSessionControl',
-                    'raw_value': 0x10,
-                    'unit': None
-                },
-                {
-                    'children': (
-                        {
-                            'children': (),
-                            'length': 1,
-                            'name': 'suppressPosRspMsgIndicationBit',
-                            'physical_value': 'yes',
-                            'raw_value': 1,
-                            'unit': None
-                        },
-                        {
-                            'children': (),
-                            'length': 7,
-                            'name': 'diagnosticSessionType',
-                            'physical_value': 'defaultSession',
-                            'raw_value': 0x01,
-                            'unit': None
-                        }
-                    ),
-                    'length': 8,
-                    'name': 'SubFunction',
-                    'physical_value': 0x81,
-                    'raw_value': 0x81,
-                    'unit': None
-                }
-            )
-        ),
-        (
-            [0x50, 0x03, 0x12, 0x34, 0x56, 0x78],
+                [0x10, 0x81],
+                (
+                    {
+                        "children": (),
+                        "length": 8,
+                        "name": "SID",
+                        "physical_value": "DiagnosticSessionControl",
+                        "raw_value": 0x10,
+                        "unit": None,
+                    },
+                    {
+                        "children": (
+                            {
+                                "children": (),
+                                "length": 1,
+                                "name": "suppressPosRspMsgIndicationBit",
+                                "physical_value": "yes",
+                                "raw_value": 1,
+                                "unit": None,
+                            },
+                            {
+                                "children": (),
+                                "length": 7,
+                                "name": "diagnosticSessionType",
+                                "physical_value": "defaultSession",
+                                "raw_value": 0x01,
+                                "unit": None,
+                            },
+                        ),
+                        "length": 8,
+                        "name": "SubFunction",
+                        "physical_value": 0x81,
+                        "raw_value": 0x81,
+                        "unit": None,
+                    },
+                ),
+            ),
             (
-                {
-                    'children': (),
-                    'length': 8,
-                    'name': 'RSID',
-                    'physical_value': 'DiagnosticSessionControl',
-                    'raw_value': 0x50,
-                    'unit': None
-                },
-                {
-                    'children': (
-                        {
-                            'children': (),
-                            'length': 1,
-                            'name': 'suppressPosRspMsgIndicationBit',
-                            'physical_value': 'no',
-                            'raw_value': 0,
-                            'unit': None},
-                        {
-                            'children': (),
-                            'length': 7,
-                            'name': 'diagnosticSessionType',
-                            'physical_value': 'extendedDiagnosticSession',
-                            'raw_value': 0x03,
-                            'unit': None
-                        }
-                    ),
-                    'length': 8,
-                    'name': 'SubFunction',
-                    'physical_value': 0x03,
-                    'raw_value': 0x03,
-                    'unit': None},
-                {
-                    'children': (
-                        {
-                            'children': (),
-                            'length': 16,
-                            'name': 'P2Server_max',
-                            'physical_value': 0x1234,
-                            'raw_value': 0x1234,
-                            'unit': 'ms'
-                        },
-                        {
-                            'children': (),
-                            'length': 16,
-                            'name': 'P2*Server_max',
-                            'physical_value': 0x5678 * 10,
-                            'raw_value': 0x5678,
-                            'unit': 'ms'
-                        }
-                    ),
-                    'length': 32,
-                    'name': 'sessionParameterRecord',
-                    'physical_value': 0x12345678,
-                    'raw_value': 0x12345678,
-                    'unit': None
-                }
-            )
-        ),
-        (
-            [0x7F, 0x10, 0x22],
+                [0x50, 0x03, 0x12, 0x34, 0x56, 0x78],
+                (
+                    {
+                        "children": (),
+                        "length": 8,
+                        "name": "RSID",
+                        "physical_value": "DiagnosticSessionControl",
+                        "raw_value": 0x50,
+                        "unit": None,
+                    },
+                    {
+                        "children": (
+                            {
+                                "children": (),
+                                "length": 1,
+                                "name": "suppressPosRspMsgIndicationBit",
+                                "physical_value": "no",
+                                "raw_value": 0,
+                                "unit": None,
+                            },
+                            {
+                                "children": (),
+                                "length": 7,
+                                "name": "diagnosticSessionType",
+                                "physical_value": "extendedDiagnosticSession",
+                                "raw_value": 0x03,
+                                "unit": None,
+                            },
+                        ),
+                        "length": 8,
+                        "name": "SubFunction",
+                        "physical_value": 0x03,
+                        "raw_value": 0x03,
+                        "unit": None,
+                    },
+                    {
+                        "children": (
+                            {
+                                "children": (),
+                                "length": 16,
+                                "name": "P2Server_max",
+                                "physical_value": 0x1234,
+                                "raw_value": 0x1234,
+                                "unit": "ms",
+                            },
+                            {
+                                "children": (),
+                                "length": 16,
+                                "name": "P2*Server_max",
+                                "physical_value": 0x5678 * 10,
+                                "raw_value": 0x5678,
+                                "unit": "ms",
+                            },
+                        ),
+                        "length": 32,
+                        "name": "sessionParameterRecord",
+                        "physical_value": 0x12345678,
+                        "raw_value": 0x12345678,
+                        "unit": None,
+                    },
+                ),
+            ),
             (
-                {
-                    'children': (),
-                    'length': 8,
-                    'name': 'RSID',
-                    'physical_value': 'NegativeResponse',
-                    'raw_value': 0x7F,
-                    'unit': None
-                },
-                {
-                    'children': (),
-                    'length': 8,
-                    'name': 'SID',
-                    'physical_value': 'DiagnosticSessionControl',
-                    'raw_value': 0x10,
-                    'unit': None
-                },
-                {
-                    'children': (),
-                    'length': 8,
-                    'name': 'NRC',
-                    'physical_value': 'ConditionsNotCorrect',
-                    'raw_value': 0x22,
-                    'unit': None
-                }
-            )
-        ),
-    ])
+                [0x7F, 0x10, 0x22],
+                (
+                    {
+                        "children": (),
+                        "length": 8,
+                        "name": "RSID",
+                        "physical_value": "NegativeResponse",
+                        "raw_value": 0x7F,
+                        "unit": None,
+                    },
+                    {
+                        "children": (),
+                        "length": 8,
+                        "name": "SID",
+                        "physical_value": "DiagnosticSessionControl",
+                        "raw_value": 0x10,
+                        "unit": None,
+                    },
+                    {
+                        "children": (),
+                        "length": 8,
+                        "name": "NRC",
+                        "physical_value": "ConditionsNotCorrect",
+                        "raw_value": 0x22,
+                        "unit": None,
+                    },
+                ),
+            ),
+        ],
+    )
     def test_decode(self, translator, payload, decoded_message):
-        assert translator.decode(payload=payload) == decoded_message
+        output = translator.decode(payload=payload)
+        output_dict = tuple(data_record_info.to_dict() for data_record_info in output)
+        assert output_dict == decoded_message

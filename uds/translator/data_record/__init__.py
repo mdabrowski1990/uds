@@ -7,12 +7,15 @@ meaningful information (e.g. physical value, text).
 
 from .abstract_data_record import (
     AbstractDataRecord,
+    AbstractDataRecordOccurrences,
     ChildrenValuesAlias,
-    DataRecordInfoAlias,
-    MultipleOccurrencesInfo,
+    DataRecordOccurrenceDict,
+    MultipleOccurrences,
+    MultipleOccurrencesDict,
     MultiplePhysicalValuesAlias,
     PhysicalValueAlias,
-    SingleOccurrenceInfo,
+    SingleOccurrence,
+    SingleOccurrenceDict,
     SinglePhysicalValueAlias,
 )
 from .conditional_data_record import (
