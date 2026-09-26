@@ -58,9 +58,9 @@ class TestFunctions:
     # find_element
 
     @pytest.mark.parametrize(
-        "sequence, attributes, match_index",
+        "sequence, element_type, attributes, match_index",
         [
-            ((Mock(), Mock(a=2), Mock(a=3)), {"a": 2}, 1),
+            ((Mock(spec=int), Mock(spec=int, a=2), Mock(a=3)), int, {"a": 2}, 1),
             (
                 (
                     Mock(param_1="a", param_2=100),
@@ -68,28 +68,30 @@ class TestFunctions:
                     Mock(param_1="c", param_2=101),
                     Mock(param_1="d", param_2=101),
                 ),
+                None,
                 {"param_1": "d", "param_2": 101},
                 3,
             ),
         ],
     )
-    def test_find_element__valid(self, sequence, attributes, match_index):
-        assert find_element(sequence, **attributes) == sequence[match_index]
+    def test_find_element__valid(self, sequence, element_type, attributes, match_index):
+        assert find_element(sequence, element_type, **attributes) == sequence[match_index]
 
     @pytest.mark.parametrize(
-        "sequence, attributes",
+        "sequence, element_type, attributes",
         [
-            ((Mock(a=1), Mock(a=2), Mock()), {"a": 0}),
+            ((Mock(spec=int), Mock(a=2), Mock(spec=int, a=3)), int, {"a": 2}),
             (
                 (
                     Mock(param_1="a", param_2=100),
-                    Mock(param_1="b"),
-                    Mock(param_2=101),
+                    Mock(param_2=100),
+                    Mock(param_1="c", param_2=101),
                     Mock(param_1="d", param_2=101),
                 ),
-                {"param_1": "d", "param_2": 100},
+                None,
+                {"param_1": "a", "param_2": 101},
             ),
         ],
     )
-    def test_find_element__not_found(self, sequence, attributes):
-        assert find_element(sequence, **attributes) is None
+    def test_find_element__not_found(self, sequence, element_type, attributes):
+        assert find_element(sequence, element_type, **attributes) is None

@@ -37,6 +37,7 @@ from uds.translator.configurable_translator import (
     CONTROL_TYPE,
     DEFINITION_TYPE,
     DIAGNOSTIC_SESSION_TYPE,
+    DID_2013,
     DID_BIT_LENGTH,
     DID_COUNT_RECORDS,
     DTC_AND_STATUS,
@@ -840,12 +841,12 @@ class TestConfigurableTranslator:
     # did_mapping
 
     def test_did_mapping__get(self):
+        read_data_by_identifier = self.mock_translator.services_mapping[RequestSID.ReadDataByIdentifier]
         assert (
             ConfigurableTranslator.did_mapping.fget(self.mock_translator)
-            == self.mock_translator.services_mapping[RequestSID.ReadDataByIdentifier]
-            .request_structure[0]
-            .values_mapping
+            == self.mock_find_element.return_value.values_mapping
         )
+        self.mock_find_element.assert_called_once_with(read_data_by_identifier.request_structure, name=DID_2013.name)
 
     def test_did_mapping__get__none(self):
         mock_get = Mock(return_value=None)
@@ -853,20 +854,49 @@ class TestConfigurableTranslator:
         assert ConfigurableTranslator.did_mapping.fget(self.mock_translator) is None
         mock_get.assert_called_once_with(RequestSID.ReadDataByIdentifier, None)
 
-    def test_did_mapping__set__rdbi_only(self):
-        self.mock_translator.services_mapping = {
-            RequestSID.ReadDataByIdentifier: MagicMock(response_structure=10 * [Mock()]),
-        }
+    @pytest.mark.parametrize(
+        "response_structure",
+        [
+            (
+                Mock(name=Mock(startswith=Mock(return_value=False))),
+                Mock(name=Mock(startswith=Mock(return_value=False))),
+                Mock(name=Mock(startswith=Mock(return_value=True))),
+                Mock(name=Mock(startswith=Mock(return_value=False))),
+            ),
+            (Mock(name=Mock(startswith=Mock(return_value=True))), Mock(name=Mock(startswith=Mock(return_value=True)))),
+        ],
+    )
+    @patch(f"{SCRIPT_LOCATION}.isinstance")
+    def test_did_mapping__set__rdbi_only(self, mock_isinstance, response_structure):
+        mock_isinstance.return_value = True
         mock_value = {Mock(): Mock()}
+        read_data_by_identifier = MagicMock(response_structure=response_structure)
+        self.mock_translator.services_mapping = {
+            RequestSID.ReadDataByIdentifier: read_data_by_identifier,
+        }
         assert ConfigurableTranslator.did_mapping.fset(self.mock_translator, mock_value) is None
-        assert (
-            self.mock_translator.services_mapping[RequestSID.ReadDataByIdentifier].request_structure[0].values_mapping
-            == mock_value
-        )
+        assert self.mock_find_element.return_value.values_mapping == mock_value
+        self.mock_find_element.assert_called_once_with(read_data_by_identifier.request_structure, name=DID_2013.name)
+        for data_record in response_structure:
+            data_record.name.startswith.assert_called_once_with(DID_2013.name)
         assert all(
             did.values_mapping == mock_value
-            for did in self.mock_translator.services_mapping[RequestSID.ReadDataByIdentifier].response_structure[::2]
+            for did in filter(lambda data_record: data_record.name.startswith.return_value, response_structure)
         )
+        assert all(
+            did.values_mapping != mock_value
+            for did in filter(lambda data_record: not data_record.name.startswith.return_value, response_structure)
+        )
+
+    def test_did_mapping__set__wdbi(self):
+        mock_value = {Mock(): Mock()}
+        write_data_by_identifier = MagicMock()
+        self.mock_translator.services_mapping = {
+            RequestSID.ReadDataByIdentifier: MagicMock(),
+            RequestSID.WriteDataByIdentifier: write_data_by_identifier,
+        }
+        assert ConfigurableTranslator.did_mapping.fset(self.mock_translator, mock_value) is None
+        assert self.mock_find_element.return_value.values_mapping == mock_value
 
     def test_did_mapping__set__all(self):
         self.mock_translator.services_mapping = {

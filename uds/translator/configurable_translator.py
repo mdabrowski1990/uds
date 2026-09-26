@@ -26,6 +26,7 @@ from .data_record_definitions import (
     CONTROL_TYPE,
     DEFINITION_TYPE,
     DIAGNOSTIC_SESSION_TYPE,
+    DID_2013,
     DID_COUNT_RECORDS,
     DTC_AND_STATUS,
     DTC_SETTING_TYPE,
@@ -694,7 +695,8 @@ class ConfigurableTranslator(Translator):
         read_data_by_identifier = self.services_mapping.get(RequestSID.ReadDataByIdentifier, None)
         if read_data_by_identifier is None:
             return None
-        did: MappingDataRecord = read_data_by_identifier.request_structure[0]  # type: ignore
+        did: MappingDataRecord = find_element(read_data_by_identifier.request_structure,  # type: ignore
+                                              name=DID_2013.name)
         return did.values_mapping
 
     @did_mapping.setter
@@ -706,14 +708,17 @@ class ConfigurableTranslator(Translator):
         """
         # ReadDataByIdentifier
         read_data_by_identifier = self.services_mapping[RequestSID.ReadDataByIdentifier]
-        read_data_by_identifier.request_structure[0].values_mapping = (  # type: ignore
-            value
-        )  # did_mapping value is stored here
-        for did in read_data_by_identifier.response_structure[::2]:
-            did.values_mapping = value  # type: ignore
+        did: MappingDataRecord = find_element(read_data_by_identifier.request_structure,  # type: ignore
+                                              name=DID_2013.name)
+        did.values_mapping = value
+        for did in filter(lambda data_record: isinstance(data_record, MappingDataRecord)
+                                              and data_record.name.startswith(DID_2013.name),
+                          read_data_by_identifier.response_structure):
+            did.values_mapping = value
         # WriteDataByIdentifier
         write_data_by_identifier = self.services_mapping.get(RequestSID.WriteDataByIdentifier, None)
         if write_data_by_identifier is not None:
+            did: MappingDataRecord = find_element(write_data_by_identifier.request_structure, name=DID_2013.name)
             write_data_by_identifier.request_structure[0].values_mapping = value  # type: ignore
             write_data_by_identifier.response_structure[0].values_mapping = value  # type: ignore
         # ReadScalingDataByIdentifier
