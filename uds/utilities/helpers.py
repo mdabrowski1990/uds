@@ -46,7 +46,7 @@ def validate_timeout(value: TimeMillisecondsAlias | None) -> None:
 
 
 @overload
-def find_element(sequence: Sequence[T1 | T2],
+def find_element(sequence: Sequence[T1],
                  element_type: type[T2],
                  **attributes: Any
                  ) -> T2 | None:  # pragma: no cover

@@ -44,8 +44,10 @@ from uds.translator.configurable_translator import (
     DTC_SETTING_TYPE,
     DTC_STORED_DATA_RECORD_NUMBERS_LIST,
     DTCS_AND_STATUSES_LIST,
+    DYNAMICALLY_DEFINED_DID_2013,
     EVENT_2013,
     EVENT_TYPE_2013,
+    EVENT_TYPE_RECORD_08_2020,
     INPUT_OUTPUT_CONTROL_PARAMETER,
     LINK_CONTROL_TYPE,
     MEMORY_SELECTION,
@@ -813,9 +815,10 @@ class TestConfigurableTranslator:
         assert ConfigurableTranslator.rid_mapping.fset(self.mock_translator, mock_value) is None
         assert all(found_element.values_mapping == mock_value for found_element in found_elements)
         self.mock_find_element.assert_has_calls(
-            [call(routine_control.request_structure, name=RID.name)]
+            [call(routine_control.request_structure, element_type=self.mock_mapping_data_record, name=RID.name)]
             + [
-                call(response_continuation, name=RID.name) for response_continuation in mock_mapping_values.return_value
+                call(response_continuation, element_type=self.mock_mapping_data_record, name=RID.name)
+                for response_continuation in mock_mapping_values.return_value
             ],
             any_order=True,
         )
@@ -831,9 +834,10 @@ class TestConfigurableTranslator:
         assert ConfigurableTranslator.rid_mapping.fset(self.mock_translator, mock_value) is None
         assert found_elements[0].values_mapping == mock_value
         self.mock_find_element.assert_has_calls(
-            [call(routine_control.request_structure, name=RID.name)]
+            [call(routine_control.request_structure, element_type=self.mock_mapping_data_record, name=RID.name)]
             + [
-                call(response_continuation, name=RID.name) for response_continuation in mock_mapping_values.return_value
+                call(response_continuation, element_type=self.mock_mapping_data_record, name=RID.name)
+                for response_continuation in mock_mapping_values.return_value
             ],
             any_order=True,
         )
@@ -846,7 +850,9 @@ class TestConfigurableTranslator:
             ConfigurableTranslator.did_mapping.fget(self.mock_translator)
             == self.mock_find_element.return_value.values_mapping
         )
-        self.mock_find_element.assert_called_once_with(read_data_by_identifier.request_structure, name=DID_2013.name)
+        self.mock_find_element.assert_called_once_with(
+            read_data_by_identifier.request_structure, element_type=self.mock_mapping_data_record, name=DID_2013.name
+        )
 
     def test_did_mapping__get__none(self):
         mock_get = Mock(return_value=None)
@@ -876,7 +882,9 @@ class TestConfigurableTranslator:
         }
         assert ConfigurableTranslator.did_mapping.fset(self.mock_translator, mock_value) is None
         assert self.mock_find_element.return_value.values_mapping == mock_value
-        self.mock_find_element.assert_called_once_with(read_data_by_identifier.request_structure, name=DID_2013.name)
+        self.mock_find_element.assert_called_once_with(
+            read_data_by_identifier.request_structure, element_type=self.mock_mapping_data_record, name=DID_2013.name
+        )
         for data_record in response_structure:
             data_record.name.startswith.assert_called_once_with(DID_2013.name)
         assert all(
@@ -897,182 +905,255 @@ class TestConfigurableTranslator:
         }
         assert ConfigurableTranslator.did_mapping.fset(self.mock_translator, mock_value) is None
         assert self.mock_find_element.return_value.values_mapping == mock_value
+        self.mock_find_element.assert_has_calls(
+            [
+                call(
+                    write_data_by_identifier.request_structure,
+                    element_type=self.mock_mapping_data_record,
+                    name=DID_2013.name,
+                ),
+                call(
+                    write_data_by_identifier.response_structure,
+                    element_type=self.mock_mapping_data_record,
+                    name=DID_2013.name,
+                ),
+            ],
+            any_order=True,
+        )
 
-    def test_did_mapping__set__all(self):
-        self.mock_translator.services_mapping = {
-            RequestSID.ReadDataByIdentifier: MagicMock(response_structure=100 * [Mock()]),
-            RequestSID.WriteDataByIdentifier: MagicMock(),
-            RequestSID.ReadScalingDataByIdentifier: MagicMock(),
-            RequestSID.DynamicallyDefineDataIdentifier: MagicMock(),
-            RequestSID.InputOutputControlByIdentifier: MagicMock(),
-            RequestSID.ReadDTCInformation: MagicMock(response_structure=[Mock(), Mock(mapping={})]),
-            RequestSID.ResponseOnEvent: MagicMock(
-                request_structure=[
-                    MagicMock(),
-                    MagicMock(mapping={i: 10 * [MagicMock()] for i in range(10)}),
-                ],
-                response_structure=[
-                    MagicMock(),
-                    MagicMock(mapping={i: 10 * [MagicMock()] for i in range(10)}),
-                ],
-            ),
-        }
-        self.mock_translator._ConfigurableTranslator__conditional_read_dtc_information_response = Mock()
-        self.mock_translator._ConfigurableTranslator__conditional_response_on_event_response = Mock()
+    def test_did_mapping__set__rsdbi(self):
         mock_value = {Mock(): Mock()}
+        read_scaling_data_by_identifier = MagicMock()
+        self.mock_translator.services_mapping = {
+            RequestSID.ReadDataByIdentifier: MagicMock(),
+            RequestSID.ReadScalingDataByIdentifier: read_scaling_data_by_identifier,
+        }
         assert ConfigurableTranslator.did_mapping.fset(self.mock_translator, mock_value) is None
-        # ReadDataByIdentifier
-        assert (
-            self.mock_translator.services_mapping[RequestSID.ReadDataByIdentifier].request_structure[0].values_mapping
-            == mock_value
+        assert self.mock_find_element.return_value.values_mapping == mock_value
+        self.mock_find_element.assert_has_calls(
+            [
+                call(
+                    read_scaling_data_by_identifier.request_structure,
+                    element_type=self.mock_mapping_data_record,
+                    name=DID_2013.name,
+                ),
+                call(
+                    read_scaling_data_by_identifier.response_structure,
+                    element_type=self.mock_mapping_data_record,
+                    name=DID_2013.name,
+                ),
+            ],
+            any_order=True,
         )
-        assert all(
-            did.values_mapping == mock_value
-            for did in self.mock_translator.services_mapping[RequestSID.ReadDataByIdentifier].response_structure[::2]
+
+    def test_did_mapping__set__iocbi(self):
+        mock_value = {Mock(): Mock()}
+        input_output_control_by_identifier = MagicMock()
+        self.mock_translator.services_mapping = {
+            RequestSID.ReadDataByIdentifier: MagicMock(),
+            RequestSID.InputOutputControlByIdentifier: input_output_control_by_identifier,
+        }
+        assert ConfigurableTranslator.did_mapping.fset(self.mock_translator, mock_value) is None
+        assert self.mock_find_element.return_value.values_mapping == mock_value
+        self.mock_find_element.assert_has_calls(
+            [
+                call(
+                    input_output_control_by_identifier.request_structure,
+                    element_type=self.mock_mapping_data_record,
+                    name=DID_2013.name,
+                ),
+                call(
+                    input_output_control_by_identifier.response_structure,
+                    element_type=self.mock_mapping_data_record,
+                    name=DID_2013.name,
+                ),
+            ],
+            any_order=True,
         )
-        # WriteDataByIdentifier
-        assert (
-            self.mock_translator.services_mapping[RequestSID.WriteDataByIdentifier].request_structure[0].values_mapping
-            == mock_value
+
+    @pytest.mark.parametrize(
+        "conditional_request_continuation_mapping, conditional_response_continuation_mapping",
+        [
+            (
+                {
+                    0x01: (Mock(name=DYNAMICALLY_DEFINED_DID_2013.name), Mock()),
+                    0x02: (Mock(), Mock()),
+                    0x03: (Mock(name=DYNAMICALLY_DEFINED_DID_2013.name),),
+                },
+                {
+                    0x01: (Mock(name=DYNAMICALLY_DEFINED_DID_2013.name),),
+                    0x02: (
+                        Mock(name=DYNAMICALLY_DEFINED_DID_2013.name),
+                        Mock(name=DYNAMICALLY_DEFINED_DID_2013.name),
+                    ),
+                    0x03: (
+                        Mock(name=DYNAMICALLY_DEFINED_DID_2013.name),
+                        Mock(name=DYNAMICALLY_DEFINED_DID_2013.name),
+                        Mock(name=DYNAMICALLY_DEFINED_DID_2013.name),
+                    ),
+                },
+            ),
+            (
+                {
+                    0x00: (Mock(name=DYNAMICALLY_DEFINED_DID_2013.name),),
+                    0x10: (Mock(),),
+                    0xFA: (Mock(), Mock(), Mock()),
+                },
+                {
+                    0x5B: (
+                        Mock(),
+                        Mock(),
+                        Mock(name=DYNAMICALLY_DEFINED_DID_2013.name),
+                        Mock(),
+                    ),
+                    0xC1: (),
+                    0xEE: (Mock(), Mock(name=DYNAMICALLY_DEFINED_DID_2013.name)),
+                },
+            ),
+        ],
+    )
+    @patch(f"{SCRIPT_LOCATION}.isinstance")
+    def test_did_mapping__set__dddi(
+        self, mock_isinstance, conditional_request_continuation_mapping, conditional_response_continuation_mapping
+    ):
+        mock_value = {Mock(): Mock()}
+        mock_isinstance.return_value = True
+        for data_records in tuple(conditional_request_continuation_mapping.values()) + tuple(
+            conditional_response_continuation_mapping.values()
+        ):
+            for mock_dr in data_records:
+                mock_dr.name = mock_dr._extract_mock_name()
+        dynamically_define_data_identifier = MagicMock(
+            request_structure=[Mock(), Mock(mapping=conditional_request_continuation_mapping)],
+            response_structure=[Mock(), Mock(mapping=conditional_response_continuation_mapping)],
         )
-        assert (
-            self.mock_translator.services_mapping[RequestSID.WriteDataByIdentifier].response_structure[0].values_mapping
-            == mock_value
-        )
-        # ReadScalingDataByIdentifier
-        assert (
-            self.mock_translator.services_mapping[RequestSID.ReadScalingDataByIdentifier]
-            .request_structure[0]
-            .values_mapping
-            == mock_value
-        )
-        assert (
-            self.mock_translator.services_mapping[RequestSID.ReadScalingDataByIdentifier]
-            .response_structure[0]
-            .values_mapping
-            == mock_value
-        )
-        # DynamicallyDefineDataIdentifier
-        assert (
-            self.mock_translator.services_mapping[RequestSID.DynamicallyDefineDataIdentifier]
-            .request_structure[1]
-            .mapping[0x01][0]
-            .values_mapping
-            == mock_value
-        )
-        assert (
-            self.mock_translator.services_mapping[RequestSID.DynamicallyDefineDataIdentifier]
-            .request_structure[1]
-            .mapping[0x01][1]
-            .children[0]
-            .values_mapping
-            == mock_value
-        )
-        assert (
-            self.mock_translator.services_mapping[RequestSID.DynamicallyDefineDataIdentifier]
-            .request_structure[1]
-            .mapping[0x02][0]
-            .values_mapping
-            == mock_value
-        )
-        assert (
-            self.mock_translator.services_mapping[RequestSID.DynamicallyDefineDataIdentifier]
-            .request_structure[1]
-            .mapping[0x03][0]
-            .values_mapping
-            == mock_value
-        )
-        assert (
-            self.mock_translator.services_mapping[RequestSID.DynamicallyDefineDataIdentifier]
-            .response_structure[1]
-            .mapping[0x01][0]
-            .values_mapping
-            == mock_value
-        )
-        assert (
-            self.mock_translator.services_mapping[RequestSID.DynamicallyDefineDataIdentifier]
-            .response_structure[1]
-            .mapping[0x02][0]
-            .values_mapping
-            == mock_value
-        )
-        assert (
-            self.mock_translator.services_mapping[RequestSID.DynamicallyDefineDataIdentifier]
-            .response_structure[1]
-            .mapping[0x03][0]
-            .values_mapping
-            == mock_value
-        )
-        # InputOutputControlByIdentifier
-        assert (
-            self.mock_translator.services_mapping[RequestSID.InputOutputControlByIdentifier]
-            .request_structure[0]
-            .values_mapping
-            == mock_value
-        )
-        assert (
-            self.mock_translator.services_mapping[RequestSID.InputOutputControlByIdentifier]
-            .response_structure[0]
-            .values_mapping
-            == mock_value
-        )
-        # ReadDTCInformation
-        assert self.mock_translator.services_mapping[RequestSID.ReadDTCInformation].response_structure[1].mapping[
-            0x04
-        ] == (
+        self.mock_translator.services_mapping = {
+            RequestSID.ReadDataByIdentifier: MagicMock(),
+            RequestSID.DynamicallyDefineDataIdentifier: dynamically_define_data_identifier,
+        }
+        assert ConfigurableTranslator.did_mapping.fset(self.mock_translator, mock_value) is None
+        for data_records in tuple(conditional_request_continuation_mapping.values()) + tuple(
+            conditional_response_continuation_mapping.values()
+        ):
+            for mock_dr in data_records:
+                if mock_dr.name == DYNAMICALLY_DEFINED_DID_2013.name:
+                    assert mock_dr.values_mapping == mock_value
+                else:
+                    assert mock_dr.values_mapping != mock_value
+
+    def test_did_mapping__set__rdi(self):
+        mock_value = {Mock(): Mock()}
+        read_dtc_information = MagicMock(response_structure=[Mock(), Mock(mapping={})])
+        self.mock_translator.services_mapping = {
+            RequestSID.ReadDataByIdentifier: MagicMock(),
+            RequestSID.ReadDTCInformation: read_dtc_information,
+        }
+        assert ConfigurableTranslator.did_mapping.fset(self.mock_translator, mock_value) is None
+        assert read_dtc_information.response_structure[1].mapping[0x04] == (
             DTC_AND_STATUS,
             *self.mock_translator._ConfigurableTranslator__dtc_snapshot_records,
         )
         assert (
-            self.mock_translator.services_mapping[RequestSID.ReadDTCInformation].response_structure[1].mapping[0x05]
+            read_dtc_information.response_structure[1].mapping[0x05]
             == self.mock_translator._ConfigurableTranslator__dtc_stored_data_records
         )
-        assert self.mock_translator.services_mapping[RequestSID.ReadDTCInformation].response_structure[1].mapping[
-            0x18
-        ] == (
+        assert read_dtc_information.response_structure[1].mapping[0x18] == (
             MEMORY_SELECTION,
             DTC_AND_STATUS,
             *self.mock_translator._ConfigurableTranslator__dtc_snapshot_records,
         )
-        # ResponseOnEvent
-        assert (
-            self.mock_translator.services_mapping[RequestSID.ResponseOnEvent]
-            .request_structure[1]
-            .mapping[0x03][1]
-            .children[0]
-            .values_mapping
-            == mock_value
+
+    @pytest.mark.parametrize(
+        "conditional_request_continuation_mapping, conditional_response_continuation_mapping",
+        [
+            (
+                {
+                    0x01: (Mock(),),
+                    0x02: (Mock(), Mock()),
+                    0x03: (Mock(), Mock(name=EVENT_TYPE_RECORD_08_2020.name, children=[Mock(name=DID_2013.name)])),
+                    0x07: (
+                        Mock(),
+                        Mock(name=EVENT_TYPE_RECORD_08_2020.name, children=[Mock(name=DID_2013.name), Mock()]),
+                    ),
+                },
+                {
+                    0x01: (Mock(), Mock()),
+                    0x02: (Mock(), Mock(), Mock()),
+                    0x03: (
+                        Mock(),
+                        Mock(),
+                        Mock(name=EVENT_TYPE_RECORD_08_2020.name, children=[Mock(name=DID_2013.name)]),
+                    ),
+                    0x07: (
+                        Mock(),
+                        Mock(),
+                        Mock(name=EVENT_TYPE_RECORD_08_2020.name, children=[Mock(name=DID_2013.name), Mock()]),
+                    ),
+                },
+            ),
+            (
+                {
+                    0x00: (Mock(), Mock(children=10 * [Mock()]), Mock(children=5 * [Mock()])),
+                    0x03: (Mock(), Mock(), Mock(), Mock()),
+                    0x04: (Mock(),),
+                    0x50: (Mock(name=EVENT_TYPE_RECORD_08_2020.name, children=[Mock(name=DID_2013.name)]),),
+                },
+                {
+                    0x03: (
+                        Mock(),
+                        Mock(
+                            name=EVENT_TYPE_RECORD_08_2020.name,
+                            children=[Mock(), Mock(), Mock(name=DID_2013.name), Mock()],
+                        ),
+                        Mock(),
+                    ),
+                    0x17: (
+                        Mock(name=EVENT_TYPE_RECORD_08_2020.name, children=[Mock(), Mock(name=DID_2013.name)]),
+                        Mock(),
+                        Mock(),
+                    ),
+                    0x19: (Mock(),),
+                },
+            ),
+        ],
+    )
+    @patch(f"{SCRIPT_LOCATION}.isinstance")
+    def test_did_mapping__set__roe(
+        self, mock_isinstance, conditional_request_continuation_mapping, conditional_response_continuation_mapping
+    ):
+        mock_value = {Mock(): Mock()}
+        mock_isinstance.return_value = True
+        for data_records in tuple(conditional_request_continuation_mapping.values()) + tuple(
+            conditional_response_continuation_mapping.values()
+        ):
+            for mock_dr in data_records:
+                mock_dr.name = mock_dr._extract_mock_name()
+                if not isinstance(mock_dr.children, Mock):
+                    for mock_child in mock_dr.children:
+                        mock_child.name = mock_child._extract_mock_name()
+        response_on_event = MagicMock(
+            request_structure=[Mock(), Mock(mapping=conditional_request_continuation_mapping)],
+            response_structure=[Mock(), Mock(mapping=conditional_response_continuation_mapping)],
         )
-        assert (
-            self.mock_translator.services_mapping[RequestSID.ResponseOnEvent]
-            .request_structure[1]
-            .mapping[0x07][1]
-            .children[0]
-            .values_mapping
-            == mock_value
-        )
-        assert (
-            self.mock_translator.services_mapping[RequestSID.ResponseOnEvent]
-            .response_structure[1]
-            .mapping[0x03][2]
-            .children[0]
-            .values_mapping
-            == mock_value
-        )
-        assert self.mock_translator.services_mapping[RequestSID.ResponseOnEvent].response_structure[1].mapping[
-            0x04
-        ] == (
+        self.mock_translator.services_mapping = {
+            RequestSID.ReadDataByIdentifier: MagicMock(),
+            RequestSID.ResponseOnEvent: response_on_event,
+        }
+        assert ConfigurableTranslator.did_mapping.fset(self.mock_translator, mock_value) is None
+        assert response_on_event.response_structure[1].mapping[0x04] == (
             NUMBER_OF_ACTIVATED_EVENTS,
             self.mock_translator._ConfigurableTranslator__conditional_activated_events,
         )
-        assert (
-            self.mock_translator.services_mapping[RequestSID.ResponseOnEvent]
-            .response_structure[1]
-            .mapping[0x07][2]
-            .children[0]
-            .values_mapping
-            == mock_value
-        )
+        for data_records in tuple(conditional_request_continuation_mapping.values()) + tuple(
+            conditional_response_continuation_mapping.values()
+        ):
+            for mock_dr in data_records:
+                if not isinstance(mock_dr.children, Mock):
+                    for mock_child in mock_dr.children:
+                        if mock_child.name == DID_2013.name:
+                            assert mock_child.values_mapping == mock_value
+                        else:
+                            assert mock_child.values_mapping != mock_value
 
     # did_data_mapping
 
