@@ -2,7 +2,7 @@
 
 __all__ = ["validate_time", "validate_timeout", "find_element"]
 
-from collections.abc import Sequence
+from collections.abc import Iterable
 from typing import Any, TypeVar, overload
 
 from .common_types import TimeMillisecondsAlias
@@ -46,7 +46,7 @@ def validate_timeout(value: TimeMillisecondsAlias | None) -> None:
 
 
 @overload
-def find_element(sequence: Sequence[T1],
+def find_element(values: Iterable[T1],
                  element_type: type[T2],
                  **attributes: Any
                  ) -> T2 | None:  # pragma: no cover
@@ -54,28 +54,28 @@ def find_element(sequence: Sequence[T1],
 
 
 @overload
-def find_element(sequence: Sequence[T1],
+def find_element(values: Iterable[T1],
                  element_type: None = None,
                  **attributes: Any
                  ) -> T1 | None:  # pragma: no cover
     ...
 
 
-def find_element(sequence: Sequence[Any],
+def find_element(values: Iterable[Any],
                  element_type: type[Any] | None = None,
                  **attributes: Any,
                  ) -> Any | None:
     """
     Find the element matching all given attributes.
 
-    :param sequence: Sequence of elements to look in.
+    :param values: Iterator with elements to look in.
     :param element_type: Element type to look for. None if type is irrelevant.
     :param attributes: Attributes of an object.
         If an element does not have an attribute, None value is assumed.
 
     :return: An object that was found or None if not found.
     """
-    for element in sequence:
+    for element in values:
         if element_type is not None and not isinstance(element, element_type):
             continue
         if all(getattr(element, attr_name, None) == attr_value for attr_name, attr_value in attributes.items()):

@@ -6,6 +6,7 @@ __all__ = ["ConfigurableTranslator"]
 
 from collections.abc import Callable, Iterator, Mapping, Sequence
 from copy import deepcopy
+from itertools import chain
 from types import MappingProxyType
 from typing import Any
 from warnings import warn
@@ -37,6 +38,7 @@ from .data_record_definitions import (
     EVENT_TYPE_2013,
     EVENT_TYPE_RECORD_08_2020,
     EVENT_TYPE_RECORD_09_2020,
+    EVENT_WINDOW_TIME_2013,
     INPUT_OUTPUT_CONTROL_PARAMETER,
     LINK_CONTROL_TYPE,
     MEMORY_SELECTION,
@@ -87,7 +89,7 @@ class ConfigurableTranslator(Translator):
                  link_control_type_mapping: Mapping[int, str] | None = None,
                  rid_mapping: Mapping[int, str] | None = None,
                  did_mapping: Mapping[int, str] | None = None,
-                 did_data_mapping: Mapping[int, MessageStructureAlias],
+                 did_data_mapping: Mapping[int, MessageStructureAlias] = MappingProxyType({}),
                  ) -> None:
         """
         Reconfigure a translator.
@@ -301,8 +303,7 @@ class ConfigurableTranslator(Translator):
                     request_continuation_08,
                     element_type=RawDataRecord,
                     name=EVENT_TYPE_RECORD_08_2020.name,
-                    length=EVENT_TYPE_RECORD_08_2020.length,
-                )
+                    length=EVENT_TYPE_RECORD_08_2020.length)
                 if request_event_type_record_08 is not None:
                     subfunction_parameter: MappingDataRecord = (  # type: ignore
                         request_event_type_record_08
@@ -319,8 +320,7 @@ class ConfigurableTranslator(Translator):
                     response_continuation_08,
                     element_type=RawDataRecord,
                     name=EVENT_TYPE_RECORD_08_2020.name,
-                    length=EVENT_TYPE_RECORD_08_2020.length,
-                )
+                    length=EVENT_TYPE_RECORD_08_2020.length)
                 if response_event_type_record_08 is not None:
                     subfunction_parameter: MappingDataRecord = (  # type: ignore
                         response_event_type_record_08
@@ -337,8 +337,7 @@ class ConfigurableTranslator(Translator):
                     request_continuation_09,
                     element_type=RawDataRecord,
                     name=EVENT_TYPE_RECORD_09_2020.name,
-                    length=EVENT_TYPE_RECORD_09_2020.length,
-                )
+                    length=EVENT_TYPE_RECORD_09_2020.length)
                 if request_event_type_record_09 is not None:
                     subfunction_parameter: MappingDataRecord = (  # type: ignore
                         request_event_type_record_09
@@ -355,8 +354,7 @@ class ConfigurableTranslator(Translator):
                     response_continuation_09,
                     element_type=RawDataRecord,
                     name=EVENT_TYPE_RECORD_08_2020.name,
-                    length=EVENT_TYPE_RECORD_08_2020.length,
-                )
+                    length=EVENT_TYPE_RECORD_08_2020.length)
                 if response_event_type_record_09 is not None:
                     subfunction_parameter: MappingDataRecord = (  # type: ignore
                         response_event_type_record_09
@@ -689,17 +687,15 @@ class ConfigurableTranslator(Translator):
         :param value: Mapping value to set.
         """
         routine_control = self.services_mapping[RequestSID.RoutineControl]
-        rid: MappingDataRecord = find_element(routine_control.request_structure,  # type: ignore
-                                              element_type=MappingDataRecord,
-                                              name=RID.name)
-        rid.values_mapping = value
+        request_rid: MappingDataRecord = find_element(routine_control.request_structure,  # type: ignore
+                                                      element_type=MappingDataRecord,
+                                                      name=RID.name)
+        request_rid.values_mapping = value
         conditional_response: ConditionalMappingDataRecord = routine_control.response_structure[1]  # type: ignore
-        for response_continuation in conditional_response.mapping.values():
-            _rid: MappingDataRecord | None = find_element(response_continuation,
-                                                          element_type=MappingDataRecord,
-                                                          name=RID.name)
-            if _rid is not None:
-                _rid.values_mapping = value
+        for response_rid in filter(lambda data_record: isinstance(data_record, MappingDataRecord)
+                                   and data_record.name == RID.name,
+                                   chain.from_iterable(conditional_response.mapping.values())):
+            response_rid.values_mapping = value  # type: ignore
 
     @property
     def did_mapping(self) -> Mapping[int, str] | None:
@@ -778,10 +774,7 @@ class ConfigurableTranslator(Translator):
             dddi_did_data_records: Iterator[MappingDataRecord] = filter(
                 lambda data_record: isinstance(data_record, MappingDataRecord)  # type: ignore
                 and data_record.name == DYNAMICALLY_DEFINED_DID_2013.name,
-                [data_record
-                 for message_continuation in tuple(dddi_conditional_request.mapping.values())
-                 + tuple(dddi_conditional_response.mapping.values())
-                 for data_record in message_continuation])
+                chain(*dddi_conditional_request.mapping.values(), *dddi_conditional_response.mapping.values()))
             for did_data_record in dddi_did_data_records:
                 did_data_record.values_mapping = value
         # ReadDTCInformation
@@ -789,11 +782,13 @@ class ConfigurableTranslator(Translator):
         if read_dtc_information is not None:
             rdi_conditional_response: ConditionalMappingDataRecord = (  # type: ignore
                 read_dtc_information.response_structure)[1]
-            rdi_conditional_response_mapping = dict(rdi_conditional_response.mapping)
-            rdi_conditional_response_mapping[0x04] = (DTC_AND_STATUS, *self.__dtc_snapshot_records)
-            rdi_conditional_response_mapping[0x05] = self.__dtc_stored_data_records
-            rdi_conditional_response_mapping[0x18] = (MEMORY_SELECTION, DTC_AND_STATUS, *self.__dtc_snapshot_records)
-            rdi_conditional_response.mapping = rdi_conditional_response_mapping
+            new_rdi_conditional_response_mapping = dict(rdi_conditional_response.mapping)  # make copy
+            new_rdi_conditional_response_mapping[0x04] = (DTC_AND_STATUS, *self.__dtc_snapshot_records)
+            new_rdi_conditional_response_mapping[0x05] = self.__dtc_stored_data_records
+            new_rdi_conditional_response_mapping[0x18] = (MEMORY_SELECTION,
+                                                          DTC_AND_STATUS,
+                                                          *self.__dtc_snapshot_records)
+            rdi_conditional_response.mapping = new_rdi_conditional_response_mapping
         # ResponseOnEvent
         response_on_event = self.services_mapping.get(RequestSID.ResponseOnEvent, None)
         if response_on_event is not None:
@@ -804,16 +799,11 @@ class ConfigurableTranslator(Translator):
             event_type_records: Iterator[RawDataRecord] = filter(
                 lambda data_record: isinstance(data_record, RawDataRecord)  # type: ignore
                 and data_record.name == EVENT_TYPE_RECORD_08_2020.name,
-                [data_record
-                 for message_continuation in tuple(roe_conditional_request.mapping.values())
-                 + tuple(roe_conditional_response.mapping.values())
-                 for data_record in message_continuation])
+                chain(*roe_conditional_request.mapping.values(), *roe_conditional_response.mapping.values()))
             roe_did_data_records: Iterator[MappingDataRecord] = filter(
                 lambda data_record: isinstance(data_record, MappingDataRecord)  # type: ignore
                 and data_record.name == DID_2013.name,
-                [child
-                 for event_type_record in event_type_records
-                 for child in event_type_record.children])
+                chain.from_iterable(map(lambda event_type_record: event_type_record.children, event_type_records)))
             for did_data_record in roe_did_data_records:
                 did_data_record.values_mapping = value
             roe_conditional_response_mapping = dict(roe_conditional_response.mapping)
@@ -832,7 +822,6 @@ class ConfigurableTranslator(Translator):
 
         :param value: Mapping value to set.
         """
-        # TODO: continue here
         self.__did_data_mapping = MappingProxyType(value)
         # ReadDataByIdentifier
         read_data_by_identifier = self.services_mapping.get(RequestSID.ReadDataByIdentifier, None)
@@ -844,27 +833,28 @@ class ConfigurableTranslator(Translator):
         # WriteDataByIdentifier
         write_data_by_identifier = self.services_mapping.get(RequestSID.WriteDataByIdentifier, None)
         if write_data_by_identifier is not None:
-            write_data_by_identifier.request_structure = (
-                write_data_by_identifier.request_structure[0],
-                self.__get_did_data(),
-            )
+            did: MappingDataRecord = self.__get_did(name=DID_2013.name)
+            did_data: ConditionalFormulaDataRecord = self.__get_did_data()
+            write_data_by_identifier.request_structure = (did, did_data)
         # InputOutputControlByIdentifier
         input_output_control_by_identifier = self.services_mapping.get(RequestSID.InputOutputControlByIdentifier, None)
         if input_output_control_by_identifier is not None:
-            input_output_control_by_identifier.request_structure[1].formula = (  # type: ignore
-                self.__get_input_output_control_by_identifier_request
-            )
-            input_output_control_by_identifier.response_structure[1].formula = (  # type: ignore
-                self.__get_input_output_control_by_identifier_response
-            )
+            iocbi_conditional_request: ConditionalFormulaDataRecord = (  # type: ignore
+                input_output_control_by_identifier.request_structure)[1]
+            iocbi_conditional_response: ConditionalFormulaDataRecord = (  # type: ignore
+                input_output_control_by_identifier.response_structure)[1]
+            iocbi_conditional_request.formula = self.__get_input_output_control_by_identifier_request
+            iocbi_conditional_response.formula = self.__get_input_output_control_by_identifier_response
         # ReadDTCInformation
         read_dtc_information = self.services_mapping.get(RequestSID.ReadDTCInformation, None)
         if read_dtc_information is not None:
-            mapping = dict(read_dtc_information.response_structure[1].mapping)  # type: ignore
-            mapping[0x04] = (DTC_AND_STATUS, *self.__dtc_snapshot_records)
-            mapping[0x05] = self.__dtc_stored_data_records
-            mapping[0x18] = (MEMORY_SELECTION, DTC_AND_STATUS, *self.__dtc_snapshot_records)
-            read_dtc_information.response_structure[1].mapping = mapping  # type: ignore
+            rdi_conditional_response: ConditionalMappingDataRecord = (  # type: ignore
+                read_dtc_information.response_structure)[1]
+            new_rdi_mapping = dict(rdi_conditional_response.mapping)  # make copy
+            new_rdi_mapping[0x04] = (DTC_AND_STATUS, *self.__dtc_snapshot_records)
+            new_rdi_mapping[0x05] = self.__dtc_stored_data_records
+            new_rdi_mapping[0x18] = (MEMORY_SELECTION, DTC_AND_STATUS, *self.__dtc_snapshot_records)
+            rdi_conditional_response.mapping = new_rdi_mapping
 
     @property
     def __did_records(self) -> tuple[ConditionalFormulaDataRecord, ...]:
@@ -889,13 +879,10 @@ class ConfigurableTranslator(Translator):
             :obj:`~uds.translator.data_record_definitions.conditional._DTC_SNAPSHOT_RECORDS_2020` and
             :obj:`~uds.translator.data_record_definitions.conditional._DTC_SNAPSHOT_RECORDS_2013`.
         """
-        return tuple(
-            item
-            for snapshot_record in zip(
-                OPTIONAL_DTC_SNAPSHOT_RECORDS_NUMBERS_LIST, DID_COUNT_RECORDS, self.__did_records, strict=True
-            )
-            for item in snapshot_record
-        )
+        return tuple(chain.from_iterable(zip(OPTIONAL_DTC_SNAPSHOT_RECORDS_NUMBERS_LIST,
+                                             DID_COUNT_RECORDS,
+                                             self.__did_records,
+                                             strict=True)))
 
     @property
     def __dtc_stored_data_records(self) -> tuple[MappingDataRecord | RawDataRecord | ConditionalFormulaDataRecord, ...]:
@@ -906,17 +893,11 @@ class ConfigurableTranslator(Translator):
             :obj:`~uds.translator.data_record_definitions.conditional._DTC_STORED_DATA_RECORDS_2020` and
             :obj:`~uds.translator.data_record_definitions.conditional._DTC_STORED_DATA_RECORDS_2013`.
         """
-        return tuple(
-            item
-            for stored_data_record in zip(
-                DTC_STORED_DATA_RECORD_NUMBERS_LIST,
-                DTCS_AND_STATUSES_LIST,
-                DID_COUNT_RECORDS,
-                self.__did_records,
-                strict=True,
-            )
-            for item in stored_data_record
-        )
+        return tuple(chain.from_iterable(zip(DTC_STORED_DATA_RECORD_NUMBERS_LIST,
+                                             DTCS_AND_STATUSES_LIST,
+                                             DID_COUNT_RECORDS,
+                                             self.__did_records,
+                                             strict=True)))
 
     @property
     def __event_window_time(self) -> MappingDataRecord:
@@ -928,14 +909,22 @@ class ConfigurableTranslator(Translator):
             :obj:`~uds.translator.data_record_definitions.conditional.EVENT_WINDOW_TIME_2013`.
 
         :raise ValueError: ResponseOnEvent service is not defined in this Translator.
+        :raise RuntimeError: Data Record `eventWindowTime` could not be found.
         """
         response_on_event = self.services_mapping.get(RequestSID.ResponseOnEvent, None)
         if response_on_event is None:
             raise ValueError("ResponseOnEvent service is not defined in this Translator.")
-        return response_on_event.request_structure[1][0x00][0]  # type: ignore
+        conditional_request: ConditionalMappingDataRecord = response_on_event.request_structure[1]  # type: ignore
+        event_window_time: MappingDataRecord | None = find_element(chain(conditional_request.mapping.values()),
+                                                                   element_type=MappingDataRecord,
+                                                                   name=EVENT_WINDOW_TIME_2013.name)
+        if event_window_time is None:
+            raise RuntimeError("ResponseOnEvent service is incorrectly defined - "
+                               "`eventWindowTime` Data Record was not found.")
+        return event_window_time
 
     @property
-    def __event_type(self) -> RawDataRecord:
+    def __event_type(self) -> RawDataRecord:  # TODO: continue
         """
         Get definition of `eventType` Data Record that is part of ResponseOnEvent SubFunction.
 

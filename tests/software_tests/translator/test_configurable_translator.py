@@ -128,19 +128,17 @@ class TestConfigurableTranslator:
     # __init__
 
     @pytest.mark.parametrize(
-        "services, did_data_mapping",
+        "services",
         [
-            ([Mock()], {}),
-            ([Mock(), Mock()], {Mock(): Mock()}),
+            [Mock()],
+            (Mock(), Mock()),
         ],
     )
     @patch(f"{SCRIPT_LOCATION}.Translator.__init__")
-    def test_init__mandatory_args(self, mock_translator_init, services, did_data_mapping):
+    def test_init__mandatory_args(self, mock_translator_init, services):
         mock_base = Mock(spec=Translator, services=services)
-        assert (
-            ConfigurableTranslator.__init__(self.mock_translator, mock_base, did_data_mapping=did_data_mapping) is None
-        )
-        assert self.mock_translator.did_data_mapping == did_data_mapping
+        assert ConfigurableTranslator.__init__(self.mock_translator, mock_base) is None
+        assert self.mock_translator.did_data_mapping == {}
         self.mock_deepcopy.assert_called_once_with(mock_base.services)
         mock_translator_init.assert_called_once_with(services=self.mock_deepcopy.return_value)
 
@@ -804,42 +802,16 @@ class TestConfigurableTranslator:
         assert ConfigurableTranslator.rid_mapping.fget(self.mock_translator) is None
         mock_get.assert_called_once_with(RequestSID.RoutineControl, None)
 
-    def test_rid_mapping__set__continuation_with_rid(self):
+    @patch(f"{SCRIPT_LOCATION}.filter")
+    def test_rid_mapping__set(self, mock_filter):
         mock_value = {Mock(): Mock()}
-        mock_mapping_values = Mock(return_value=5 * [Mock()])
-        found_elements = [Mock()] + len(mock_mapping_values.return_value) * [Mock()]
-        self.mock_find_element.side_effect = found_elements
-        mock_conditional_response_data_record = Mock(mapping=Mock(values=mock_mapping_values))
         routine_control = self.mock_translator.services_mapping[RequestSID.RoutineControl]
-        routine_control.response_structure = (Mock(), mock_conditional_response_data_record)
+        mock_filter.return_value = 10 * [Mock()]
         assert ConfigurableTranslator.rid_mapping.fset(self.mock_translator, mock_value) is None
-        assert all(found_element.values_mapping == mock_value for found_element in found_elements)
-        self.mock_find_element.assert_has_calls(
-            [call(routine_control.request_structure, element_type=self.mock_mapping_data_record, name=RID.name)]
-            + [
-                call(response_continuation, element_type=self.mock_mapping_data_record, name=RID.name)
-                for response_continuation in mock_mapping_values.return_value
-            ],
-            any_order=True,
-        )
-
-    def test_rid_mapping__set__continuation_without_rid(self):
-        mock_value = {Mock(): Mock()}
-        mock_mapping_values = Mock(return_value=5 * [Mock()])
-        found_elements = [Mock()] + len(mock_mapping_values.return_value) * [None]
-        self.mock_find_element.side_effect = found_elements
-        mock_conditional_response_data_record = Mock(mapping=Mock(values=mock_mapping_values))
-        routine_control = self.mock_translator.services_mapping[RequestSID.RoutineControl]
-        routine_control.response_structure = (Mock(), mock_conditional_response_data_record)
-        assert ConfigurableTranslator.rid_mapping.fset(self.mock_translator, mock_value) is None
-        assert found_elements[0].values_mapping == mock_value
-        self.mock_find_element.assert_has_calls(
-            [call(routine_control.request_structure, element_type=self.mock_mapping_data_record, name=RID.name)]
-            + [
-                call(response_continuation, element_type=self.mock_mapping_data_record, name=RID.name)
-                for response_continuation in mock_mapping_values.return_value
-            ],
-            any_order=True,
+        assert self.mock_find_element.return_value.values_mapping == mock_value
+        assert all(mock.values_mapping == mock_value for mock in mock_filter.return_value)
+        self.mock_find_element.assert_called_once_with(
+            routine_control.request_structure, element_type=self.mock_mapping_data_record, name=RID.name
         )
 
     # did_mapping
@@ -1147,9 +1119,12 @@ class TestConfigurableTranslator:
         for data_records in tuple(conditional_request_continuation_mapping.values()) + tuple(
             conditional_response_continuation_mapping.values()
         ):
+            print(f"{data_records = }")
             for mock_dr in data_records:
+                print(f"{mock_dr = }")
                 if not isinstance(mock_dr.children, Mock):
                     for mock_child in mock_dr.children:
+                        print(f"{mock_child = }")
                         if mock_child.name == DID_2013.name:
                             assert mock_child.values_mapping == mock_value
                         else:
@@ -1164,7 +1139,7 @@ class TestConfigurableTranslator:
             == self.mock_translator._ConfigurableTranslator__did_data_mapping
         )
 
-    def test_did_data_mapping__set__none(self):
+    def test_did_data_mapping__set__no_service(self):
         self.mock_translator.services_mapping = {}
         mock_value = {Mock(): Mock()}
         assert ConfigurableTranslator.did_data_mapping.fset(self.mock_translator, mock_value) is None
@@ -1173,46 +1148,57 @@ class TestConfigurableTranslator:
         )
         self.mock_mapping_proxy_type.assert_called_once_with(mock_value)
 
-    def test_did_data_mapping__set__all(self):
-        self.mock_translator.services_mapping = {
-            RequestSID.ReadDataByIdentifier: MagicMock(),
-            RequestSID.WriteDataByIdentifier: MagicMock(),
-            RequestSID.InputOutputControlByIdentifier: MagicMock(),
-            RequestSID.ReadDTCInformation: MagicMock(response_structure=[Mock(), Mock(mapping={})]),
-        }
-        mock_rdbi_response_structure = 52 * (Mock(),)
-        self.mock_translator._ConfigurableTranslator__get_did_record.side_effect = [
-            mock_rdbi_response_structure[:2],
-            mock_rdbi_response_structure,
-        ]
+    def test_did_data_mapping__set__rdbi(self):
         mock_value = {Mock(): Mock()}
+        read_data_by_identifier = MagicMock()
+        self.mock_translator.services_mapping = {
+            RequestSID.ReadDataByIdentifier: read_data_by_identifier,
+        }
         assert ConfigurableTranslator.did_data_mapping.fset(self.mock_translator, mock_value) is None
         assert (
             self.mock_translator._ConfigurableTranslator__did_data_mapping == self.mock_mapping_proxy_type.return_value
         )
-        self.mock_mapping_proxy_type.assert_called_once_with(mock_value)
-        # ReadDataByIdentifier
-        assert (
-            self.mock_translator.services_mapping[RequestSID.ReadDataByIdentifier].response_structure
-            == mock_rdbi_response_structure
+        assert read_data_by_identifier.response_structure == (
+            *self.mock_translator._ConfigurableTranslator__get_did_record.return_value,
+            *self.mock_translator._ConfigurableTranslator__get_did_record.return_value[2:],
         )
+        self.mock_mapping_proxy_type.assert_called_once_with(mock_value)
         self.mock_translator._ConfigurableTranslator__get_did_record.assert_has_calls(
             [
                 call(did_count=1, record_number=None, optional=False),
-                call(
-                    did_count=REPEATED_DATA_RECORDS_NUMBER,
-                    record_number=None,
-                    optional=True,
-                ),
-            ]
+                call(did_count=REPEATED_DATA_RECORDS_NUMBER, record_number=None, optional=True),
+            ],
+            any_order=True,
         )
-        # WriteDataByIdentifier
-        assert self.mock_translator.services_mapping[RequestSID.WriteDataByIdentifier].request_structure == (
-            self.mock_translator.services_mapping[RequestSID.WriteDataByIdentifier].request_structure[0],
+
+    def test_did_data_mapping__set__wdbi(self):
+        mock_value = {Mock(): Mock()}
+        write_data_by_identifier = MagicMock()
+        self.mock_translator.services_mapping = {
+            RequestSID.WriteDataByIdentifier: write_data_by_identifier,
+        }
+        assert ConfigurableTranslator.did_data_mapping.fset(self.mock_translator, mock_value) is None
+        assert (
+            self.mock_translator._ConfigurableTranslator__did_data_mapping == self.mock_mapping_proxy_type.return_value
+        )
+        assert write_data_by_identifier.request_structure == (
+            self.mock_translator._ConfigurableTranslator__get_did.return_value,
             self.mock_translator._ConfigurableTranslator__get_did_data.return_value,
         )
+        self.mock_mapping_proxy_type.assert_called_once_with(mock_value)
+        self.mock_translator._ConfigurableTranslator__get_did.assert_called_once_with(name=DID_2013.name)
         self.mock_translator._ConfigurableTranslator__get_did_data.assert_called_once_with()
-        # InputOutputControlByIdentifier
+
+    def test_did_data_mapping__set__iocbi(self):
+        mock_value = {Mock(): Mock()}
+        input_output_control_by_identifier = MagicMock()
+        self.mock_translator.services_mapping = {
+            RequestSID.InputOutputControlByIdentifier: input_output_control_by_identifier,
+        }
+        assert ConfigurableTranslator.did_data_mapping.fset(self.mock_translator, mock_value) is None
+        assert (
+            self.mock_translator._ConfigurableTranslator__did_data_mapping == self.mock_mapping_proxy_type.return_value
+        )
         assert (
             self.mock_translator.services_mapping[RequestSID.InputOutputControlByIdentifier]
             .request_structure[1]
@@ -1225,24 +1211,32 @@ class TestConfigurableTranslator:
             .formula
             == self.mock_translator._ConfigurableTranslator__get_input_output_control_by_identifier_response
         )
-        # ReadDTCInformation
-        assert self.mock_translator.services_mapping[RequestSID.ReadDTCInformation].response_structure[1].mapping[
-            0x04
-        ] == (
+        self.mock_mapping_proxy_type.assert_called_once_with(mock_value)
+
+    def test_did_data_mapping__set__rdi(self):
+        mock_value = {Mock(): Mock()}
+        read_dtc_information = MagicMock()
+        self.mock_translator.services_mapping = {
+            RequestSID.ReadDTCInformation: read_dtc_information,
+        }
+        assert ConfigurableTranslator.did_data_mapping.fset(self.mock_translator, mock_value) is None
+        assert (
+            self.mock_translator._ConfigurableTranslator__did_data_mapping == self.mock_mapping_proxy_type.return_value
+        )
+        assert read_dtc_information.response_structure[1].mapping[0x04] == (
             DTC_AND_STATUS,
             *self.mock_translator._ConfigurableTranslator__dtc_snapshot_records,
         )
         assert (
-            self.mock_translator.services_mapping[RequestSID.ReadDTCInformation].response_structure[1].mapping[0x05]
+            read_dtc_information.response_structure[1].mapping[0x05]
             == self.mock_translator._ConfigurableTranslator__dtc_stored_data_records
         )
-        assert self.mock_translator.services_mapping[RequestSID.ReadDTCInformation].response_structure[1].mapping[
-            0x18
-        ] == (
+        assert read_dtc_information.response_structure[1].mapping[0x18] == (
             MEMORY_SELECTION,
             DTC_AND_STATUS,
             *self.mock_translator._ConfigurableTranslator__dtc_snapshot_records,
         )
+        self.mock_mapping_proxy_type.assert_called_once_with(mock_value)
 
     # __did_records
 
@@ -1302,14 +1296,26 @@ class TestConfigurableTranslator:
             ConfigurableTranslator._ConfigurableTranslator__event_window_time.fget(self.mock_translator)
         mock_get.assert_called_once_with(RequestSID.ResponseOnEvent, None)
 
+    def test_event_window_time__get__runtime_error(self):
+        mock_service = MagicMock()
+        mock_get = Mock(return_value=mock_service)
+        self.mock_translator.services_mapping = Mock(get=mock_get)
+        self.mock_find_element.return_value = None
+        with pytest.raises(RuntimeError):
+            ConfigurableTranslator._ConfigurableTranslator__event_window_time.fget(self.mock_translator)
+        mock_get.assert_called_once_with(RequestSID.ResponseOnEvent, None)
+        self.mock_find_element.assert_called_once()
+
     def test_event_window_time__get(self):
         mock_service = MagicMock()
         mock_get = Mock(return_value=mock_service)
         self.mock_translator.services_mapping = Mock(get=mock_get)
         assert (
             ConfigurableTranslator._ConfigurableTranslator__event_window_time.fget(self.mock_translator)
-            == mock_service.request_structure[1][0x00][0]
+            == self.mock_find_element.return_value
         )
+        mock_get.assert_called_once_with(RequestSID.ResponseOnEvent, None)
+        self.mock_find_element.assert_called_once()
 
     # __event_type
 
