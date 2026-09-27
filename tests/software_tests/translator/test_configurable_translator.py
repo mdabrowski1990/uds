@@ -1332,8 +1332,9 @@ class TestConfigurableTranslator:
         self.mock_translator.services_mapping = Mock(get=mock_get)
         assert (
             ConfigurableTranslator._ConfigurableTranslator__event_type.fget(self.mock_translator)
-            == mock_service.request_structure[0].children[1]
+            == mock_service.request_structure[0].__getitem__.return_value
         )
+        mock_service.request_structure[0].__getitem__.assert_called_once_with(EVENT_TYPE_2013.name)
 
     # __conditional_control_state
 
@@ -1695,33 +1696,57 @@ class TestConfigurableTranslator:
             ConfigurableTranslator._ConfigurableTranslator__get_event_type_record(self.mock_translator, Mock(), Mock())
         mock_get.assert_called_once_with(RequestSID.ResponseOnEvent, None)
 
-    @pytest.mark.parametrize("event_number", [1, 32])
     @pytest.mark.parametrize("event", [2, 9])
-    def test_get_event_type_record__none(self, event, event_number):
+    def test_get_event_type_record__none__no_continuation(self, event):
         self.mock_translator.services_mapping = {
             RequestSID.ResponseOnEvent: MagicMock(
                 response_structure=[
                     MagicMock(),
-                    MagicMock(mapping={i: 2 * [MagicMock()] for i in range(5)}),
+                    MagicMock(mapping={}),
                 ]
             ),
         }
         assert (
             ConfigurableTranslator._ConfigurableTranslator__get_event_type_record(
-                self.mock_translator, event_number=event_number, event=event
+                self.mock_translator, event_number=Mock(), event=event
             )
             is None
         )
         self.mock_deepcopy.assert_not_called()
+        self.mock_find_element.assert_not_called()
 
-    @pytest.mark.parametrize("event_number", [1, 32])
     @pytest.mark.parametrize("event", [2, 9])
-    def test_get_event_type_record__valid(self, event, event_number):
+    def test_get_event_type_record__none__no_data_record(self, event):
+        mock_message_continuation = Mock()
         self.mock_translator.services_mapping = {
             RequestSID.ResponseOnEvent: MagicMock(
                 response_structure=[
                     MagicMock(),
-                    MagicMock(mapping={i: 10 * [MagicMock()] for i in range(10)}),
+                    MagicMock(mapping={event: mock_message_continuation}),
+                ]
+            ),
+        }
+        self.mock_find_element.return_value = None
+        assert (
+            ConfigurableTranslator._ConfigurableTranslator__get_event_type_record(
+                self.mock_translator, event_number=Mock(), event=event
+            )
+            is None
+        )
+        self.mock_deepcopy.assert_not_called()
+        self.mock_find_element.assert_called_once_with(
+            mock_message_continuation, element_type=self.mock_raw_data_record, name=EVENT_TYPE_RECORD_08_2020.name
+        )
+
+    @pytest.mark.parametrize("event_number", [1, 32])
+    @pytest.mark.parametrize("event", [2, 9])
+    def test_get_event_type_record__valid(self, event, event_number):
+        mock_message_continuation = Mock()
+        self.mock_translator.services_mapping = {
+            RequestSID.ResponseOnEvent: MagicMock(
+                response_structure=[
+                    MagicMock(),
+                    MagicMock(mapping={event: mock_message_continuation}),
                 ]
             ),
         }
@@ -1732,13 +1757,14 @@ class TestConfigurableTranslator:
             == self.mock_deepcopy.return_value
         )
         self.mock_deepcopy.return_value.name.endswith(f"#{event_number}")
-        self.mock_deepcopy.assert_called_once_with(
-            self.mock_translator.services_mapping[RequestSID.ResponseOnEvent].response_structure[1].mapping[event][2]
+        self.mock_deepcopy.assert_called_once_with(self.mock_find_element.return_value)
+        self.mock_find_element.assert_called_once_with(
+            mock_message_continuation, element_type=self.mock_raw_data_record, name=EVENT_TYPE_RECORD_08_2020.name
         )
 
     # __get_event_type_record_09_continuation
 
-    def test_get_event_type_record_09_continuation__value_error(self):
+    def test_get_event_type_record_09_continuation__value_error__service_not_defined(self):
         mock_get = Mock(return_value=None)
         self.mock_translator.services_mapping = MagicMock(get=mock_get)
         with pytest.raises(ValueError):
@@ -1746,6 +1772,23 @@ class TestConfigurableTranslator:
                 self.mock_translator, Mock()
             )
         mock_get.assert_called_once_with(RequestSID.ResponseOnEvent, None)
+
+    @patch(f"{SCRIPT_LOCATION}.isinstance")
+    def test_get_event_type_record_09_continuation__value_error__structure(self, mock_isinstance):
+        mock_isinstance.return_value = False
+        event_type_record_continuation = Mock()
+        self.mock_translator.services_mapping = {
+            RequestSID.ResponseOnEvent: MagicMock(
+                response_structure=[MagicMock(), MagicMock(mapping={0x09: [event_type_record_continuation]})]
+            ),
+        }
+        with pytest.raises(ValueError):
+            ConfigurableTranslator._ConfigurableTranslator__get_event_type_record_09_continuation(
+                self.mock_translator, Mock()
+            )
+        mock_isinstance.assert_called_once_with(
+            event_type_record_continuation, self.mock_conditional_mapping_data_record
+        )
 
     @pytest.mark.parametrize("event_number", [1, 32])
     def test_get_event_type_record_09_continuation__none(self, event_number):
@@ -1761,12 +1804,15 @@ class TestConfigurableTranslator:
         self.mock_deepcopy.assert_not_called()
 
     @pytest.mark.parametrize("event_number", [1, 32])
-    def test_get_event_type_record_09_continuation__valid(self, event_number):
+    @patch(f"{SCRIPT_LOCATION}.isinstance")
+    def test_get_event_type_record_09_continuation__valid(self, mock_isinstance, event_number):
+        mock_isinstance.return_value = True
+        event_type_record_continuation = Mock()
         self.mock_translator.services_mapping = {
             RequestSID.ResponseOnEvent: MagicMock(
                 response_structure=[
                     MagicMock(),
-                    MagicMock(mapping={0x09: [MagicMock(), MagicMock(), MagicMock(), MagicMock()]}),
+                    MagicMock(mapping={0x09: [Mock(), Mock(), Mock(), event_type_record_continuation]}),
                 ]
             ),
         }
@@ -1784,9 +1830,7 @@ class TestConfigurableTranslator:
             == self.mock_deepcopy.return_value
         )
         self.mock_deepcopy.return_value.name.endswith(f"#{event_number}")
-        self.mock_deepcopy.assert_called_once_with(
-            self.mock_translator.services_mapping[RequestSID.ResponseOnEvent].response_structure[1].mapping[0x09][3]
-        )
+        self.mock_deepcopy.assert_called_once_with(event_type_record_continuation)
         for data_records in self.mock_deepcopy.return_value.mapping.values():
             for data_record in data_records:
                 assert data_record.name.endswith(f"#{event_number}")
