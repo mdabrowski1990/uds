@@ -9,4 +9,4 @@ repos:
     rev: v0.16.8
     hooks:
       - id: ruff-format
-        args: ["tests", "examples", "docs"]
+        files: ^(tests|examples|docs)/
