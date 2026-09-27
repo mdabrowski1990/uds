@@ -19,7 +19,7 @@ __all__ = [
 from abc import ABC, abstractmethod
 from collections import OrderedDict
 from collections.abc import Mapping, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import TypedDict
 
 from uds.utilities import InconsistencyError, ReassignmentError, find_element
@@ -161,12 +161,12 @@ class SingleOccurrence(AbstractDataRecordOccurrences):
     :arg unit: Unit in which physical value is represented.
     """
 
-    name: str
-    length: int
-    raw_value: int
-    physical_value: SinglePhysicalValueAlias
-    children: tuple[AbstractDataRecordOccurrences, ...]
-    unit: str | None = None
+    name: str = field()
+    length: int = field()
+    raw_value: int = field()
+    physical_value: SinglePhysicalValueAlias = field()
+    children: tuple[AbstractDataRecordOccurrences, ...] = field()
+    unit: str | None = field(default=None)
 
     def __getitem__(self, child_name: str) -> AbstractDataRecordOccurrences:
         """
@@ -209,12 +209,12 @@ class MultipleOccurrences(AbstractDataRecordOccurrences):
     :arg unit: Unit in which physical value is represented.
     """
 
-    name: str
-    length: int
-    raw_value: tuple[int, ...]
-    physical_value: MultiplePhysicalValuesAlias
-    children: tuple[tuple[AbstractDataRecordOccurrences, ...], ...]
-    unit: str | None = None
+    name: str = field()
+    length: int = field()
+    raw_value: tuple[int, ...] = field()
+    physical_value: MultiplePhysicalValuesAlias = field()
+    children: tuple[tuple[AbstractDataRecordOccurrences, ...], ...] = field()
+    unit: str | None = field(default=None)
 
     def __getitem__(self, child_name: str) -> tuple[AbstractDataRecordOccurrences, ...]:
         """
