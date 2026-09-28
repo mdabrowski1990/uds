@@ -324,10 +324,8 @@ class ConditionalFormulaDataRecord(AbstractConditionalDataRecord):
         if len(formula_signature.parameters) != 1:
             raise ValueError("Provided formula does not take exactly one parameter.")
         param_annotation = list(formula_signature.parameters.items())[0][-1].annotation
-        if (
-            param_annotation != formula_signature.empty  # not annotated
-            and param_annotation != "int"  # when __future__.annotation is used
-            and not issubclass(param_annotation, int)
-        ):
+        if (param_annotation != formula_signature.empty  # not annotated
+                and param_annotation != "int"  # when __future__.annotation is used
+                and not issubclass(param_annotation, int)):
             raise ValueError("Formula's annotation suggests the formula does not take raw value as an argument.")
         self.__formula = formula

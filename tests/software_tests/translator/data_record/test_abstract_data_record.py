@@ -72,12 +72,12 @@ class TestMultipleOccurrencesInfo:
     @pytest.mark.parametrize("occurrences_count", [1, 5])
     def test_getitem__valid(self, occurrences_count):
         mock_name = Mock()
-        self.mock_info.children = [Mock()] * occurrences_count
+        self.mock_info.children = [Mock() for _ in range(occurrences_count)]
         assert MultipleOccurrences.__getitem__(self.mock_info, mock_name) == occurrences_count * (
             self.mock_find_element.return_value,
         )
         self.mock_find_element.assert_has_calls(
-            [call(child_occurrences, name=mock_name) for child_occurrences in self.mock_info.children], any_order=True
+            [call(child_occurrences, name=mock_name) for child_occurrences in self.mock_info.children], any_order=False
         )
 
     def test_getitem__value_error(self):
