@@ -1,5 +1,7 @@
 """Definition of UDS Addressing Information for storing Client/Server Addresses."""
 
+from __future__ import annotations
+
 __all__ = ["AbstractAddressingInformation"]
 
 from abc import ABC, abstractmethod
@@ -154,7 +156,7 @@ class AbstractAddressingInformation(ABC):
         :return: Addressing Type used for transmission of this packet, None otherwise.
         """
 
-    def get_other_end(self) -> "AbstractAddressingInformation":
+    def get_other_end(self) -> AbstractAddressingInformation:
         """
         Get Addressing Information of UDS entity on the other end of UDS communication.
 

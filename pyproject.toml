@@ -83,6 +83,9 @@ dependency-scan = [
 sorting-imports = [
     "isort == 9.0.1"
 ]
+formatting = [
+    "ruff == 0.16.8"
+]
 docs = [
     "sphinx",
     "sphinx-autoapi",
@@ -98,6 +101,7 @@ dev = [
     "py-uds[static-code-analysis]",
     "py-uds[dependency-scan]",
     "py-uds[sorting-imports]",
+    "py-uds[formatting]",
     "py-uds[docs]",
     "py-uds[docs-checks]",
 ]
@@ -167,3 +171,13 @@ ignore-path-errors = [
     "docs\\source\\pages\\knowledge_base\\service.rst;D001",  # tables
     "docs\\source\\pages\\user_guide\\message_translation.rst;D001",  # long references
 ]
+
+
+[tool.ruff]
+line-length = 120
+extend-exclude = ["./uds/**"]
+force-exclude = true
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"

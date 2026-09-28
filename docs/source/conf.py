@@ -23,11 +23,13 @@ try:  # python 3.11 or newer
     import tomlib
 except ModuleNotFoundError:
     import tomli as tomlib
-sys.path.append(os.path.abspath('../..'))
+sys.path.append(os.path.abspath("../.."))
 
 
 with open("../../uds/__init__.py", "r", encoding="utf-8") as init_file:
-    full_version_from_init = re.search(r'^__version__\s*=\s*[\'"]([^\'"]*)[\'"]', init_file.read(), re.MULTILINE).group(1)
+    full_version_from_init = re.search(r'^__version__\s*=\s*[\'"]([^\'"]*)[\'"]', init_file.read(), re.MULTILINE).group(
+        1
+    )
     init_file.seek(0)
     author_from_init = re.search(r'^__author__\s*=\s*[\'"]([^\'"]*)[\'"]', init_file.read(), re.MULTILINE).group(1)
 
@@ -49,21 +51,25 @@ release = full_version_from_init
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
-extensions = ["sphinx.ext.autodoc",
-              "autoapi.extension",
-              "sphinx.ext.viewcode",
-              "sphinx.ext.intersphinx"]
+extensions = ["sphinx.ext.autodoc", "autoapi.extension", "sphinx.ext.viewcode", "sphinx.ext.intersphinx"]
 
 autodoc_typehints = "description"
 autodoc_typehints_description_target = "all"
 
 
 autoapi_type = "python"
-autoapi_dirs = [os.path.abspath('../../uds')]
+autoapi_dirs = [os.path.abspath("../../uds")]
 autoapi_add_toctree_entry = True
 autoapi_generate_api_docs = True
-autoapi_options = ["members", "private-members", "special-members", "undoc-members",
-                   "show-inheritance", "show-inheritance-diagram", "show-module-summary"]
+autoapi_options = [
+    "members",
+    "private-members",
+    "special-members",
+    "undoc-members",
+    "show-inheritance",
+    "show-inheritance-diagram",
+    "show-module-summary",
+]
 autoapi_python_class_content = "both"
 
 intersphinx_mapping = {
@@ -89,5 +95,5 @@ html_theme_options = {
     "navigation_depth": 8,
 }
 
-html_static_path = ['static']
-html_css_files = ['custom.css']
+html_static_path = ["static"]
+html_css_files = ["custom.css"]

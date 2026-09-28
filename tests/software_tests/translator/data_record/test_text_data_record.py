@@ -117,10 +117,12 @@ class TestTextDataRecord:
         # patching
         self._patcher_abstract_data_record_init = patch(f"{SCRIPT_LOCATION}.AbstractDataRecord.__init__")
         self.mock_abstract_data_record_init = self._patcher_abstract_data_record_init.start()
-        self._patcher_abstract_data_record_get_physical_values \
-            = patch(f"{SCRIPT_LOCATION}.AbstractDataRecord.get_physical_values")
-        self.mock_abstract_data_record_get_physical_values \
-            = self._patcher_abstract_data_record_get_physical_values.start()
+        self._patcher_abstract_data_record_get_physical_values = patch(
+            f"{SCRIPT_LOCATION}.AbstractDataRecord.get_physical_values"
+        )
+        self.mock_abstract_data_record_get_physical_values = (
+            self._patcher_abstract_data_record_get_physical_values.start()
+        )
         self._patcher_text_encoding_validate_member = patch(f"{SCRIPT_LOCATION}.TextEncoding.validate_member")
         self.mock_text_encoding_validate_member = self._patcher_text_encoding_validate_member.start()
 
@@ -131,50 +133,63 @@ class TestTextDataRecord:
 
     # __init__
 
-    @pytest.mark.parametrize("name, encoding", [
-        (Mock(), Mock()),
-        ("Some Name", TextEncoding.ASCII),
-    ])
+    @pytest.mark.parametrize(
+        "name, encoding",
+        [
+            (Mock(), Mock()),
+            ("Some Name", TextEncoding.ASCII),
+        ],
+    )
     def test_init__mandatory_args(self, name, encoding):
         mock_length = Mock(spec=int)
         mock_encoding = MagicMock(__getitem__=MagicMock(return_value=mock_length))
         mock_encodings = MagicMock(__getitem__=MagicMock(return_value=mock_encoding))
         self.mock_data_record._TextDataRecord__ENCODINGS = mock_encodings
-        assert TextDataRecord.__init__(self.mock_data_record,
-                                       name=name,
-                                       encoding=encoding) is None
+        assert TextDataRecord.__init__(self.mock_data_record, name=name, encoding=encoding) is None
         assert self.mock_data_record.encoding == encoding
-        self.mock_abstract_data_record_init.assert_called_once_with(name=name,
-                                                                    children=tuple(),
-                                                                    min_occurrences=1,
-                                                                    max_occurrences=None,
-                                                                    length=mock_length,
-                                                                    enforce_reoccurring=True)
+        self.mock_abstract_data_record_init.assert_called_once_with(
+            name=name,
+            children=tuple(),
+            min_occurrences=1,
+            max_occurrences=None,
+            length=mock_length,
+            enforce_reoccurring=True,
+        )
         mock_encodings.__getitem__.assert_called_once_with(encoding)
         mock_encoding.__getitem__.assert_called_once_with("length")
 
-    @pytest.mark.parametrize("name, encoding, min_occurrences, max_occurrences, enforce_reoccurring", [
-        (Mock(), Mock(), Mock(), Mock(), True),
-        ("Some Name", TextEncoding.ASCII, 0, None, False),
-    ])
+    @pytest.mark.parametrize(
+        "name, encoding, min_occurrences, max_occurrences, enforce_reoccurring",
+        [
+            (Mock(), Mock(), Mock(), Mock(), True),
+            ("Some Name", TextEncoding.ASCII, 0, None, False),
+        ],
+    )
     def test_init__all_args(self, name, encoding, min_occurrences, max_occurrences, enforce_reoccurring):
         mock_length = Mock(spec=int)
         mock_encoding = MagicMock(__getitem__=MagicMock(return_value=mock_length))
         mock_encodings = MagicMock(__getitem__=MagicMock(return_value=mock_encoding))
         self.mock_data_record._TextDataRecord__ENCODINGS = mock_encodings
-        assert TextDataRecord.__init__(self.mock_data_record,
-                                       name=name,
-                                       encoding=encoding,
-                                       min_occurrences=min_occurrences,
-                                       max_occurrences=max_occurrences,
-                                       enforce_reoccurring=enforce_reoccurring) is None
+        assert (
+            TextDataRecord.__init__(
+                self.mock_data_record,
+                name=name,
+                encoding=encoding,
+                min_occurrences=min_occurrences,
+                max_occurrences=max_occurrences,
+                enforce_reoccurring=enforce_reoccurring,
+            )
+            is None
+        )
         assert self.mock_data_record.encoding == encoding
-        self.mock_abstract_data_record_init.assert_called_once_with(name=name,
-                                                                    children=tuple(),
-                                                                    min_occurrences=min_occurrences,
-                                                                    max_occurrences=max_occurrences,
-                                                                    length=mock_length,
-                                                                    enforce_reoccurring=enforce_reoccurring)
+        self.mock_abstract_data_record_init.assert_called_once_with(
+            name=name,
+            children=tuple(),
+            min_occurrences=min_occurrences,
+            max_occurrences=max_occurrences,
+            length=mock_length,
+            enforce_reoccurring=enforce_reoccurring,
+        )
         mock_encodings.__getitem__.assert_called_once_with(encoding)
         mock_encoding.__getitem__.assert_called_once_with("length")
 
@@ -191,7 +206,8 @@ class TestTextDataRecord:
             encoding=self.mock_data_record.encoding,
             min_occurrences=self.mock_data_record.min_occurrences,
             max_occurrences=self.mock_data_record.max_occurrences,
-            enforce_reoccurring=self.mock_data_record.enforce_reoccurring)
+            enforce_reoccurring=self.mock_data_record.enforce_reoccurring,
+        )
 
     # encoding
 
@@ -219,10 +235,13 @@ class TestTextDataRecord:
 
     # get_physical_values
 
-    @pytest.mark.parametrize("raw_values, characters", [
-        (range(10), "0"),
-        ([Mock(), Mock(), Mock()], "a"),
-    ])
+    @pytest.mark.parametrize(
+        "raw_values, characters",
+        [
+            (range(10), "0"),
+            ([Mock(), Mock(), Mock()], "a"),
+        ],
+    )
     def test_get_physical_values(self, raw_values, characters):
         self.mock_abstract_data_record_get_physical_values.return_value = tuple(characters)
         assert TextDataRecord.get_physical_values(self.mock_data_record, *raw_values) == characters
@@ -257,8 +276,10 @@ class TestTextDataRecord:
         mock_encoding = MagicMock(__getitem__=MagicMock(return_value=mock_decode))
         mock_encodings = MagicMock(__getitem__=MagicMock(return_value=mock_encoding))
         self.mock_data_record._TextDataRecord__ENCODINGS = mock_encodings
-        assert (TextDataRecord.get_raw_value(self.mock_data_record, physical_value=physical_value)
-                == mock_decode.return_value)
+        assert (
+            TextDataRecord.get_raw_value(self.mock_data_record, physical_value=physical_value)
+            == mock_decode.return_value
+        )
         mock_encodings.__getitem__.assert_called_once_with(self.mock_data_record.encoding)
         mock_encoding.__getitem__.assert_called_once_with("decode")
 
@@ -268,29 +289,35 @@ class TestTextDataRecordIntegration:
     """Integration tests for `TextDataRecord` class."""
 
     def setup_class(self):
-        self.bcd = TextDataRecord(name="BCD",
-                                  encoding=TextEncoding.BCD)
-        self.ascii = TextDataRecord(name="ASCII",
-                                    encoding=TextEncoding.ASCII)
-        self.dtc = TextDataRecord(name="DTC",
-                                  min_occurrences=1,
-                                  max_occurrences=1,
-                                  encoding=TextEncoding.DTC_OBD_FORMAT,
-                                  enforce_reoccurring=False)
+        self.bcd = TextDataRecord(name="BCD", encoding=TextEncoding.BCD)
+        self.ascii = TextDataRecord(name="ASCII", encoding=TextEncoding.ASCII)
+        self.dtc = TextDataRecord(
+            name="DTC",
+            min_occurrences=1,
+            max_occurrences=1,
+            encoding=TextEncoding.DTC_OBD_FORMAT,
+            enforce_reoccurring=False,
+        )
 
     # get_physical_values
 
-    @pytest.mark.parametrize("raw_values, text", [
-        (range(10), "0123456789"),
-        ([9, 0, 9, 0, 5, 2], "909052"),
-    ])
+    @pytest.mark.parametrize(
+        "raw_values, text",
+        [
+            (range(10), "0123456789"),
+            ([9, 0, 9, 0, 5, 2], "909052"),
+        ],
+    )
     def test_get_physical_values__bcd(self, raw_values, text):
         assert self.bcd.get_physical_values(*raw_values) == text
 
-    @pytest.mark.parametrize("raw_values, text", [
-        ([0x53, 0x6f, 0x6d, 0x65, 0x20, 0x56, 0x61, 0x6c, 0x75, 0x65], "Some Value"),
-        ((0x00, 0x10, 0x20, 0x30, 0x40, 0x50, 0x60, 0x70, 0x7F), "\x00\x10\x20\x30\x40\x50\x60\x70\x7F"),
-    ])
+    @pytest.mark.parametrize(
+        "raw_values, text",
+        [
+            ([0x53, 0x6F, 0x6D, 0x65, 0x20, 0x56, 0x61, 0x6C, 0x75, 0x65], "Some Value"),
+            ((0x00, 0x10, 0x20, 0x30, 0x40, 0x50, 0x60, 0x70, 0x7F), "\x00\x10\x20\x30\x40\x50\x60\x70\x7f"),
+        ],
+    )
     def test_get_physical_values__ascii(self, raw_values, text):
         assert self.ascii.get_physical_values(*raw_values) == text
 
@@ -306,12 +333,15 @@ class TestTextDataRecordIntegration:
         with pytest.raises(ValueError):
             self.ascii.get_physical_value(raw_value)
 
-    @pytest.mark.parametrize("raw_value, text", [
-        (0x012345, "P0123-45"),
-        (0x634567, "C2345-67"),
-        (0x812345, "B0123-45"),
-        (0xDFEDCB, "U1FED-CB"),
-    ])
+    @pytest.mark.parametrize(
+        "raw_value, text",
+        [
+            (0x012345, "P0123-45"),
+            (0x634567, "C2345-67"),
+            (0x812345, "B0123-45"),
+            (0xDFEDCB, "U1FED-CB"),
+        ],
+    )
     def test_get_physical_value__dtc(self, raw_value, text):
         assert self.dtc.get_physical_value(raw_value) == text
 

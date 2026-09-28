@@ -19,14 +19,16 @@ if __name__ == "__main__":
         sent_message = buffered_reader.get_message(timeout=1)
         time_after_send = time()
 
-        print(f"-----------------------------------------------\n"
-              f"Result:\n"
-              f"Timestamp before send: {time_before_send}\n"
-              f"Message timestamp: {sent_message.timestamp}\n"
-              f"Current timestamp: {time_after_send}\n"
-              f"Message timestamp - Timestamp before send: {sent_message.timestamp - time_before_send:06f} (expected > 0)\n"
-              f"Current timestamp - Message timestamp: {time_after_send - sent_message.timestamp:06f} (expected > 0)\n"
-              f"Timestamp before send <= Message timestamp <= Current timestamp: {time_before_send <= sent_message.timestamp <= time_after_send} (expected `True`)")
+        print(
+            f"-----------------------------------------------\n"
+            f"Result:\n"
+            f"Timestamp before send: {time_before_send}\n"
+            f"Message timestamp: {sent_message.timestamp}\n"
+            f"Current timestamp: {time_after_send}\n"
+            f"Message timestamp - Timestamp before send: {sent_message.timestamp - time_before_send:06f} (expected > 0)\n"
+            f"Current timestamp - Message timestamp: {time_after_send - sent_message.timestamp:06f} (expected > 0)\n"
+            f"Timestamp before send <= Message timestamp <= Current timestamp: {time_before_send <= sent_message.timestamp <= time_after_send} (expected `True`)"
+        )
 
     kvaser_interface_1.shutdown()
     kvaser_interface_2.shutdown()

@@ -5,6 +5,8 @@ Module with common and reused implementation of enums.
 named values. This module provides extension to `aenum <https://pypi.org/project/aenum/>`_ package.
 """
 
+from __future__ import annotations
+
 __all__ = ["ExtendableEnum", "ValidatedEnum", "ByteEnum", "NibbleEnum",
            "Endianness"]
 
@@ -22,7 +24,7 @@ class ExtendableEnum(AEnum):  # type: ignore
     """Enum that supports new members adding."""
 
     @classmethod
-    def add_member(cls, name: str, value: Any) -> "ExtendableEnum":
+    def add_member(cls, name: str, value: Any) -> ExtendableEnum:
         """
         Register a new member.
 
@@ -61,7 +63,7 @@ class ValidatedEnum(AEnum):  # type: ignore
         return True
 
     @classmethod
-    def validate_member(cls, value: Any) -> "ValidatedEnum":
+    def validate_member(cls, value: Any) -> ValidatedEnum:
         """
         Validate whether given argument is a member or a value stored by this Enum.
 
@@ -79,7 +81,7 @@ class ValidatedEnum(AEnum):  # type: ignore
 class ByteEnum(AIntEnum):  # type: ignore
     """Enum which members are one byte integers (0x00-0xFF) only."""
 
-    def __new__(cls, value: int) -> "ByteEnum":
+    def __new__(cls, value: int) -> ByteEnum:
         """
         Creation of a new member.
 
@@ -94,7 +96,7 @@ class ByteEnum(AIntEnum):  # type: ignore
 class NibbleEnum(AIntEnum):  # type: ignore
     """Enum which members are one nibble (4 bits) integers (0x0-0xF) only."""
 
-    def __new__(cls, value: int) -> "NibbleEnum":
+    def __new__(cls, value: int) -> NibbleEnum:
         """
         Creation of a new member.
 
@@ -113,9 +115,9 @@ class Endianness(ValidatedEnum, AStrEnum):  # type: ignore
     `Endianness <https://en.wikipedia.org/wiki/Endianness>`_ determines order of bytes in a bytes sequence.
     """
 
-    LITTLE_ENDIAN: "Endianness" = "little"  # type: ignore  # noqa: vulture
+    LITTLE_ENDIAN: Endianness = "little"  # type: ignore  # noqa: vulture
     """Little Endian stores the most significant byte at the largest memory address and the least significant byte
     at the smallest."""
-    BIG_ENDIAN: "Endianness" = "big"  # type: ignore
+    BIG_ENDIAN: Endianness = "big"  # type: ignore
     """Big Endian stores the most significant byte at the smallest memory address and the least significant byte
     at the largest."""

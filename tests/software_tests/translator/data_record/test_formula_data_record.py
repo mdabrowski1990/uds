@@ -21,49 +21,67 @@ class TestLinearFormulaDataRecord:
 
     # __init__
 
-    @pytest.mark.parametrize("name, length, factor, offset", [
-        (Mock(), Mock(), Mock(), Mock()),
-        ("Some name", 8, 0.5, -10),
-    ])
+    @pytest.mark.parametrize(
+        "name, length, factor, offset",
+        [
+            (Mock(), Mock(), Mock(), Mock()),
+            ("Some name", 8, 0.5, -10),
+        ],
+    )
     def test_init__mandatory_args(self, name, length, factor, offset):
-        assert LinearFormulaDataRecord.__init__(self.mock_formula_data_record,
-                                                name=name,
-                                                length=length,
-                                                factor=factor,
-                                                offset=offset) is None
+        assert (
+            LinearFormulaDataRecord.__init__(
+                self.mock_formula_data_record, name=name, length=length, factor=factor, offset=offset
+            )
+            is None
+        )
         assert self.mock_formula_data_record.factor == factor
         assert self.mock_formula_data_record.offset == offset
-        self.mock_abstract_data_record_init.assert_called_once_with(name=name,
-                                                                    length=length,
-                                                                    children=tuple(),
-                                                                    unit=None,
-                                                                    min_occurrences=1,
-                                                                    max_occurrences=1,
-                                                                    enforce_reoccurring=False)
+        self.mock_abstract_data_record_init.assert_called_once_with(
+            name=name,
+            length=length,
+            children=tuple(),
+            unit=None,
+            min_occurrences=1,
+            max_occurrences=1,
+            enforce_reoccurring=False,
+        )
 
-    @pytest.mark.parametrize("name, length, factor, offset, min_occurrences, max_occurrences, unit, enforce_reoccurring", [
-        (Mock(), Mock(), Mock(), Mock(), Mock(), Mock(), Mock(), Mock()),
-        ("Some name", 8, 0.5, -10, 1, 8, "C degrees", True),
-    ])
-    def test_init__all_args(self, name, length, factor, offset, min_occurrences, max_occurrences, unit, enforce_reoccurring):
-        assert LinearFormulaDataRecord.__init__(self.mock_formula_data_record,
-                                                name=name,
-                                                length=length,
-                                                factor=factor,
-                                                offset=offset,
-                                                min_occurrences=min_occurrences,
-                                                max_occurrences=max_occurrences,
-                                                unit=unit,
-                                                enforce_reoccurring=enforce_reoccurring) is None
+    @pytest.mark.parametrize(
+        "name, length, factor, offset, min_occurrences, max_occurrences, unit, enforce_reoccurring",
+        [
+            (Mock(), Mock(), Mock(), Mock(), Mock(), Mock(), Mock(), Mock()),
+            ("Some name", 8, 0.5, -10, 1, 8, "C degrees", True),
+        ],
+    )
+    def test_init__all_args(
+        self, name, length, factor, offset, min_occurrences, max_occurrences, unit, enforce_reoccurring
+    ):
+        assert (
+            LinearFormulaDataRecord.__init__(
+                self.mock_formula_data_record,
+                name=name,
+                length=length,
+                factor=factor,
+                offset=offset,
+                min_occurrences=min_occurrences,
+                max_occurrences=max_occurrences,
+                unit=unit,
+                enforce_reoccurring=enforce_reoccurring,
+            )
+            is None
+        )
         assert self.mock_formula_data_record.factor == factor
         assert self.mock_formula_data_record.offset == offset
-        self.mock_abstract_data_record_init.assert_called_once_with(name=name,
-                                                                    length=length,
-                                                                    children=tuple(),
-                                                                    unit=unit,
-                                                                    min_occurrences=min_occurrences,
-                                                                    max_occurrences=max_occurrences,
-                                                                    enforce_reoccurring=enforce_reoccurring)
+        self.mock_abstract_data_record_init.assert_called_once_with(
+            name=name,
+            length=length,
+            children=tuple(),
+            unit=unit,
+            min_occurrences=min_occurrences,
+            max_occurrences=max_occurrences,
+            enforce_reoccurring=enforce_reoccurring,
+        )
 
     # __deepcopy__
 
@@ -81,14 +99,17 @@ class TestLinearFormulaDataRecord:
             min_occurrences=self.mock_formula_data_record.min_occurrences,
             max_occurrences=self.mock_formula_data_record.max_occurrences,
             unit=self.mock_formula_data_record.unit,
-            enforce_reoccurring=self.mock_formula_data_record.enforce_reoccurring)
+            enforce_reoccurring=self.mock_formula_data_record.enforce_reoccurring,
+        )
 
     # factor
 
     def test_factor__get(self):
         self.mock_formula_data_record._LinearFormulaDataRecord__factor = Mock()
-        assert (LinearFormulaDataRecord.factor.fget(self.mock_formula_data_record)
-                == self.mock_formula_data_record._LinearFormulaDataRecord__factor)
+        assert (
+            LinearFormulaDataRecord.factor.fget(self.mock_formula_data_record)
+            == self.mock_formula_data_record._LinearFormulaDataRecord__factor
+        )
 
     @pytest.mark.parametrize("value", [Mock(), "Some value"])
     @patch(f"{SCRIPT_LOCATION}.isinstance")
@@ -98,7 +119,7 @@ class TestLinearFormulaDataRecord:
             LinearFormulaDataRecord.factor.fset(self.mock_formula_data_record, value)
         mock_isinstance.assert_called_once_with(value, (int, float))
 
-    @pytest.mark.parametrize("value", [0, 0.])
+    @pytest.mark.parametrize("value", [0, 0.0])
     def test_factor__set__value_error(self, value):
         with pytest.raises(ValueError):
             LinearFormulaDataRecord.factor.fset(self.mock_formula_data_record, value)
@@ -110,13 +131,15 @@ class TestLinearFormulaDataRecord:
         assert LinearFormulaDataRecord.factor.fset(self.mock_formula_data_record, value) is None
         assert self.mock_formula_data_record._LinearFormulaDataRecord__factor == value
         mock_isinstance.assert_called_once_with(value, (int, float))
-    
+
     # offset
-    
+
     def test_offset__get(self):
         self.mock_formula_data_record._LinearFormulaDataRecord__offset = Mock()
-        assert (LinearFormulaDataRecord.offset.fget(self.mock_formula_data_record)
-                == self.mock_formula_data_record._LinearFormulaDataRecord__offset)
+        assert (
+            LinearFormulaDataRecord.offset.fget(self.mock_formula_data_record)
+            == self.mock_formula_data_record._LinearFormulaDataRecord__offset
+        )
 
     @pytest.mark.parametrize("value", [Mock(), "Some value"])
     @patch(f"{SCRIPT_LOCATION}.isinstance")
@@ -136,12 +159,15 @@ class TestLinearFormulaDataRecord:
 
     # min_physical_value
 
-    @pytest.mark.parametrize("min_raw_value, max_raw_value, factor, offset", [
-        (0, 255, 0.01, -0.5423),
-        (0, 65123, -23, 987),
-    ])
+    @pytest.mark.parametrize(
+        "min_raw_value, max_raw_value, factor, offset",
+        [
+            (0, 255, 0.01, -0.5423),
+            (0, 65123, -23, 987),
+        ],
+    )
     def test_min_physical_value(self, min_raw_value, max_raw_value, factor, offset):
-        min_physical_value = min((min_raw_value*factor + offset), (max_raw_value*factor + offset))
+        min_physical_value = min((min_raw_value * factor + offset), (max_raw_value * factor + offset))
         self.mock_formula_data_record.min_raw_value = min_raw_value
         self.mock_formula_data_record.max_raw_value = max_raw_value
         self.mock_formula_data_record.factor = factor
@@ -150,12 +176,15 @@ class TestLinearFormulaDataRecord:
 
     # max_physical_value
 
-    @pytest.mark.parametrize("min_raw_value, max_raw_value, factor, offset", [
-        (0, 255, -0.01, 0.5423),
-        (0, 65123, 23, -987),
-    ])
+    @pytest.mark.parametrize(
+        "min_raw_value, max_raw_value, factor, offset",
+        [
+            (0, 255, -0.01, 0.5423),
+            (0, 65123, 23, -987),
+        ],
+    )
     def test_max_physical_value(self, min_raw_value, max_raw_value, factor, offset):
-        max_physical_value = max((min_raw_value*factor + offset), (max_raw_value*factor + offset))
+        max_physical_value = max((min_raw_value * factor + offset), (max_raw_value * factor + offset))
         self.mock_formula_data_record.min_raw_value = min_raw_value
         self.mock_formula_data_record.max_raw_value = max_raw_value
         self.mock_formula_data_record.factor = factor
@@ -164,15 +193,20 @@ class TestLinearFormulaDataRecord:
 
     # get_physical_value
 
-    @pytest.mark.parametrize("raw_value, factor, offset", [
-        (0, 0.0004, 765),
-        (987321, -52.21, -74.25),
-    ])
+    @pytest.mark.parametrize(
+        "raw_value, factor, offset",
+        [
+            (0, 0.0004, 765),
+            (987321, -52.21, -74.25),
+        ],
+    )
     def test_get_physical_value(self, raw_value, factor, offset):
         self.mock_formula_data_record.factor = factor
         self.mock_formula_data_record.offset = offset
-        assert LinearFormulaDataRecord.get_physical_value(self.mock_formula_data_record,
-                                                          raw_value=raw_value) == raw_value*factor + offset
+        assert (
+            LinearFormulaDataRecord.get_physical_value(self.mock_formula_data_record, raw_value=raw_value)
+            == raw_value * factor + offset
+        )
         self.mock_formula_data_record._validate_raw_value.assert_called_once_with(raw_value)
 
     # get_raw_value
@@ -182,35 +216,41 @@ class TestLinearFormulaDataRecord:
     def test_get_raw_value__type_error(self, mock_isinstance, physical_value):
         mock_isinstance.return_value = False
         with pytest.raises(TypeError):
-            LinearFormulaDataRecord.get_raw_value(self.mock_formula_data_record,
-                                                  physical_value=physical_value)
+            LinearFormulaDataRecord.get_raw_value(self.mock_formula_data_record, physical_value=physical_value)
         mock_isinstance.assert_called_once_with(physical_value, (int, float))
 
-    @pytest.mark.parametrize("min_raw_value, max_raw_value, physical_value, factor, offset", [
-        (0, 255, -41, 1, -40),
-        (0, 63, 6.3501, 0.1, 0),
-    ])
+    @pytest.mark.parametrize(
+        "min_raw_value, max_raw_value, physical_value, factor, offset",
+        [
+            (0, 255, -41, 1, -40),
+            (0, 63, 6.3501, 0.1, 0),
+        ],
+    )
     def test_get_raw_value__value_error(self, min_raw_value, max_raw_value, physical_value, factor, offset):
         self.mock_formula_data_record.min_raw_value = min_raw_value
         self.mock_formula_data_record.max_raw_value = max_raw_value
         self.mock_formula_data_record.factor = factor
         self.mock_formula_data_record.offset = offset
         with pytest.raises(ValueError):
-            LinearFormulaDataRecord.get_raw_value(self.mock_formula_data_record,
-                                                  physical_value=physical_value)
+            LinearFormulaDataRecord.get_raw_value(self.mock_formula_data_record, physical_value=physical_value)
 
-    @pytest.mark.parametrize("min_raw_value, max_raw_value, raw_value, physical_value, factor, offset", [
-        (0, 255, 0, -40, 1, -40),
-        (0, 63, 63, 6.3499, 0.1, 0),
-        (0, 15, 7, 2, -0.25, 3.7),
-    ])
+    @pytest.mark.parametrize(
+        "min_raw_value, max_raw_value, raw_value, physical_value, factor, offset",
+        [
+            (0, 255, 0, -40, 1, -40),
+            (0, 63, 63, 6.3499, 0.1, 0),
+            (0, 15, 7, 2, -0.25, 3.7),
+        ],
+    )
     def test_get_raw_value__valid(self, min_raw_value, max_raw_value, raw_value, physical_value, factor, offset):
         self.mock_formula_data_record.min_raw_value = min_raw_value
         self.mock_formula_data_record.max_raw_value = max_raw_value
         self.mock_formula_data_record.factor = factor
         self.mock_formula_data_record.offset = offset
-        assert LinearFormulaDataRecord.get_raw_value(self.mock_formula_data_record,
-                                                     physical_value=physical_value) == raw_value
+        assert (
+            LinearFormulaDataRecord.get_raw_value(self.mock_formula_data_record, physical_value=physical_value)
+            == raw_value
+        )
 
 
 class TestCustomFormulaDataRecord:
@@ -230,52 +270,82 @@ class TestCustomFormulaDataRecord:
 
     # __init__
 
-    @pytest.mark.parametrize("name, length, encoding_formula, decoding_formula", [
-        (Mock(), Mock(), Mock(), Mock()),
-        ("Some name", 8, MagicMock(), MagicMock()),
-    ])
+    @pytest.mark.parametrize(
+        "name, length, encoding_formula, decoding_formula",
+        [
+            (Mock(), Mock(), Mock(), Mock()),
+            ("Some name", 8, MagicMock(), MagicMock()),
+        ],
+    )
     def test_init__mandatory_args(self, name, length, encoding_formula, decoding_formula):
-        assert CustomFormulaDataRecord.__init__(self.mock_formula_data_record,
-                                                name=name,
-                                                length=length,
-                                                encoding_formula=encoding_formula,
-                                                decoding_formula=decoding_formula) is None
+        assert (
+            CustomFormulaDataRecord.__init__(
+                self.mock_formula_data_record,
+                name=name,
+                length=length,
+                encoding_formula=encoding_formula,
+                decoding_formula=decoding_formula,
+            )
+            is None
+        )
         assert self.mock_formula_data_record.encoding_formula == encoding_formula
         assert self.mock_formula_data_record.decoding_formula == decoding_formula
-        self.mock_abstract_data_record_init.assert_called_once_with(name=name,
-                                                                    length=length,
-                                                                    children=tuple(),
-                                                                    unit=None,
-                                                                    min_occurrences=1,
-                                                                    max_occurrences=1,
-                                                                    enforce_reoccurring=False)
+        self.mock_abstract_data_record_init.assert_called_once_with(
+            name=name,
+            length=length,
+            children=tuple(),
+            unit=None,
+            min_occurrences=1,
+            max_occurrences=1,
+            enforce_reoccurring=False,
+        )
 
-    @pytest.mark.parametrize("name, length, encoding_formula, decoding_formula, children, unit, "
-                             "min_occurrences, max_occurrences, enforce_reoccurring", [
-        (Mock(), Mock(), Mock(), Mock(), Mock(), Mock(), Mock(), Mock(), Mock()),
-        ("Some name", 8, MagicMock(), MagicMock(), [Mock(), Mock()], "m/s^2", 1, 8, True),
-    ])
-    def test_init__all_args(self, name, length, encoding_formula, decoding_formula, children, unit,
-                            min_occurrences, max_occurrences, enforce_reoccurring):
-        assert CustomFormulaDataRecord.__init__(self.mock_formula_data_record,
-                                                name=name,
-                                                length=length,
-                                                encoding_formula=encoding_formula,
-                                                decoding_formula=decoding_formula,
-                                                children=children,
-                                                unit=unit,
-                                                min_occurrences=min_occurrences,
-                                                max_occurrences=max_occurrences,
-                                                enforce_reoccurring=enforce_reoccurring) is None
+    @pytest.mark.parametrize(
+        "name, length, encoding_formula, decoding_formula, children, unit, "
+        "min_occurrences, max_occurrences, enforce_reoccurring",
+        [
+            (Mock(), Mock(), Mock(), Mock(), Mock(), Mock(), Mock(), Mock(), Mock()),
+            ("Some name", 8, MagicMock(), MagicMock(), [Mock(), Mock()], "m/s^2", 1, 8, True),
+        ],
+    )
+    def test_init__all_args(
+        self,
+        name,
+        length,
+        encoding_formula,
+        decoding_formula,
+        children,
+        unit,
+        min_occurrences,
+        max_occurrences,
+        enforce_reoccurring,
+    ):
+        assert (
+            CustomFormulaDataRecord.__init__(
+                self.mock_formula_data_record,
+                name=name,
+                length=length,
+                encoding_formula=encoding_formula,
+                decoding_formula=decoding_formula,
+                children=children,
+                unit=unit,
+                min_occurrences=min_occurrences,
+                max_occurrences=max_occurrences,
+                enforce_reoccurring=enforce_reoccurring,
+            )
+            is None
+        )
         assert self.mock_formula_data_record.encoding_formula == encoding_formula
         assert self.mock_formula_data_record.decoding_formula == decoding_formula
-        self.mock_abstract_data_record_init.assert_called_once_with(name=name,
-                                                                    length=length,
-                                                                    children=children,
-                                                                    unit=unit,
-                                                                    min_occurrences=min_occurrences,
-                                                                    max_occurrences=max_occurrences,
-                                                                    enforce_reoccurring=enforce_reoccurring)
+        self.mock_abstract_data_record_init.assert_called_once_with(
+            name=name,
+            length=length,
+            children=children,
+            unit=unit,
+            min_occurrences=min_occurrences,
+            max_occurrences=max_occurrences,
+            enforce_reoccurring=enforce_reoccurring,
+        )
 
     # __deepcopy__
 
@@ -294,18 +364,25 @@ class TestCustomFormulaDataRecord:
             min_occurrences=self.mock_formula_data_record.min_occurrences,
             max_occurrences=self.mock_formula_data_record.max_occurrences,
             unit=self.mock_formula_data_record.unit,
-            enforce_reoccurring=self.mock_formula_data_record.enforce_reoccurring)
-        self.mock_deepcopy.assert_has_calls([call(self.mock_formula_data_record.encoding_formula, memo=memo),
-                                             call(self.mock_formula_data_record.decoding_formula, memo=memo),
-                                             call(self.mock_formula_data_record.children, memo=memo)],
-                                            any_order=True)
+            enforce_reoccurring=self.mock_formula_data_record.enforce_reoccurring,
+        )
+        self.mock_deepcopy.assert_has_calls(
+            [
+                call(self.mock_formula_data_record.encoding_formula, memo=memo),
+                call(self.mock_formula_data_record.decoding_formula, memo=memo),
+                call(self.mock_formula_data_record.children, memo=memo),
+            ],
+            any_order=True,
+        )
 
     # encoding_formula
-    
+
     def test_encoding_formula__get(self):
         self.mock_formula_data_record._CustomFormulaDataRecord__encoding_formula = Mock()
-        assert (CustomFormulaDataRecord.encoding_formula.fget(self.mock_formula_data_record)
-                == self.mock_formula_data_record._CustomFormulaDataRecord__encoding_formula)
+        assert (
+            CustomFormulaDataRecord.encoding_formula.fget(self.mock_formula_data_record)
+            == self.mock_formula_data_record._CustomFormulaDataRecord__encoding_formula
+        )
 
     @pytest.mark.parametrize("value", [Mock(), "Some value"])
     @patch(f"{SCRIPT_LOCATION}.callable")
@@ -327,8 +404,10 @@ class TestCustomFormulaDataRecord:
 
     def test_decoding_formula__get(self):
         self.mock_formula_data_record._CustomFormulaDataRecord__decoding_formula = Mock()
-        assert (CustomFormulaDataRecord.decoding_formula.fget(self.mock_formula_data_record)
-                == self.mock_formula_data_record._CustomFormulaDataRecord__decoding_formula)
+        assert (
+            CustomFormulaDataRecord.decoding_formula.fget(self.mock_formula_data_record)
+            == self.mock_formula_data_record._CustomFormulaDataRecord__decoding_formula
+        )
 
     @pytest.mark.parametrize("value", [Mock(), "Some value"])
     @patch(f"{SCRIPT_LOCATION}.callable")
@@ -350,8 +429,10 @@ class TestCustomFormulaDataRecord:
 
     @pytest.mark.parametrize("raw_value", [Mock(), "Some value"])
     def test_get_physical_value(self, raw_value):
-        assert (CustomFormulaDataRecord.get_physical_value(self.mock_formula_data_record, raw_value=raw_value)
-                == self.mock_formula_data_record.decoding_formula.return_value)
+        assert (
+            CustomFormulaDataRecord.get_physical_value(self.mock_formula_data_record, raw_value=raw_value)
+            == self.mock_formula_data_record.decoding_formula.return_value
+        )
         self.mock_formula_data_record._validate_raw_value.assert_called_once_with(raw_value)
         self.mock_formula_data_record.decoding_formula.assert_called_once_with(raw_value)
 
@@ -359,8 +440,10 @@ class TestCustomFormulaDataRecord:
 
     @pytest.mark.parametrize("physical_value", [Mock(), "Some value"])
     def test_get_raw_value(self, physical_value):
-        assert (CustomFormulaDataRecord.get_raw_value(self.mock_formula_data_record, physical_value=physical_value)
-                == self.mock_formula_data_record.encoding_formula.return_value)
+        assert (
+            CustomFormulaDataRecord.get_raw_value(self.mock_formula_data_record, physical_value=physical_value)
+            == self.mock_formula_data_record.encoding_formula.return_value
+        )
         self.mock_formula_data_record.encoding_formula.assert_called_once_with(physical_value)
 
 
@@ -369,36 +452,48 @@ class TestLinearFormulaDataRecordIntegration:
     """Integration tests for `LinearFormulaDataRecord` class."""
 
     def setup_class(self) -> None:
-        self.fahrenheit_to_celsius_data_record = LinearFormulaDataRecord(name="Celsius Temperature",
-                                                                         length=16,
-                                                                         factor=5 / 9,
-                                                                         offset=-160 / 9)
+        self.fahrenheit_to_celsius_data_record = LinearFormulaDataRecord(
+            name="Celsius Temperature", length=16, factor=5 / 9, offset=-160 / 9
+        )
 
     # get_raw_value
 
-    @pytest.mark.parametrize("physical_value, raw_value", [
-        (0, 32),
-        (-17.8, 0),
-        (36390.6, 0xFFFF),
-    ])
+    @pytest.mark.parametrize(
+        "physical_value, raw_value",
+        [
+            (0, 32),
+            (-17.8, 0),
+            (36390.6, 0xFFFF),
+        ],
+    )
     def test_get_raw_value(self, physical_value, raw_value):
         assert self.fahrenheit_to_celsius_data_record.get_raw_value(physical_value) == raw_value
 
-    @pytest.mark.parametrize("physical_value", [-18.1,36390.9,])
+    @pytest.mark.parametrize(
+        "physical_value",
+        [
+            -18.1,
+            36390.9,
+        ],
+    )
     def test_get_raw_value__value_error(self, physical_value):
         with pytest.raises(ValueError):
             self.fahrenheit_to_celsius_data_record.get_raw_value(physical_value)
 
     # get_physical_value
 
-    @pytest.mark.parametrize("physical_value, raw_value", [
-        (0, 32),
-        (-17.7777, 0),
-        (36390.5555, 0xFFFF),
-    ])
+    @pytest.mark.parametrize(
+        "physical_value, raw_value",
+        [
+            (0, 32),
+            (-17.7777, 0),
+            (36390.5555, 0xFFFF),
+        ],
+    )
     def test_get_raw_value_2(self, physical_value, raw_value):
-        assert (round(self.fahrenheit_to_celsius_data_record.get_physical_value(raw_value), 3)
-                == round(physical_value, 3))
+        assert round(self.fahrenheit_to_celsius_data_record.get_physical_value(raw_value), 3) == round(
+            physical_value, 3
+        )
 
     # two conversions
 
@@ -415,41 +510,35 @@ class TestCustomFormulaDataRecordIntegration:
     def setup_class(self) -> None:
         def encoding_formula(physical_value: float) -> int:
             if physical_value >= 0:
-                raw_value = physical_value*100
+                raw_value = physical_value * 100
             else:
                 raw_value = 128 + ((physical_value + 1.28) * 100)
-            return int(round(raw_value,0))
+            return int(round(raw_value, 0))
 
         def decoding_formula(raw_value: int) -> float:
-            physical_value = (raw_value & 0x7F) / 100.
+            physical_value = (raw_value & 0x7F) / 100.0
             if raw_value >= 128:
                 physical_value -= 1.28
             return physical_value
 
-        self.sensor_entries = CustomFormulaDataRecord(name="Acceleration",
-                                                      length=8,
-                                                      encoding_formula=encoding_formula,
-                                                      decoding_formula=decoding_formula,
-                                                      min_occurrences=4,
-                                                      max_occurrences=4)
+        self.sensor_entries = CustomFormulaDataRecord(
+            name="Acceleration",
+            length=8,
+            encoding_formula=encoding_formula,
+            decoding_formula=decoding_formula,
+            min_occurrences=4,
+            max_occurrences=4,
+        )
 
     # get_raw_value
 
-    @pytest.mark.parametrize("physical_value, raw_value", [
-        (0, 0),
-        (-1.281, 0x80),
-        (1.2699, 0x7F)
-    ])
+    @pytest.mark.parametrize("physical_value, raw_value", [(0, 0), (-1.281, 0x80), (1.2699, 0x7F)])
     def test_get_raw_value(self, physical_value, raw_value):
         assert self.sensor_entries.get_raw_value(physical_value) == raw_value
 
     # get_physical_value
 
-    @pytest.mark.parametrize("physical_value, raw_value", [
-        (0, 0),
-        (-1.28, 0x80),
-        (1.27, 0x7F)
-    ])
+    @pytest.mark.parametrize("physical_value, raw_value", [(0, 0), (-1.28, 0x80), (1.27, 0x7F)])
     def test_get_physical_value(self, physical_value, raw_value):
         assert self.sensor_entries.get_physical_value(raw_value) == physical_value
 

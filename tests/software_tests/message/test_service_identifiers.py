@@ -202,8 +202,10 @@ class TestFunctions:
         mock_name = Mock(spec=str)
         self.mock_is_sid_member.return_value = False
         self.mock_is_rsid_member.return_value = False
-        assert define_service(sid=sid, name=mock_name) == (self.mock_add_sid_member.return_value,
-                                                           self.mock_add_rsid_member.return_value)
+        assert define_service(sid=sid, name=mock_name) == (
+            self.mock_add_sid_member.return_value,
+            self.mock_add_rsid_member.return_value,
+        )
         self.mock_is_sid_member.assert_called_once_with(sid)
         self.mock_is_rsid_member.assert_called_once_with(sid + RESPONSE_REQUEST_SID_DIFF)
         self.mock_add_sid_member.assert_called_once_with(name=mock_name, value=sid)
@@ -212,18 +214,19 @@ class TestFunctions:
 
 @pytest.mark.integration
 class TestSIDIntegration:
-
     SYSTEM_SPECIFIC_REQUEST_SID_VALUES = range(0xBA, 0xBF)
     SYSTEM_SPECIFIC_RESPONSE_SID_VALUES = range(0xFA, 0xFF)
 
     def test_number_of_members(self):
-        assert len(ResponseSID) == len(RequestSID) + 1, \
+        assert len(ResponseSID) == len(RequestSID) + 1, (
             "ResponseSID shall contain RSID for each SID and one additional element for 'NegativeResponse'."
+        )
 
     @pytest.mark.parametrize("request_sid_member", list(RequestSID))
     def test_rsid_members(self, request_sid_member):
-        assert ResponseSID[request_sid_member.name] == request_sid_member + 0x40, \
+        assert ResponseSID[request_sid_member.name] == request_sid_member + 0x40, (
             "Verify each ResponseSID member has correct value (SID + 0x40)."
+        )
 
     @pytest.mark.parametrize("undefined_value", SYSTEM_SPECIFIC_REQUEST_SID_VALUES)
     def test_undefined_request_sid(self, undefined_value):
@@ -235,10 +238,13 @@ class TestSIDIntegration:
         assert ResponseSID.is_response_sid(undefined_value) is True
         assert ResponseSID.is_member(undefined_value) is False
 
-    @pytest.mark.parametrize("sid, name", [
-        (SYSTEM_SPECIFIC_REQUEST_SID_VALUES[0], "NewSID"),
-        (SYSTEM_SPECIFIC_REQUEST_SID_VALUES[1], "Another"),
-    ])
+    @pytest.mark.parametrize(
+        "sid, name",
+        [
+            (SYSTEM_SPECIFIC_REQUEST_SID_VALUES[0], "NewSID"),
+            (SYSTEM_SPECIFIC_REQUEST_SID_VALUES[1], "Another"),
+        ],
+    )
     def test_define_service(self, sid, name):
         sid_member, rsid_member = define_service(sid=sid, name=name)
         assert sid_member.value == sid

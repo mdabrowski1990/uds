@@ -12,6 +12,7 @@ from .python_can import (
 
 # Config
 
+
 class KvaserConfig(AbstractPythonCanTests):
     """Configuration for python-can Transport Interface tests with Kvaser CAN interfaces."""
 
@@ -19,23 +20,19 @@ class KvaserConfig(AbstractPythonCanTests):
 
     def _define_interfaces(self) -> None:
         """Configure CAN bus objects that manage CAN interfaces."""
-        self.can_interface_1 = Bus(interface="kvaser",
-                                   channel=0,
-                                   fd=True,
-                                   receive_own_messages=True)
-        self.can_interface_2 = Bus(interface="kvaser",
-                                   channel=1,
-                                   fd=True,
-                                   receive_own_messages=True)
+        self.can_interface_1 = Bus(interface="kvaser", channel=0, fd=True, receive_own_messages=True)
+        self.can_interface_2 = Bus(interface="kvaser", channel=1, fd=True, receive_own_messages=True)
 
 
 # Can Packets Transmission and Reception
+
 
 class TestKvaserCanPacket(AbstractCanPacketTests, KvaserConfig):
     """CAN packets related system tests for python-can Transport Interface."""
 
 
 # Messages Transmission and Reception
+
 
 class TestKvaserUnsegmentedMessage(AbstractUnsegmentedMessageTests, KvaserConfig):
     """Unsegmented UDS message related system tests for python-can Transport Interface."""
@@ -47,17 +44,20 @@ class TestKvaserSegmentedMessage(AbstractSegmentedMessageTests, KvaserConfig):
 
 # Full Duplex
 
+
 class TestKvaserFullDuplex(AbstractFullDuplexTests, KvaserConfig):
     """Full-Duplex related system tests for python-can Transport Interface."""
 
 
 # Use-Cases
 
+
 class TestKvaserUseCase(AbstractUseCaseTests, KvaserConfig):
     """Use case based system tests for python-can Transport Interface."""
 
 
 # Error Guessing
+
 
 class TestKvaserErrorGuessing(AbstractErrorGuessingTests, KvaserConfig):
     """Error guessing system tests for python-can Transport Interface."""
