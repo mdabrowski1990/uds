@@ -84,7 +84,7 @@ sorting-imports = [
     "isort == 9.0.1"
 ]
 formatting = [
-    "ruff == 0.16.8"
+    "ruff == 0.16.9"
 ]
 docs = [
     "sphinx",
