@@ -43,6 +43,8 @@ class PythonCanTransportInterface(AbstractCanTransportInterface):
                                                         "socketcan", "udp_multicast", "iscan", "slcan", "robotell",
                                                         "neousys", "virtual", "seeedstudio", "nixnet"})
 
+    addressing_information: AbstractCanAddressingInformation
+
     def __init__(self,
                  network_manager: BusABC,
                  addressing_information: AbstractCanAddressingInformation,
