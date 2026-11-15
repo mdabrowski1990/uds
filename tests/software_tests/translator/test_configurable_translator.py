@@ -2802,10 +2802,10 @@ class TestConfigurableTranslatorIntegration:
                         "children": (
                             {
                                 "children": (),
-                                "length": 2,
-                                "name": "messagesType",
-                                "physical_value": "networkManagementCommunicationMessages and normalCommunicationMessages",
-                                "raw_value": 0x3,
+                                "length": 4,
+                                "name": "networks",
+                                "physical_value": "network on which this request is received",
+                                "raw_value": 0xF,
                                 "unit": None,
                             },
                             {
@@ -2818,10 +2818,10 @@ class TestConfigurableTranslatorIntegration:
                             },
                             {
                                 "children": (),
-                                "length": 4,
-                                "name": "networks",
-                                "physical_value": "network on which this request is received",
-                                "raw_value": 0xF,
+                                "length": 2,
+                                "name": "messagesType",
+                                "physical_value": "networkManagementCommunicationMessages and normalCommunicationMessages",
+                                "raw_value": 0x3,
                                 "unit": None,
                             },
                         ),

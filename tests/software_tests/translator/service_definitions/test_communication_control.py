@@ -22,7 +22,7 @@ class TestCommunicationControlIntegration:
         "payload, decoded_message",
         [
             (
-                [0x28, 0x00, 0x40],
+                [0x28, 0x00, 0x01],
                 (
                     {
                         "children": (),
@@ -61,10 +61,10 @@ class TestCommunicationControlIntegration:
                         "children": (
                             {
                                 "children": (),
-                                "length": 2,
-                                "name": "messagesType",
-                                "physical_value": "normalCommunicationMessages",
-                                "raw_value": 1,
+                                "length": 4,
+                                "name": "networks",
+                                "physical_value": "all connected networks",
+                                "raw_value": 0x0,
                                 "unit": None,
                             },
                             {
@@ -77,23 +77,23 @@ class TestCommunicationControlIntegration:
                             },
                             {
                                 "children": (),
-                                "length": 4,
-                                "name": "networks",
-                                "physical_value": "all connected networks",
-                                "raw_value": 0x0,
+                                "length": 2,
+                                "name": "messagesType",
+                                "physical_value": "normalCommunicationMessages",
+                                "raw_value": 1,
                                 "unit": None,
                             },
                         ),
                         "length": 8,
                         "name": "communicationType",
-                        "physical_value": 0x40,
-                        "raw_value": 0x40,
+                        "physical_value": 0x01,
+                        "raw_value": 0x01,
                         "unit": None,
                     },
                 ),
             ),
             (
-                [0x28, 0x84, 0xCF, 0xF1, 0xDE],
+                [0x28, 0x84, 0xF3, 0xF1, 0xDE],
                 (
                     {
                         "children": (),
@@ -132,10 +132,10 @@ class TestCommunicationControlIntegration:
                         "children": (
                             {
                                 "children": (),
-                                "length": 2,
-                                "name": "messagesType",
-                                "physical_value": "networkManagementCommunicationMessages and normalCommunicationMessages",
-                                "raw_value": 3,
+                                "length": 4,
+                                "name": "networks",
+                                "physical_value": "network on which this request is received",
+                                "raw_value": 0xF,
                                 "unit": None,
                             },
                             {
@@ -148,17 +148,17 @@ class TestCommunicationControlIntegration:
                             },
                             {
                                 "children": (),
-                                "length": 4,
-                                "name": "networks",
-                                "physical_value": "network on which this request is received",
-                                "raw_value": 0xF,
+                                "length": 2,
+                                "name": "messagesType",
+                                "physical_value": "networkManagementCommunicationMessages and normalCommunicationMessages",
+                                "raw_value": 3,
                                 "unit": None,
                             },
                         ),
                         "length": 8,
                         "name": "communicationType",
-                        "physical_value": 0xCF,
-                        "raw_value": 0xCF,
+                        "physical_value": 0xF3,
+                        "raw_value": 0xF3,
                         "unit": None,
                     },
                     {
@@ -240,7 +240,7 @@ class TestCommunicationControlIntegration:
                 },
                 RequestSID.CommunicationControl,
                 None,
-                bytearray([0x28, 0x85, 0x8A, 0x00, 0x05]),
+                bytearray([0x28, 0x85, 0xA2, 0x00, 0x05]),
             ),
             (
                 {
