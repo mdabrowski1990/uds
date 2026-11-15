@@ -336,7 +336,7 @@ NETWORKS = MappingDataRecord(name="networks",
 
 COMMUNICATION_TYPE = RawDataRecord(name="communicationType",
                                    length=8,
-                                   children=(MESSAGES_TYPE, RESERVED_2BITS, NETWORKS))
+                                   children=(NETWORKS, RESERVED_2BITS, MESSAGES_TYPE))
 """Definition of `communicationType` Data Record."""
 
 NODE_IDENTIFICATION_NUMBER = MappingDataRecord(name="nodeIdentificationNumber",
