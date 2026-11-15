@@ -168,29 +168,32 @@ class CanDlcHandler:
      - 0x9-0xF - discrete range which is supported by CAN FD only
     """
 
-    __DLC_VALUES: tuple[int, ...] = tuple(range(0x10))
+    MIN_DLC_VALUE: int = 0x0
+    """Minimum value of DLC parameter."""
+    MAX_DLC_VALUE: int = 0xF
+    """Maximum value of DLC parameter."""
+
+    DLC_SPECIFIC_FOR_CAN_FD: frozenset[int] = frozenset({0x9, 0xA, 0xB, 0xC, 0xD, 0xE, 0xF})
+    """DLC values supported by CAN-FD, but not supported by Classic CAN (version 2.0)."""
+
+    MIN_BASE_UDS_DLC: int = 0x8
+    """Minimum CAN DLC value that can be used for UDS communication.
+    Lower values of DLC are only allowed when :ref:`CAN Frame Data Optimization <knowledge-base-can-data-optimization>`
+    is used."""
+
+    __ALL_DLC_VALUES: tuple[int, ...] = tuple(range(0x10))
     __DATA_BYTES_NUMBERS: tuple[int, ...] = (0, 1, 2, 3, 4, 5, 6, 7, 8, 12, 16, 20, 24, 32, 48, 64)
-    __DLC_MAPPING: Mapping[int, int] = MappingProxyType(dict(zip(__DLC_VALUES,
+    __DLC_MAPPING: Mapping[int, int] = MappingProxyType(dict(zip(__ALL_DLC_VALUES,
                                                                  __DATA_BYTES_NUMBERS,
                                                                  strict=True)))
     __DATA_BYTES_NUMBER_MAPPING: Mapping[int, int] = MappingProxyType(dict(zip(__DATA_BYTES_NUMBERS,
-                                                                               __DLC_VALUES,
+                                                                               __ALL_DLC_VALUES,
                                                                                strict=True)))
-    __DLC_SPECIFIC_FOR_CAN_FD: frozenset[int] = frozenset(dlc for dlc in __DLC_VALUES if dlc > 8)
 
     MIN_DATA_BYTES_NUMBER: int = min(__DATA_BYTES_NUMBERS)
     """Minimum number of data bytes in a CAN frame."""
     MAX_DATA_BYTES_NUMBER: int = max(__DATA_BYTES_NUMBERS)
     """Maximum number of data bytes in a CAN frame."""
-    MIN_DLC_VALUE: int = min(__DLC_VALUES)
-    """Minimum value of DLC parameter."""
-    MAX_DLC_VALUE: int = max(__DLC_VALUES)
-    """Maximum value of DLC parameter."""
-
-    MIN_BASE_UDS_DLC: int = 8
-    """Minimum CAN DLC value that can be used for UDS communication.
-    Lower values of DLC are only allowed when :ref:`CAN Frame Data Optimization <knowledge-base-can-data-optimization>`
-    is used."""
 
     @classmethod
     def decode_dlc(cls, dlc: int) -> int:
@@ -227,7 +230,7 @@ class CanDlcHandler:
         """
         cls.validate_data_bytes_number(data_bytes_number, False)
         index = bisect_left(a=cls.__DATA_BYTES_NUMBERS, x=data_bytes_number)
-        return cls.__DLC_VALUES[index]
+        return cls.__ALL_DLC_VALUES[index]
 
     @classmethod
     def is_can_fd_specific_dlc(cls, dlc: int) -> bool:
@@ -238,7 +241,7 @@ class CanDlcHandler:
 
         :return: True if provided DLC value is CAN FD specific, False otherwise.
         """
-        return dlc in cls.__DLC_SPECIFIC_FOR_CAN_FD
+        return dlc in cls.DLC_SPECIFIC_FOR_CAN_FD
 
     @classmethod
     def validate_dlc(cls, value: int) -> None:
