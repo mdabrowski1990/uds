@@ -3,7 +3,7 @@
 Diagnostics over CAN
 ====================
 Diagnostics over CAN (DoCAN) also known as CAN Transport Protocol (CAN-TP, ISO 15765-2),
-is the transport layer protocol used by UDS and several other diagnostic protocols (e.g., SAE J1979,
+is the transport layer communication protocol used by UDS and several other diagnostic protocols (e.g., SAE J1979,
 `KWP2000 <https://en.wikipedia.org/wiki/Keyword_Protocol_2000>`_)
 for :ref:`message segmentation <knowledge-base-segmentation>` on CAN networks.
 In other words, DoCAN provides the adaptation that allows UDS to operate on CAN.

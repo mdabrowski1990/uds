@@ -20,6 +20,7 @@ understanding of the UDS protocol itself.
   knowledge_base/rid.rst
   knowledge_base/time_parameters.rst
   knowledge_base/can.rst
+  knowledge_base/lin.rst
 
 
 .. seealso:: For an online course on UDS, visit
