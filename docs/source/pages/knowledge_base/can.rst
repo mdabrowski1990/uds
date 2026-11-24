@@ -16,12 +16,16 @@ CAN Bus Versions
 ----------------
 `CAN Bus <https://en.wikipedia.org/wiki/CAN_bus>`_ was released in multiple version over the years.
 
+:download:`Comparison of Classic CAN, CAN-FD and CAN-XL <../../specs/CAN/Comparison_Bosch.pdf>`
+
 
 Classic CAN
 ```````````
 Classic CAN, also called CAN 2.0.
 
 - supports DLC values 0-8
+
+:download:`Bosch CAN 2.0 Specification <../../specs/CAN/CAN_2_0_Bosch.pdf>`
 
 
 CAN FD
@@ -32,6 +36,8 @@ CAN version with Flexible Data-Rate.
 - faster transmission of data field
 - backward compatible with Classic CAN
 
+:download:`Bosch CAN FD Specification <../../specs/CAN/CAN_FD_Bosch.pdf>`
+
 
 CAN XL
 ``````
@@ -39,6 +45,8 @@ To be released in the near future.
 
 - supports up to 2048-bytes payload
 - backward compatible with Classic CAN and CAN FD
+
+:download:`Bosch CAN XL Specification <../../specs/CAN/CAN_XL_Bosch.pdf>`
 
 
 .. _knowledge-base-can-frame:

@@ -16,6 +16,37 @@ LIN uses a master-slave communication model, where the master node controls bus 
 all frame transmissions according to a predefined schedule.
 
 
+LIN Versions
+------------
+`LIN Bus <https://en.wikipedia.org/wiki/Local_Interconnect_Network>`_ was released in multiple version over the years.
+
+
+LIN 1.3
+```````
+Released in December 2002 (link to specification: https://lniv.fe.uni-lj.si/courses/ndes/LIN_Spec_1_3.pdf ).
+
+- Supports classic checksum only.
+
+
+:download:`LIN 1.3 Specification <../../specs/LIN/LIN_1_3.pdf>`
+
+
+LIN 2.0
+```````
+
+:download:`LIN 2.0 Specification <../../specs/LIN/LIN_2_0.pdf>`
+
+LIN 2.1
+```````
+
+:download:`LIN 2.1 Specification <../../specs/LIN/LIN_2_1.pdf>`
+
+LIN 2.2A
+````````
+
+:download:`LIN 2.2A Specification <../../specs/LIN/LIN_2_2_A.pdf>`
+
+
 .. _knowledge-base-lin-frame:
 
 LIN Frame
