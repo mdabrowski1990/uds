@@ -101,3 +101,173 @@ Diagnostic frames always use the classic checksum for backwards compatibility re
 LIN Packet
 ----------
 LIN Packets (N_PDUs) are :ref:`LIN Frames <knowledge-base-lin-frame>` exchanged during DoLIN communication.
+
+
+.. _knowledge-base-lin-nad:
+
+NAD
+```
+Network NAD is 1 byte parameter located in the first byte in each LIN diagnostic frame.
+
+Based on NAD value, the communication model is distinguished:
+
+- 0x00: Not Applicable, reserved for sleep command frame
+
+- 0x01-0x7D: :ref:`physical address <knowledge-base-lin-physical-address>`
+
+- 0x7E: :ref:`functional address <knowledge-base-lin-functional-address>`
+
+- 0x7F: :ref:`broadcast address <knowledge-base-lin-broadcast-address>`
+
+
+.. _knowledge-base-lin-n-pci:
+
+LIN Packet Types
+````````````````
+
+
+.. _knowledge-base-lin-single-frame:
+
+Single Frame
+''''''''''''
+
+
+.. _knowledge-base-lin-single-frame-data-length:
+
+Single Frame Data Length
+........................
+
+
+
+.. _knowledge-base-lin-first-frame:
+
+First Frame
+'''''''''''
+
+
+.. _knowledge-base-lin-first-frame-data-length:
+
+First Frame Data Length
+.......................
+
+
+
+.. _knowledge-base-lin-consecutive-frame:
+
+Consecutive Frame
+'''''''''''''''''
+
+
+.. _knowledge-base-lin-sequence-number:
+
+Sequence Number
+...............
+
+
+Addressing Types
+````````````````
+
+
+Physical
+''''''''
+
+
+Functional
+''''''''''
+
+
+Broadcast
+'''''''''
+
+
+
+.. _knowledge-base-lin-performance-and-error-handling:
+
+Performance and Error Handling
+------------------------------
+ISO 17987-2 defines the following network layer parameters for Diagnostics over LIN (DoLIN):
+
+- N_As_
+- N_Cs_
+- N_Cr_
+
+.. figure:: ../../images/LIN_Timings.png
+  :alt: Diagnostic on LIN timings
+  :figclass: align-center
+  :width: 100%
+
+  Network layer time values (N_As, N_Cs, N_Cr) present during UDS on LIN communication.
+
+.. note:: The example uses
+  :ref:`segmented diagnostic message transmission <knowledge-base-lin-segmented-message-transmission>`
+  as it enables to present all LIN timing parameters.
+  For :ref:`unsegmented diagnostic message transmission <knowledge-base-lin-unsegmented-message-transmission>` though,
+  the only applicable time parameter is N_As_.
+
+
+.. _knowledge-base-lin-n-as:
+
+N_As
+````
+N_As is the time parameter of a :ref:`LIN Packet <knowledge-base-lin-packet>` transmission.
+It is measured on Master side from the moment its transport layer requests for a diagnostic frame to be transmitted
+till the frame has been fully transmitted on the bus.
+
+Timeout value:
+  1000ms
+
+Error handling:
+  If N_As timeout is exceeded, the transmission of
+  the :ref:`diagnostic message <knowledge-base-diagnostic-message>` shall be aborted.
+
+Affected :ref:`LIN Packets <knowledge-base-lin-packet>`:
+
+- :ref:`Single Frame <knowledge-base-lin-single-frame>`
+- :ref:`First Frame <knowledge-base-lin-first-frame>`
+- :ref:`Consecutive Frame <knowledge-base-lin-consecutive-frame>`
+
+
+.. _knowledge-base-lin-n-cs:
+
+N_Cs
+````
+N_Cs is the time parameter related to :ref:`Consecutive Frame <knowledge-base-lin-consecutive-frame>` packet
+transmission by a sender.
+It is measured from the end of the last transmitted LIN Packet (either
+:ref:`First Frame <knowledge-base-lin-first-frame>` or :ref:`Consecutive Frame <knowledge-base-lin-consecutive-frame>`)
+until the requested :ref:`Consecutive Frame <knowledge-base-lin-consecutive-frame>` is transmitted.
+
+Performance requirement:
+  A sending entity shall transmit the :ref:`Consecutive Frame <knowledge-base-lin-consecutive-frame>` packet
+  before N_Cs reaches its maximal allowed value.
+
+  .. code-block::
+
+    [N_Cs] + [N_As] < 0.9 * [N_Cr timeout]
+    [N_Cs max] = 900ms - [N_As]
+
+Affected :ref:`LIN Packets <knowledge-base-lin-packet>`:
+
+- :ref:`Consecutive Frame <knowledge-base-lin-consecutive-frame>`
+
+
+.. _knowledge-base-lin-n-cr:
+
+N_Cr
+````
+N_Cr is the time parameter related to :ref:`Consecutive Frame <knowledge-base-lin-consecutive-frame>` packet
+reception by a receiver.
+It is measured from the end of the last received LIN Packet (either
+:ref:`First Frame <knowledge-base-lin-first-frame>` or :ref:`Consecutive Frame <knowledge-base-lin-consecutive-frame>`)
+until the reception of :ref:`Consecutive Frame <knowledge-base-lin-consecutive-frame>`.
+
+Timeout value:
+  1000ms
+
+Error handling:
+  If the N_Cr timeout is exceeded, the reception of the :ref:`diagnostic message <knowledge-base-diagnostic-message>`
+  shall be aborted.
+
+Affected :ref:`LIN Packets <knowledge-base-lin-packet>`:
+
+- :ref:`Consecutive Frame <knowledge-base-lin-consecutive-frame>`
