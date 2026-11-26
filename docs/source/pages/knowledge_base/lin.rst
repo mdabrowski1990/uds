@@ -119,6 +119,8 @@ Based on NAD value, the communication model is distinguished:
 
 - 0x7F: :ref:`broadcast address <knowledge-base-lin-broadcast-address>`
 
+- 0x80-0xFF: for vehicle manufacturer definition
+
 
 .. _knowledge-base-lin-n-pci:
 
