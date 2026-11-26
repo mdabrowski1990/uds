@@ -110,16 +110,12 @@ A CAN data frame consists of several fields, but for DoCAN communication the mos
   | 0xF |            64            |             NO             |         YES         |
   +-----+--------------------------+----------------------------+---------------------+
 
-.. note:: To learn more about CAN bus and CAN frame structure, we encourage you to read
-  `CAN bus specification <http://esd.cs.ucr.edu/webres/can20.pdf>`_ and visit
-  `e-learning portal of Vector Informatik GmbH <https://elearning.vector.com/>`_.
-
 
 .. _knowledge-base-can-packet:
 
 CAN Packet
 ----------
-CAN Packets are :ref:`CAN Frames <knowledge-base-can-frame>` exchanged during DoCAN communication.
+CAN Packets (N_PDUs) are :ref:`CAN Frames <knowledge-base-can-frame>` exchanged during DoCAN communication.
 
 
 .. _knowledge-base-can-data-field:
