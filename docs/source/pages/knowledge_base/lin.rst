@@ -235,7 +235,7 @@ N_Cs is the time parameter related to :ref:`Consecutive Frame <knowledge-base-li
 transmission by a sender.
 It is measured from the end of the last transmitted LIN Packet (either
 :ref:`First Frame <knowledge-base-lin-first-frame>` or :ref:`Consecutive Frame <knowledge-base-lin-consecutive-frame>`)
-until the requested :ref:`Consecutive Frame <knowledge-base-lin-consecutive-frame>` is transmitted.
+until the next :ref:`Consecutive Frame <knowledge-base-lin-consecutive-frame>` is requested.
 
 Performance requirement:
   A sending entity shall transmit the :ref:`Consecutive Frame <knowledge-base-lin-consecutive-frame>` packet
