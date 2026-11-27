@@ -1,4 +1,4 @@
-.. _examples-python-can: 
+.. _examples-python-can:
 
 Python-CAN
 ==========
