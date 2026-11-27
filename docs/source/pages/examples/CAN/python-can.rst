@@ -185,8 +185,28 @@ Packet handling
   :code: python
 
 
+CSS Electronics CANsub interface
+--------------------------------
+Examples demonstrating the use of `CSS Electronics CANsub`_ as a hardware device for sending and receiving CAN messages.
+
+.. seealso:: https://github.com/mdabrowski1990/uds/tree/main/examples/can/python-can/cansub
+
+
+- Send UDS message on one interface, receive on the other:
+
+.. include:: ../../../../../examples/can/python-can/cansub/send_and_receive_message.py
+  :code: python
+
+- Send CAN packets on one interface, receive on the other:
+
+.. include:: ../../../../../examples/can/python-can/cansub/send_and_receive_packet.py
+  :code: python
+
+
 .. _python-can: https://github.com/hardbyte/python-can
 
 .. _Kvaser CAN interfaces: https://kvaser.com/products/?descriptor=pc_productcategory&pc_productcategory=PC+interfaces
 
 .. _Vector CAN interfaces: https://www.vector.com/int/en/products/products-a-z/hardware/network-interfaces/
+
+.. _CSS Electronics CANsub: https://www.csselectronics.com/products/can-fd-usb-interface-ethernet-cansub-2
